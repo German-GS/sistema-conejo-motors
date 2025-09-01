@@ -1,0 +1,37 @@
+/* Estilos generales del contenedor del dashboard */
+.dashboardContainer {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+/* Estilos para la cabecera (Título y botón de logout) */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+/* Estilos para la tabla de inventario */
+.inventoryTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.inventoryTable th,
+.inventoryTable td {
+  border: 1px solid #444;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.inventoryTable th {
+  background-color: #333;
+}
