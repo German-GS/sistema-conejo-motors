@@ -11,10 +11,10 @@
 
 .form input {
   padding: 0.5rem;
-  border: 1px solid #555;
-  background-color: #333;
-  color: white;
-  border-radius: 4px;
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 6px;
   width: 100%; /* Ocupar todo el espacio de su columna */
   box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
 }
@@ -25,7 +25,7 @@
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
 }

@@ -11,14 +11,14 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     marca: "",
     modelo: "",
-    año: 2025,
+    año: "",
     vin: "",
     color: "",
-    precio_costo: 0,
-    precio_venta: 0,
-    autonomia_km: 0,
-    potencia_hp: 0,
-    capacidad_bateria_kwh: 0,
+    precio_costo: "",
+    precio_venta: "",
+    autonomia_km: "",
+    potencia_hp: "",
+    capacidad_bateria_kwh: "",
   });
 
   // 2. Faltaban estos dos 'useState' para el archivo y el error.

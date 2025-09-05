@@ -2,5 +2,7 @@
 export class CreateUserDto {
   nombre_completo: string;
   email: string;
-  contrasena: string; // Recibimos 'contrasena', la convertiremos a 'password_hash'
+  contrasena: string;
+  salario_base?: number;
+  rol_id?: number;
 }

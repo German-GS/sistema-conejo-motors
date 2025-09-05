@@ -1,0 +1,75 @@
+.usersTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.usersTable th,
+.usersTable td {
+  border-bottom: 1px solid var(--borde-suave);
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.usersTable th {
+  color: var(--texto-principal);
+  font-weight: 600;
+}
+
+.usersTable button {
+  padding: 0.75rem 1rem;
+  margin: 0.5rem;
+  background-color: #ee8829;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem; /* Espacio vertical y horizontal */
+  align-items: end; /* Alinea los elementos al final para que los labels y inputs se vean bien */
+}
+
+.formField {
+  grid-column: span 1; /* Por defecto, cada campo ocupa una columna */
+}
+
+.fullWidth {
+  grid-column: 1 / -1; /* Para que un campo ocupe todo el ancho */
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--texto-secundario);
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2);
+}
+
+.buttonContainer {
+  grid-column: 1 / -1;
+  text-align: right;
+  margin-top: 1rem;
+}

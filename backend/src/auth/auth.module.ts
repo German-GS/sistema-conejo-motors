@@ -11,7 +11,7 @@ import { PassportModule } from '@nestjs/passport';
     UsersModule, // Lo importamos para poder usar UsersService
     PassportModule,
     JwtModule.register({
-      global: true,
+      //global: true,
       secret: 'ESTO_ES_UN_SECRETO_TEMPORAL', // IMPORTANTE: En producción esto debe ser una variable de entorno
       signOptions: { expiresIn: '1h' }, // El token expira en 1 hora
     }),

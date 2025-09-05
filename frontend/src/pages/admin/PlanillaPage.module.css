@@ -1,0 +1,61 @@
+/* En: src/pages/admin/PlanillaPage.module.css */
+
+.inputField,
+.selectField {
+  width: 100%;
+  padding: 0.75rem 1rem; /* Aumentamos el padding para más espacio */
+  border: 1px solid var(--color-border); /* Color de borde consistente */
+  border-radius: var(--border-radius); /* Bordes redondeados */
+  font-size: 1rem;
+  color: var(--color-text-dark); /* Color de texto más oscuro */
+  background-color: var(--color-white); /* Fondo blanco */
+  box-shadow: var(--shadow-sm); /* Sombra ligera para profundidad */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Transición suave */
+  box-sizing: border-box; /* Importante para el width: 100% */
+}
+
+.inputField:focus,
+.selectField:focus {
+  outline: none; /* Quitamos el outline predeterminado */
+  border-color: var(--azul-principal); /* Borde azul al enfocar */
+  box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2); /* Sombra de enfoque */
+}
+
+/* Estilo para los label */
+.label {
+  display: block; /* Para que ocupen toda la línea y el input quede debajo */
+  margin-bottom: 0.4rem; /* Espacio entre el label y el input */
+  font-weight: 600; /* Texto un poco más grueso */
+  color: var(--color-text-primary); /* Color de texto principal */
+  font-size: 0.9rem; /* Un poco más pequeño */
+}
+
+/* Estilo para el contenedor de los campos para el grid */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Dos columnas por defecto */
+  gap: 1.5rem; /* Espacio entre los campos */
+}
+
+.formGridFullWidth {
+  grid-column: 1 / -1; /* Para que un campo ocupe toda la anchura */
+}
+
+/* Estilo para el botón */
+.generateButtonContainer {
+  grid-column: 1 / -1; /* Para que el botón ocupe toda la anchura */
+  text-align: right;
+  margin-top: 1rem;
+}
+
+/* Pequeño ajuste para el select para que la flecha se vea bien */
+.selectField {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.8em;
+  padding-right: 2.5rem; /* Espacio para la flecha */
+}

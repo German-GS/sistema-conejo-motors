@@ -1,0 +1,234 @@
+.layout {
+  display: flex;
+  background-color: var(--fondo-principal);
+  font-family: sans-serif;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: var(--azul-principal);
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+  color: white;
+  display: flex;
+  flex-direction: column; /* Organiza los elementos verticalmente */
+  padding: 1.5rem 1rem;
+  height: 100vh;
+  position: fixed;
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+/* --- ESTILOS CORREGIDOS Y AÑADIDOS --- */
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  overflow: hidden;
+}
+
+.logoImage {
+  width: 40px;
+  height: auto;
+  flex-shrink: 0; /* Evita que la imagen se encoja */
+}
+
+.logoText,
+.userInfo span,
+.linkText {
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+/* Regla clave: Cuando el sidebar está colapsado, oculta estos textos */
+.sidebar.collapsed .logoText,
+.sidebar.collapsed .userInfo span,
+.sidebar.collapsed .linkText {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.userInfo {
+  text-align: center;
+  margin-bottom: 2rem; /* Reduce el margen inferior */
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0.7;
+  height: 1em;
+  transition: opacity 0.2s ease;
+}
+
+.nav {
+  flex-grow: 1; /* Hace que la navegación ocupe el espacio sobrante */
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Centra el icono cuando el menú está colapsado */
+.sidebar.collapsed .nav a {
+  justify-content: center;
+}
+
+/* --- Panel Principal --- */
+
+.mainPanel {
+  margin-left: calc(260px + 2rem); /* deja espacio de 2rem extra */
+  width: calc(100% - 260px - 2rem);
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.mainPanel.mainPanelCollapsed {
+  margin-left: calc(
+    80px + 2rem
+  ); /* deja espacio de 2rem cuando está colapsado */
+  width: calc(100% - 80px - 2rem);
+}
+
+.header {
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headerTitle {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.logoutButton {
+  background: none;
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 2rem; /* <-- ESTA ES LA LÍNEA CLAVE */
+  overflow-y: auto;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: var(--azul-principal);
+  color: white;
+  display: flex;
+  flex-direction: column; /* Asegura el orden vertical */
+  padding: 4rem 4rem;
+  height: 100vh;
+  position: fixed;
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 80px; /* Ancho colapsado */
+}
+
+/* --- ESTILOS CORREGIDOS Y AÑADIDOS --- */
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  overflow: hidden; /* Oculta el texto que se desborda */
+}
+
+.logoImage {
+  width: 40px;
+  height: auto;
+  flex-shrink: 0; /* Evita que el logo se encoja */
+}
+
+.logoText,
+.userInfo span,
+.linkText {
+  white-space: nowrap; /* Evita que el texto se parta en varias líneas */
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+/* Regla clave: Cuando el sidebar está colapsado, oculta estos textos */
+.sidebar.collapsed .logoText,
+.sidebar.collapsed .userInfo span,
+.sidebar.collapsed .linkText {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: var(--azul-principal);
+  color: white;
+  display: flex;
+  flex-direction: column; /* Asegura el orden vertical */
+  padding: 1.5rem 1rem;
+  height: 100vh;
+  position: fixed;
+  transition: width 0.3s ease;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  overflow: hidden; /* Oculta el texto que se desborda */
+  transition: all 0.2s ease-in-out;
+}
+
+.nav a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Cuando está colapsado, el enlace centra su contenido (el icono) */
+.sidebar.collapsed .nav a {
+  justify-content: center;
+}
+
+.toggleButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  border-radius: 5px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

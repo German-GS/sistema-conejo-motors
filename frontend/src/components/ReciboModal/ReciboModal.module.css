@@ -1,0 +1,95 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+}
+
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #888;
+}
+
+.modalContent h2 {
+  margin-top: 0;
+  color: var(--azul-principal);
+  border-bottom: 2px solid var(--borde-suave);
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.section h4 {
+  margin: 0 0 0.8rem 0;
+  color: var(--texto-secundario);
+}
+
+.section p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.section p:last-child {
+  border-bottom: none;
+}
+
+.section p span {
+  font-weight: 500;
+}
+
+.total {
+  font-weight: bold;
+  color: var(--texto-principal);
+}
+
+.summary {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.summary h3 {
+  margin: 0;
+  color: var(--azul-principal);
+}
+
+.summary span {
+  font-weight: 700;
+}
+
+.actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}

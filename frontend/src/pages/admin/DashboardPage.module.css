@@ -21,17 +21,42 @@
 /* Estilos para la tabla de inventario */
 .inventoryTable {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse; /* Une los bordes de las celdas */
   margin-top: 1rem;
+  font-size: 0.9rem; /* Tamaño de fuente ligeramente más pequeño */
 }
 
+/* Estilos para las celdas de la cabecera (th) y del cuerpo (td) */
 .inventoryTable th,
 .inventoryTable td {
-  border: 1px solid #444;
-  padding: 0.75rem;
+  border-bottom: 1px solid var(--borde-suave); /* Línea divisoria suave */
+  padding: 0.8rem 1rem;
   text-align: left;
+  color: var(--texto-secundario); /* Color de texto gris */
 }
 
+/* Estilos específicos para la cabecera */
 .inventoryTable th {
-  background-color: #333;
+  background-color: transparent; /* Fondo transparente */
+  color: var(--texto-principal); /* Color de texto más oscuro */
+  font-weight: 600; /* Texto en negrita */
+}
+
+/* Estilos para los botones de acción dentro de la tabla */
+.inventoryTable button {
+  padding: 0.3rem 0.7rem;
+  margin-right: 0.5rem;
+  border: 1px solid var(--borde-suave);
+  background-color: transparent;
+  color: var(--texto-principal);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* Estilo para el botón de eliminar al pasar el mouse */
+.inventoryTable button:hover {
+  background-color: #ffebee; /* Un rojo muy suave */
+  border-color: #ef9a9a;
+  color: #c62828;
 }

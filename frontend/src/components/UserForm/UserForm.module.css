@@ -1,0 +1,36 @@
+.form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.form input {
+  padding: 0.5rem;
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 6px;
+  width: 100%; /* Ocupar todo el espacio de su columna */
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+}
+
+.form select {
+  padding: 0.5rem;
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 6px;
+  width: 100%; /* Ocupar todo el espacio de su columna */
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+}
+
+.form button {
+  grid-column: 1 / -1; /* El botón ocupa todas las columnas */
+  padding: 0.75rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}

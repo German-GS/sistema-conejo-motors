@@ -1,68 +1,84 @@
+/* Definición de la paleta de colores global */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --azul-principal: #024f7d;
+  --turquesa-acento: #00c7b1;
+  --fondo-principal: #f7f7f7;
+  --fondo-tarjeta: #ffffff;
+  --texto-principal: #333333;
+  --texto-secundario: #555555;
+  --borde-suave: #e0e0e0;
+  --warning: #c90c0c;
+  --caution: #d86e0b;
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+/* Reseteo y estilos base */
+body {
+  margin: 0; /* <-- Mantenemos esto */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background-color: var(--fondo-principal);
+  color: var(--texto-principal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Las líneas de 'display', 'place-items', y 'min-height' se han eliminado */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* Limpiamos estilos de la raíz de la app */
+#root {
+  width: 100%;
+  height: 100%;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+.btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* Botón Principal (Azul) */
+.btn-principal {
+  background-color: var(--azul-principal);
+  color: white;
+}
+.btn-principal:hover {
+  background-color: #023a5c; /* Un azul más oscuro */
+  transform: translateY(-1px);
+}
+
+/*Boton de advertencia*/
+.btn-caution {
+  background-color: var(--caution);
+  color: white;
+}
+
+.btn-caution:hover {
+  background-color: #ee7300; /* Un azul más oscuro */
+  transform: translateY(-1px);
+}
+
+/* Botón de Peligro (Rojo) */
+.btn-danger {
+  background-color: var(--warning);
+  color: white;
+}
+.btn-danger:hover {
+  background-color: #c62828;
+  transform: translateY(-1px);
+}
+
+/* Botón Secundario (Gris/Editar) */
+.btn-secondary {
+  background-color: #f1f3f4;
+  color: var(--texto-secundario);
+  border: 1px solid var(--borde-suave);
+}
+.btn-secondary:hover {
+  background-color: #e8eaed;
 }

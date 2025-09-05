@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
-import { VehicleForm } from "../../components/VechicleForm/VehicleForm"; // Ruta actualizada
+import { VehicleForm } from "../../components/VechicleForm/VehicleForm"; // Corregida la ruta si es necesario
+import { Card } from "../../components/Card";
 import styles from "./DashboardPage.module.css";
 
+// Interfaz para el tipo de dato Vehicle
 interface Vehicle {
   id: number;
   marca: string;
@@ -30,11 +32,6 @@ export const DashboardPage = () => {
     fetchVehicles();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    window.location.reload();
-  };
-
   const handleDelete = async (id: number) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este vehículo?")) {
       try {
@@ -49,22 +46,12 @@ export const DashboardPage = () => {
   };
 
   return (
-    <div className={styles.dashboardContainer}>
-      <div className={styles.header}>
-        <h1>Dashboard de Administración</h1>
-        <button onClick={handleLogout}>Cerrar Sesión</button>
-      </div>
-      <hr />
-
-      <div>
-        <h3>Añadir Nuevo Vehículo</h3>
-        {/* Ahora solo le pasamos la función que debe ejecutar cuando todo sale bien */}
+    <>
+      <Card title="Añadir Nuevo Vehículo">
         <VehicleForm onSuccess={fetchVehicles} />
-      </div>
-      <hr />
+      </Card>
 
-      <div>
-        <h2>Inventario de Vehículos</h2>
+      <Card title="Inventario de Vehículos">
         {error && <p style={{ color: "red" }}>{error}</p>}
         <table className={styles.inventoryTable}>
           <thead>
@@ -88,6 +75,7 @@ export const DashboardPage = () => {
                 <td>{vehicle.vin}</td>
                 <td>{vehicle.estado}</td>
                 <td>
+                  <button>Editar</button>
                   <button onClick={() => handleDelete(vehicle.id)}>
                     Eliminar
                   </button>
@@ -96,7 +84,7 @@ export const DashboardPage = () => {
             ))}
           </tbody>
         </table>
-      </div>
-    </div>
+      </Card>
+    </>
   );
 };

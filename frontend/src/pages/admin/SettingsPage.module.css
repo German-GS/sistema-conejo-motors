@@ -1,0 +1,43 @@
+.settingsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.settingsTable th,
+.settingsTable td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--borde-suave);
+  text-align: left;
+}
+
+.settingsTable th {
+  font-weight: 600;
+}
+
+.settingsTable td:nth-child(2) {
+  /* Columna de Valor */
+  font-weight: bold;
+  color: var(--azul-principal);
+}
+
+.settingsTable input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 120px;
+}
+
+.settingsTable button {
+  padding: 0.4rem 0.8rem;
+  margin-left: 0.5rem;
+  border: 1px solid var(--borde-suave);
+  background-color: transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settingsTable button:hover {
+  background-color: #e9e9e9;
+  border-color: #bbb;
+}

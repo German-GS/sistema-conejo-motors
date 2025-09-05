@@ -1,6 +1,13 @@
 // backend/src/users/user.entity.ts
-
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Role } from '../roles/role.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { Salario } from '../salarios/salario.entity';
 
 @Entity({ name: 'usuarios' }) // Esto vincula la clase a la tabla 'usuarios'
 export class User {
@@ -16,10 +23,23 @@ export class User {
   @Column()
   password_hash: string;
 
-  // La relación con los roles la añadiremos más tarde
-  // @Column()
-  // rol_id: number;
-
   @Column({ default: true })
   activo: boolean;
+
+  @Column({ unique: true, nullable: true })
+  cedula: string;
+
+  // --- AÑADIMOS ESTOS CAMPOS PARA CRÉDITOS FISCALES ---
+  @Column({ default: false })
+  tiene_conyuge: boolean;
+
+  @Column({ default: 0 })
+  cantidad_hijos: number;
+  // ----------------------------------------------------
+
+  @ManyToOne(() => Role, (role) => role.usuarios)
+  rol: Role;
+
+  @OneToMany(() => Salario, (salario) => salario.usuario)
+  salarios: Salario[];
 }

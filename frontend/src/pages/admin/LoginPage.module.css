@@ -1,0 +1,87 @@
+/* frontend/src/pages/admin/LoginPage.module.css */
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(
+    --color-fondo-admin
+  ); /* Usamos el color de fondo general */
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.loginCard {
+  background-color: var(--color-blanco);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Espaciado entre elementos */
+}
+
+.logo {
+  width: 120px;
+  height: auto;
+  margin: 0 auto 1rem; /* Centra el logo y añade margen inferior */
+}
+
+.loginCard h1 {
+  color: var(--color-texto-oscuro);
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.loginCard p {
+  color: var(--color-texto-claro);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loginForm input {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--color-texto-oscuro);
+  transition: border-color 0.2s ease-in-out;
+}
+
+.loginForm input:focus {
+  border-color: var(--azul-principal);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 141, 151, 0.2); /* Sombra al enfocar */
+}
+
+.loginForm button {
+  background-color: var(--azul-principal);
+  color: var(--color-blanco);
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.loginForm button:hover {
+  background-color: var(--azul-oscuro);
+  transform: translateY(-1px);
+}
+
+.error {
+  color: var(--color-error);
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}

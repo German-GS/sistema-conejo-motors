@@ -1,0 +1,21 @@
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.cardHeader {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #024f7d; /* Título con el color principal */
+}
+
+.cardContent {
+  padding: 1.5rem;
+}
