@@ -10,6 +10,9 @@ export class VehicleImage {
   @Column()
   url: string; // La URL o ruta del archivo de la imagen
 
+  @Column({ type: 'int', default: 0 })
+  order: number;
+
   @ManyToOne(() => Vehicle, (vehicle) => vehicle.imagenes)
   vehicle: Vehicle;
 }

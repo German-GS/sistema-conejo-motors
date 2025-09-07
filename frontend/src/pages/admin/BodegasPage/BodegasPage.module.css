@@ -1,0 +1,40 @@
+.form {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.input {
+  flex-grow: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.bodegasTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.bodegasTable th,
+.bodegasTable td {
+  border-bottom: 1px solid var(--borde-suave);
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.bodegasTable th {
+  font-weight: 600;
+}
+
+.mensaje {
+  color: green;
+  margin-top: 1rem;
+}
+
+.error {
+  color: var(--warning);
+  margin-top: 1rem;
+}

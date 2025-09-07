@@ -1,13 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import styles from "./VehicleForm.module.css";
-
-// 1. La interfaz de props estaba mal definida. Ahora es correcta.
-interface VehicleFormProps {
-  onSuccess: () => void;
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from "@hello-pangea/dnd";
+// Interfaces para los tipos de datos
+interface Bodega {
+  id: number;
+  nombre: string;
 }
 
-export const VehicleForm: React.FC<VehicleFormProps> = ({ onSuccess }) => {
+interface Vehicle {
+  id: number;
+  marca: string;
+  modelo: string;
+  año: number;
+  vin: string;
+  color: string;
+  precio_costo: number;
+  precio_venta: number;
+  autonomia_km: number;
+  potencia_hp: number;
+  capacidad_bateria_kwh: number;
+  bodega?: Bodega;
+  imagenes?: { id: number; url: string }[];
+}
+
+interface VehicleFormProps {
+  onSuccess: () => void;
+  initialData?: Vehicle | null;
+}
+
+export const VehicleForm: React.FC<VehicleFormProps> = ({
+  onSuccess,
+  initialData,
+}) => {
   const [formData, setFormData] = useState({
     marca: "",
     modelo: "",
@@ -19,24 +49,158 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ onSuccess }) => {
     autonomia_km: "",
     potencia_hp: "",
     capacidad_bateria_kwh: "",
+    bodegaId: "",
   });
-
-  // 2. Faltaban estos dos 'useState' para el archivo y el error.
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [error, setError] = useState("");
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
-    }));
+  const wrapperStyles: React.CSSProperties = {
+    position: "relative",
+    width: "100%",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    backgroundColor: "white",
+    backgroundImage:
+      "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E')",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 1rem center",
+    backgroundSize: "0.7em",
   };
 
-  // 3. Faltaba la función para manejar el cambio de archivo.
+  const selectStyles: React.CSSProperties = {
+    width: "100%",
+    padding: "0.45rem 1rem",
+    fontSize: "1rem",
+    color: "#333333",
+    cursor: "pointer",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    appearance: "none",
+    backgroundColor: "transparent",
+    border: "1px solid #cccc",
+    borderRadius: "6px",
+  };
+
+  const [bodegas, setBodegas] = useState<Bodega[]>([]);
+  const [error, setError] = useState("");
+  const isEditing = !!initialData;
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<
+    { id: number; url: string; order: number }[]
+  >([]);
+
+  // Efecto para cargar las bodegas (sin cambios)
+  useEffect(() => {
+    const fetchBodegas = async () => {
+      try {
+        const response = await apiClient.get("/bodegas");
+        setBodegas(response.data);
+      } catch (err) {
+        console.error("Error al cargar bodegas", err);
+      }
+    };
+    fetchBodegas();
+  }, []);
+
+  // Efecto para rellenar el formulario en modo edición (sin cambios, pero ahora funcionará)
+  useEffect(() => {
+    if (isEditing && initialData) {
+      setFormData({
+        marca: initialData.marca || "",
+        modelo: initialData.modelo || "",
+        año: initialData.año?.toString() || "",
+        vin: initialData.vin || "",
+        color: initialData.color || "",
+        precio_costo: initialData.precio_costo?.toString() || "",
+        precio_venta: initialData.precio_venta?.toString() || "",
+        autonomia_km: initialData.autonomia_km?.toString() || "",
+        potencia_hp: initialData.potencia_hp?.toString() || "",
+        capacidad_bateria_kwh:
+          initialData.capacidad_bateria_kwh?.toString() || "",
+        bodegaId: initialData.bodega?.id?.toString() || "",
+      });
+      setExistingImages(
+        initialData.imagenes?.map((img, index) => ({ ...img, order: index })) ||
+          []
+      );
+    } else {
+      // Reinicia estados para un nuevo vehículo
+      setFormData({
+        marca: "",
+        modelo: "",
+        año: "",
+        vin: "",
+        color: "",
+        precio_costo: "",
+        precio_venta: "",
+        autonomia_km: "",
+        potencia_hp: "",
+        capacidad_bateria_kwh: "",
+        bodegaId: "",
+      });
+      setExistingImages([]);
+    }
+    setSelectedFiles([]);
+  }, [initialData, isEditing]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    console.log("--- Drag End ---"); // 1. Confirma que la función se ejecuta
+
+    const { source, destination } = result;
+
+    // Si se suelta fuera de la lista, no hacer nada
+    if (!destination) {
+      console.log("-> Soltado fuera de la lista. No se hace nada.");
+      return;
+    }
+
+    // Si se suelta en la misma posición, no hacer nada
+    if (destination.index === source.index) {
+      console.log("-> Soltado en la misma posición. No se hace nada.");
+      return;
+    }
+
+    console.log(
+      `Moviendo desde el índice ${source.index} al índice ${destination.index}`
+    );
+
+    // Creamos una copia del array actual para trabajar con ella
+    const items = Array.from(existingImages);
+    console.log(
+      "Array ANTES del cambio:",
+      items.map((img) => img.id)
+    );
+
+    // Quitamos el elemento de su lugar original
+    const [reorderedItem] = items.splice(source.index, 1);
+
+    // Insertamos el elemento en su nuevo lugar
+    items.splice(destination.index, 0, reorderedItem);
+
+    console.log(
+      "Array DESPUÉS del cambio:",
+      items.map((img) => img.id)
+    );
+
+    // Actualizamos el estado con el nuevo array.
+    console.log("-> Actualizando el estado de React...");
+    setExistingImages(items);
+  };
+
+  const handleRemoveExistingImage = (imageId: number) => {
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+    if (e.target.files) {
+      // Convertimos el FileList a un Array y lo guardamos
+      setSelectedFiles(Array.from(e.target.files));
+    } else {
+      setSelectedFiles([]);
     }
   };
 
@@ -44,40 +208,65 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ onSuccess }) => {
     e.preventDefault();
     setError("");
 
+    const vehicleData = {
+      ...formData,
+      año: Number(formData.año),
+      precio_costo: Number(formData.precio_costo),
+      precio_venta: Number(formData.precio_venta),
+      autonomia_km: Number(formData.autonomia_km),
+      potencia_hp: Number(formData.potencia_hp),
+      capacidad_bateria_kwh: Number(formData.capacidad_bateria_kwh),
+      bodegaId: formData.bodegaId ? Number(formData.bodegaId) : null,
+    };
+
     try {
-      // Paso 1: Crear el vehículo con los datos de texto
-      const vehicleResponse = await apiClient.post("/vehicles", formData);
-      const newVehicleId = vehicleResponse.data.id;
+      // PASO 1: Guardar los datos de texto del vehículo
+      const vehicleResponse = isEditing
+        ? await apiClient.patch(`/vehicles/${initialData?.id}`, vehicleData)
+        : await apiClient.post("/vehicles", vehicleData);
 
-      alert("Vehículo creado con éxito. Subiendo imagen...");
+      const vehicleId = vehicleResponse.data.id;
 
-      // Paso 2: Si hay un archivo, subirlo
-      if (selectedFile) {
-        const imageFormData = new FormData();
-        imageFormData.append("file", selectedFile);
-
-        await apiClient.post(
-          `/vehicles/${newVehicleId}/upload`,
-          imageFormData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        alert("Imagen subida con éxito.");
+      // PASO 2: Subir las nuevas imágenes (si las hay)
+      if (selectedFiles.length > 0) {
+        const uploadFormData = new FormData();
+        selectedFiles.forEach((file) => {
+          uploadFormData.append("files", file);
+        });
+        await apiClient.post(`/vehicles/${vehicleId}/upload`, uploadFormData);
       }
 
-      onSuccess(); // Llama a la función onSuccess (refrescar la lista)
-    } catch (err) {
-      setError("Ocurrió un error. Revisa la consola.");
+      // PASO 3: Actualizar el orden y eliminar las imágenes viejas (solo en modo edición)
+      if (isEditing) {
+        const originalImageIds =
+          initialData?.imagenes?.map((img) => img.id) || [];
+        const currentImageIds = new Set(existingImages.map((img) => img.id));
+        const idsToDelete = originalImageIds.filter(
+          (id) => !currentImageIds.has(id)
+        );
+
+        const imagesToUpdate = existingImages.map((img, index) => ({
+          id: img.id,
+          order: index,
+        }));
+
+        await apiClient.patch(`/vehicles/${vehicleId}/images`, {
+          imagesToUpdate,
+          idsToDelete,
+        });
+      }
+
+      alert(`Vehículo ${isEditing ? "actualizado" : "creado"} con éxito.`);
+      onSuccess();
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Ocurrió un error al guardar.");
       console.error(err);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {/* Todos los inputs que ya tenías están bien */}
+      {/* --- Inputs de Texto --- */}
       <input
         name="marca"
         value={formData.marca}
@@ -151,13 +340,101 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ onSuccess }) => {
         placeholder="Batería (kWh)"
       />
 
-      <div>
-        <label>Imagen del Vehículo:</label>
-        <input type="file" onChange={handleFileChange} />
+      {/* --- Selector de Bodega --- */}
+      <div style={wrapperStyles}>
+        <select
+          name="bodegaId"
+          value={formData.bodegaId}
+          onChange={handleChange}
+          style={selectStyles}
+        >
+          <option value="">-- Sin Asignar Ubicacion--</option>
+          {bodegas.map((bodega) => (
+            <option key={bodega.id} value={bodega.id}>
+              {bodega.nombre}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <button type="submit">Añadir Vehículo</button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {/* --- Sección de Arrastrar y Soltar Imágenes --- */}
+      {isEditing && existingImages.length > 0 && (
+        <div className={styles.existingImagesSection}>
+          <h3>Imágenes Actuales (Arrastra para ordenar)</h3>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="image-list" direction="horizontal">
+              {(provided) => (
+                <div
+                  className={styles.existingImagesGrid}
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  {existingImages.map((image, index) => (
+                    <Draggable
+                      key={image.id}
+                      draggableId={image.id.toString()}
+                      index={index}
+                    >
+                      {(provided) => (
+                        <div
+                          className={styles.existingImageItem}
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <img
+                            src={`${apiClient.defaults.baseURL}/${image.url}`}
+                            alt={`Imagen ${image.id}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveExistingImage(image.id)}
+                            className={styles.removeImageButton}
+                          >
+                            X
+                          </button>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
+      )}
+
+      {/* --- Input para Subir Nuevas Imágenes --- */}
+      <div className={styles.fileInputWrapper}>
+        <label htmlFor="vehicleImage" className={styles.fileInputLabel}>
+          Añadir Nueva(s) Imagen(es)
+        </label>
+        <span className={styles.fileName}>
+          {selectedFiles.length > 0
+            ? `${selectedFiles.length} archivo(s) nuevo(s)`
+            : "No se han seleccionado nuevos archivos"}
+        </span>
+        <input
+          type="file"
+          id="vehicleImage"
+          name="files"
+          onChange={handleFileChange}
+          className={styles.fileInput}
+          accept="image/*"
+          multiple
+        />
+      </div>
+
+      {/* --- Botón de Envío y Mensaje de Error --- */}
+      <button
+        type="submit"
+        className="btn btn-principal"
+        style={{ gridColumn: "1 / -1" }}
+      >
+        {isEditing ? "Actualizar Vehículo" : "Añadir Vehículo"}
+      </button>
+      {error && <p className={styles.error}>{error}</p>}
     </form>
   );
 };

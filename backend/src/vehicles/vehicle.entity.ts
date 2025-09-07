@@ -5,7 +5,9 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
+import { Bodega } from '../bodegas/bodega.entity';
 import { VehicleImage } from './vehicle-image.entity';
 
 @Entity({ name: 'vehiculos' })
@@ -52,6 +54,9 @@ export class Vehicle {
   @Column({ length: 20, default: 'Disponible' })
   estado: string;
 
-  @Column({ nullable: true })
-  bodega_id: number; // Este es el campo que reemplazó a 'ubicacion'
+  @ManyToOne(() => Bodega, (bodega) => bodega.vehiculos, {
+    nullable: true, // Un vehículo puede no tener bodega asignada
+    eager: true, // Carga automáticamente la bodega al buscar un vehículo
+  })
+  bodega: Bodega | null;
 }

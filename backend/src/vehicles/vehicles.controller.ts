@@ -8,14 +8,14 @@ import {
   Param,
   Delete,
   UseGuards,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('vehicles')
 @UseGuards(AuthGuard('jwt'))
@@ -47,12 +47,36 @@ export class VehiclesController {
     return this.vehiclesService.remove(+id);
   }
 
-  @Post(':id/upload')
-  @UseInterceptors(FileInterceptor('file')) // 'file' es el nombre del campo que enviaremos
-  uploadImage(
+  @Get('dashboard/stats')
+  getDashboardStats() {
+    return this.vehiclesService.getDashboardStats();
+  }
+
+  @Patch(':id/images')
+  updateImagesOrder(
     @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
+    @Body()
+    body: {
+      imagesToUpdate: { id: number; order: number }[];
+      idsToDelete: number[];
+    },
   ) {
-    return this.vehiclesService.addImage(+id, file.path);
+    return this.vehiclesService.updateImages(
+      +id,
+      body.imagesToUpdate,
+      body.idsToDelete,
+    );
+  }
+
+  @Post(':id/upload')
+  @UseInterceptors(FilesInterceptor('files', 7)) // 1. Cambia a FilesInterceptor, 'files' es el nombre del campo, 7 es el máximo
+  uploadImages(
+    @Param('id') id: string,
+    @UploadedFiles() files: Array<Express.Multer.File>, // 2. Cambia a @UploadedFiles y espera un Array
+  ) {
+    return this.vehiclesService.addImages(
+      +id,
+      files.map((file) => file.path),
+    );
   }
 }

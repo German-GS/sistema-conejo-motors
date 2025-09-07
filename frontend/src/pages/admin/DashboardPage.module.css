@@ -60,3 +60,31 @@
   border-color: #ef9a9a;
   color: #c62828;
 }
+
+/* En: src/pages/admin/DashboardPage.module.css */
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 50px;
+  object-fit: cover; /* Recorta la imagen para que encaje sin deformarse */
+  border-radius: 4px;
+}
+
+.noImage {
+  width: 80px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #aaa;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}

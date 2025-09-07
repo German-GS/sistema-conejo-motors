@@ -6,7 +6,9 @@ import { PlanillaPage } from "./pages/admin/PlanillaPage";
 import { DashboardHomePage } from "./pages/admin/DashboardHomePage";
 import { UsersPage } from "./pages/admin/UsersPage";
 import { AdminLayout } from "./components/AdminLayout";
-import React, { useState } from "react"; // <-- 1. IMPORTAR useState
+import React, { useState } from "react";
+import { BodegasPage } from "./pages/admin/BodegasPage";
+import { TrackingPage } from "./pages/admin/TrackingPage";
 
 function App() {
   // 2. CREAR ESTADO DE AUTENTICACIÓN
@@ -50,6 +52,8 @@ function App() {
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="planilla" element={<PlanillaPage />} />
+          <Route path="bodegas" element={<BodegasPage />} />
+          <Route path="tracking" element={<TrackingPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 

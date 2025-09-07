@@ -33,3 +33,75 @@
 .form button:hover {
   background-color: #0056b3;
 }
+
+select .customSelect {
+  padding: 0.5rem;
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 6px;
+  width: 100%; /* Ocupar todo el espacio de su columna */
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+}
+.existingImagesSection {
+  grid-column: 1 / -1;
+  margin-top: 1rem;
+}
+
+.existingImagesSection h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* El contenedor que es la zona para soltar (Droppable) */
+.existingImagesGrid {
+  display: flex;
+  padding: 8px;
+  gap: 8px; /* Espacio entre imágenes */
+  overflow-x: auto; /* Permite scroll horizontal si hay muchas imágenes */
+  background: #f9f9f9;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  min-height: 120px;
+}
+
+/* El item que se puede arrastrar (Draggable) */
+.existingImageItem {
+  position: relative;
+  width: 100px;
+  height: 80px;
+  flex-shrink: 0; /* Evita que las imágenes se encojan */
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: grab;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.existingImageItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeImageButton {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(220, 53, 69, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.existingImageItem:hover .removeImageButton {
+  opacity: 1; /* Muestra el botón de eliminar solo al pasar el mouse */
+}

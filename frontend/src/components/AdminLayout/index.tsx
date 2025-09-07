@@ -9,6 +9,8 @@ import {
   LuUsers,
   LuSettings,
   LuFileText,
+  LuWarehouse,
+  LuMapPin,
 } from "react-icons/lu";
 
 export const AdminLayout = () => {
@@ -69,6 +71,14 @@ export const AdminLayout = () => {
           <Link to="/admin/planilla">
             <LuFileText size={20} />
             {!isCollapsed && <span className={styles.linkText}>Planilla</span>}
+          </Link>
+          <Link to="/admin/bodegas">
+            <LuWarehouse size={20} /> {/* O el ícono que prefieras */}
+            {!isCollapsed && <span className={styles.linkText}>Bodegas</span>}
+          </Link>
+          <Link to="/admin/tracking">
+            <LuMapPin size={20} /> {/* O el ícono que prefieras */}
+            {!isCollapsed && <span className={styles.linkText}>Rastreo</span>}
           </Link>
           {userRole === "Administrador" && (
             <Link to="/admin/settings">

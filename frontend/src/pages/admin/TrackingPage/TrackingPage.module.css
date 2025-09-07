@@ -1,0 +1,27 @@
+.error {
+  color: var(--warning);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.bodegaHeader {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.trackingTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.trackingTable th,
+.trackingTable td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--borde-suave);
+  text-align: left;
+}
+
+.trackingTable th {
+  font-weight: 600;
+}

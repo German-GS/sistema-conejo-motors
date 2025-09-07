@@ -1,0 +1,223 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px; /* Un poco más ancho para el formulario */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--borde-suave);
+  padding: 1rem 1.5rem;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--azul-principal);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.content {
+  padding: 1.5rem;
+}
+
+/* En: src/components/VechicleForm/VehicleForm.module.css */
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(250px, 1fr)
+  ); /* 3 columnas en pantallas grandes, se ajusta */
+  gap: 1rem;
+}
+
+.form input,
+.form select, /* <-- Añadimos estilo para el select */
+.form button {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 1rem;
+  color: var(--texto-principal);
+  background-color: var(--blanco);
+  box-sizing: border-box;
+}
+
+.form input:focus,
+.form select:focus {
+  /* <-- Añadimos estilo de foco para el select */
+  outline: none;
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2);
+}
+
+/* Estilo específico para el select para la flecha */
+.form select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.8em;
+  padding-right: 2.5rem; /* Espacio para la flecha */
+}
+
+.form button[type="submit"] {
+  background-color: var(--azul-principal);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  grid-column: 1 / -1; /* Botón ocupa todo el ancho */
+}
+
+/* Estilos para el input de tipo file */
+.fileInputContainer {
+  grid-column: 1 / -1; /* Ocupa todo el ancho */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fileInputLabel {
+  display: block;
+  font-weight: 600;
+  color: var(--texto-principal);
+  font-size: 0.9rem;
+}
+
+.fileInput {
+  padding: 0; /* Quitamos padding predeterminado */
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  background-color: var(--blanco);
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--texto-principal);
+}
+
+.fileInput::file-selector-button {
+  background-color: var(--gris-claro); /* Color de fondo del botón interno */
+  color: var(--texto-principal);
+  padding: 0.8rem 1rem;
+  border: none;
+  border-right: 1px solid var(--borde-suave);
+  border-radius: 6px 0 0 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.fileInput::file-selector-button:hover {
+  background-color: var(--borde-suave);
+}
+
+.error {
+  color: var(
+    --warning
+  ); /* Asegúrate de que --warning esté definido en tus variables CSS */
+  grid-column: 1 / -1; /* El error ocupa todo el ancho */
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.fileInputWrapper {
+  /* Contenedor que ocupará el espacio en el grid */
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Ocultamos el input original */
+.fileInput {
+  display: none;
+}
+
+/* Este es el botón falso que el usuario verá */
+.fileInputLabel {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  border: 1px solid var(--borde-suave);
+}
+
+.fileInputLabel:hover {
+  background-color: #e0e0e0;
+}
+
+/* Aquí mostraremos el nombre del archivo seleccionado */
+.fileName {
+  color: var(--texto-secundario);
+  font-style: italic;
+}
+
+.selectWrapper {
+  position: relative; /* Clave para posicionar el select dentro */
+  width: 100%;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  background-color: white;
+
+  /* La flecha ahora va en el contenedor */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.7em;
+}
+
+.selectWrapper:focus-within {
+  /* Cuando el select de adentro tiene foco */
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2);
+}
+
+/* 2. El <select> que hacemos transparente */
+.selectElement {
+  /* Hacemos que ocupe todo el espacio del div padre */
+  width: 100%;
+  height: 100%;
+  position: relative; /* Opcional pero ayuda */
+  z-index: 2; /* Para que esté por encima de la flecha del div */
+
+  /* El truco: lo hacemos invisible pero funcional */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+
+  /* Aquí el padding SÍ funciona porque no hay borde nativo */
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  font-size: 1rem;
+  color: var(--texto-principal);
+  cursor: pointer;
+}

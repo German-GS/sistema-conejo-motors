@@ -11,5 +11,5 @@ export class CreateVehicleDto {
   potencia_hp: number;
   capacidad_bateria_kwh: number;
   estado?: string; // Opcional, ya que tiene un valor por defecto
-  bodega_id?: number; // Opcional por ahora
+  bodegaId?: number; // Opcional por ahora
 }

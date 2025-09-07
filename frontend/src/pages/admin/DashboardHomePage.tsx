@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import { Card } from "../../components/Card";
+import apiClient from "../../api/apiClient";
 import {
   Bar,
   BarChart,
@@ -9,53 +11,96 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import styles from "./DashboardPage.module.css"; // Reutilizaremos algunos estilos
 
-// Datos de ejemplo. Más adelante, vendrán de la API.
-const salesData = [
-  { month: "Enero", vendidos: 4, marca: "BYD" },
-  { month: "Febrero", vendidos: 3, marca: "Tesla" },
-  { month: "Marzo", vendidos: 5, marca: "BYD" },
-  { month: "Abril", vendidos: 2, marca: "Hyundai" },
-  { month: "Mayo", vendidos: 8, marca: "BYD" },
-];
+// Interfaz para la estructura de los datos que esperamos de la API
+interface DashboardStats {
+  totalVehicles: number;
+  inventoryCost: number;
+  monthlySales: number;
+  monthlyRevenue: number;
+  salesData: { month: string; vendidos: number }[];
+}
+
+// Helper para formatear números como moneda
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("es-CR", {
+    style: "currency",
+    currency: "CRC", // Colón Costarricense
+    minimumFractionDigits: 0,
+  }).format(value);
+};
 
 export const DashboardHomePage = () => {
+  // Estado para guardar las estadísticas y manejar la carga/errores
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get("/vehicles/dashboard/stats");
+        setStats(response.data);
+      } catch (err) {
+        setError("No se pudieron cargar las estadísticas del dashboard.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // Si está cargando, muestra un mensaje
+  if (loading) {
+    return <p>Cargando estadísticas...</p>;
+  }
+
+  // Si hay un error, lo muestra
+  if (error) {
+    return <p style={{ color: "red" }}>{error}</p>;
+  }
+
   return (
     <div>
-      {/* Fila de KPIs (Indicadores Clave) */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "1.5rem",
-          marginBottom: "2rem",
-        }}
-      >
+      {/* Fila de KPIs con datos dinámicos */}
+      <div className={styles.kpiGrid}>
+        {" "}
+        {/* Usamos un estilo para el grid */}
         <Card title="Vehículos en Stock">
-          <h2>32</h2>
+          <h2>{stats?.totalVehicles ?? 0}</h2>
         </Card>
         <Card title="Ventas del Mes">
-          <h2>8</h2>
+          {/* Este dato aún es simulado */}
+          <h2>{stats?.monthlySales ?? 0}</h2>
         </Card>
         <Card title="Ingresos del Mes">
-          <h2>$450,000</h2>
+          {/* Este dato aún es simulado */}
+          <h2>{formatCurrency(stats?.monthlyRevenue ?? 0)}</h2>
         </Card>
         <Card title="Costo Inventario">
-          <h2>$1.8M</h2>
+          <h2>{formatCurrency(stats?.inventoryCost ?? 0)}</h2>
         </Card>
       </div>
 
-      {/* Gráfico Principal */}
+      {/* Gráfico Principal con datos dinámicos */}
       <Card title="Ventas por Mes">
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer>
-            <BarChart data={salesData}>
+            <BarChart data={stats?.salesData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip />
+              <Tooltip formatter={(value: number) => [value, "Vendidos"]} />
               <Legend />
-              <Bar dataKey="vendidos" fill="#024f7d" />
+              <Bar
+                dataKey="vendidos"
+                fill="#024f7d"
+                name="Vehículos Vendidos"
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

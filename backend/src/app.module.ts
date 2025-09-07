@@ -18,6 +18,8 @@ import { PlanillaParametro } from './planilla-parametros/entities/planilla-param
 import { SalariosModule } from './salarios/salarios.module';
 import { AuditLog } from './audit-logs/audit-log.entity';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { Bodega } from './bodegas/bodega.entity';
+import { BodegasModule } from './bodegas/bodegas.module';
 
 @Module({
   imports: [
@@ -38,6 +40,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
         ReciboPago,
         PlanillaParametro,
         AuditLog,
+        Bodega,
       ], // Aquí irán nuestras "entidades" o modelos de datos más adelante
       synchronize: true, // En desarrollo, esto crea las tablas automáticamente. Lo desactivaremos en producción.
     }),
@@ -49,6 +52,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     PlanillaParametrosModule,
     SalariosModule,
     AuditLogsModule,
+    BodegasModule,
     // --- FIN DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
   ],
   controllers: [AppController],
