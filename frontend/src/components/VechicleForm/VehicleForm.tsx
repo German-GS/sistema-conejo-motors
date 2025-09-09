@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
+import toast from "react-hot-toast";
 import styles from "./VehicleForm.module.css";
 import {
   DragDropContext,
@@ -256,10 +257,15 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         });
       }
 
-      alert(`Vehículo ${isEditing ? "actualizado" : "creado"} con éxito.`);
+      toast.success(
+        `Vehículo ${isEditing ? "actualizado" : "creado"} con éxito.`
+      );
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Ocurrió un error al guardar.");
+      const errorMessage =
+        err.response?.data?.message || "Ocurrió un error al guardar.";
+      setError(errorMessage);
+      toast.error(errorMessage);
       console.error(err);
     }
   };
@@ -295,6 +301,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         placeholder="VIN"
         required
+        disabled={isEditing}
       />
       <input
         name="color"
@@ -341,21 +348,24 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       />
 
       {/* --- Selector de Bodega --- */}
-      <div style={wrapperStyles}>
-        <select
-          name="bodegaId"
-          value={formData.bodegaId}
-          onChange={handleChange}
-          style={selectStyles}
-        >
-          <option value="">-- Sin Asignar Ubicacion--</option>
-          {bodegas.map((bodega) => (
-            <option key={bodega.id} value={bodega.id}>
-              {bodega.nombre}
-            </option>
-          ))}
-        </select>
-      </div>
+      {!isEditing && (
+        <div style={wrapperStyles}>
+          <select
+            name="bodegaId"
+            value={formData.bodegaId}
+            onChange={handleChange}
+            style={selectStyles}
+          >
+            {/* 2. Cambiamos el texto para que sea más claro */}
+            <option value="">-- Asignar Ubicación Inicial --</option>
+            {bodegas.map((bodega) => (
+              <option key={bodega.id} value={bodega.id}>
+                {bodega.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* --- Sección de Arrastrar y Soltar Imágenes --- */}
       {isEditing && existingImages.length > 0 && (

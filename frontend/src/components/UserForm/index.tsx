@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import styles from "./UserForm.module.css";
+import toast from "react-hot-toast";
 
 interface Role {
   id: number;
@@ -89,14 +90,14 @@ export const UserForm: React.FC<UserFormProps> = ({
           dataToSend.contrasena = formData.contrasena;
         }
         await apiClient.patch(`/users/${initialData.id}`, dataToSend);
-        alert("Colaborador actualizado con éxito.");
+        toast.success("Colaborador actualizado con éxito.");
       } else {
         await apiClient.post("/users", {
           ...formData,
           rol_id: Number(formData.rol_id),
           salario_base: Number(formData.salario_base),
         });
-        alert("Colaborador creado con éxito.");
+        toast.success("Colaborador creado con éxito.");
       }
       onSuccess();
     } catch (err: any) {

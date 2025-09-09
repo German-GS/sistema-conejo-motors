@@ -1,0 +1,58 @@
+.catalogGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.vehicleCard {
+  background-color: var(--fondo-tarjeta);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.vehicleCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.vehicleImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.vehicleInfo {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Para que el contenido ocupe el espacio y el botón se alinee abajo */
+}
+
+.vehicleInfo h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: var(--azul-principal);
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--texto-principal);
+  margin: 0 0 1rem 0;
+}
+
+.specs {
+  display: flex;
+  gap: 1rem;
+  color: var(--texto-secundario);
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+.error {
+  color: var(--warning);
+}

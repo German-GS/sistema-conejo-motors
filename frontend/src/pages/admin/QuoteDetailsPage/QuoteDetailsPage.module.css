@@ -1,0 +1,65 @@
+.detailsContainer {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--borde-suave);
+  padding-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.detailCard {
+  background-color: var(--fondo-tarjeta);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.detailCard h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.detailCard p {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--azul-principal);
+}
+
+.detailCard span {
+  font-size: 0.9rem;
+  color: var(--texto-secundario);
+}
+
+.warning {
+  background-color: #fff3cd;
+  color: #664d03;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+}

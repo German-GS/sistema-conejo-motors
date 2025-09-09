@@ -3,6 +3,7 @@ import apiClient from "../../api/apiClient";
 import { UserForm } from "../../components/UserForm";
 import { Card } from "../../components/Card";
 import styles from "./UsersPage.module.css";
+import toast from "react-hot-toast";
 
 // Interfaz para el tipo de dato User (puede necesitar más campos)
 interface User {
@@ -35,16 +36,15 @@ export const UsersPage = () => {
   }, []);
 
   const handleDelete = async (id: number) => {
-    if (
-      window.confirm("¿Estás seguro de que deseas eliminar este colaborador?")
-    ) {
-      try {
-        await apiClient.delete(`/users/${id}`);
-        alert("Colaborador eliminado con éxito.");
-        fetchUsers();
-      } catch (err) {
-        setError("Error al eliminar el colaborador.");
-      }
+    // Reemplazamos window.confirm por una acción directa con notificación
+    try {
+      await apiClient.delete(`/users/${id}`);
+      toast.success("Colaborador eliminado con éxito."); // <-- 2. Reemplaza alert
+      fetchUsers();
+    } catch (err) {
+      const errorMessage = "Error al eliminar el colaborador.";
+      setError(errorMessage);
+      toast.error(errorMessage); // <-- 3. Añade toast de error
     }
   };
 

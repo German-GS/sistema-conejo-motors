@@ -1,67 +1,141 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { LoginPage } from "./pages/admin/LoginPage";
-import { DashboardPage as InventoryPage } from "./pages/admin/DashboardPage";
-import { SettingsPage } from "./pages/admin/SettingsPage";
-import { PlanillaPage } from "./pages/admin/PlanillaPage";
-import { DashboardHomePage } from "./pages/admin/DashboardHomePage";
-import { UsersPage } from "./pages/admin/UsersPage";
-import { AdminLayout } from "./components/AdminLayout";
-import React, { useState } from "react";
-import { BodegasPage } from "./pages/admin/BodegasPage";
-import { TrackingPage } from "./pages/admin/TrackingPage";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+
+// Layouts
+import { AdminLayout } from "@/components/AdminLayout";
+import { SalesLayout } from "@/components/SalesLayout";
+
+// Páginas de Administración
+import { LoginPage } from "@/pages/admin/LoginPage";
+import { DashboardHomePage } from "@/pages/admin/DashboardHomePage";
+import { DashboardPage as InventoryPage } from "@/pages/admin/DashboardPage";
+import { UsersPage } from "@/pages/admin/UsersPage";
+import { PlanillaPage } from "@/pages/admin/PlanillaPage";
+import { BodegasPage } from "@/pages/admin/BodegasPage";
+import TrackingPage from "@/pages/admin/TrackingPage";
+import { SettingsPage } from "@/pages/admin/SettingsPage";
+
+// Páginas de Ventas (con el alias @)
+import { CatalogPage } from "@/pages/admin/sales/CatalogPage";
+import { CreateQuotePage } from "@/pages/admin/sales/CreateQuotePage";
+import { MyQuotesPage } from "@/pages/admin/sales/MyQuotesPage";
+import { QuoteDetailsPage } from "@/pages/admin/QuoteDetailsPage";
+
+// --- COMPONENTES DE LÓGICA DE RUTAS ---
+
+const HomeRedirect = () => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return <Navigate to="/login" />;
+  try {
+    const decodedToken: { rol?: { nombre: string } } = jwtDecode(token);
+    return decodedToken.rol?.nombre === "Vendedor" ? (
+      <Navigate to="/sales" />
+    ) : (
+      <Navigate to="/admin" />
+    );
+  } catch (error) {
+    localStorage.removeItem("accessToken");
+    return <Navigate to="/login" />;
+  }
+};
+
+const ProtectedRouteByRole = ({ allowedRoles }: { allowedRoles: string[] }) => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return <Navigate to="/login" />;
+  try {
+    const decodedToken: { rol?: { nombre: string } } = jwtDecode(token);
+    const userRole = decodedToken.rol?.nombre || "";
+    return allowedRoles.includes(userRole) ? <Outlet /> : <Navigate to="/" />;
+  } catch (error) {
+    localStorage.removeItem("accessToken");
+    return <Navigate to="/login" />;
+  }
+};
+
+// --- COMPONENTE PRINCIPAL ---
 
 function App() {
-  // 2. CREAR ESTADO DE AUTENTICACIÓN
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("accessToken")
-  );
-
   const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-  };
-
-  interface ProtectedRouteProps {
-    children: React.ReactNode;
-  }
-
-  // 3. ACTUALIZAR RUTA PROTEGIDA PARA USAR EL ESTADO
-  const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const isAuthenticated = !!localStorage.getItem("accessToken");
-    return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+    window.location.href = "/";
   };
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" reverseOrder={false} />
       <Routes>
+        {/* Ruta Pública */}
         <Route
           path="/login"
           element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
         />
 
-        {/* --- Bloque de Rutas de Administración --- */}
+        {/* Ruta Raíz que Redirige */}
+        <Route path="/" element={<HomeRedirect />} />
+
+        {/* --- Grupo de Rutas de Administración --- */}
         <Route
-          path="/admin"
           element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
+            <ProtectedRouteByRole
+              allowedRoles={["Administrador", "Contador"]}
+            />
           }
         >
-          {/* Todas las páginas del panel deben ir aquí dentro */}
-          <Route index element={<DashboardHomePage />} />
-          <Route path="inventory" element={<InventoryPage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="planilla" element={<PlanillaPage />} />
-          <Route path="bodegas" element={<BodegasPage />} />
-          <Route path="tracking" element={<TrackingPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<DashboardHomePage />} />
+            <Route path="inventory" element={<InventoryPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="planilla" element={<PlanillaPage />} />
+            <Route path="bodegas" element={<BodegasPage />} />
+            <Route path="tracking" element={<TrackingPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            {/* Rutas de ventas accesibles para el admin */}
+            <Route path="sales/catalog" element={<CatalogPage />} />
+            <Route
+              path="sales/catalog/:vehicleId/quote"
+              element={<CreateQuotePage />}
+            />
+            <Route path="sales/quotes" element={<MyQuotesPage />} />
+            {/* 👇 CORRECCIÓN AQUÍ 👇 */}
+            <Route
+              path="sales/quotes/:quoteId"
+              element={<QuoteDetailsPage />}
+            />
+          </Route>
         </Route>
 
+        {/* --- Grupo de Rutas de Ventas --- */}
         <Route
-          path="*"
-          element={<Navigate to={isAuthenticated ? "/admin" : "/login"} />}
-        />
-        {/* La ruta de "settings" ya no debe estar aquí abajo */}
+          element={
+            <ProtectedRouteByRole
+              allowedRoles={["Vendedor", "Administrador"]}
+            />
+          }
+        >
+          <Route path="/sales" element={<SalesLayout />}>
+            <Route
+              index
+              element={<h1>Dashboard de Vendedor Próximamente...</h1>}
+            />
+            <Route path="catalog" element={<CatalogPage />} />
+            <Route
+              path="catalog/:vehicleId/quote"
+              element={<CreateQuotePage />}
+            />
+            <Route path="quotes" element={<MyQuotesPage />} />
+            {/* 👇 Y CORRECCIÓN AQUÍ 👇 */}
+            <Route path="quotes/:quoteId" element={<QuoteDetailsPage />} />
+          </Route>
+        </Route>
+
+        {/* Ruta para cualquier otra URL */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

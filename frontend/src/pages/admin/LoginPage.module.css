@@ -65,7 +65,7 @@
 
 .loginForm button {
   background-color: var(--azul-principal);
-  color: var(--color-blanco);
+  color: white;
   padding: 1rem;
   border: none;
   border-radius: 8px;
@@ -78,6 +78,7 @@
 .loginForm button:hover {
   background-color: var(--azul-oscuro);
   transform: translateY(-1px);
+  color: var(--azul-oscuro);
 }
 
 .error {

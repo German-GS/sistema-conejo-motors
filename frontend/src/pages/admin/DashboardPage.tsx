@@ -4,6 +4,7 @@ import { VehicleForm } from "../../components/VechicleForm/VehicleForm";
 import { Card } from "../../components/Card";
 import styles from "./DashboardPage.module.css";
 import { Modal } from "../../components/Modal";
+import toast from "react-hot-toast";
 
 // Interfaz para el tipo de dato Vehicle
 interface Vehicle {
@@ -64,15 +65,15 @@ export const DashboardPage = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este vehículo?")) {
-      try {
-        await apiClient.delete(`/vehicles/${id}`);
-        alert("Vehículo eliminado con éxito.");
-        fetchVehicles();
-      } catch (err) {
-        setError("Error al eliminar el vehículo.");
-        console.error(err);
-      }
+    try {
+      await apiClient.delete(`/vehicles/${id}`);
+      toast.success("Vehículo eliminado con éxito."); // <-- 2. Reemplaza alert
+      fetchVehicles();
+    } catch (err) {
+      const errorMessage = "Error al eliminar el vehículo.";
+      setError(errorMessage);
+      toast.error(errorMessage); // <-- 3. Añade toast de error
+      console.error(err);
     }
   };
 

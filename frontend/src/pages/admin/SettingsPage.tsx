@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
 import styles from "./SettingsPage.module.css";
+import toast from "react-hot-toast";
 
 interface Parametro {
   id: number;
@@ -112,12 +113,12 @@ export const SettingsPage = () => {
   const handleUpdate = async (id: number) => {
     try {
       await apiClient.patch(`/planilla-parametros/${id}`, { valor: editValue });
-      alert("Parámetro actualizado con éxito.");
+      toast.success("Parámetro actualizado con éxito.");
       setEditId(null);
       // Recargamos la página para ver los cambios
       window.location.reload();
     } catch (err) {
-      alert("Error al actualizar el parámetro.");
+      toast.error("Error al actualizar el parámetro.");
     }
   };
 
