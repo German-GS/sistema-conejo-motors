@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
 import styles from "./SettingsPage.module.css";
@@ -12,7 +12,6 @@ interface Parametro {
   tipo: "DEDUCCION_EMPLEADO" | "CARGA_PATRONAL" | "RENTA" | "CREDITO_FISCAL";
 }
 
-// Un componente reutilizable para las tablas, para no repetir código
 const ParametrosTable = ({
   parametros,
   editId,
@@ -41,8 +40,7 @@ const ParametrosTable = ({
                 value={editValue}
                 onChange={(e) => onValueChange(parseFloat(e.target.value))}
               />
-            ) : // Mostramos % para las cargas y deducciones
-            param.tipo.includes("PATRONAL") ||
+            ) : param.tipo.includes("PATRONAL") ||
               param.tipo.includes("EMPLEADO") ? (
               `${param.valor}%`
             ) : (
@@ -79,6 +77,13 @@ const ParametrosTable = ({
   </table>
 );
 
+interface VehicleProfile {
+  id: number;
+  marca: string;
+  modelo: string;
+  logo_url?: string;
+}
+
 export const SettingsPage = () => {
   const [cargasPatronales, setCargasPatronales] = useState<Parametro[]>([]);
   const [deduccionesEmpleado, setDeduccionesEmpleado] = useState<Parametro[]>(
@@ -88,26 +93,46 @@ export const SettingsPage = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState(0);
 
+  const [profiles, setProfiles] = useState<VehicleProfile[]>([]);
+  const [newProfile, setNewProfile] = useState({
+    marca: "",
+    modelo: "",
+    potencia_hp: "",
+    autonomia_km: "",
+    capacidad_bateria_kwh: "",
+  });
+
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchParametros = async () => {
+    try {
+      const response = await apiClient.get("/planilla-parametros");
+      setCargasPatronales(
+        response.data.filter((p: Parametro) => p.tipo === "CARGA_PATRONAL")
+      );
+      setDeduccionesEmpleado(
+        response.data.filter((p: Parametro) => p.tipo === "DEDUCCION_EMPLEADO")
+      );
+    } catch (err) {
+      setError(
+        "No se pudo cargar la configuración. Asegúrate de tener permisos de Administrador."
+      );
+    }
+  };
+
+  const fetchVehicleProfiles = async () => {
+    try {
+      const response = await apiClient.get("/vehicle-profiles");
+      setProfiles(response.data);
+    } catch (err) {
+      toast.error("No se pudieron cargar los perfiles de vehículos.");
+    }
+  };
+
   useEffect(() => {
-    const fetchParametros = async () => {
-      try {
-        const response = await apiClient.get("/planilla-parametros");
-        // Filtramos los parámetros por tipo
-        setCargasPatronales(
-          response.data.filter((p: Parametro) => p.tipo === "CARGA_PATRONAL")
-        );
-        setDeduccionesEmpleado(
-          response.data.filter(
-            (p: Parametro) => p.tipo === "DEDUCCION_EMPLEADO"
-          )
-        );
-      } catch (err) {
-        setError(
-          "No se pudo cargar la configuración. Asegúrate de tener permisos de Administrador."
-        );
-      }
-    };
     fetchParametros();
+    fetchVehicleProfiles();
   }, []);
 
   const handleUpdate = async (id: number) => {
@@ -115,16 +140,173 @@ export const SettingsPage = () => {
       await apiClient.patch(`/planilla-parametros/${id}`, { valor: editValue });
       toast.success("Parámetro actualizado con éxito.");
       setEditId(null);
-      // Recargamos la página para ver los cambios
-      window.location.reload();
+      fetchParametros(); // Vuelve a cargar los datos para ver el cambio
     } catch (err) {
       toast.error("Error al actualizar el parámetro.");
+    }
+  };
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setLogoFile(e.target.files[0]);
+    }
+  };
+
+  const handleCreateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("marca", newProfile.marca);
+    formData.append("modelo", newProfile.modelo);
+    formData.append("potencia_hp", newProfile.potencia_hp);
+    formData.append("autonomia_km", newProfile.autonomia_km);
+    formData.append("capacidad_bateria_kwh", newProfile.capacidad_bateria_kwh);
+    if (logoFile) {
+      formData.append("logo", logoFile);
+    }
+
+    try {
+      await apiClient.post("/vehicle-profiles", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Perfil de vehículo creado con éxito.");
+      // Limpiar formulario y archivo
+      setNewProfile({
+        marca: "",
+        modelo: "",
+        potencia_hp: "",
+        autonomia_km: "",
+        capacidad_bateria_kwh: "",
+      });
+      setLogoFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      fetchVehicleProfiles();
+    } catch (err) {
+      toast.error("Error al crear el perfil.");
+    }
+  };
+
+  const handleDeleteProfile = async (id: number) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este perfil?")) {
+      try {
+        await apiClient.delete(`/vehicle-profiles/${id}`);
+        toast.success("Perfil eliminado.");
+        fetchVehicleProfiles(); // Vuelve a cargar la lista de perfiles
+      } catch (err) {
+        toast.error("Error al eliminar el perfil.");
+      }
     }
   };
 
   return (
     <>
       {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
+
+      <Card title="Perfiles de Modelos de Vehículos">
+        <form onSubmit={handleCreateProfile} className={styles.profileForm}>
+          <input
+            name="marca"
+            type="text"
+            value={newProfile.marca}
+            onChange={handleProfileChange}
+            placeholder="Marca (Ej: BYD)"
+            required
+          />
+          <input
+            name="modelo"
+            type="text"
+            value={newProfile.modelo}
+            onChange={handleProfileChange}
+            placeholder="Modelo (Ej: Dolphin)"
+            required
+          />
+          <input
+            name="potencia_hp"
+            type="number"
+            value={newProfile.potencia_hp}
+            onChange={handleProfileChange}
+            placeholder="Potencia (HP)"
+            required
+          />
+          <input
+            name="autonomia_km"
+            type="number"
+            value={newProfile.autonomia_km}
+            onChange={handleProfileChange}
+            placeholder="Autonomía (km)"
+            required
+          />
+          <input
+            name="capacidad_bateria_kwh"
+            type="number"
+            value={newProfile.capacidad_bateria_kwh}
+            onChange={handleProfileChange}
+            placeholder="Batería (kWh)"
+            required
+          />
+
+          <div className={styles.fileInputContainer}>
+            <label htmlFor="logo-upload" className={styles.fileInputLabel}>
+              {logoFile ? `Archivo: ${logoFile.name}` : "Subir Logo (Opcional)"}
+            </label>
+            <input
+              id="logo-upload"
+              type="file"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+              accept="image/*"
+            />
+          </div>
+
+          <button type="submit" className="btn btn-principal">
+            Añadir Perfil
+          </button>
+        </form>
+
+        <table className={styles.settingsTable} style={{ marginTop: "2rem" }}>
+          <thead>
+            <tr>
+              <th>Logo</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {profiles.map((profile) => (
+              <tr key={profile.id}>
+                <td>
+                  {profile.logo_url ? (
+                    <img
+                      src={`${apiClient.defaults.baseURL}/${profile.logo_url}`}
+                      alt={profile.marca}
+                      className={styles.logoImage}
+                    />
+                  ) : (
+                    <div className={styles.noLogo}>Sin logo</div>
+                  )}
+                </td>
+                <td>{profile.marca}</td>
+                <td>{profile.modelo}</td>
+                <td>
+                  <button
+                    onClick={() => handleDeleteProfile(profile.id)}
+                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
 
       <Card title="Obligaciones del Patrono">
         <ParametrosTable

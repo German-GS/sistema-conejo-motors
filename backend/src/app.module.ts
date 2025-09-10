@@ -20,9 +20,23 @@ import { AuditLog } from './audit-logs/audit-log.entity';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { Bodega } from './bodegas/bodega.entity';
 import { BodegasModule } from './bodegas/bodegas.module';
+import { TrackingModule } from './tracking/tracking.module';
+import { TrackingHistory } from './tracking/tracking.entity';
+import { ClientesModule } from './clientes/clientes.module';
+import { Cliente } from './clientes/cliente.entity';
+import { CotizacionesModule } from './cotizaciones/cotizaciones.module';
+import { Cotizacion } from './cotizaciones/cotizacion.entity';
+import { VentasModule } from './ventas/ventas.module';
+import { Venta } from './ventas/venta.entity';
+import { ConfigModule } from '@nestjs/config';
+import { VehicleProfile } from './vehicle-profiles/vehicle-profile.entity';
+import { VehicleProfilesModule } from './vehicle-profiles/vehicle-profiles.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     // --- INICIO DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -41,6 +55,11 @@ import { BodegasModule } from './bodegas/bodegas.module';
         PlanillaParametro,
         AuditLog,
         Bodega,
+        TrackingHistory,
+        Cliente,
+        Cotizacion,
+        Venta,
+        VehicleProfile,
       ], // Aquí irán nuestras "entidades" o modelos de datos más adelante
       synchronize: true, // En desarrollo, esto crea las tablas automáticamente. Lo desactivaremos en producción.
     }),
@@ -53,6 +72,11 @@ import { BodegasModule } from './bodegas/bodegas.module';
     SalariosModule,
     AuditLogsModule,
     BodegasModule,
+    TrackingModule,
+    ClientesModule,
+    CotizacionesModule,
+    VentasModule,
+    VehicleProfilesModule,
     // --- FIN DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
   ],
   controllers: [AppController],

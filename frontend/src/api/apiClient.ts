@@ -3,7 +3,8 @@ import axios from "axios";
 
 // Creamos una instancia de Axios
 const apiClient = axios.create({
-  baseURL: "http://localhost:3000", // La URL base de nuestra API
+  // 👇 La baseURL se define aquí, al crear la instancia
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Esto es un "interceptor": se ejecuta antes de cada petición

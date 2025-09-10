@@ -9,6 +9,9 @@ import {
 } from 'typeorm';
 import { Bodega } from '../bodegas/bodega.entity';
 import { VehicleImage } from './vehicle-image.entity';
+import { TrackingHistory } from '../tracking/tracking.entity';
+
+export type VehicleStatus = 'Disponible' | 'Reservado' | 'Vendido';
 
 @Entity({ name: 'vehiculos' })
 export class Vehicle {
@@ -51,8 +54,21 @@ export class Vehicle {
   @Column({ type: 'decimal', precision: 5, scale: 1 })
   capacidad_bateria_kwh: number;
 
-  @Column({ length: 20, default: 'Disponible' })
-  estado: string;
+  @Column({
+    type: 'enum',
+    enum: ['Disponible', 'Reservado', 'Vendido'],
+    default: 'Disponible',
+  })
+  estado: VehicleStatus;
+
+  @Column({ nullable: true }) // Permite que la ubicación inicial sea nula si no hay bodegas
+  currentLocation: string;
+
+  @OneToMany(
+    () => TrackingHistory,
+    (trackingHistory) => trackingHistory.vehicle,
+  )
+  trackingHistory: TrackingHistory[];
 
   @ManyToOne(() => Bodega, (bodega) => bodega.vehiculos, {
     nullable: true, // Un vehículo puede no tener bodega asignada

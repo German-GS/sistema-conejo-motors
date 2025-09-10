@@ -16,6 +16,8 @@ import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('vehicles')
 @UseGuards(AuthGuard('jwt'))
@@ -50,6 +52,13 @@ export class VehiclesController {
   @Get('dashboard/stats')
   getDashboardStats() {
     return this.vehiclesService.getDashboardStats();
+  }
+
+  @Get('sales/catalog')
+  @UseGuards(RolesGuard)
+  @Roles('Vendedor', 'Administrador') // Solo accesible para estos roles
+  findCatalog() {
+    return this.vehiclesService.findCatalog();
   }
 
   @Patch(':id/images')

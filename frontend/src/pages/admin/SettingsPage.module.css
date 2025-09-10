@@ -1,3 +1,4 @@
+/* Estilos existentes para la tabla de parámetros y roles */
 .settingsTable {
   width: 100%;
   border-collapse: collapse;
@@ -15,7 +16,6 @@
 }
 
 .settingsTable td:nth-child(2) {
-  /* Columna de Valor */
   font-weight: bold;
   color: var(--azul-principal);
 }
@@ -26,18 +26,146 @@
   border-radius: 4px;
   width: 120px;
 }
-
-.settingsTable button {
-  padding: 0.4rem 0.8rem;
-  margin-left: 0.5rem;
-  border: 1px solid var(--borde-suave);
-  background-color: transparent;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
 .settingsTable button:hover {
   background-color: #e9e9e9;
   border-color: #bbb;
+}
+
+.valueInput {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 120px;
+}
+
+/* --- 👇 NUEVOS ESTILOS PARA EL FORMULARIO DE PERFILES 👇 --- */
+
+.profileForm {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(180px, 1fr)
+  ); /* Columnas responsivas */
+  gap: 1.5rem; /* Más espacio entre elementos */
+  align-items: end; /* Alinea los elementos en la parte inferior */
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--borde-suave);
+  margin-bottom: 1.5rem;
+}
+
+.profileForm input[type="text"],
+.profileForm input[type="number"] {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 1rem;
+  color: var(--texto-principal);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.profileForm input[type="text"]:focus,
+.profileForm input[type="number"]:focus {
+  outline: none;
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2);
+}
+
+.profileForm button {
+  padding: 0.8rem;
+  height: fit-content; /* Se ajusta a la altura del padding */
+}
+
+/* Estilos para el input de archivo personalizado */
+.fileInputContainer {
+  grid-column: 1 / -1; /* Ocupa todo el ancho */
+}
+
+.fileInputContainer input[type="file"] {
+  display: none; /* Ocultamos el input feo */
+}
+
+.fileInputLabel {
+  background-color: white;
+  color: var(--texto-secundario);
+  border: 2px dashed var(--borde-suave);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  display: block;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.fileInputLabel:hover {
+  background-color: #f8f9fa;
+  border-color: var(--azul-principal);
+  color: var(--azul-principal);
+}
+
+/* Estilos para la tabla de perfiles */
+.logoImage {
+  width: 100px; /* Un poco más grande */
+  height: auto;
+  max-height: 50px;
+  object-fit: contain;
+}
+
+.noLogo {
+  color: #aaa;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+/* Estilo base para todos los botones de acción en la tabla */
+.actionButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease-in-out;
+  margin-right: 0.5rem; /* Espacio entre botones */
+}
+
+.actionButton:hover {
+  transform: translateY(-1px);
+}
+
+/* Botón de Editar (Azul) */
+.editButton {
+  background-color: var(--azul-principal);
+  color: white;
+}
+.editButton:hover {
+  background-color: #023a5c;
+}
+
+/* Botón de Guardar (Naranja) */
+.saveButton {
+  background-color: var(--azul-principal);
+  color: white;
+}
+.saveButton:hover {
+  background-color: #ee7300;
+}
+
+/* Botón de Eliminar (Rojo) */
+.deleteButton {
+  background-color: var(--warning);
+  color: white;
+}
+.deleteButton:hover {
+  background-color: #c62828;
+}
+
+/* Botón de Cancelar (Gris) */
+.cancelButton {
+  background-color: #f1f3f4;
+  color: var(--texto-secundario);
+  border: 1px solid var(--borde-suave);
+}
+.cancelButton:hover {
+  background-color: #e8eaed;
 }
