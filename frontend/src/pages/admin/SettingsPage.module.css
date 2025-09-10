@@ -169,3 +169,7 @@
 .cancelButton:hover {
   background-color: #e8eaed;
 }
+
+.highlightCard {
+  border-left: 4px solid var(--caution); /* Borde naranja para resaltar */
+}

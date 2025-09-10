@@ -14,7 +14,6 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password_hash))) {
-      // Si la contraseña es correcta, retornamos el usuario sin el hash de la contraseña
       const { password_hash, ...result } = user;
       return result;
     }
@@ -27,6 +26,7 @@ export class AuthService {
       email: user.email,
       sub: user.id,
       rol: user.rol,
+      nombre_completo: user.nombre_completo,
     };
     return {
       access_token: this.jwtService.sign(payload),

@@ -31,6 +31,9 @@ import { Venta } from './ventas/venta.entity';
 import { ConfigModule } from '@nestjs/config';
 import { VehicleProfile } from './vehicle-profiles/vehicle-profile.entity';
 import { VehicleProfilesModule } from './vehicle-profiles/vehicle-profiles.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { Notification } from './notifications/notification.entity';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -60,6 +63,7 @@ import { VehicleProfilesModule } from './vehicle-profiles/vehicle-profiles.modul
         Cotizacion,
         Venta,
         VehicleProfile,
+        Notification,
       ], // Aquí irán nuestras "entidades" o modelos de datos más adelante
       synchronize: true, // En desarrollo, esto crea las tablas automáticamente. Lo desactivaremos en producción.
     }),
@@ -77,6 +81,8 @@ import { VehicleProfilesModule } from './vehicle-profiles/vehicle-profiles.modul
     CotizacionesModule,
     VentasModule,
     VehicleProfilesModule,
+    NotificationsModule, // <-- 3. AÑADE EL MÓDULO 'NotificationsModule'
+    ReportsModule,
     // --- FIN DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
   ],
   controllers: [AppController],

@@ -8,9 +8,9 @@ import logo from "@/img/Logos/Logo-Conejo-Motors.png";
 import styles from "./QuoteDetailsPage.module.css";
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("es-CR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "CRC",
+    currency: "USD",
   }).format(value);
 };
 

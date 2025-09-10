@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+// --- 👇 1. AÑADE 'In' A ESTA LÍNEA 👇 ---
+import { Between, In, MoreThanOrEqual, Repository } from 'typeorm';
 import { Vehicle } from './vehicle.entity';
+import { Venta } from '../ventas/venta.entity';
+import { User } from '../users/user.entity';
+import { Cotizacion } from '../cotizaciones/cotizacion.entity';
+import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { VehicleImage } from './vehicle-image.entity';
@@ -12,32 +17,113 @@ export class VehiclesService {
   constructor(
     @InjectRepository(Vehicle)
     private readonly vehiclesRepository: Repository<Vehicle>,
+    @InjectRepository(Venta)
+    private readonly ventasRepository: Repository<Venta>,
+    @InjectRepository(Cotizacion)
+    private readonly cotizacionesRepository: Repository<Cotizacion>,
+    @InjectRepository(PlanillaParametro)
+    private readonly parametrosRepository: Repository<PlanillaParametro>,
     @InjectRepository(VehicleImage)
     private readonly imagesRepository: Repository<VehicleImage>,
     @InjectRepository(Bodega)
     private readonly bodegaRepository: Repository<Bodega>,
   ) {}
 
-  async getDashboardStats() {
-    const allVehicles = await this.vehiclesRepository.find();
-    const totalVehicles = allVehicles.length;
+  // --- 👇 2. EL RESTO DE LA FUNCIÓN YA ESTÁ CORRECTO 👇 ---
+  async getSalespersonDashboardStats(user: User) {
+    const totalVehicles = await this.vehiclesRepository.count({
+      where: { estado: 'Disponible' },
+    });
 
-    const inventoryCost = allVehicles.reduce(
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const monthlySales = await this.ventasRepository.find({
+      where: {
+        vendedor: { id: user.id },
+        fecha_venta: Between(startOfMonth, endOfMonth),
+      },
+    });
+
+    const monthlySalesCount = monthlySales.length;
+    const monthlyRevenue = monthlySales.reduce(
+      (sum, venta) => sum + Number(venta.monto_final),
+      0,
+    );
+
+    const commissionParam = await this.parametrosRepository.findOne({
+      where: { nombre: 'COMISION_VENDEDOR_PORC' },
+    });
+    const commissionPercentage = commissionParam
+      ? Number(commissionParam.valor) / 100
+      : 0.05;
+    const estimatedCommissions = monthlyRevenue * commissionPercentage;
+
+    const pendingQuotes = await this.cotizacionesRepository.count({
+      where: {
+        vendedor: { id: user.id },
+        estado: In(['Borrador', 'Enviada']),
+      },
+    });
+
+    return {
+      totalVehicles,
+      monthlySalesCount,
+      monthlyRevenue,
+      estimatedCommissions,
+      pendingQuotes,
+    };
+  }
+
+  // ... (El resto de los métodos de tu servicio no necesitan cambios)
+  async getDashboardStats() {
+    // --- KPIs de Inventario (Datos Reales) ---
+    const vehiclesInStock = await this.vehiclesRepository.find({
+      where: { estado: 'Disponible' },
+    });
+    const totalVehicles = vehiclesInStock.length;
+    const inventoryCost = vehiclesInStock.reduce(
       (sum, vehicle) => sum + Number(vehicle.precio_costo || 0),
       0,
     );
 
-    // --- Lógica de Ventas (Simulada por ahora) ---
-    const monthlySales = 8;
-    const monthlyRevenue = 450000;
-    const salesData = [
-      { month: 'Enero', vendidos: 4 },
-      { month: 'Febrero', vendidos: 3 },
-      { month: 'Marzo', vendidos: 5 },
-      { month: 'Abril', vendidos: 2 },
-      { month: 'Mayo', vendidos: 8 },
-      { month: 'Junio', vendidos: 6 },
-    ];
+    // --- KPIs de Ventas (Datos Reales) ---
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const monthlySalesData = await this.ventasRepository.find({
+      where: { fecha_venta: MoreThanOrEqual(startOfMonth) },
+    });
+    const monthlySales = monthlySalesData.length;
+    const monthlyRevenue = monthlySalesData.reduce(
+      (sum, venta) => sum + Number(venta.monto_final),
+      0,
+    );
+
+    // --- Gráfico de Ventas (Datos Reales de los últimos 6 meses) ---
+    const salesData: { month: string; vendidos: number }[] = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthName = date.toLocaleString('es-ES', { month: 'long' });
+      const year = date.getFullYear();
+
+      const firstDay = new Date(year, date.getMonth(), 1);
+      const lastDay = new Date(year, date.getMonth() + 1, 0);
+
+      const salesInMonth = await this.ventasRepository.count({
+        where: {
+          fecha_venta: Between(firstDay, lastDay),
+        },
+      });
+
+      salesData.push({
+        month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        vendidos: salesInMonth,
+      });
+    }
 
     return {
       totalVehicles,
@@ -54,7 +140,6 @@ export class VehiclesService {
     let bodega: Bodega | null = null;
     let currentLocation: string | undefined = undefined;
 
-    // 1. Buscamos la bodega SOLO si se proporcionó un bodegaId
     if (bodegaId) {
       bodega = await this.bodegaRepository.findOneBy({ id: bodegaId });
       if (!bodega) {
@@ -64,14 +149,12 @@ export class VehiclesService {
       }
       currentLocation = bodega.nombre;
     } else {
-      // Si no se asigna bodega, buscamos la primera disponible como ubicación inicial
       const firstBodega = await this.bodegaRepository.findOne({
         order: { id: 'ASC' },
       });
       if (firstBodega) {
         currentLocation = firstBodega.nombre;
       } else {
-        // Si no hay ninguna bodega en el sistema, la ubicación puede ser algo genérico
         currentLocation = 'En Tránsito';
       }
     }
@@ -79,7 +162,7 @@ export class VehiclesService {
     const newVehicle = this.vehiclesRepository.create({
       ...vehicleData,
       currentLocation: currentLocation,
-      bodega: bodega, // Asigna la entidad Bodega encontrada o null
+      bodega: bodega,
     });
 
     return this.vehiclesRepository.save(newVehicle);
@@ -88,20 +171,19 @@ export class VehiclesService {
   async findCatalog(): Promise<Omit<Vehicle, 'precio_costo'>[]> {
     const vehicles = await this.vehiclesRepository.find({
       where: { estado: 'Disponible' },
-      relations: ['bodega', 'imagenes'], // <-- CORREGIDO
+      relations: ['bodega', 'imagenes'],
     });
-    // El resto del método está bien
     return vehicles.map(({ precio_costo, ...vehicle }) => vehicle);
   }
 
   async findAll(): Promise<Vehicle[]> {
-    return this.vehiclesRepository.find({ relations: ['bodega', 'imagenes'] }); // <-- CORREGIDO
+    return this.vehiclesRepository.find({ relations: ['bodega', 'imagenes'] });
   }
 
   async findOne(id: number): Promise<Vehicle | null> {
     return this.vehiclesRepository.findOne({
       where: { id },
-      relations: ['bodega', 'imagenes'], // <-- CORREGIDO
+      relations: ['bodega', 'imagenes'],
     });
   }
 
@@ -110,7 +192,6 @@ export class VehiclesService {
     updateVehicleDto: UpdateVehicleDto,
   ): Promise<Vehicle> {
     const { bodegaId, ...vehicleData } = updateVehicleDto;
-
     const vehicle = await this.vehiclesRepository.preload({
       id: id,
       ...vehicleData,
@@ -178,7 +259,6 @@ export class VehiclesService {
         if (idsToDelete && idsToDelete.length > 0) {
           await transactionalEntityManager.delete(VehicleImage, idsToDelete);
         }
-
         if (imagesToUpdate && imagesToUpdate.length > 0) {
           const updatePromises = imagesToUpdate.map((image) =>
             transactionalEntityManager.update(

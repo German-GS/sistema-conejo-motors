@@ -9,7 +9,12 @@ interface Parametro {
   nombre: string;
   valor: number;
   descripcion: string;
-  tipo: "DEDUCCION_EMPLEADO" | "CARGA_PATRONAL" | "RENTA" | "CREDITO_FISCAL";
+  tipo:
+    | "DEDUCCION_EMPLEADO"
+    | "CARGA_PATRONAL"
+    | "RENTA"
+    | "CREDITO_FISCAL"
+    | "COMISION";
 }
 
 const ParametrosTable = ({
@@ -20,62 +25,70 @@ const ParametrosTable = ({
   onCancel,
   onSave,
   onValueChange,
-}: any) => (
-  <table className={styles.settingsTable}>
-    <thead>
-      <tr>
-        <th>Descripción</th>
-        <th>Valor</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {parametros.map((param: Parametro) => (
-        <tr key={param.id}>
-          <td>{param.descripcion}</td>
-          <td>
-            {editId === param.id ? (
-              <input
-                type="number"
-                value={editValue}
-                onChange={(e) => onValueChange(parseFloat(e.target.value))}
-              />
-            ) : param.tipo.includes("PATRONAL") ||
-              param.tipo.includes("EMPLEADO") ? (
-              `${param.valor}%`
-            ) : (
-              `₡${param.valor.toLocaleString("es-CR")}`
-            )}
-          </td>
-          <td>
-            {editId === param.id ? (
-              <>
-                <button
-                  onClick={() => onSave(param.id)}
-                  className="btn btn-caution"
-                  style={{ backgroundColor: "#ee7300" }}
-                >
-                  Guardar
-                </button>
-                <button onClick={onCancel} className="btn btn-secondary">
-                  Cancelar
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => onEdit(param.id, param.valor)}
-                className="btn btn-secondary"
-                style={{ backgroundColor: "#023a5c", color: "white" }}
-              >
-                Editar
-              </button>
-            )}
-          </td>
+}: any) => {
+  if (parametros.length === 0) {
+    return <p>No hay parámetros de este tipo para mostrar.</p>;
+  }
+  return (
+    <table className={styles.settingsTable}>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Valor</th>
+          <th>Acciones</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
-);
+      </thead>
+      <tbody>
+        {parametros.map((param: Parametro) => (
+          <tr key={param.id}>
+            <td>{param.descripcion}</td>
+            <td>
+              {editId === param.id ? (
+                <input
+                  type="number"
+                  value={editValue}
+                  onChange={(e) => onValueChange(parseFloat(e.target.value))}
+                  className={styles.valueInput}
+                />
+              ) : param.tipo.includes("PATRONAL") ||
+                param.tipo.includes("EMPLEADO") ||
+                param.tipo === "COMISION" ? (
+                `${param.valor}%`
+              ) : (
+                `₡${param.valor.toLocaleString("es-CR")}`
+              )}
+            </td>
+            <td>
+              {editId === param.id ? (
+                <>
+                  <button
+                    onClick={() => onSave(param.id)}
+                    className={`${styles.actionButton} ${styles.saveButton}`}
+                  >
+                    Guardar
+                  </button>
+                  <button
+                    onClick={onCancel}
+                    className={`${styles.actionButton} ${styles.cancelButton}`}
+                  >
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => onEdit(param.id, param.valor)}
+                  className={`${styles.actionButton} ${styles.editButton}`}
+                >
+                  Editar
+                </button>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 interface VehicleProfile {
   id: number;
@@ -89,10 +102,10 @@ export const SettingsPage = () => {
   const [deduccionesEmpleado, setDeduccionesEmpleado] = useState<Parametro[]>(
     []
   );
+  const [comisiones, setComisiones] = useState<Parametro[]>([]);
   const [error, setError] = useState("");
   const [editId, setEditId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState(0);
-
   const [profiles, setProfiles] = useState<VehicleProfile[]>([]);
   const [newProfile, setNewProfile] = useState({
     marca: "",
@@ -101,7 +114,6 @@ export const SettingsPage = () => {
     autonomia_km: "",
     capacidad_bateria_kwh: "",
   });
-
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -113,6 +125,9 @@ export const SettingsPage = () => {
       );
       setDeduccionesEmpleado(
         response.data.filter((p: Parametro) => p.tipo === "DEDUCCION_EMPLEADO")
+      );
+      setComisiones(
+        response.data.filter((p: Parametro) => p.tipo === "COMISION")
       );
     } catch (err) {
       setError(
@@ -140,7 +155,7 @@ export const SettingsPage = () => {
       await apiClient.patch(`/planilla-parametros/${id}`, { valor: editValue });
       toast.success("Parámetro actualizado con éxito.");
       setEditId(null);
-      fetchParametros(); // Vuelve a cargar los datos para ver el cambio
+      fetchParametros();
     } catch (err) {
       toast.error("Error al actualizar el parámetro.");
     }
@@ -159,23 +174,17 @@ export const SettingsPage = () => {
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const formData = new FormData();
-    formData.append("marca", newProfile.marca);
-    formData.append("modelo", newProfile.modelo);
-    formData.append("potencia_hp", newProfile.potencia_hp);
-    formData.append("autonomia_km", newProfile.autonomia_km);
-    formData.append("capacidad_bateria_kwh", newProfile.capacidad_bateria_kwh);
-    if (logoFile) {
-      formData.append("logo", logoFile);
-    }
+    Object.entries(newProfile).forEach(([key, value]) =>
+      formData.append(key, value)
+    );
+    if (logoFile) formData.append("logo", logoFile);
 
     try {
       await apiClient.post("/vehicle-profiles", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Perfil de vehículo creado con éxito.");
-      // Limpiar formulario y archivo
       setNewProfile({
         marca: "",
         modelo: "",
@@ -185,7 +194,6 @@ export const SettingsPage = () => {
       });
       setLogoFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-
       fetchVehicleProfiles();
     } catch (err) {
       toast.error("Error al crear el perfil.");
@@ -197,7 +205,7 @@ export const SettingsPage = () => {
       try {
         await apiClient.delete(`/vehicle-profiles/${id}`);
         toast.success("Perfil eliminado.");
-        fetchVehicleProfiles(); // Vuelve a cargar la lista de perfiles
+        fetchVehicleProfiles();
       } catch (err) {
         toast.error("Error al eliminar el perfil.");
       }
@@ -250,7 +258,6 @@ export const SettingsPage = () => {
             placeholder="Batería (kWh)"
             required
           />
-
           <div className={styles.fileInputContainer}>
             <label htmlFor="logo-upload" className={styles.fileInputLabel}>
               {logoFile ? `Archivo: ${logoFile.name}` : "Subir Logo (Opcional)"}
@@ -263,12 +270,10 @@ export const SettingsPage = () => {
               accept="image/*"
             />
           </div>
-
           <button type="submit" className="btn btn-principal">
             Añadir Perfil
           </button>
         </form>
-
         <table className={styles.settingsTable} style={{ marginTop: "2rem" }}>
           <thead>
             <tr>
@@ -308,7 +313,24 @@ export const SettingsPage = () => {
         </table>
       </Card>
 
-      <Card title="Obligaciones del Patrono">
+      <div className={styles.highlightCard}>
+        <Card title="Parámetros de Comisiones">
+          <ParametrosTable
+            parametros={comisiones}
+            editId={editId}
+            editValue={editValue}
+            onEdit={(id: number, value: number) => {
+              setEditId(id);
+              setEditValue(value);
+            }}
+            onCancel={() => setEditId(null)}
+            onSave={handleUpdate}
+            onValueChange={setEditValue}
+          />
+        </Card>
+      </div>
+
+      <Card title="Obligaciones del Patrono (Planilla)">
         <ParametrosTable
           parametros={cargasPatronales}
           editId={editId}
@@ -323,7 +345,7 @@ export const SettingsPage = () => {
         />
       </Card>
 
-      <Card title="Deducciones del Colaborador">
+      <Card title="Deducciones del Colaborador (Planilla)">
         <ParametrosTable
           parametros={deduccionesEmpleado}
           editId={editId}

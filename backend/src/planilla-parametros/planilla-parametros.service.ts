@@ -1,3 +1,5 @@
+// src/planilla-parametros/planilla-parametros.service.ts
+
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,20 +13,14 @@ export class PlanillaParametrosService implements OnModuleInit {
     private parametrosRepository: Repository<PlanillaParametro>,
   ) {}
 
-  /**
-   * Este método se ejecuta automáticamente cuando el módulo se inicia.
-   * Llama a la función para sembrar los parámetros por defecto.
-   */
   async onModuleInit() {
     await this.seedDefaultParameters();
   }
 
-  /**
-   * Sembrador de parámetros: Inserta los valores por defecto en la base de datos
-   * solo si no existen previamente. Esto evita duplicados y errores.
-   */
+  // --- 👇 LÓGICA MEJORADA DEL SEEDER 👇 ---
   private async seedDefaultParameters() {
     const defaultParams = [
+      // ... (todos tus parámetros existentes aquí)
       {
         nombre: 'DEDUCCION_OBRERO_SEM',
         valor: 5.5,
@@ -181,7 +177,6 @@ export class PlanillaParametrosService implements OnModuleInit {
       },
     ];
 
-    // Itera sobre cada parámetro y lo inserta solo si no existe
     for (const paramData of defaultParams) {
       const existingParam = await this.parametrosRepository.findOneBy({
         nombre: paramData.nombre,
@@ -194,6 +189,7 @@ export class PlanillaParametrosService implements OnModuleInit {
     }
   }
 
+  // ... (El resto de los métodos no cambian)
   findAll() {
     return this.parametrosRepository.find();
   }
@@ -214,14 +210,12 @@ export class PlanillaParametrosService implements OnModuleInit {
 
     return this.parametrosRepository.save(parametro);
   }
-  // 👇 AÑADIENDO LOS MÉTODOS QUE FALTABAN
+
   create() {
-    // No implementamos la lógica, pero el método debe existir
     return 'La creación de nuevos parámetros no está permitida.';
   }
 
   remove(id: number) {
-    // No implementamos la lógica, pero el método debe existir
     return `La eliminación del parámetro #${id} no está permitida.`;
   }
 }
