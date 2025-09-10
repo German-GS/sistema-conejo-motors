@@ -1,0 +1,45 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filters select,
+.filters input {
+  padding: 0.75rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.reportTable th,
+.reportTable td {
+  border-bottom: 1px solid var(--borde-suave);
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.reportTable th {
+  font-weight: 600;
+}
+
+/* Nuevo estilo para las tarjetas de KPIs en el informe de ganancias */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.kpiGrid h2 {
+  color: var(--azul-principal);
+  font-size: 2rem;
+  margin: 0;
+}

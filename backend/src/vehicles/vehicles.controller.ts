@@ -10,6 +10,7 @@ import {
   UseGuards,
   UploadedFiles,
   UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { VehiclesService } from './vehicles.service';
@@ -52,6 +53,14 @@ export class VehiclesController {
   @Get('dashboard/stats')
   getDashboardStats() {
     return this.vehiclesService.getDashboardStats();
+  }
+
+  @Get('dashboard/sales-stats')
+  @UseGuards(RolesGuard)
+  @Roles('Vendedor', 'Administrador') // Accesible para vendedores y admins
+  getSalespersonDashboardStats(@Req() req) {
+    // Pasamos el objeto 'user' completo del request al servicio
+    return this.vehiclesService.getSalespersonDashboardStats(req.user);
   }
 
   @Get('sales/catalog')

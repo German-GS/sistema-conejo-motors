@@ -20,9 +20,9 @@ interface CatalogVehicle {
 
 // Helper para formatear el precio a colones costarricenses
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("es-CR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "CRC",
+    currency: "USD",
   }).format(value);
 };
 

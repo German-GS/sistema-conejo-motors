@@ -21,12 +21,14 @@ import { PlanillaPage } from "@/pages/admin/PlanillaPage";
 import { BodegasPage } from "@/pages/admin/BodegasPage";
 import TrackingPage from "@/pages/admin/TrackingPage";
 import { SettingsPage } from "@/pages/admin/SettingsPage";
+import { ReportsPage } from "@/pages/admin/ReportsPage";
 
 // Páginas de Ventas (con el alias @)
 import { CatalogPage } from "@/pages/admin/sales/CatalogPage";
 import { CreateQuotePage } from "@/pages/admin/sales/CreateQuotePage";
 import { MyQuotesPage } from "@/pages/admin/sales/MyQuotesPage";
 import { QuoteDetailsPage } from "@/pages/admin/QuoteDetailsPage";
+import { SalesDashboardPage } from "@/pages/admin/sales/SalesDashboardPage";
 
 // --- COMPONENTES DE LÓGICA DE RUTAS ---
 
@@ -95,8 +97,8 @@ function App() {
             <Route path="bodegas" element={<BodegasPage />} />
             <Route path="tracking" element={<TrackingPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            {/* Rutas de ventas accesibles para el admin */}
             <Route path="sales/catalog" element={<CatalogPage />} />
+            <Route path="reports" element={<ReportsPage />} />
             <Route
               path="sales/catalog/:vehicleId/quote"
               element={<CreateQuotePage />}
@@ -119,10 +121,7 @@ function App() {
           }
         >
           <Route path="/sales" element={<SalesLayout />}>
-            <Route
-              index
-              element={<h1>Dashboard de Vendedor Próximamente...</h1>}
-            />
+            <Route index element={<SalesDashboardPage />} />
             <Route path="catalog" element={<CatalogPage />} />
             <Route
               path="catalog/:vehicleId/quote"
