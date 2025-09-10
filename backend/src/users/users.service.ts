@@ -103,22 +103,56 @@ export class UsersService implements OnModuleInit {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    if (updateUserDto.contrasena) {
-      const salt = await bcrypt.genSalt();
-      updateUserDto.password_hash = await bcrypt.hash(
-        updateUserDto.contrasena,
-        salt,
-      );
-      delete updateUserDto.contrasena;
-    }
-    await this.usersRepository.update(id, updateUserDto);
-    const updatedUser = await this.usersRepository.findOneBy({ id });
-    if (!updatedUser) {
+    // 1. Separamos los datos que son de relaciones de los datos directos del usuario.
+    const { rol_id, salario_base, contrasena, ...userData } = updateUserDto;
+
+    // 2. Usamos 'preload' para cargar el usuario y fusionar los datos directos.
+    const user = await this.usersRepository.preload({
+      id: id,
+      ...userData,
+    });
+
+    if (!user) {
       throw new NotFoundException(`Usuario con ID #${id} no encontrado`);
     }
-    return updatedUser;
-  }
 
+    // 3. Si se proporciona una nueva contraseña, la hasheamos.
+    if (contrasena) {
+      const salt = await bcrypt.genSalt();
+      user.password_hash = await bcrypt.hash(contrasena, salt);
+    }
+
+    // 4. Si se proporciona un rol_id, buscamos el rol y lo asignamos.
+    if (rol_id) {
+      const rol = await this.rolesRepository.findOneBy({ id: rol_id });
+      if (rol) {
+        user.rol = rol;
+      } else {
+        throw new NotFoundException(`Rol con ID #${rol_id} no encontrado`);
+      }
+    }
+
+    // 5. Guardamos los cambios en la entidad del usuario.
+    await this.usersRepository.save(user);
+
+    // 6. Si se proporciona un nuevo salario, creamos un nuevo registro de salario.
+    //    Esto es bueno para mantener un historial de cambios salariales.
+    if (salario_base && salario_base > 0) {
+      const newSalario = this.salariosRepository.create({
+        usuario: user,
+        salario_base: salario_base,
+        fecha_efectiva: new Date(),
+        comision_porcentaje: 0, // Valor por defecto
+      });
+      await this.salariosRepository.save(newSalario);
+    }
+
+    // 7. Devolvemos el usuario actualizado con todas sus relaciones cargadas.
+    return this.usersRepository.findOneOrFail({
+      where: { id },
+      relations: ['rol'],
+    });
+  }
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
       select: ['id', 'nombre_completo', 'email', 'activo'],

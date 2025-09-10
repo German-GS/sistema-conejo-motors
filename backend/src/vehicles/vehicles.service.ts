@@ -1,5 +1,3 @@
-// En: src/vehicles/vehicles.service.ts
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,41 +11,34 @@ import { Bodega } from '../bodegas/bodega.entity';
 export class VehiclesService {
   constructor(
     @InjectRepository(Vehicle)
-    private vehiclesRepository: Repository<Vehicle>,
+    private readonly vehiclesRepository: Repository<Vehicle>,
     @InjectRepository(VehicleImage)
-    private imagesRepository: Repository<VehicleImage>,
+    private readonly imagesRepository: Repository<VehicleImage>,
     @InjectRepository(Bodega)
-    private bodegasRepository: Repository<Bodega>,
+    private readonly bodegaRepository: Repository<Bodega>,
   ) {}
 
   async getDashboardStats() {
-    // 1. Conteo de Vehículos y Cálculo de Valor de Inventario
     const allVehicles = await this.vehiclesRepository.find();
-
     const totalVehicles = allVehicles.length;
 
     const inventoryCost = allVehicles.reduce(
-      (sum, vehicle) => sum + Number(vehicle.precio_costo),
+      (sum, vehicle) => sum + Number(vehicle.precio_costo || 0),
       0,
     );
 
     // --- Lógica de Ventas (Simulada por ahora) ---
-    // NOTA: Cuando tengas un módulo de ventas, esta lógica se reemplazará
-    // con consultas reales a la base de datos.
-    const monthlySales = 8; // Valor de ejemplo
-    const monthlyRevenue = 450000; // Valor de ejemplo
-
-    // Datos para el gráfico (también simulados)
+    const monthlySales = 8;
+    const monthlyRevenue = 450000;
     const salesData = [
       { month: 'Enero', vendidos: 4 },
       { month: 'Febrero', vendidos: 3 },
       { month: 'Marzo', vendidos: 5 },
       { month: 'Abril', vendidos: 2 },
       { month: 'Mayo', vendidos: 8 },
-      { month: 'Junio', vendidos: 6 }, // Mes de ejemplo
+      { month: 'Junio', vendidos: 6 },
     ];
 
-    // Retornamos el objeto con todas las estadísticas
     return {
       totalVehicles,
       inventoryCost,
@@ -56,87 +47,70 @@ export class VehiclesService {
       salesData,
     };
   }
+
   async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
     const { bodegaId, ...vehicleData } = createVehicleDto;
-    const newVehicle = this.vehiclesRepository.create(vehicleData);
 
+    let bodega: Bodega | null = null;
+    let currentLocation: string | undefined = undefined;
+
+    // 1. Buscamos la bodega SOLO si se proporcionó un bodegaId
     if (bodegaId) {
-      const bodega = await this.bodegasRepository.findOneBy({ id: bodegaId });
-      if (bodega) {
-        newVehicle.bodega = bodega;
+      bodega = await this.bodegaRepository.findOneBy({ id: bodegaId });
+      if (!bodega) {
+        throw new NotFoundException(
+          `La bodega con el ID #${bodegaId} no fue encontrada.`,
+        );
+      }
+      currentLocation = bodega.nombre;
+    } else {
+      // Si no se asigna bodega, buscamos la primera disponible como ubicación inicial
+      const firstBodega = await this.bodegaRepository.findOne({
+        order: { id: 'ASC' },
+      });
+      if (firstBodega) {
+        currentLocation = firstBodega.nombre;
+      } else {
+        // Si no hay ninguna bodega en el sistema, la ubicación puede ser algo genérico
+        currentLocation = 'En Tránsito';
       }
     }
+
+    const newVehicle = this.vehiclesRepository.create({
+      ...vehicleData,
+      currentLocation: currentLocation,
+      bodega: bodega, // Asigna la entidad Bodega encontrada o null
+    });
+
     return this.vehiclesRepository.save(newVehicle);
   }
 
+  async findCatalog(): Promise<Omit<Vehicle, 'precio_costo'>[]> {
+    const vehicles = await this.vehiclesRepository.find({
+      where: { estado: 'Disponible' },
+      relations: ['bodega', 'imagenes'], // <-- CORREGIDO
+    });
+    // El resto del método está bien
+    return vehicles.map(({ precio_costo, ...vehicle }) => vehicle);
+  }
+
   async findAll(): Promise<Vehicle[]> {
-    return this.vehiclesRepository.find({ relations: ['bodega', 'imagenes'] });
+    return this.vehiclesRepository.find({ relations: ['bodega', 'imagenes'] }); // <-- CORREGIDO
   }
 
   async findOne(id: number): Promise<Vehicle | null> {
     return this.vehiclesRepository.findOne({
       where: { id },
-      relations: ['bodega', 'imagenes'],
+      relations: ['bodega', 'imagenes'], // <-- CORREGIDO
     });
   }
 
-  async updateImages(
-    vehicleId: number,
-    imagesToUpdate: { id: number; order: number }[],
-    idsToDelete: number[],
-  ) {
-    // Usaremos una transacción para asegurar que todas las operaciones se completen
-    // o ninguna lo haga si algo falla.
-    return this.imagesRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        // 1. Eliminar las imágenes marcadas para borrado
-        if (idsToDelete && idsToDelete.length > 0) {
-          await transactionalEntityManager.delete(VehicleImage, idsToDelete);
-        }
-
-        // 2. Actualizar el orden de las imágenes restantes
-        if (imagesToUpdate && imagesToUpdate.length > 0) {
-          // Creamos una promesa para cada actualización
-          const updatePromises = imagesToUpdate.map((image) =>
-            transactionalEntityManager.update(
-              VehicleImage,
-              { id: image.id },
-              { order: image.order },
-            ),
-          );
-          // Esperamos a que todas las actualizaciones se completen
-          await Promise.all(updatePromises);
-        }
-      },
-    );
-  }
-
-  async addImages(vehicleId: number, imagePaths: string[]) {
-    const vehicle = await this.findOne(vehicleId);
-    if (!vehicle) {
-      throw new NotFoundException(
-        `Vehículo con ID #${vehicleId} no encontrado`,
-      );
-    }
-
-    // Creamos una entidad VehicleImage por cada ruta de imagen y las guardamos todas
-    const images = imagePaths.map((path) =>
-      this.imagesRepository.create({
-        url: path,
-        vehicle: vehicle,
-      }),
-    );
-
-    return this.imagesRepository.save(images);
-  }
   async update(
     id: number,
     updateVehicleDto: UpdateVehicleDto,
   ): Promise<Vehicle> {
-    // Se extrae el bodegaId y el resto de los datos del DTO
     const { bodegaId, ...vehicleData } = updateVehicleDto;
 
-    // Se precarga el vehículo con los datos básicos
     const vehicle = await this.vehiclesRepository.preload({
       id: id,
       ...vehicleData,
@@ -148,29 +122,74 @@ export class VehiclesService {
       );
     }
 
-    // Se busca y asigna la nueva bodega si se proporcionó un bodegaId
     if (bodegaId !== undefined) {
       if (bodegaId === null) {
-        vehicle.bodega = null; // Permite desasignar una bodega
+        vehicle.bodega = null;
       } else {
-        const bodega = await this.bodegasRepository.findOneBy({ id: bodegaId });
-        // Solo asignamos si la bodega existe
+        const bodega = await this.bodegaRepository.findOneBy({ id: bodegaId });
         if (bodega) {
           vehicle.bodega = bodega;
+        } else {
+          throw new NotFoundException(
+            `La bodega con el ID #${bodegaId} no fue encontrada`,
+          );
         }
       }
     }
 
-    // Se guardan todos los cambios y se retorna el vehículo actualizado
     return this.vehiclesRepository.save(vehicle);
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.vehiclesRepository.delete(id);
-    if (result.affected === 0) {
+    const vehicle = await this.findOne(id);
+    if (!vehicle) {
       throw new NotFoundException(
         `El vehículo con el ID #${id} no fue encontrado`,
       );
     }
+    await this.vehiclesRepository.remove(vehicle);
+  }
+
+  async addImages(vehicleId: number, imagePaths: string[]) {
+    const vehicle = await this.findOne(vehicleId);
+    if (!vehicle) {
+      throw new NotFoundException(
+        `Vehículo con ID #${vehicleId} no encontrado`,
+      );
+    }
+
+    const images = imagePaths.map((path) =>
+      this.imagesRepository.create({
+        url: path,
+        vehicle: vehicle,
+      }),
+    );
+
+    return this.imagesRepository.save(images);
+  }
+
+  async updateImages(
+    vehicleId: number,
+    imagesToUpdate: { id: number; order: number }[],
+    idsToDelete: number[],
+  ) {
+    return this.imagesRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        if (idsToDelete && idsToDelete.length > 0) {
+          await transactionalEntityManager.delete(VehicleImage, idsToDelete);
+        }
+
+        if (imagesToUpdate && imagesToUpdate.length > 0) {
+          const updatePromises = imagesToUpdate.map((image) =>
+            transactionalEntityManager.update(
+              VehicleImage,
+              { id: image.id },
+              { order: image.order },
+            ),
+          );
+          await Promise.all(updatePromises);
+        }
+      },
+    );
   }
 }

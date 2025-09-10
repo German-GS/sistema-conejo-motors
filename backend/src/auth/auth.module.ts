@@ -5,15 +5,21 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config'; // 👈 1. Importa los módulos
 
 @Module({
   imports: [
-    UsersModule, // Lo importamos para poder usar UsersService
+    UsersModule,
     PassportModule,
-    JwtModule.register({
-      //global: true,
-      secret: 'ESTO_ES_UN_SECRETO_TEMPORAL', // IMPORTANTE: En producción esto debe ser una variable de entorno
-      signOptions: { expiresIn: '1h' }, // El token expira en 1 hora
+    ConfigModule, // 👈 2. Asegúrate de que ConfigModule esté aquí
+    // 👇 3. Modifica JwtModule.register para que sea asíncrono
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'), // Lee el secreto desde .env
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
   ],
   providers: [AuthService, JwtStrategy],

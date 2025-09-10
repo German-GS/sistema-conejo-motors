@@ -105,3 +105,13 @@ select .customSelect {
 .existingImageItem:hover .removeImageButton {
   opacity: 1; /* Muestra el botón de eliminar solo al pasar el mouse */
 }
+
+.profileSelect {
+  grid-column: 1 / -1; /* Ocupa todo el ancho */
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #f0f8ff; /* Un color de fondo suave para destacarlo */
+  margin-bottom: 1rem; /* Espacio extra debajo */
+}

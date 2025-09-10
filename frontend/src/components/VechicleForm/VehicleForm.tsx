@@ -8,10 +8,20 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-// Interfaces para los tipos de datos
+
+// --- INTERFACES ---
 interface Bodega {
   id: number;
   nombre: string;
+}
+
+interface VehicleProfile {
+  id: number;
+  marca: string;
+  modelo: string;
+  potencia_hp: number;
+  autonomia_km: number;
+  capacidad_bateria_kwh: number;
 }
 
 interface Vehicle {
@@ -27,7 +37,7 @@ interface Vehicle {
   potencia_hp: number;
   capacidad_bateria_kwh: number;
   bodega?: Bodega;
-  imagenes?: { id: number; url: string }[];
+  imagenes?: { id: number; url: string; order: number }[];
 }
 
 interface VehicleFormProps {
@@ -39,7 +49,9 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
   onSuccess,
   initialData,
 }) => {
+  // --- ESTADOS ---
   const [formData, setFormData] = useState({
+    profileId: "",
     marca: "",
     modelo: "",
     año: "",
@@ -52,34 +64,9 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     capacidad_bateria_kwh: "",
     bodegaId: "",
   });
-  const wrapperStyles: React.CSSProperties = {
-    position: "relative",
-    width: "100%",
-    border: "1px solid #e0e0e0",
-    borderRadius: "6px",
-    backgroundColor: "white",
-    backgroundImage:
-      "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E')",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 1rem center",
-    backgroundSize: "0.7em",
-  };
-
-  const selectStyles: React.CSSProperties = {
-    width: "100%",
-    padding: "0.45rem 1rem",
-    fontSize: "1rem",
-    color: "#333333",
-    cursor: "pointer",
-    WebkitAppearance: "none",
-    MozAppearance: "none",
-    appearance: "none",
-    backgroundColor: "transparent",
-    border: "1px solid #cccc",
-    borderRadius: "6px",
-  };
 
   const [bodegas, setBodegas] = useState<Bodega[]>([]);
+  const [profiles, setProfiles] = useState<VehicleProfile[]>([]);
   const [error, setError] = useState("");
   const isEditing = !!initialData;
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -87,23 +74,52 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     { id: number; url: string; order: number }[]
   >([]);
 
-  // Efecto para cargar las bodegas (sin cambios)
+  // --- EFECTOS ---
+
+  // Carga los datos iniciales (bodegas y perfiles)
   useEffect(() => {
-    const fetchBodegas = async () => {
+    const fetchData = async () => {
       try {
-        const response = await apiClient.get("/bodegas");
-        setBodegas(response.data);
+        const [bodegasRes, profilesRes] = await Promise.all([
+          apiClient.get("/bodegas"),
+          apiClient.get("/vehicle-profiles"),
+        ]);
+        setBodegas(bodegasRes.data);
+        setProfiles(profilesRes.data);
       } catch (err) {
-        console.error("Error al cargar bodegas", err);
+        console.error("Error al cargar datos iniciales", err);
+        toast.error("No se pudieron cargar los perfiles y bodegas.");
       }
     };
-    fetchBodegas();
+    fetchData();
   }, []);
 
-  // Efecto para rellenar el formulario en modo edición (sin cambios, pero ahora funcionará)
+  // Función para limpiar el formulario
+  const resetForm = () => {
+    setFormData({
+      profileId: "",
+      marca: "",
+      modelo: "",
+      año: "",
+      vin: "",
+      color: "",
+      precio_costo: "",
+      precio_venta: "",
+      autonomia_km: "",
+      potencia_hp: "",
+      capacidad_bateria_kwh: "",
+      bodegaId: "",
+    });
+    setExistingImages([]);
+    setSelectedFiles([]);
+  };
+
+  // 👇 CORRECCIÓN AQUÍ: Este efecto llena o limpia el formulario 👇
   useEffect(() => {
     if (isEditing && initialData) {
+      // MODO EDICIÓN: Rellenar el formulario con los datos existentes
       setFormData({
+        profileId: "", // El perfil no se usa al editar
         marca: initialData.marca || "",
         modelo: initialData.modelo || "",
         año: initialData.año?.toString() || "",
@@ -117,29 +133,46 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
           initialData.capacidad_bateria_kwh?.toString() || "",
         bodegaId: initialData.bodega?.id?.toString() || "",
       });
+      // Cargar las imágenes existentes para la sección de arrastrar y soltar
       setExistingImages(
         initialData.imagenes?.map((img, index) => ({ ...img, order: index })) ||
           []
       );
+      setSelectedFiles([]); // Limpiar cualquier archivo nuevo seleccionado previamente
     } else {
-      // Reinicia estados para un nuevo vehículo
-      setFormData({
+      // MODO CREACIÓN: Asegurarse de que el formulario esté vacío
+      resetForm();
+    }
+  }, [initialData, isEditing]);
+
+  // --- MANEJADORES DE EVENTOS ---
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const profileId = e.target.value;
+    const selectedProfile = profiles.find((p) => p.id === Number(profileId));
+
+    if (selectedProfile) {
+      setFormData((prev) => ({
+        ...prev,
+        profileId,
+        marca: selectedProfile.marca,
+        modelo: selectedProfile.modelo,
+        potencia_hp: selectedProfile.potencia_hp.toString(),
+        autonomia_km: selectedProfile.autonomia_km.toString(),
+        capacidad_bateria_kwh: selectedProfile.capacidad_bateria_kwh.toString(),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        profileId: "",
         marca: "",
         modelo: "",
-        año: "",
-        vin: "",
-        color: "",
-        precio_costo: "",
-        precio_venta: "",
-        autonomia_km: "",
         potencia_hp: "",
+        autonomia_km: "",
         capacidad_bateria_kwh: "",
-        bodegaId: "",
-      });
-      setExistingImages([]);
+      }));
     }
-    setSelectedFiles([]);
-  }, [initialData, isEditing]);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -149,46 +182,13 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   const onDragEnd = (result: DropResult) => {
-    console.log("--- Drag End ---"); // 1. Confirma que la función se ejecuta
-
     const { source, destination } = result;
-
-    // Si se suelta fuera de la lista, no hacer nada
-    if (!destination) {
-      console.log("-> Soltado fuera de la lista. No se hace nada.");
+    if (!destination || destination.index === source.index) {
       return;
     }
-
-    // Si se suelta en la misma posición, no hacer nada
-    if (destination.index === source.index) {
-      console.log("-> Soltado en la misma posición. No se hace nada.");
-      return;
-    }
-
-    console.log(
-      `Moviendo desde el índice ${source.index} al índice ${destination.index}`
-    );
-
-    // Creamos una copia del array actual para trabajar con ella
     const items = Array.from(existingImages);
-    console.log(
-      "Array ANTES del cambio:",
-      items.map((img) => img.id)
-    );
-
-    // Quitamos el elemento de su lugar original
     const [reorderedItem] = items.splice(source.index, 1);
-
-    // Insertamos el elemento en su nuevo lugar
     items.splice(destination.index, 0, reorderedItem);
-
-    console.log(
-      "Array DESPUÉS del cambio:",
-      items.map((img) => img.id)
-    );
-
-    // Actualizamos el estado con el nuevo array.
-    console.log("-> Actualizando el estado de React...");
     setExistingImages(items);
   };
 
@@ -198,10 +198,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      // Convertimos el FileList a un Array y lo guardamos
       setSelectedFiles(Array.from(e.target.files));
-    } else {
-      setSelectedFiles([]);
     }
   };
 
@@ -221,14 +218,12 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     };
 
     try {
-      // PASO 1: Guardar los datos de texto del vehículo
       const vehicleResponse = isEditing
         ? await apiClient.patch(`/vehicles/${initialData?.id}`, vehicleData)
         : await apiClient.post("/vehicles", vehicleData);
 
       const vehicleId = vehicleResponse.data.id;
 
-      // PASO 2: Subir las nuevas imágenes (si las hay)
       if (selectedFiles.length > 0) {
         const uploadFormData = new FormData();
         selectedFiles.forEach((file) => {
@@ -237,7 +232,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         await apiClient.post(`/vehicles/${vehicleId}/upload`, uploadFormData);
       }
 
-      // PASO 3: Actualizar el orden y eliminar las imágenes viejas (solo en modo edición)
       if (isEditing) {
         const originalImageIds =
           initialData?.imagenes?.map((img) => img.id) || [];
@@ -245,12 +239,10 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         const idsToDelete = originalImageIds.filter(
           (id) => !currentImageIds.has(id)
         );
-
         const imagesToUpdate = existingImages.map((img, index) => ({
           id: img.id,
           order: index,
         }));
-
         await apiClient.patch(`/vehicles/${vehicleId}/images`, {
           imagesToUpdate,
           idsToDelete,
@@ -266,19 +258,41 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         err.response?.data?.message || "Ocurrió un error al guardar.";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error(err);
     }
   };
 
+  // --- RENDERIZADO DEL COMPONENTE ---
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {/* --- Inputs de Texto --- */}
+      {/* Selector de Perfil (solo en modo creación) */}
+      {!isEditing && (
+        <div className={styles.profileSelectorWrapper}>
+          <select
+            name="profileId"
+            value={formData.profileId}
+            onChange={handleProfileChange}
+            className={styles.profileSelector}
+          >
+            <option value="">
+              -- Seleccionar un Perfil para Autocompletar --
+            </option>
+            {profiles.map((profile) => (
+              <option key={profile.id} value={profile.id}>
+                {profile.marca} - {profile.modelo}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Inputs de Datos */}
       <input
         name="marca"
         value={formData.marca}
         onChange={handleChange}
         placeholder="Marca"
         required
+        disabled={!!formData.profileId}
       />
       <input
         name="modelo"
@@ -286,6 +300,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         placeholder="Modelo"
         required
+        disabled={!!formData.profileId}
       />
       <input
         name="año"
@@ -308,6 +323,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         value={formData.color}
         onChange={handleChange}
         placeholder="Color"
+        required
       />
       <input
         name="precio_costo"
@@ -331,6 +347,8 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         value={formData.autonomia_km}
         onChange={handleChange}
         placeholder="Autonomía (km)"
+        required
+        disabled={!!formData.profileId}
       />
       <input
         name="potencia_hp"
@@ -338,6 +356,8 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         value={formData.potencia_hp}
         onChange={handleChange}
         placeholder="Potencia (HP)"
+        required
+        disabled={!!formData.profileId}
       />
       <input
         name="capacidad_bateria_kwh"
@@ -345,29 +365,27 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         value={formData.capacidad_bateria_kwh}
         onChange={handleChange}
         placeholder="Batería (kWh)"
+        required
+        disabled={!!formData.profileId}
       />
 
-      {/* --- Selector de Bodega --- */}
+      {/* Selector de Bodega (solo en modo creación) */}
       {!isEditing && (
-        <div style={wrapperStyles}>
-          <select
-            name="bodegaId"
-            value={formData.bodegaId}
-            onChange={handleChange}
-            style={selectStyles}
-          >
-            {/* 2. Cambiamos el texto para que sea más claro */}
-            <option value="">-- Asignar Ubicación Inicial --</option>
-            {bodegas.map((bodega) => (
-              <option key={bodega.id} value={bodega.id}>
-                {bodega.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          name="bodegaId"
+          value={formData.bodegaId}
+          onChange={handleChange}
+        >
+          <option value="">-- Asignar Ubicación Inicial (Opcional) --</option>
+          {bodegas.map((bodega) => (
+            <option key={bodega.id} value={bodega.id}>
+              {bodega.nombre}
+            </option>
+          ))}
+        </select>
       )}
 
-      {/* --- Sección de Arrastrar y Soltar Imágenes --- */}
+      {/* Sección de Imágenes Existentes (solo en modo edición) */}
       {isEditing && existingImages.length > 0 && (
         <div className={styles.existingImagesSection}>
           <h3>Imágenes Actuales (Arrastra para ordenar)</h3>
@@ -381,7 +399,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
                 >
                   {existingImages.map((image, index) => (
                     <Draggable
-                      key={image.id}
+                      key={image.id.toString()}
                       draggableId={image.id.toString()}
                       index={index}
                     >
@@ -415,7 +433,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         </div>
       )}
 
-      {/* --- Input para Subir Nuevas Imágenes --- */}
+      {/* Input para Subir Nuevas Imágenes */}
       <div className={styles.fileInputWrapper}>
         <label htmlFor="vehicleImage" className={styles.fileInputLabel}>
           Añadir Nueva(s) Imagen(es)
@@ -436,7 +454,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         />
       </div>
 
-      {/* --- Botón de Envío y Mensaje de Error --- */}
+      {/* Botón de Envío y Mensaje de Error */}
       <button
         type="submit"
         className="btn btn-principal"
