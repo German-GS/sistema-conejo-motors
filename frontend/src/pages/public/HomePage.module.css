@@ -1,0 +1,179 @@
+/* src/pages/public/HomePage.module.css */
+/* --- Carrusel --- */
+.carousel {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 73px);
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  display: flex; /* Mantener flex para la superposición de contenido */
+  align-items: flex-end; /* Alinear contenido al final (abajo) */
+  justify-content: center; /* Centrar contenido horizontalmente */
+  text-align: center;
+  padding-bottom: 3rem; /* Espacio desde la parte inferior */
+}
+.slide.active {
+  opacity: 1;
+}
+
+.slide::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* 👇 REEMPLAZA EL FONDO SÓLIDO POR UN DEGRADADO 👇 */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+.slideContent {
+  position: relative;
+  z-index: 2;
+  color: white;
+  padding: 2rem;
+  max-width: 800px; /* Limitar ancho para que el texto no sea demasiado largo */
+}
+
+.slideContent h1 {
+  font-size: 3.5rem; /* Hacemos el título un poco más grande */
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+}
+.slideContent p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+/* --- Sección de Destacados --- */
+.featuredSection {
+  text-align: center;
+  padding: 3rem 1rem; /* Añadimos padding horizontal para pantallas pequeñas */
+}
+
+.featuredSection h2 {
+  font-size: 2.5rem;
+  color: var(--azul-principal);
+  margin-bottom: 2rem;
+}
+
+.featuredSection .catalogGrid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(300px, 1fr)
+  ); /* Asegurar que sean 3 columnas si hay espacio */
+  gap: 1.5rem; /* Espacio entre las tarjetas */
+  max-width: 1200px; /* Limitar el ancho del grid */
+  margin: 0 auto; /* Centrar el grid */
+  justify-items: center; /* Centrar los elementos dentro del grid */
+}
+
+.featuredGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px; /* Ancho máximo para el contenedor de las tarjetas */
+  margin: 0 auto; /* ¡La clave! Esto centra el grid en la página */
+}
+
+.vehicleInfo {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  text-align: center; /* <-- ¡AÑADE ESTA LÍNEA MÁGICA! */
+}
+
+.vehicleInfo h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: var(--azul-principal);
+}
+
+.vehicleCard {
+  background-color: var(--fondo-tarjeta);
+  border-radius: 12px; /* Bordes un poco más redondeados */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra más suave */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* 👇 LA MAGIA ESTÁ AQUÍ 👇 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vehicleCard:hover {
+  transform: translateY(-8px); /* Eleva la tarjeta */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); /* Sombra más pronunciada */
+}
+
+.carouselButton {
+  background-color: transparent; /* Fondo transparente */
+  border: 2px solid white; /* Borde blanco */
+  color: white; /* Texto blanco */
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.carouselButton:hover {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.2
+  ); /* Fondo blanco semi-transparente al pasar el ratón */
+  transform: translateY(-2px); /* Pequeño efecto de elevación */
+}
+
+.ctaSection {
+  padding: 4rem 2rem;
+  background-color: var(--fondo-tarjeta); /* Fondo blanco para separar */
+  margin-top: 3rem; /* Espacio arriba */
+  background-image: url("/src/img/"); /* Imagen de fondo sutil */
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+}
+
+.ctaContent {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.9
+  ); /* Fondo blanco traslúcido para legibilidad */
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.ctaContent h2 {
+  font-size: 2.5rem;
+  color: var(--azul-principal);
+  margin-top: 0;
+}
+
+.ctaContent p {
+  font-size: 1.1rem;
+  color: var(--texto-secundario);
+  margin-bottom: 2rem;
+}

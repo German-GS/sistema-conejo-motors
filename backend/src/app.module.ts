@@ -34,6 +34,12 @@ import { VehicleProfilesModule } from './vehicle-profiles/vehicle-profiles.modul
 import { NotificationsModule } from './notifications/notifications.module';
 import { Notification } from './notifications/notification.entity';
 import { ReportsModule } from './reports/reports.module';
+import { Lead } from './leads/lead.entity';
+import { LeadsModule } from './leads/leads.module';
+import { Customer } from './customers/customer.entity';
+import { CustomersModule } from './customers/customers.module';
+import { SiteSetting } from './site-settings/site-setting.entity';
+import { SiteSettingsModule } from './site-settings/site-settings.module';
 
 @Module({
   imports: [
@@ -64,8 +70,11 @@ import { ReportsModule } from './reports/reports.module';
         Venta,
         VehicleProfile,
         Notification,
-      ], // Aquí irán nuestras "entidades" o modelos de datos más adelante
-      synchronize: true, // En desarrollo, esto crea las tablas automáticamente. Lo desactivaremos en producción.
+        Lead,
+        Customer,
+        SiteSetting,
+      ],
+      synchronize: true,
     }),
     UsersModule,
     AuthModule,
@@ -81,9 +90,11 @@ import { ReportsModule } from './reports/reports.module';
     CotizacionesModule,
     VentasModule,
     VehicleProfilesModule,
-    NotificationsModule, // <-- 3. AÑADE EL MÓDULO 'NotificationsModule'
+    NotificationsModule,
     ReportsModule,
-    // --- FIN DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
+    LeadsModule,
+    CustomersModule,
+    SiteSettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

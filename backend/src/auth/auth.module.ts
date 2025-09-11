@@ -5,19 +5,20 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // 👈 1. Importa los módulos
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CustomersModule } from '../customers/customers.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    ConfigModule, // 👈 2. Asegúrate de que ConfigModule esté aquí
-    // 👇 3. Modifica JwtModule.register para que sea asíncrono
+    CustomersModule,
+    ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'), // Lee el secreto desde .env
+        secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '1h' },
       }),
     }),
