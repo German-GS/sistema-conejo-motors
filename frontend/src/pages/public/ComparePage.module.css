@@ -1,0 +1,151 @@
+/* src/pages/public/ComparePage.module.css */
+
+.compareContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.compareContainer h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--azul-principal);
+}
+
+.compareContainer > p {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--texto-secundario);
+  margin-top: -1rem;
+  margin-bottom: 3rem;
+}
+
+/* --- Grid para los 3 selectores de vehículos --- */
+.selectorsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+/* --- Estilo para la tarjeta del vehículo seleccionado --- */
+.selectorCard {
+  background-color: var(--fondo-tarjeta);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.selectorCard img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.selectorCard h3 {
+  margin: 0.5rem 0 0 0;
+  color: var(--azul-principal);
+}
+
+.selectorCard p {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* --- Estilo para el espacio vacío antes de seleccionar un auto --- */
+.emptySelector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 320px;
+  border: 2px dashed var(--borde-suave);
+  border-radius: 12px;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.emptySelector:hover {
+  border-color: var(--azul-principal);
+  background-color: #fcfcfc;
+}
+
+/* --- Estilos para la tabla de comparación --- */
+.tableContainer {
+  margin-bottom: 3rem;
+  overflow-x: auto; /* Para responsividad en móviles */
+}
+
+.compareTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.compareTable th,
+.compareTable td {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.compareTable th {
+  font-size: 1.2rem;
+  color: var(--azul-principal);
+}
+
+/* La primera columna (características) */
+.compareTable td:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: var(--texto-secundario);
+}
+
+/* Filas con colores alternos para mejor legibilidad */
+.compareTable tbody tr:nth-child(even) {
+  background-color: var(--fondo-tarjeta);
+}
+
+/* --- Estilos para el Modal de selección --- */
+.modalVehicleList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modalVehicleItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.modalVehicleItem:hover {
+  background-color: #f4f4f4;
+}
+
+.modalVehicleItem img {
+  width: 100px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.modalVehicleItem h4 {
+  margin: 0;
+  color: var(--texto-principal);
+}
+
+.modalVehicleItem p {
+  margin: 0;
+  color: var(--texto-secundario);
+}

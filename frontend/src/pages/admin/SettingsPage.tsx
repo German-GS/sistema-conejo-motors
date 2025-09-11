@@ -3,6 +3,7 @@ import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
 import styles from "./SettingsPage.module.css";
 import toast from "react-hot-toast";
+import { SiteHomepageSettings } from "../../components/SiteHomepageSettings";
 
 interface Parametro {
   id: number;
@@ -311,6 +312,9 @@ export const SettingsPage = () => {
             ))}
           </tbody>
         </table>
+      </Card>
+      <Card title="Configuración de Página Principal">
+        <SiteHomepageSettings />
       </Card>
 
       <div className={styles.highlightCard}>

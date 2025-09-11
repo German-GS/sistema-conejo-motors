@@ -9,79 +9,108 @@ import { Toaster } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
 
 // Layouts
-import { AdminLayout } from "@/components/AdminLayout";
-import { SalesLayout } from "@/components/SalesLayout";
+import { AdminLayout } from "./components/AdminLayout";
+import { SalesLayout } from "./components/SalesLayout";
+import { PublicLayout } from "./components/PublicLayout";
+
+// Páginas Públicas
+import { PublicCatalogPage } from "./pages/public/PublicCatalogPage";
+import { VehicleDetailPage } from "./pages/public/VehicleDetailPage";
+import { ComparePage } from "./pages/public/ComparePage";
+import { HomePage } from "./pages/public/HomePage";
 
 // Páginas de Administración
-import { LoginPage } from "@/pages/admin/LoginPage";
-import { DashboardHomePage } from "@/pages/admin/DashboardHomePage";
-import { DashboardPage as InventoryPage } from "@/pages/admin/DashboardPage";
-import { UsersPage } from "@/pages/admin/UsersPage";
-import { PlanillaPage } from "@/pages/admin/PlanillaPage";
-import { BodegasPage } from "@/pages/admin/BodegasPage";
-import TrackingPage from "@/pages/admin/TrackingPage";
-import { SettingsPage } from "@/pages/admin/SettingsPage";
-import { ReportsPage } from "@/pages/admin/ReportsPage";
+import { LoginPage } from "./pages/admin/LoginPage";
+import { DashboardHomePage } from "./pages/admin/DashboardHomePage";
+import { DashboardPage as InventoryPage } from "./pages/admin/DashboardPage";
+import { UsersPage } from "./pages/admin/UsersPage";
+import { PlanillaPage } from "./pages/admin/PlanillaPage";
+import { BodegasPage } from "./pages/admin/BodegasPage";
+import TrackingPage from "./pages/admin/TrackingPage";
+import { SettingsPage } from "./pages/admin/SettingsPage";
+import { ReportsPage } from "./pages/admin/ReportsPage";
 
-// Páginas de Ventas (con el alias @)
-import { CatalogPage } from "@/pages/admin/sales/CatalogPage";
-import { CreateQuotePage } from "@/pages/admin/sales/CreateQuotePage";
-import { MyQuotesPage } from "@/pages/admin/sales/MyQuotesPage";
-import { QuoteDetailsPage } from "@/pages/admin/QuoteDetailsPage";
-import { SalesDashboardPage } from "@/pages/admin/sales/SalesDashboardPage";
+// Páginas de Ventas
+import { CatalogPage } from "./pages/admin/sales/CatalogPage";
+import { CreateQuotePage } from "./pages/admin/sales/CreateQuotePage";
+import { MyQuotesPage } from "./pages/admin/sales/MyQuotesPage";
+import { QuoteDetailsPage } from "./pages/admin/QuoteDetailsPage";
+import { SalesDashboardPage } from "./pages/admin/sales/SalesDashboardPage";
 
 // --- COMPONENTES DE LÓGICA DE RUTAS ---
 
-const HomeRedirect = () => {
+// Este componente decide a qué dashboard redirigir a un empleado DESPUÉS de iniciar sesión.
+const DashboardRedirect = () => {
   const token = localStorage.getItem("accessToken");
-  if (!token) return <Navigate to="/login" />;
+  if (!token) return <Navigate to="/login" replace />;
   try {
     const decodedToken: { rol?: { nombre: string } } = jwtDecode(token);
+    // Si es Vendedor, va a /sales. Si no, va a /admin.
     return decodedToken.rol?.nombre === "Vendedor" ? (
-      <Navigate to="/sales" />
+      <Navigate to="/sales" replace />
     ) : (
-      <Navigate to="/admin" />
+      <Navigate to="/admin" replace />
     );
   } catch (error) {
     localStorage.removeItem("accessToken");
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 };
 
+// Este componente protege las rutas internas según el rol del empleado.
 const ProtectedRouteByRole = ({ allowedRoles }: { allowedRoles: string[] }) => {
   const token = localStorage.getItem("accessToken");
-  if (!token) return <Navigate to="/login" />;
+  if (!token) return <Navigate to="/login" replace />;
   try {
     const decodedToken: { rol?: { nombre: string } } = jwtDecode(token);
     const userRole = decodedToken.rol?.nombre || "";
-    return allowedRoles.includes(userRole) ? <Outlet /> : <Navigate to="/" />;
+    return allowedRoles.includes(userRole) ? (
+      <Outlet />
+    ) : (
+      <Navigate to="/dashboard-redirect" replace />
+    );
   } catch (error) {
     localStorage.removeItem("accessToken");
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 };
 
-// --- COMPONENTE PRINCIPAL ---
+// --- COMPONENTE PRINCIPAL DE LA APLICACIÓN ---
 
 function App() {
   const handleLoginSuccess = () => {
-    window.location.href = "/";
+    // Redirige al componente que decide el dashboard correcto.
+    window.location.href = "/dashboard-redirect";
   };
 
   return (
     <BrowserRouter>
       <Toaster position="top-right" reverseOrder={false} />
       <Routes>
-        {/* Ruta Pública */}
+        {/* --- 1. Grupo de Rutas Públicas (Ahora es la entrada principal) --- */}
+        <Route path="/" element={<PublicLayout />}>
+          {/* La nueva página de inicio es ahora el 'index' */}
+          <Route index element={<HomePage />} />
+
+          {/* La página de catálogo ahora tiene su propia ruta */}
+          <Route path="catalog" element={<PublicCatalogPage />} />
+
+          {/* Anidamos los detalles del vehículo dentro del catálogo */}
+          <Route path="catalog/:vehicleId" element={<VehicleDetailPage />} />
+
+          <Route path="compare" element={<ComparePage />} />
+        </Route>
+
+        {/* --- 2. Ruta de Login para Empleados --- */}
         <Route
           path="/login"
           element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
         />
 
-        {/* Ruta Raíz que Redirige */}
-        <Route path="/" element={<HomeRedirect />} />
+        {/* --- 3. Ruta Intermedia para Redirección Post-Login --- */}
+        <Route path="/dashboard-redirect" element={<DashboardRedirect />} />
 
-        {/* --- Grupo de Rutas de Administración --- */}
+        {/* --- 4. Grupo de Rutas Protegidas de Administración --- */}
         <Route
           element={
             <ProtectedRouteByRole
@@ -97,14 +126,14 @@ function App() {
             <Route path="bodegas" element={<BodegasPage />} />
             <Route path="tracking" element={<TrackingPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="sales/catalog" element={<CatalogPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            {/* Rutas de ventas accesibles para el admin */}
+            <Route path="sales/catalog" element={<CatalogPage />} />
             <Route
               path="sales/catalog/:vehicleId/quote"
               element={<CreateQuotePage />}
             />
             <Route path="sales/quotes" element={<MyQuotesPage />} />
-            {/* 👇 CORRECCIÓN AQUÍ 👇 */}
             <Route
               path="sales/quotes/:quoteId"
               element={<QuoteDetailsPage />}
@@ -112,7 +141,7 @@ function App() {
           </Route>
         </Route>
 
-        {/* --- Grupo de Rutas de Ventas --- */}
+        {/* --- 5. Grupo de Rutas Protegidas de Ventas --- */}
         <Route
           element={
             <ProtectedRouteByRole
@@ -128,13 +157,12 @@ function App() {
               element={<CreateQuotePage />}
             />
             <Route path="quotes" element={<MyQuotesPage />} />
-            {/* 👇 Y CORRECCIÓN AQUÍ 👇 */}
             <Route path="quotes/:quoteId" element={<QuoteDetailsPage />} />
           </Route>
         </Route>
 
-        {/* Ruta para cualquier otra URL */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* --- 6. Ruta para cualquier otra URL no encontrada --- */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

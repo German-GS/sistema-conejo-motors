@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 // --- 👇 1. AÑADE 'In' A ESTA LÍNEA 👇 ---
 import { Between, In, MoreThanOrEqual, Repository } from 'typeorm';
@@ -165,7 +169,17 @@ export class VehiclesService {
       bodega: bodega,
     });
 
-    return this.vehiclesRepository.save(newVehicle);
+    try {
+      return await this.vehiclesRepository.save(newVehicle);
+    } catch (error) {
+      if (error?.code === '23505') {
+        // 👇 LA CORRECCIÓN: Se eliminó la coma extra al final de esta línea 👇
+        throw new ConflictException(
+          'Ya existe un vehículo registrado con este VIN.',
+        );
+      }
+      throw error;
+    }
   }
 
   async findCatalog(): Promise<Omit<Vehicle, 'precio_costo'>[]> {
