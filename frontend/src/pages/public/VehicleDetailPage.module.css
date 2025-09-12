@@ -66,3 +66,23 @@
   font-size: 1rem;
   box-sizing: border-box;
 }
+
+.detailsSection {
+  margin-bottom: 2rem;
+}
+
+.detailsSection h3 {
+  border-bottom: 1px solid var(--borde-suave);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.detailsSection ul {
+  list-style: none;
+  padding: 0;
+}
+
+.detailsSection li {
+  margin-bottom: 0.5rem;
+  color: var(--texto-secundario);
+}

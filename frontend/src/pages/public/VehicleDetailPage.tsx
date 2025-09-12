@@ -16,6 +16,11 @@ interface CatalogVehicle {
   potencia_hp: number;
   capacidad_bateria_kwh: number;
   imagenes?: { url: string }[];
+  categoria: string;
+  traccion: string;
+  numero_pasajeros: number;
+  material_interior: string;
+  equipamiento_destacado: string;
 }
 
 export const VehicleDetailPage = () => {
@@ -83,6 +88,34 @@ export const VehicleDetailPage = () => {
             <span>Batería</span>
             <strong>{vehicle.capacidad_bateria_kwh} kWh</strong>
           </div>
+          <div>
+            <span>Pasajeros</span>
+            <strong>{vehicle.numero_pasajeros}</strong>
+          </div>
+          <div>
+            <span>Tracción</span>
+            <strong>{vehicle.traccion}</strong>
+          </div>
+        </div>
+        <div className={styles.detailsSection}>
+          <h3>Características Adicionales</h3>
+          <ul>
+            {vehicle.categoria && (
+              <li>
+                <strong>Categoría:</strong> {vehicle.categoria}
+              </li>
+            )}
+            {vehicle.material_interior && (
+              <li>
+                <strong>Interior:</strong> {vehicle.material_interior}
+              </li>
+            )}
+            {vehicle.equipamiento_destacado && (
+              <li>
+                <strong>Equipamiento:</strong> {vehicle.equipamiento_destacado}
+              </li>
+            )}
+          </ul>
         </div>
 
         <div className={styles.contactForm}>

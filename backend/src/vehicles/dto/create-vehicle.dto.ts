@@ -1,4 +1,8 @@
-import type { VehicleStatus } from '../vehicle.entity';
+import type {
+  VehicleStatus,
+  VehicleCategory,
+  Drivetrain,
+} from '../vehicle.entity';
 import {
   IsString,
   IsNotEmpty,
@@ -50,6 +54,26 @@ export class CreateVehicleDto {
   @IsNumber()
   @IsPositive()
   capacidad_bateria_kwh: number;
+
+  @IsOptional()
+  @IsIn(['Sedan', 'SUV', 'Pickup', 'Hatchback', 'Comercial', 'Urbano'] as const)
+  categoria?: VehicleCategory;
+
+  @IsOptional()
+  @IsIn(['4x2', '4x4', 'AWD'] as const)
+  traccion?: Drivetrain;
+
+  @IsOptional()
+  @IsNumber()
+  numero_pasajeros?: number;
+
+  @IsOptional()
+  @IsString()
+  equipamiento_destacado?: string;
+
+  @IsOptional()
+  @IsString()
+  material_interior?: string;
 
   @IsOptional()
   // 👇 CAMBIO AQUÍ: Añade "as const" al final del array 👇

@@ -12,6 +12,14 @@ import { VehicleImage } from './vehicle-image.entity';
 import { TrackingHistory } from '../tracking/tracking.entity';
 
 export type VehicleStatus = 'Disponible' | 'Reservado' | 'Vendido';
+export type VehicleCategory =
+  | 'Sedan'
+  | 'SUV'
+  | 'Pickup'
+  | 'Hatchback'
+  | 'Comercial'
+  | 'Urbano';
+export type Drivetrain = '4x2' | '4x4' | 'AWD';
 
 @Entity({ name: 'vehiculos' })
 export class Vehicle {
@@ -53,6 +61,29 @@ export class Vehicle {
 
   @Column({ type: 'decimal', precision: 5, scale: 1 })
   capacidad_bateria_kwh: number;
+
+  @Column({
+    type: 'enum',
+    enum: ['Sedan', 'SUV', 'Pickup', 'Hatchback', 'Comercial', 'Urbano'],
+    nullable: true, // Lo hacemos opcional por ahora
+  })
+  categoria: VehicleCategory;
+
+  @Column({
+    type: 'enum',
+    enum: ['4x2', '4x4', 'AWD'],
+    nullable: true,
+  })
+  traccion: Drivetrain;
+
+  @Column({ default: 5 }) // Un valor por defecto común
+  numero_pasajeros: number;
+
+  @Column({ type: 'text', nullable: true })
+  equipamiento_destacado: string; // Para frases como "Techo panorámico, Asistente de carril"
+
+  @Column({ length: 100, nullable: true })
+  material_interior: string; // Para "Cuero", "Tela de alta densidad", etc.
 
   @Column({
     type: 'enum',

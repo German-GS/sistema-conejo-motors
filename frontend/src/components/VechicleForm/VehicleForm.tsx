@@ -24,6 +24,7 @@ interface VehicleProfile {
   capacidad_bateria_kwh: number;
 }
 
+// 👇 CORRECCIÓN 1: Actualizamos la interfaz del Vehículo 👇
 interface Vehicle {
   id: number;
   marca: string;
@@ -38,6 +39,11 @@ interface Vehicle {
   capacidad_bateria_kwh: number;
   bodega?: Bodega;
   imagenes?: { id: number; url: string; order: number }[];
+  categoria?: string;
+  traccion?: string;
+  numero_pasajeros?: number;
+  equipamiento_destacado?: string;
+  material_interior?: string;
 }
 
 interface VehicleFormProps {
@@ -49,7 +55,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
   onSuccess,
   initialData,
 }) => {
-  // --- ESTADOS ---
   const [formData, setFormData] = useState({
     profileId: "",
     marca: "",
@@ -63,6 +68,11 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     potencia_hp: "",
     capacidad_bateria_kwh: "",
     bodegaId: "",
+    categoria: "",
+    traccion: "",
+    numero_pasajeros: "5",
+    equipamiento_destacado: "",
+    material_interior: "",
   });
 
   const [bodegas, setBodegas] = useState<Bodega[]>([]);
@@ -74,9 +84,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     { id: number; url: string; order: number }[]
   >([]);
 
-  // --- EFECTOS ---
-
-  // Carga los datos iniciales (bodegas y perfiles)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -94,7 +101,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     fetchData();
   }, []);
 
-  // Función para limpiar el formulario
+  // 👇 CORRECCIÓN 2: Actualizamos la función resetForm 👇
   const resetForm = () => {
     setFormData({
       profileId: "",
@@ -109,17 +116,20 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       potencia_hp: "",
       capacidad_bateria_kwh: "",
       bodegaId: "",
+      categoria: "",
+      traccion: "",
+      numero_pasajeros: "5",
+      equipamiento_destacado: "",
+      material_interior: "",
     });
     setExistingImages([]);
     setSelectedFiles([]);
   };
 
-  // 👇 CORRECCIÓN AQUÍ: Este efecto llena o limpia el formulario 👇
   useEffect(() => {
     if (isEditing && initialData) {
-      // MODO EDICIÓN: Rellenar el formulario con los datos existentes
       setFormData({
-        profileId: "", // El perfil no se usa al editar
+        profileId: "",
         marca: initialData.marca || "",
         modelo: initialData.modelo || "",
         año: initialData.año?.toString() || "",
@@ -132,15 +142,18 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         capacidad_bateria_kwh:
           initialData.capacidad_bateria_kwh?.toString() || "",
         bodegaId: initialData.bodega?.id?.toString() || "",
+        categoria: initialData.categoria || "",
+        traccion: initialData.traccion || "",
+        numero_pasajeros: initialData.numero_pasajeros?.toString() || "5",
+        equipamiento_destacado: initialData.equipamiento_destacado || "",
+        material_interior: initialData.material_interior || "",
       });
-      // Cargar las imágenes existentes para la sección de arrastrar y soltar
       setExistingImages(
         initialData.imagenes?.map((img, index) => ({ ...img, order: index })) ||
           []
       );
-      setSelectedFiles([]); // Limpiar cualquier archivo nuevo seleccionado previamente
+      setSelectedFiles([]);
     } else {
-      // MODO CREACIÓN: Asegurarse de que el formulario esté vacío
       resetForm();
     }
   }, [initialData, isEditing]);
@@ -214,6 +227,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       autonomia_km: Number(formData.autonomia_km),
       potencia_hp: Number(formData.potencia_hp),
       capacidad_bateria_kwh: Number(formData.capacidad_bateria_kwh),
+      numero_pasajeros: Number(formData.numero_pasajeros), // Corregido
       bodegaId: formData.bodegaId ? Number(formData.bodegaId) : null,
     };
 
@@ -293,6 +307,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         placeholder="Marca"
         required
         disabled={!!formData.profileId}
+        className={styles.formInput}
       />
       <input
         name="modelo"
@@ -301,6 +316,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         placeholder="Modelo"
         required
         disabled={!!formData.profileId}
+        className={styles.formInput}
       />
       <input
         name="año"
@@ -309,6 +325,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         placeholder="Año"
         required
+        className={styles.formInput}
       />
       <input
         name="vin"
@@ -317,6 +334,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         placeholder="VIN"
         required
         disabled={isEditing}
+        className={styles.formInput}
       />
       <input
         name="color"
@@ -324,6 +342,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         placeholder="Color"
         required
+        className={styles.formInput}
       />
       <input
         name="precio_costo"
@@ -332,6 +351,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         placeholder="Precio de Costo"
         required
+        className={styles.formInput}
       />
       <input
         name="precio_venta"
@@ -340,6 +360,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         placeholder="Precio de Venta"
         required
+        className={styles.formInput}
       />
       <input
         name="autonomia_km"
@@ -349,6 +370,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         placeholder="Autonomía (km)"
         required
         disabled={!!formData.profileId}
+        className={styles.formInput}
       />
       <input
         name="potencia_hp"
@@ -358,6 +380,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         placeholder="Potencia (HP)"
         required
         disabled={!!formData.profileId}
+        className={styles.formInput}
       />
       <input
         name="capacidad_bateria_kwh"
@@ -367,14 +390,72 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         placeholder="Batería (kWh)"
         required
         disabled={!!formData.profileId}
+        className={styles.formInput}
       />
 
-      {/* Selector de Bodega (solo en modo creación) */}
+      <select
+        name="categoria"
+        value={formData.categoria}
+        onChange={handleChange}
+        className={styles.formSelect}
+      >
+        <option value="">-- Selecciona Categoría --</option>
+        <option value="Sedan">Sedan</option>
+        <option value="SUV">SUV</option>
+        <option value="Pickup">Pickup</option>
+        <option value="Hatchback">Hatchback</option>
+        <option value="Comercial">Comercial</option>
+        <option value="Urbano">Urbano</option>
+      </select>
+
+      <select
+        name="traccion"
+        value={formData.traccion}
+        onChange={handleChange}
+        className={styles.formSelect}
+      >
+        <option value="">-- Selecciona Tracción --</option>
+        <option value="4x2">4x2</option>
+        <option value="4x4">4x4</option>
+        <option value="AWD">AWD (Tracción Total)</option>
+      </select>
+
+      <select
+        name="numero_pasajeros"
+        value={formData.numero_pasajeros}
+        onChange={handleChange}
+        className={styles.formSelect}
+      >
+        <option value="">-- N° de Pasajeros --</option>
+        <option value="2">2 Pasajeros</option>
+        <option value="5">5 Pasajeros</option>
+        <option value="7">7 Pasajeros</option>
+      </select>
+
+      <input
+        name="material_interior"
+        type="text"
+        value={formData.material_interior}
+        onChange={handleChange}
+        placeholder="Material Interior (Ej: Cuero)"
+        className={styles.formInput}
+      />
+
+      <input
+        name="equipamiento_destacado"
+        type="text"
+        value={formData.equipamiento_destacado}
+        onChange={handleChange}
+        placeholder="Equipamiento (Ej: Techo panorámico, A/C)"
+        className={`${styles.formInput} ${styles.fullWidth}`}
+      />
+
       {!isEditing && (
         <select
           name="bodegaId"
           value={formData.bodegaId}
           onChange={handleChange}
+          className={styles.formSelect}
         >
           <option value="">-- Asignar Ubicación Inicial (Opcional) --</option>
           {bodegas.map((bodega) => (
