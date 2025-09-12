@@ -1,48 +1,64 @@
+/* frontend/src/components/VechicleForm/VehicleForm.module.css */
+
 .form {
-  display: grid; /* Usaremos grid para mejor alineación */
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(200px, 1fr)
-  ); /* Columnas responsivas */
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem 1.5rem;
 }
 
-.form input {
-  padding: 0.5rem;
-  border: 1px solid #cccccc;
-  background-color: #ffffff;
-  color: #333333;
+/* Estilo base para TODOS los inputs y selects del formulario */
+.formInput,
+.formSelect {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--borde-suave);
   border-radius: 6px;
-  width: 100%; /* Ocupar todo el espacio de su columna */
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+  font-size: 1rem;
+  color: var(--texto-principal);
+  background-color: var(--fondo-tarjeta);
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form button {
-  grid-column: 1 / -1; /* El botón ocupa todas las columnas */
-  padding: 0.75rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
+.formInput:focus,
+.formSelect:focus {
+  outline: none;
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2);
 }
 
-.form button:hover {
-  background-color: #0056b3;
+/* Estilo específico para la flecha del select */
+.formSelect {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%22height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.7em;
+  padding-right: 2.5rem;
 }
 
-select .customSelect {
-  padding: 0.5rem;
-  border: 1px solid #cccccc;
-  background-color: #ffffff;
-  color: #333333;
-  border-radius: 6px;
-  width: 100%; /* Ocupar todo el espacio de su columna */
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+.fullWidth {
+  grid-column: 1 / -1;
 }
+
+.profileSelector {
+  grid-column: 1 / -1;
+  margin-bottom: 1rem;
+  /* Hereda los estilos de .formSelect */
+  composes: formSelect;
+  background-color: #f0f8ff;
+}
+
+.error {
+  color: var(--warning);
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* --- Estilos para la sección de imágenes --- */
 .existingImagesSection {
   grid-column: 1 / -1;
   margin-top: 1rem;
@@ -53,24 +69,22 @@ select .customSelect {
   margin-bottom: 1rem;
 }
 
-/* El contenedor que es la zona para soltar (Droppable) */
 .existingImagesGrid {
   display: flex;
   padding: 8px;
-  gap: 8px; /* Espacio entre imágenes */
-  overflow-x: auto; /* Permite scroll horizontal si hay muchas imágenes */
+  gap: 8px;
+  overflow-x: auto;
   background: #f9f9f9;
   border: 1px solid var(--borde-suave);
   border-radius: 6px;
   min-height: 120px;
 }
 
-/* El item que se puede arrastrar (Draggable) */
 .existingImageItem {
   position: relative;
   width: 100px;
   height: 80px;
-  flex-shrink: 0; /* Evita que las imágenes se encojan */
+  flex-shrink: 0;
   border-radius: 4px;
   overflow: hidden;
   cursor: grab;
@@ -103,15 +117,39 @@ select .customSelect {
 }
 
 .existingImageItem:hover .removeImageButton {
-  opacity: 1; /* Muestra el botón de eliminar solo al pasar el mouse */
+  opacity: 1;
 }
 
-.profileSelect {
-  grid-column: 1 / -1; /* Ocupa todo el ancho */
-  padding: 0.8rem 1rem;
+.fileInputWrapper {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   border: 1px solid var(--borde-suave);
+  padding: 0.3rem;
   border-radius: 6px;
-  font-size: 1rem;
-  background-color: #f0f8ff; /* Un color de fondo suave para destacarlo */
-  margin-bottom: 1rem; /* Espacio extra debajo */
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileInputLabel {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.fileInputLabel:hover {
+  background-color: #e0e0e0;
+}
+
+.fileName {
+  color: var(--texto-secundario);
+  font-style: italic;
+  font-size: 0.9rem;
 }
