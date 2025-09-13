@@ -39,37 +39,85 @@
 }
 
 /* --- 👇 NUEVOS ESTILOS PARA EL FORMULARIO DE PERFILES 👇 --- */
-
-.profileForm {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(180px, 1fr)
-  ); /* Columnas responsivas */
-  gap: 1.5rem; /* Más espacio entre elementos */
-  align-items: end; /* Alinea los elementos en la parte inferior */
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--borde-suave);
-  margin-bottom: 1.5rem;
-}
-
 .profileForm input[type="text"],
-.profileForm input[type="number"] {
+.profileForm input[type="number"],
+.profileForm select {
   width: 100%;
   padding: 0.8rem 1rem;
   border: 1px solid var(--borde-suave);
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.9rem; /* Un poco más pequeño para que quepa bien */
   color: var(--texto-principal);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: var(--fondo-tarjeta);
   box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.profileForm input[type="text"]:focus,
-.profileForm input[type="number"]:focus {
+.formInput,
+.formSelect {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--texto-principal);
+  background-color: var(--fondo-tarjeta);
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formInput:focus,
+.formSelect:focus {
   outline: none;
   border-color: var(--azul-principal);
   box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2);
+}
+
+.formSelect {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%22height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.7em;
+  padding-right: 2.5rem;
+}
+
+.profileForm button {
+  padding: 0.8rem;
+  height: fit-content;
+}
+
+/* Efecto de foco para resaltar el campo activo */
+.profileForm input[type="text"]:focus,
+.profileForm input[type="number"]:focus,
+.profileForm select:focus {
+  outline: none;
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.2);
+}
+
+/* Estilo para la flecha personalizada del select */
+.profileForm select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%22height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20202.7%2018.8%2075.1c-6.7-6.7-17.7-6.7-24.4%200-6.7%206.7-6.7%2017.7%200%2024.4l137.9%20137.9c6.7%206.7%2017.7%206.7%2024.4%200l137.9-137.9c6.7-6.7%206.7-17.7%200-24.4-6.8-6.8-17.7-6.8-24.5-.1z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.7em;
+  padding-right: 2.5rem; /* Espacio para la flecha */
+}
+
+.profileForm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  align-items: end;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--borde-suave);
+  margin-bottom: 1.5rem;
 }
 
 .profileForm button {

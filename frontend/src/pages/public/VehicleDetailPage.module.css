@@ -86,3 +86,108 @@
   margin-bottom: 0.5rem;
   color: var(--texto-secundario);
 }
+
+.detailContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* --- Hero Section --- */
+.hero {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.heroImage img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.heroInfo h1 {
+  /*...*/
+}
+.price {
+  /*...*/
+}
+
+.keySpecs {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.keySpecs span {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--azul-principal);
+}
+
+.keySpecs p {
+  margin: 0;
+  color: var(--texto-secundario);
+}
+
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 2px solid var(--borde-suave);
+  margin-bottom: 2rem;
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--texto-secundario);
+  position: relative;
+}
+
+.tabs button.active {
+  color: var(--azul-principal);
+}
+
+.tabs button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--azul-principal);
+}
+
+/* --- Contenido de Tabs --- */
+.tabContent ul {
+  list-style: none;
+  padding: 0;
+  column-count: 2; /* Muestra las especificaciones en 2 columnas */
+  column-gap: 2rem;
+}
+.tabContent li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.featureSection h4 {
+  color: var(--azul-principal);
+  margin-bottom: 0.5rem;
+}
+.featureSection ul {
+  column-count: 1; /* Las listas de características no usan columnas */
+}

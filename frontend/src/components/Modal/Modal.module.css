@@ -15,10 +15,14 @@
   background: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 800px; /* Un poco más ancho para el formulario */
+  max-width: 800px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  /* --- 👇 INICIO DE LA CORRECCIÓN 👇 --- */
+  max-height: 90vh; /* Límite de altura: 90% de la pantalla */
+  display: flex;
+  flex-direction: column;
+  /* --- 👆 FIN DE LA CORRECCIÓN 👆 --- */
 }
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -43,6 +47,7 @@
 
 .content {
   padding: 1.5rem;
+  overflow-y: auto;
 }
 
 /* En: src/components/VechicleForm/VehicleForm.module.css */
