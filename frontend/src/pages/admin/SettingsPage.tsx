@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
 import styles from "./SettingsPage.module.css";
 import toast from "react-hot-toast";
 import { SiteHomepageSettings } from "../../components/SiteHomepageSettings";
 
+// --- INTERFACES ---
 interface Parametro {
   id: number;
   nombre: string;
@@ -18,6 +19,14 @@ interface Parametro {
     | "COMISION";
 }
 
+interface VehicleProfile {
+  id: number;
+  marca: string;
+  modelo: string;
+  logo_url?: string;
+}
+
+// --- COMPONENTES INTERNOS ---
 const ParametrosTable = ({
   parametros,
   editId,
@@ -27,7 +36,7 @@ const ParametrosTable = ({
   onSave,
   onValueChange,
 }: any) => {
-  if (parametros.length === 0) {
+  if (!parametros || parametros.length === 0) {
     return <p>No hay parámetros de este tipo para mostrar.</p>;
   }
   return (
@@ -91,13 +100,7 @@ const ParametrosTable = ({
   );
 };
 
-interface VehicleProfile {
-  id: number;
-  marca: string;
-  modelo: string;
-  logo_url?: string;
-}
-
+// --- COMPONENTE PRINCIPAL ---
 export const SettingsPage = () => {
   const [cargasPatronales, setCargasPatronales] = useState<Parametro[]>([]);
   const [deduccionesEmpleado, setDeduccionesEmpleado] = useState<Parametro[]>(
@@ -108,15 +111,29 @@ export const SettingsPage = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState(0);
   const [profiles, setProfiles] = useState<VehicleProfile[]>([]);
-  const [newProfile, setNewProfile] = useState({
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const initialProfileState = {
     marca: "",
     modelo: "",
     potencia_hp: "",
     autonomia_km: "",
     capacidad_bateria_kwh: "",
-  });
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+    torque_nm: "",
+    aceleracion_0_100: "",
+    velocidad_maxima: "",
+    categoria: "",
+    traccion: "",
+    largo_mm: "",
+    ancho_mm: "",
+    alto_mm: "",
+    distancia_ejes_mm: "",
+    peso_kg: "",
+    capacidad_maletero_l: "",
+    numero_pasajeros: "",
+  };
+  const [newProfile, setNewProfile] = useState(initialProfileState);
 
   const fetchParametros = async () => {
     try {
@@ -162,9 +179,10 @@ export const SettingsPage = () => {
     }
   };
 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewProfile((prev) => ({ ...prev, [name]: value }));
+  const handleProfileFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setNewProfile((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,9 +194,9 @@ export const SettingsPage = () => {
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
-    Object.entries(newProfile).forEach(([key, value]) =>
-      formData.append(key, value)
-    );
+    Object.entries(newProfile).forEach(([key, value]) => {
+      if (value) formData.append(key, value);
+    });
     if (logoFile) formData.append("logo", logoFile);
 
     try {
@@ -186,13 +204,7 @@ export const SettingsPage = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Perfil de vehículo creado con éxito.");
-      setNewProfile({
-        marca: "",
-        modelo: "",
-        potencia_hp: "",
-        autonomia_km: "",
-        capacidad_bateria_kwh: "",
-      });
+      setNewProfile(initialProfileState);
       setLogoFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       fetchVehicleProfiles();
@@ -221,25 +233,58 @@ export const SettingsPage = () => {
         <form onSubmit={handleCreateProfile} className={styles.profileForm}>
           <input
             name="marca"
-            type="text"
             value={newProfile.marca}
-            onChange={handleProfileChange}
+            onChange={handleProfileFormChange}
             placeholder="Marca (Ej: BYD)"
             required
+            className={styles.formInput}
           />
           <input
             name="modelo"
-            type="text"
             value={newProfile.modelo}
-            onChange={handleProfileChange}
+            onChange={handleProfileFormChange}
             placeholder="Modelo (Ej: Dolphin)"
             required
+            className={styles.formInput}
           />
+          <select
+            name="categoria"
+            value={newProfile.categoria}
+            onChange={handleProfileFormChange}
+          >
+            <option value="">-- Categoría --</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Pickup">Pickup</option>
+            <option value="Hatchback">Hatchback</option>
+            <option value="Comercial">Comercial</option>
+            <option value="Urbano">Urbano</option>
+          </select>
+          <select
+            name="traccion"
+            value={newProfile.traccion}
+            onChange={handleProfileFormChange}
+          >
+            <option value="">-- Tracción --</option>
+            <option value="4x2">4x2</option>
+            <option value="4x4">4x4</option>
+            <option value="AWD">AWD</option>
+          </select>
+          <select
+            name="numero_pasajeros"
+            value={newProfile.numero_pasajeros}
+            onChange={handleProfileFormChange}
+          >
+            <option value="">-- Pasajeros --</option>
+            <option value="2">2</option>
+            <option value="5">5</option>
+            <option value="7">7</option>
+          </select>
           <input
             name="potencia_hp"
             type="number"
             value={newProfile.potencia_hp}
-            onChange={handleProfileChange}
+            onChange={handleProfileFormChange}
             placeholder="Potencia (HP)"
             required
           />
@@ -247,7 +292,7 @@ export const SettingsPage = () => {
             name="autonomia_km"
             type="number"
             value={newProfile.autonomia_km}
-            onChange={handleProfileChange}
+            onChange={handleProfileFormChange}
             placeholder="Autonomía (km)"
             required
           />
@@ -255,10 +300,74 @@ export const SettingsPage = () => {
             name="capacidad_bateria_kwh"
             type="number"
             value={newProfile.capacidad_bateria_kwh}
-            onChange={handleProfileChange}
+            onChange={handleProfileFormChange}
             placeholder="Batería (kWh)"
             required
           />
+          <input
+            name="torque_nm"
+            type="number"
+            value={newProfile.torque_nm}
+            onChange={handleProfileFormChange}
+            placeholder="Torque (Nm)"
+          />
+          <input
+            name="aceleracion_0_100"
+            type="number"
+            value={newProfile.aceleracion_0_100}
+            onChange={handleProfileFormChange}
+            placeholder="Aceleración 0-100 (s)"
+          />
+          <input
+            name="velocidad_maxima"
+            type="number"
+            value={newProfile.velocidad_maxima}
+            onChange={handleProfileFormChange}
+            placeholder="Vel. Máxima (km/h)"
+          />
+          <input
+            name="largo_mm"
+            type="number"
+            value={newProfile.largo_mm}
+            onChange={handleProfileFormChange}
+            placeholder="Largo (mm)"
+          />
+          <input
+            name="ancho_mm"
+            type="number"
+            value={newProfile.ancho_mm}
+            onChange={handleProfileFormChange}
+            placeholder="Ancho (mm)"
+          />
+          <input
+            name="alto_mm"
+            type="number"
+            value={newProfile.alto_mm}
+            onChange={handleProfileFormChange}
+            placeholder="Alto (mm)"
+          />
+          <input
+            name="distancia_ejes_mm"
+            type="number"
+            value={newProfile.distancia_ejes_mm}
+            onChange={handleProfileFormChange}
+            placeholder="Dist. Ejes (mm)"
+          />
+          <input
+            name="peso_kg"
+            type="number"
+            value={newProfile.peso_kg}
+            onChange={handleProfileFormChange}
+            placeholder="Peso (kg)"
+          />
+          <input
+            name="capacidad_maletero_l"
+            type="number"
+            value={newProfile.capacidad_maletero_l}
+            onChange={handleProfileFormChange}
+            placeholder="Maletero (L)"
+          />
+
           <div className={styles.fileInputContainer}>
             <label htmlFor="logo-upload" className={styles.fileInputLabel}>
               {logoFile ? `Archivo: ${logoFile.name}` : "Subir Logo (Opcional)"}
@@ -275,6 +384,7 @@ export const SettingsPage = () => {
             Añadir Perfil
           </button>
         </form>
+
         <table className={styles.settingsTable} style={{ marginTop: "2rem" }}>
           <thead>
             <tr>
@@ -313,6 +423,7 @@ export const SettingsPage = () => {
           </tbody>
         </table>
       </Card>
+
       <Card title="Configuración de Página Principal">
         <SiteHomepageSettings />
       </Card>

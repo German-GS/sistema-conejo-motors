@@ -1,4 +1,5 @@
 // backend/src/vehicles/vehicle.entity.ts
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -26,9 +27,6 @@ export class Vehicle {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany(() => VehicleImage, (image) => image.vehicle)
-  imagenes: VehicleImage[];
-
   @Column({ unique: true, length: 17 })
   vin: string;
 
@@ -45,27 +43,51 @@ export class Vehicle {
   color: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
-  precio_costo: number; // Costo de adquisición
+  precio_costo: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   precio_venta: number;
 
   @CreateDateColumn({ type: 'timestamp' })
-  fecha_ingreso: Date; // Se genera automáticamente al crear
+  fecha_ingreso: Date;
 
-  @Column()
-  autonomia_km: number;
+  @Column({
+    type: 'enum',
+    enum: ['Disponible', 'Reservado', 'Vendido'],
+    default: 'Disponible',
+  })
+  estado: VehicleStatus;
 
-  @Column()
-  potencia_hp: number;
+  // --- ESPECIFICACIONES TÉCNICAS ---
 
-  @Column({ type: 'decimal', precision: 5, scale: 1 })
-  capacidad_bateria_kwh: number;
+  @Column({ nullable: true })
+  potencia_hp: number; // Caballos de fuerza
+
+  @Column({ nullable: true })
+  torque_nm: number; // Torque en Newton-metro
+
+  @Column({ type: 'decimal', precision: 4, scale: 1, nullable: true })
+  aceleracion_0_100: number; // Tiempo en segundos
+
+  @Column({ nullable: true })
+  velocidad_maxima: number; // En km/h
+
+  @Column({ nullable: true })
+  autonomia_km: number; // Autonomía en WLTP o CLTC
+
+  @Column({ type: 'decimal', precision: 5, scale: 1, nullable: true })
+  capacidad_bateria_kwh: number; // Capacidad de la batería
+
+  @Column({ nullable: true })
+  tiempo_carga_dc: number; // Tiempo de carga rápida (DC) en minutos (ej: 30)
+
+  @Column({ nullable: true })
+  tiempo_carga_ac: number; // Tiempo de carga lenta (AC) en horas (ej: 8)
 
   @Column({
     type: 'enum',
     enum: ['Sedan', 'SUV', 'Pickup', 'Hatchback', 'Comercial', 'Urbano'],
-    nullable: true, // Lo hacemos opcional por ahora
+    nullable: true,
   })
   categoria: VehicleCategory;
 
@@ -76,23 +98,52 @@ export class Vehicle {
   })
   traccion: Drivetrain;
 
-  @Column({ default: 5 }) // Un valor por defecto común
+  // --- DIMENSIONES ---
+
+  @Column({ nullable: true })
+  largo_mm: number;
+
+  @Column({ nullable: true })
+  ancho_mm: number;
+
+  @Column({ nullable: true })
+  alto_mm: number;
+
+  @Column({ nullable: true })
+  distancia_ejes_mm: number;
+
+  @Column({ nullable: true })
+  peso_kg: number;
+
+  @Column({ nullable: true })
+  capacidad_maletero_l: number; // En litros
+
+  // --- EQUIPAMIENTO Y CONFORT ---
+
+  @Column({ nullable: true })
   numero_pasajeros: number;
 
-  @Column({ type: 'text', nullable: true })
-  equipamiento_destacado: string; // Para frases como "Techo panorámico, Asistente de carril"
+  @Column({ type: 'text', nullable: true, array: true })
+  colores_disponibles: string[]; // Lista de colores como "Rojo,Azul,Blanco"
 
-  @Column({ length: 100, nullable: true })
-  material_interior: string; // Para "Cuero", "Tela de alta densidad", etc.
+  @Column({ type: 'text', nullable: true, array: true })
+  seguridad: string[]; // Lista de características de seguridad
 
-  @Column({
-    type: 'enum',
-    enum: ['Disponible', 'Reservado', 'Vendido'],
-    default: 'Disponible',
-  })
-  estado: VehicleStatus;
+  @Column({ type: 'text', nullable: true, array: true })
+  interior: string[]; // Lista de características interiores
 
-  @Column({ nullable: true }) // Permite que la ubicación inicial sea nula si no hay bodegas
+  @Column({ type: 'text', nullable: true, array: true })
+  exterior: string[]; // Lista de características exteriores
+
+  @Column({ type: 'text', nullable: true, array: true })
+  tecnologia: string[]; // Lista de características de tecnología
+
+  // --- RELACIONES ---
+
+  @OneToMany(() => VehicleImage, (image) => image.vehicle)
+  imagenes: VehicleImage[];
+
+  @Column({ nullable: true })
   currentLocation: string;
 
   @OneToMany(
@@ -102,8 +153,8 @@ export class Vehicle {
   trackingHistory: TrackingHistory[];
 
   @ManyToOne(() => Bodega, (bodega) => bodega.vehiculos, {
-    nullable: true, // Un vehículo puede no tener bodega asignada
-    eager: true, // Carga automáticamente la bodega al buscar un vehículo
+    nullable: true,
+    eager: true,
   })
   bodega: Bodega | null;
 }

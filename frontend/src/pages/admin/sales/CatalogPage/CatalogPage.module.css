@@ -56,3 +56,16 @@
 .error {
   color: var(--warning);
 }
+
+.categorySection {
+  margin-bottom: 4rem; /* Espacio grande entre cada categoría */
+}
+
+.categoryTitle {
+  font-size: 2.2rem;
+  color: var(--azul-principal);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--borde-suave);
+  text-align: left; /* Alinea el título a la izquierda */
+}

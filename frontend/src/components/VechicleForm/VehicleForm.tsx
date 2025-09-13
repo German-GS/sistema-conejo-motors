@@ -22,9 +22,20 @@ interface VehicleProfile {
   potencia_hp: number;
   autonomia_km: number;
   capacidad_bateria_kwh: number;
+  torque_nm: number;
+  aceleracion_0_100: number;
+  velocidad_maxima: number;
+  categoria: string;
+  traccion: string;
+  largo_mm: number;
+  ancho_mm: number;
+  alto_mm: number;
+  distancia_ejes_mm: number;
+  peso_kg: number;
+  capacidad_maletero_l: number;
+  numero_pasajeros: number;
 }
 
-// 👇 CORRECCIÓN 1: Actualizamos la interfaz del Vehículo 👇
 interface Vehicle {
   id: number;
   marca: string;
@@ -34,16 +45,30 @@ interface Vehicle {
   color: string;
   precio_costo: number;
   precio_venta: number;
-  autonomia_km: number;
-  potencia_hp: number;
-  capacidad_bateria_kwh: number;
+  autonomia_km?: number;
+  potencia_hp?: number;
+  capacidad_bateria_kwh?: number;
   bodega?: Bodega;
   imagenes?: { id: number; url: string; order: number }[];
   categoria?: string;
   traccion?: string;
   numero_pasajeros?: number;
-  equipamiento_destacado?: string;
-  material_interior?: string;
+  torque_nm?: number;
+  aceleracion_0_100?: number;
+  velocidad_maxima?: number;
+  tiempo_carga_dc?: number;
+  tiempo_carga_ac?: number;
+  largo_mm?: number;
+  ancho_mm?: number;
+  alto_mm?: number;
+  distancia_ejes_mm?: number;
+  peso_kg?: number;
+  capacidad_maletero_l?: number;
+  colores_disponibles?: string[];
+  seguridad?: string[];
+  interior?: string[];
+  exterior?: string[];
+  tecnologia?: string[];
 }
 
 interface VehicleFormProps {
@@ -71,8 +96,22 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     categoria: "",
     traccion: "",
     numero_pasajeros: "5",
-    equipamiento_destacado: "",
-    material_interior: "",
+    torque_nm: "",
+    aceleracion_0_100: "",
+    velocidad_maxima: "",
+    tiempo_carga_dc: "",
+    tiempo_carga_ac: "",
+    largo_mm: "",
+    ancho_mm: "",
+    alto_mm: "",
+    distancia_ejes_mm: "",
+    peso_kg: "",
+    capacidad_maletero_l: "",
+    colores_disponibles: "",
+    seguridad: "",
+    interior: "",
+    exterior: "",
+    tecnologia: "",
   });
 
   const [bodegas, setBodegas] = useState<Bodega[]>([]);
@@ -94,14 +133,12 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         setBodegas(bodegasRes.data);
         setProfiles(profilesRes.data);
       } catch (err) {
-        console.error("Error al cargar datos iniciales", err);
         toast.error("No se pudieron cargar los perfiles y bodegas.");
       }
     };
     fetchData();
   }, []);
 
-  // 👇 CORRECCIÓN 2: Actualizamos la función resetForm 👇
   const resetForm = () => {
     setFormData({
       profileId: "",
@@ -119,8 +156,22 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       categoria: "",
       traccion: "",
       numero_pasajeros: "5",
-      equipamiento_destacado: "",
-      material_interior: "",
+      torque_nm: "",
+      aceleracion_0_100: "",
+      velocidad_maxima: "",
+      tiempo_carga_dc: "",
+      tiempo_carga_ac: "",
+      largo_mm: "",
+      ancho_mm: "",
+      alto_mm: "",
+      distancia_ejes_mm: "",
+      peso_kg: "",
+      capacidad_maletero_l: "",
+      colores_disponibles: "",
+      seguridad: "",
+      interior: "",
+      exterior: "",
+      tecnologia: "",
     });
     setExistingImages([]);
     setSelectedFiles([]);
@@ -145,8 +196,23 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         categoria: initialData.categoria || "",
         traccion: initialData.traccion || "",
         numero_pasajeros: initialData.numero_pasajeros?.toString() || "5",
-        equipamiento_destacado: initialData.equipamiento_destacado || "",
-        material_interior: initialData.material_interior || "",
+        torque_nm: initialData.torque_nm?.toString() || "",
+        aceleracion_0_100: initialData.aceleracion_0_100?.toString() || "",
+        velocidad_maxima: initialData.velocidad_maxima?.toString() || "",
+        tiempo_carga_dc: initialData.tiempo_carga_dc?.toString() || "",
+        tiempo_carga_ac: initialData.tiempo_carga_ac?.toString() || "",
+        largo_mm: initialData.largo_mm?.toString() || "",
+        ancho_mm: initialData.ancho_mm?.toString() || "",
+        alto_mm: initialData.alto_mm?.toString() || "",
+        distancia_ejes_mm: initialData.distancia_ejes_mm?.toString() || "",
+        peso_kg: initialData.peso_kg?.toString() || "",
+        capacidad_maletero_l:
+          initialData.capacidad_maletero_l?.toString() || "",
+        colores_disponibles: initialData.colores_disponibles?.join(", ") || "",
+        seguridad: initialData.seguridad?.join(", ") || "",
+        interior: initialData.interior?.join(", ") || "",
+        exterior: initialData.exterior?.join(", ") || "",
+        tecnologia: initialData.tecnologia?.join(", ") || "",
       });
       setExistingImages(
         initialData.imagenes?.map((img, index) => ({ ...img, order: index })) ||
@@ -158,91 +224,73 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     }
   }, [initialData, isEditing]);
 
-  // --- MANEJADORES DE EVENTOS ---
-
-  const handleProfileChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const profileId = e.target.value;
-    const selectedProfile = profiles.find((p) => p.id === Number(profileId));
-
-    if (selectedProfile) {
-      setFormData((prev) => ({
-        ...prev,
-        profileId,
-        marca: selectedProfile.marca,
-        modelo: selectedProfile.modelo,
-        potencia_hp: selectedProfile.potencia_hp.toString(),
-        autonomia_km: selectedProfile.autonomia_km.toString(),
-        capacidad_bateria_kwh: selectedProfile.capacidad_bateria_kwh.toString(),
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        profileId: "",
-        marca: "",
-        modelo: "",
-        potencia_hp: "",
-        autonomia_km: "",
-        capacidad_bateria_kwh: "",
-      }));
-    }
-  };
-
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
-    if (!destination || destination.index === source.index) {
-      return;
-    }
-    const items = Array.from(existingImages);
-    const [reorderedItem] = items.splice(source.index, 1);
-    items.splice(destination.index, 0, reorderedItem);
-    setExistingImages(items);
-  };
-
-  const handleRemoveExistingImage = (imageId: number) => {
-    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setSelectedFiles(Array.from(e.target.files));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const vehicleData = {
-      ...formData,
-      año: Number(formData.año),
-      precio_costo: Number(formData.precio_costo),
-      precio_venta: Number(formData.precio_venta),
-      autonomia_km: Number(formData.autonomia_km),
-      potencia_hp: Number(formData.potencia_hp),
-      capacidad_bateria_kwh: Number(formData.capacidad_bateria_kwh),
-      numero_pasajeros: Number(formData.numero_pasajeros), // Corregido
-      bodegaId: formData.bodegaId ? Number(formData.bodegaId) : null,
-    };
+    const numericFields = [
+      "año",
+      "precio_costo",
+      "precio_venta",
+      "autonomia_km",
+      "potencia_hp",
+      "capacidad_bateria_kwh",
+      "numero_pasajeros",
+      "torque_nm",
+      "aceleracion_0_100",
+      "velocidad_maxima",
+      "tiempo_carga_dc",
+      "tiempo_carga_ac",
+      "largo_mm",
+      "ancho_mm",
+      "alto_mm",
+      "distancia_ejes_mm",
+      "peso_kg",
+      "capacidad_maletero_l",
+    ];
+    const arrayFields = [
+      "colores_disponibles",
+      "seguridad",
+      "interior",
+      "exterior",
+      "tecnologia",
+    ];
+
+    const vehicleData: { [key: string]: any } = { ...formData };
+
+    numericFields.forEach((field) => {
+      if (vehicleData[field]) vehicleData[field] = Number(vehicleData[field]);
+    });
+
+    arrayFields.forEach((field) => {
+      if (typeof vehicleData[field] === "string") {
+        vehicleData[field] = vehicleData[field]
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item);
+      }
+    });
+
+    vehicleData.bodegaId = formData.bodegaId ? Number(formData.bodegaId) : null;
 
     try {
       const vehicleResponse = isEditing
         ? await apiClient.patch(`/vehicles/${initialData?.id}`, vehicleData)
         : await apiClient.post("/vehicles", vehicleData);
-
       const vehicleId = vehicleResponse.data.id;
 
       if (selectedFiles.length > 0) {
         const uploadFormData = new FormData();
-        selectedFiles.forEach((file) => {
-          uploadFormData.append("files", file);
-        });
+        selectedFiles.forEach((file) => uploadFormData.append("files", file));
         await apiClient.post(`/vehicles/${vehicleId}/upload`, uploadFormData);
       }
 
@@ -270,8 +318,98 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Ocurrió un error al guardar.";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      setError(
+        Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
+      );
+      toast.error(
+        Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
+      );
+    }
+  };
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const profileId = e.target.value;
+    const selectedProfile = profiles.find((p) => p.id === Number(profileId));
+
+    if (selectedProfile) {
+      setFormData((prev) => ({
+        ...prev,
+        profileId,
+        marca: selectedProfile.marca,
+        modelo: selectedProfile.modelo,
+        potencia_hp: selectedProfile.potencia_hp.toString(),
+        autonomia_km: selectedProfile.autonomia_km.toString(),
+        capacidad_bateria_kwh: selectedProfile.capacidad_bateria_kwh.toString(),
+        torque_nm: selectedProfile.torque_nm?.toString() || "",
+        aceleracion_0_100: selectedProfile.aceleracion_0_100?.toString() || "",
+        velocidad_maxima: selectedProfile.velocidad_maxima?.toString() || "",
+        categoria: selectedProfile.categoria || "",
+        traccion: selectedProfile.traccion || "",
+        largo_mm: selectedProfile.largo_mm?.toString() || "",
+        ancho_mm: selectedProfile.ancho_mm?.toString() || "",
+        alto_mm: selectedProfile.alto_mm?.toString() || "",
+        distancia_ejes_mm: selectedProfile.distancia_ejes_mm?.toString() || "",
+        peso_kg: selectedProfile.peso_kg?.toString() || "",
+        capacidad_maletero_l:
+          selectedProfile.capacidad_maletero_l?.toString() || "",
+        numero_pasajeros: selectedProfile.numero_pasajeros?.toString() || "5",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        profileId: "",
+        marca: "",
+        modelo: "",
+        año: "",
+        vin: "",
+        color: "",
+        precio_costo: "",
+        precio_venta: "",
+        autonomia_km: "",
+        potencia_hp: "",
+        capacidad_bateria_kwh: "",
+        bodegaId: "",
+        categoria: "",
+        traccion: "",
+        numero_pasajeros: "5",
+        torque_nm: "",
+        aceleracion_0_100: "",
+        velocidad_maxima: "",
+        tiempo_carga_dc: "",
+        tiempo_carga_ac: "",
+        largo_mm: "",
+        ancho_mm: "",
+        alto_mm: "",
+        distancia_ejes_mm: "",
+        peso_kg: "",
+        capacidad_maletero_l: "",
+        colores_disponibles: "",
+        seguridad: "",
+        interior: "",
+        exterior: "",
+        tecnologia: "",
+      }));
+    }
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination || destination.index === source.index) {
+      return;
+    }
+    const items = Array.from(existingImages);
+    const [reorderedItem] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, reorderedItem);
+    setExistingImages(items);
+  };
+
+  const handleRemoveExistingImage = (imageId: number) => {
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
     }
   };
 
@@ -299,14 +437,13 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         </div>
       )}
 
-      {/* Inputs de Datos */}
+      {/* --- SECCIÓN PRINCIPAL --- */}
       <input
         name="marca"
         value={formData.marca}
         onChange={handleChange}
         placeholder="Marca"
         required
-        disabled={!!formData.profileId}
         className={styles.formInput}
       />
       <input
@@ -315,7 +452,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         placeholder="Modelo"
         required
-        disabled={!!formData.profileId}
         className={styles.formInput}
       />
       <input
@@ -340,16 +476,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         name="color"
         value={formData.color}
         onChange={handleChange}
-        placeholder="Color"
-        required
-        className={styles.formInput}
-      />
-      <input
-        name="precio_costo"
-        type="number"
-        value={formData.precio_costo}
-        onChange={handleChange}
-        placeholder="Precio de Costo"
+        placeholder="Color Principal"
         required
         className={styles.formInput}
       />
@@ -362,36 +489,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         required
         className={styles.formInput}
       />
-      <input
-        name="autonomia_km"
-        type="number"
-        value={formData.autonomia_km}
-        onChange={handleChange}
-        placeholder="Autonomía (km)"
-        required
-        disabled={!!formData.profileId}
-        className={styles.formInput}
-      />
-      <input
-        name="potencia_hp"
-        type="number"
-        value={formData.potencia_hp}
-        onChange={handleChange}
-        placeholder="Potencia (HP)"
-        required
-        disabled={!!formData.profileId}
-        className={styles.formInput}
-      />
-      <input
-        name="capacidad_bateria_kwh"
-        type="number"
-        value={formData.capacidad_bateria_kwh}
-        onChange={handleChange}
-        placeholder="Batería (kWh)"
-        required
-        disabled={!!formData.profileId}
-        className={styles.formInput}
-      />
 
       <select
         name="categoria"
@@ -399,7 +496,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         className={styles.formSelect}
       >
-        <option value="">-- Selecciona Categoría --</option>
+        <option value="">-- Categoría --</option>
         <option value="Sedan">Sedan</option>
         <option value="SUV">SUV</option>
         <option value="Pickup">Pickup</option>
@@ -414,10 +511,10 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         onChange={handleChange}
         className={styles.formSelect}
       >
-        <option value="">-- Selecciona Tracción --</option>
+        <option value="">-- Tracción --</option>
         <option value="4x2">4x2</option>
         <option value="4x4">4x4</option>
-        <option value="AWD">AWD (Tracción Total)</option>
+        <option value="AWD">AWD</option>
       </select>
 
       <select
@@ -432,22 +529,119 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         <option value="7">7 Pasajeros</option>
       </select>
 
-      <input
-        name="material_interior"
-        type="text"
-        value={formData.material_interior}
-        onChange={handleChange}
-        placeholder="Material Interior (Ej: Cuero)"
-        className={styles.formInput}
-      />
+      {/* --- SECCIÓN RENDIMIENTO --- */}
+      <details className={styles.formSection}>
+        <summary>Rendimiento y Batería</summary>
+        <div className={styles.sectionContent}>
+          <input
+            name="potencia_hp"
+            placeholder="Potencia (HP)"
+            className={styles.formInput}
+          />
+          <input
+            name="torque_nm"
+            placeholder="Torque (Nm)"
+            className={styles.formInput}
+          />
+          <input
+            name="aceleracion_0_100"
+            placeholder="Aceleración 0-100 km/h (s)"
+            className={styles.formInput}
+          />
+          <input
+            name="velocidad_maxima"
+            placeholder="Velocidad Máxima (km/h)"
+            className={styles.formInput}
+          />
+          <input
+            name="autonomia_km"
+            placeholder="Autonomía (km)"
+            className={styles.formInput}
+          />
+          <input
+            name="capacidad_bateria_kwh"
+            placeholder="Batería (kWh)"
+            className={styles.formInput}
+          />
+          <input
+            name="tiempo_carga_ac"
+            placeholder="Tiempo Carga AC (horas)"
+            className={styles.formInput}
+          />
+          <input
+            name="tiempo_carga_dc"
+            placeholder="Tiempo Carga DC (mins)"
+            className={styles.formInput}
+          />
+        </div>
+      </details>
 
-      <input
-        name="equipamiento_destacado"
-        type="text"
-        value={formData.equipamiento_destacado}
-        onChange={handleChange}
-        placeholder="Equipamiento (Ej: Techo panorámico, A/C)"
-        className={`${styles.formInput} ${styles.fullWidth}`}
+      {/* --- SECCIÓN DIMENSIONES --- */}
+      <details className={styles.formSection}>
+        <summary>Dimensiones y Peso</summary>
+        <div className={styles.sectionContent}>
+          <input
+            name="largo_mm"
+            placeholder="Largo (mm)"
+            className={styles.formInput}
+          />
+          <input
+            name="ancho_mm"
+            placeholder="Ancho (mm)"
+            className={styles.formInput}
+          />
+          <input
+            name="alto_mm"
+            placeholder="Alto (mm)"
+            className={styles.formInput}
+          />
+          <input
+            name="distancia_ejes_mm"
+            placeholder="Distancia entre ejes (mm)"
+            className={styles.formInput}
+          />
+          <input
+            name="peso_kg"
+            placeholder="Peso (kg)"
+            className={styles.formInput}
+          />
+          <input
+            name="capacidad_maletero_l"
+            placeholder="Maletero (L)"
+            className={styles.formInput}
+          />
+        </div>
+      </details>
+
+      {/* --- SECCIÓN EQUIPAMIENTO (CAMPOS DE TEXTO LIBRE) --- */}
+      <p className={styles.helperText}>
+        Para las siguientes secciones, separa cada característica con una coma
+        (,).
+      </p>
+      <textarea
+        name="colores_disponibles"
+        placeholder="Colores Disponibles (Rojo, Azul...)"
+        className={styles.formTextarea}
+      />
+      <textarea
+        name="seguridad"
+        placeholder="Características de Seguridad..."
+        className={styles.formTextarea}
+      />
+      <textarea
+        name="interior"
+        placeholder="Características Interiores..."
+        className={styles.formTextarea}
+      />
+      <textarea
+        name="exterior"
+        placeholder="Características Exteriores..."
+        className={styles.formTextarea}
+      />
+      <textarea
+        name="tecnologia"
+        placeholder="Características de Tecnología..."
+        className={styles.formTextarea}
       />
 
       {!isEditing && (
@@ -547,3 +741,59 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     </form>
   );
 };
+
+/* 
+const handleProfileChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const profileId = e.target.value;
+    const selectedProfile = profiles.find((p) => p.id === Number(profileId));
+
+    if (selectedProfile) {
+      setFormData((prev) => ({
+        ...prev,
+        profileId,
+        marca: selectedProfile.marca,
+        modelo: selectedProfile.modelo,
+        potencia_hp: selectedProfile.potencia_hp.toString(),
+        autonomia_km: selectedProfile.autonomia_km.toString(),
+        capacidad_bateria_kwh: selectedProfile.capacidad_bateria_kwh.toString(),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        profileId: "",
+        marca: "",
+        modelo: "",
+        potencia_hp: "",
+        autonomia_km: "",
+        capacidad_bateria_kwh: "",
+      }));
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination || destination.index === source.index) {
+      return;
+    }
+    const items = Array.from(existingImages);
+    const [reorderedItem] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, reorderedItem);
+    setExistingImages(items);
+  };
+
+  const handleRemoveExistingImage = (imageId: number) => {
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
+    }
+  }; */

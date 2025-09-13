@@ -1,4 +1,7 @@
+// backend/src/vehicle-profiles/vehicle-profile.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+// 👇 LA CORRECCIÓN ES AÑADIR LA PALABRA 'type' AQUÍ 👇
+import type { VehicleCategory, Drivetrain } from '../vehicles/vehicle.entity';
 
 @Entity({ name: 'vehicle_profiles' })
 export class VehicleProfile {
@@ -10,8 +13,7 @@ export class VehicleProfile {
 
   @Column({ length: 50 })
   modelo: string;
-  
-  // 👇 NUEVO CAMPO PARA GUARDAR LA RUTA DEL LOGO 👇
+
   @Column({ nullable: true })
   logo_url: string;
 
@@ -23,4 +25,44 @@ export class VehicleProfile {
 
   @Column({ type: 'decimal', precision: 5, scale: 1 })
   capacidad_bateria_kwh: number;
+
+  @Column({ nullable: true })
+  torque_nm: number;
+
+  @Column({ type: 'decimal', precision: 4, scale: 1, nullable: true })
+  aceleracion_0_100: number;
+
+  @Column({ nullable: true })
+  velocidad_maxima: number;
+
+  @Column({
+    type: 'enum',
+    enum: ['Sedan', 'SUV', 'Pickup', 'Hatchback', 'Comercial', 'Urbano'],
+    nullable: true,
+  })
+  categoria: VehicleCategory;
+
+  @Column({ type: 'enum', enum: ['4x2', '4x4', 'AWD'], nullable: true })
+  traccion: Drivetrain;
+
+  @Column({ nullable: true })
+  largo_mm: number;
+
+  @Column({ nullable: true })
+  ancho_mm: number;
+
+  @Column({ nullable: true })
+  alto_mm: number;
+
+  @Column({ nullable: true })
+  distancia_ejes_mm: number;
+
+  @Column({ nullable: true })
+  peso_kg: number;
+
+  @Column({ nullable: true })
+  capacidad_maletero_l: number;
+
+  @Column({ nullable: true })
+  numero_pasajeros: number;
 }
