@@ -1,3 +1,4 @@
+// backend/src/ventas/ventas.controller.ts
 import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -12,7 +13,8 @@ export class VentasController {
 
   @Post()
   @Roles('Vendedor', 'Administrador')
-  create(@Body() createVentaDto: CreateVentaDto, @Request() req) {
-    return this.ventasService.create(createVentaDto, req.user);
+  initiateSale(@Body() createVentaDto: CreateVentaDto, @Request() req) {
+    // Llamamos al nuevo método que solo inicia el proceso
+    return this.ventasService.initiateSaleProcess(createVentaDto, req.user);
   }
 }

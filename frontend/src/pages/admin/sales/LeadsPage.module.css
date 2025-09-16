@@ -1,0 +1,30 @@
+/* frontend/src/pages/admin/sales/LeadsPage.module.css */
+.leadsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.leadsTable th,
+.leadsTable td {
+  border-bottom: 1px solid var(--borde-suave);
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.leadsTable th {
+  font-weight: 600;
+}
+
+.status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: white;
+}
+
+.nuevo { background-color: #007bff; }
+.contactado { background-color: #ffc107; color: #333; }
+.enprogreso { background-color: #17a2b8; }
+.cerrado { background-color: #6c757d; }

@@ -3,6 +3,16 @@ import { Card } from "@/components/Card";
 import apiClient from "@/api/apiClient";
 import styles from "./SalesDashboardPage.module.css";
 import { jwtDecode } from "jwt-decode";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 // Interfaz para los datos que esperamos de la API
 interface SalesDashboardStats {
@@ -11,6 +21,7 @@ interface SalesDashboardStats {
   monthlyRevenue: number;
   estimatedCommissions: number;
   pendingQuotes: number;
+  salesData: { month: string; vendidos: number }[];
 }
 
 // Helper para formatear números como moneda
@@ -62,22 +73,43 @@ export const SalesDashboardPage = () => {
         Aquí tienes un resumen de tu rendimiento este mes.
       </p>
 
-      <div className={styles.kpiGrid}>
-        <Card title="Vehículos Disponibles">
-          <h2>{stats?.totalVehicles ?? 0}</h2>
-        </Card>
-        <Card title="Ventas del Mes">
-          <h2>{stats?.monthlySalesCount ?? 0}</h2>
-        </Card>
-        <Card title="Ingresos Generados (Mes)">
-          <h2>{formatCurrency(stats?.monthlyRevenue ?? 0)}</h2>
-        </Card>
-        <Card title="Comisiones Estimadas (Mes)">
-          <h2>{formatCurrency(stats?.estimatedCommissions ?? 0)}</h2>
-        </Card>
-        <Card title="Cotizaciones Pendientes">
-          <h2>{stats?.pendingQuotes ?? 0}</h2>
-        </Card>
+      <div className={styles.dashboardGrid}>
+        <div className={styles.kpiGrid}>
+          <Card title="Vehículos Disponibles">
+            <h2>{stats?.totalVehicles ?? 0}</h2>
+          </Card>
+          <Card title="Ventas del Mes">
+            <h2>{stats?.monthlySalesCount ?? 0}</h2>
+          </Card>
+          <Card title="Ingresos Generados">
+            <h2>{formatCurrency(stats?.monthlyRevenue ?? 0)}</h2>
+          </Card>
+          <Card title="Comisiones Estimadas">
+            <h2>{formatCurrency(stats?.estimatedCommissions ?? 0)}</h2>
+          </Card>
+          <Card title="Cotizaciones Pendientes">
+            <h2>{stats?.pendingQuotes ?? 0}</h2>
+          </Card>
+        </div>
+
+        <div className={styles.chartContainer}>
+          <Card title="Ventas por Mes (Últimos 6 meses)">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={stats?.salesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis allowDecimals={false} />
+                <Tooltip formatter={(value: number) => [value, "Vendidos"]} />
+                <Legend />
+                <Bar
+                  dataKey="vendidos"
+                  fill="#024f7d"
+                  name="Vehículos Vendidos"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </div>
       </div>
     </div>
   );

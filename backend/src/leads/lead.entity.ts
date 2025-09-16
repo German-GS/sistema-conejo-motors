@@ -1,4 +1,4 @@
-// src/leads/lead.entity.ts
+// backend/src/leads/lead.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -32,14 +32,20 @@ export class Lead {
   })
   estado: LeadStatus;
 
+  // --- 👇 INICIO DE LA MODIFICACIÓN 👇 ---
+  @Column({ default: false })
+  contacted_by_email: boolean;
+
+  @Column({ default: false })
+  contacted_by_phone: boolean;
+  // --- 👆 FIN DE LA MODIFICACIÓN 👆 ---
+
   @CreateDateColumn()
   fecha_creacion: Date;
 
-  // Relación: Un lead pertenece a UN vendedor (User)
   @ManyToOne(() => User)
   vendedor_asignado: User;
 
-  // Relación: Un lead puede estar interesado en UN vehículo (opcional)
-  @ManyToOne(() => Vehicle, { nullable: true })
+  @ManyToOne(() => Vehicle, { nullable: true, eager: true }) // eager: true carga el vehículo automáticamente
   vehiculo_interes?: Vehicle;
 }

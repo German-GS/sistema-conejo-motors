@@ -40,6 +40,8 @@ import { Customer } from './customers/customer.entity';
 import { CustomersModule } from './customers/customers.module';
 import { SiteSetting } from './site-settings/site-setting.entity';
 import { SiteSettingsModule } from './site-settings/site-settings.module';
+import { Factura } from './facturacion/factura.entity';
+import { FacturacionModule } from './facturacion/facturacion.module';
 
 @Module({
   imports: [
@@ -73,6 +75,7 @@ import { SiteSettingsModule } from './site-settings/site-settings.module';
         Lead,
         Customer,
         SiteSetting,
+        Factura
       ],
       synchronize: true,
     }),
@@ -95,6 +98,7 @@ import { SiteSettingsModule } from './site-settings/site-settings.module';
     LeadsModule,
     CustomersModule,
     SiteSettingsModule,
+    FacturacionModule
   ],
   controllers: [AppController],
   providers: [AppService],

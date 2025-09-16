@@ -1,0 +1,30 @@
+/* frontend/src/pages/admin/sales/LeadDetailsPage.module.css */
+.container h1 {
+  color: var(--azul-principal);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.card {
+  background-color: var(--fondo-tarjeta);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card h4 {
+  margin-top: 0;
+  color: var(--texto-secundario);
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}

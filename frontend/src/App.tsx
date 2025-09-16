@@ -29,6 +29,7 @@ import { BodegasPage } from "./pages/admin/BodegasPage";
 import TrackingPage from "./pages/admin/TrackingPage";
 import { SettingsPage } from "./pages/admin/SettingsPage";
 import { ReportsPage } from "./pages/admin/ReportsPage";
+import { PendingBillingPage } from "./pages/admin/PendingBillingPage";
 
 // Páginas de Ventas
 import { CatalogPage } from "./pages/admin/sales/CatalogPage";
@@ -36,6 +37,8 @@ import { CreateQuotePage } from "./pages/admin/sales/CreateQuotePage";
 import { MyQuotesPage } from "./pages/admin/sales/MyQuotesPage";
 import { QuoteDetailsPage } from "./pages/admin/QuoteDetailsPage";
 import { SalesDashboardPage } from "./pages/admin/sales/SalesDashboardPage";
+import { LeadsPage } from "./pages/admin/sales/LeadsPage";
+import { LeadDetailsPage } from "./pages/admin/sales/LeadDetailsPage";
 
 // --- COMPONENTES DE LÓGICA DE RUTAS ---
 
@@ -123,6 +126,7 @@ function App() {
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="planilla" element={<PlanillaPage />} />
+            <Route path="billing" element={<PendingBillingPage />} />
             <Route path="bodegas" element={<BodegasPage />} />
             <Route path="tracking" element={<TrackingPage />} />
             <Route path="settings" element={<SettingsPage />} />
@@ -158,6 +162,8 @@ function App() {
             />
             <Route path="quotes" element={<MyQuotesPage />} />
             <Route path="quotes/:quoteId" element={<QuoteDetailsPage />} />
+            <Route path="leads" element={<LeadsPage />} />
+  <Route path="leads/:leadId" element={<LeadDetailsPage />} />
           </Route>
         </Route>
 

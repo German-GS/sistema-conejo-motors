@@ -70,6 +70,27 @@ export class VehiclesService {
         estado: In(['Borrador', 'Enviada']),
       },
     });
+    const salesData: { month: string; vendidos: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthName = date.toLocaleString('es-ES', { month: 'long' });
+      const year = date.getFullYear();
+      const firstDay = new Date(year, date.getMonth(), 1);
+      const lastDay = new Date(year, date.getMonth() + 1, 0);
+
+      const salesInMonth = await this.ventasRepository.count({
+        where: {
+          vendedor: { id: user.id }, // <-- Filtro por vendedor
+          fecha_venta: Between(firstDay, lastDay),
+        },
+      });
+
+      salesData.push({
+        month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        vendidos: salesInMonth,
+      });
+    }
 
     return {
       totalVehicles,
@@ -79,6 +100,8 @@ export class VehiclesService {
       pendingQuotes,
     };
   }
+
+  
 
   // ... (El resto de los métodos de tu servicio no necesitan cambios)
   async getDashboardStats() {
@@ -140,6 +163,30 @@ export class VehiclesService {
 
   async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
     const { bodegaId, ...vehicleData } = createVehicleDto;
+
+    // Convertimos campos numéricos que puedan venir como string vacío a null
+    Object.keys(vehicleData).forEach((key) => {
+      const numericKeys = [
+        'potencia_hp',
+        'torque_nm',
+        'aceleracion_0_100',
+        'velocidad_maxima',
+        'autonomia_km',
+        'capacidad_bateria_kwh',
+        'tiempo_carga_dc',
+        'tiempo_carga_ac',
+        'largo_mm',
+        'ancho_mm',
+        'alto_mm',
+        'distancia_ejes_mm',
+        'peso_kg',
+        'capacidad_maletero_l',
+        'numero_pasajeros',
+      ];
+      if (numericKeys.includes(key) && vehicleData[key] === '') {
+        vehicleData[key] = null;
+      }
+    });
 
     let bodega: Bodega | null = null;
     let currentLocation: string | undefined = undefined;

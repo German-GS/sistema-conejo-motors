@@ -26,7 +26,8 @@ export class VehiclesController {
   constructor(private readonly vehiclesService: VehiclesService) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), RolesGuard) // Se combinan los dos guardianes en un solo decorador
+  @Roles('Administrador')                  // El decorador de Roles sigue siendo necesario como metadato
   create(@Body() createVehicleDto: CreateVehicleDto) {
     return this.vehiclesService.create(createVehicleDto);
   }
