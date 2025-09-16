@@ -14,7 +14,8 @@ import {
   LuMapPin,
   LuBookMarked,
   LuChartColumnStacked,
-  LuBell, // Ícono para notificaciones
+  LuBell,
+  LuReceipt,
 } from "react-icons/lu";
 
 // Interfaz para el objeto de notificación
@@ -142,6 +143,10 @@ export const AdminLayout = () => {
             <LuWarehouse size={20} />
             {!isCollapsed && <span className={styles.linkText}>Bodegas</span>}
           </Link>
+          <Link to="/admin/billing">
+        <LuReceipt size={20} />
+        {!isCollapsed && <span className={styles.linkText}>Facturación</span>}
+    </Link>
           <Link to="/admin/tracking">
             <LuMapPin size={20} />
             {!isCollapsed && <span className={styles.linkText}>Rastreo</span>}

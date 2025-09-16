@@ -13,7 +13,20 @@ export class NotificationsService {
     private usersRepository: Repository<User>,
   ) {}
 
-  // Crea notificaciones para todos los administradores
+  async createForUser(
+    user: User,
+    message: string,
+    link: string,
+  ): Promise<void> {
+    const notification = this.notificationsRepository.create({
+      message,
+      link,
+      user,
+    });
+    await this.notificationsRepository.save(notification);
+  }
+
+  
   async createForAdmins(message: string, link: string): Promise<void> {
     const admins = await this.usersRepository.find({
       where: { rol: { nombre: 'Administrador' } },

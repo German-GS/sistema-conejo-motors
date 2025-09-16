@@ -1,0 +1,17 @@
+/* src/pages/admin/PendingBillingPage/PendingBillingPage.module.css */
+.billingTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.billingTable th,
+.billingTable td {
+  border-bottom: 1px solid var(--borde-suave);
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.billingTable th {
+  font-weight: 600;
+}

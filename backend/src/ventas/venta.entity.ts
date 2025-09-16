@@ -1,3 +1,4 @@
+// backend/src/ventas/venta.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -9,6 +10,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
+import { Factura } from '../facturacion/factura.entity';
 
 @Entity({ name: 'ventas' })
 export class Venta {
@@ -24,14 +26,16 @@ export class Venta {
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   monto_final: number;
 
-  // Una venta está ligada a UNA cotización. A través de ella,
-  // podemos saber el cliente y el vehículo.
   @OneToOne(() => Cotizacion)
   @JoinColumn()
   cotizacion: Cotizacion;
 
-  // Guardamos al vendedor directamente en la venta, ya que él es
-  // quien recibe la comisión y cierra el trato.
   @ManyToOne(() => User)
   vendedor: User;
+
+  // --- 👇 CORRECCIÓN AQUÍ 👇 ---
+  // Se usa una función () => Factura para romper la dependencia circular
+  @OneToOne(() => Factura, (factura) => factura.venta)
+  @JoinColumn()
+  factura: Factura;
 }

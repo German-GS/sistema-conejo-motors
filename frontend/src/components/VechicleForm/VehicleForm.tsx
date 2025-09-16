@@ -9,7 +9,7 @@ import {
   type DropResult,
 } from "@hello-pangea/dnd";
 
-// --- INTERFACES ---
+// --- INTERFACES (Sin cambios) ---
 interface Bodega {
   id: number;
   nombre: string;
@@ -335,16 +335,22 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       setFormData((prev) => ({
         ...prev,
         profileId,
+        // Datos básicos
         marca: selectedProfile.marca,
         modelo: selectedProfile.modelo,
+        categoria: selectedProfile.categoria || "",
+        traccion: selectedProfile.traccion || "",
+        numero_pasajeros: selectedProfile.numero_pasajeros?.toString() || "5",
+        
+        // Rendimiento y Batería
         potencia_hp: selectedProfile.potencia_hp.toString(),
         autonomia_km: selectedProfile.autonomia_km.toString(),
         capacidad_bateria_kwh: selectedProfile.capacidad_bateria_kwh.toString(),
         torque_nm: selectedProfile.torque_nm?.toString() || "",
         aceleracion_0_100: selectedProfile.aceleracion_0_100?.toString() || "",
         velocidad_maxima: selectedProfile.velocidad_maxima?.toString() || "",
-        categoria: selectedProfile.categoria || "",
-        traccion: selectedProfile.traccion || "",
+
+        // Dimensiones y Peso
         largo_mm: selectedProfile.largo_mm?.toString() || "",
         ancho_mm: selectedProfile.ancho_mm?.toString() || "",
         alto_mm: selectedProfile.alto_mm?.toString() || "",
@@ -352,43 +358,10 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         peso_kg: selectedProfile.peso_kg?.toString() || "",
         capacidad_maletero_l:
           selectedProfile.capacidad_maletero_l?.toString() || "",
-        numero_pasajeros: selectedProfile.numero_pasajeros?.toString() || "5",
       }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        profileId: "",
-        marca: "",
-        modelo: "",
-        año: "",
-        vin: "",
-        color: "",
-        precio_costo: "",
-        precio_venta: "",
-        autonomia_km: "",
-        potencia_hp: "",
-        capacidad_bateria_kwh: "",
-        bodegaId: "",
-        categoria: "",
-        traccion: "",
-        numero_pasajeros: "5",
-        torque_nm: "",
-        aceleracion_0_100: "",
-        velocidad_maxima: "",
-        tiempo_carga_dc: "",
-        tiempo_carga_ac: "",
-        largo_mm: "",
-        ancho_mm: "",
-        alto_mm: "",
-        distancia_ejes_mm: "",
-        peso_kg: "",
-        capacidad_maletero_l: "",
-        colores_disponibles: "",
-        seguridad: "",
-        interior: "",
-        exterior: "",
-        tecnologia: "",
-      }));
+      // Si se deselecciona, limpiar los campos
+      resetForm();
     }
   };
 
@@ -480,6 +453,17 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         required
         className={styles.formInput}
       />
+      
+      <input
+        name="precio_costo"
+        type="number"
+        value={formData.precio_costo}
+        onChange={handleChange}
+        placeholder="Precio de Costo"
+        required
+        className={styles.formInput}
+      />
+
       <input
         name="precio_venta"
         type="number"
@@ -529,117 +513,154 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         <option value="7">7 Pasajeros</option>
       </select>
 
-      {/* --- SECCIÓN RENDIMIENTO --- */}
-      <details className={styles.formSection}>
+      {/* --- 👇 INICIO DE LA CORRECCIÓN: Conectar inputs con el estado 👇 --- */}
+      <details className={styles.formSection} open>
         <summary>Rendimiento y Batería</summary>
         <div className={styles.sectionContent}>
           <input
             name="potencia_hp"
+            value={formData.potencia_hp}
+            onChange={handleChange}
             placeholder="Potencia (HP)"
             className={styles.formInput}
           />
           <input
             name="torque_nm"
+            value={formData.torque_nm}
+            onChange={handleChange}
             placeholder="Torque (Nm)"
             className={styles.formInput}
           />
           <input
             name="aceleracion_0_100"
+            value={formData.aceleracion_0_100}
+            onChange={handleChange}
             placeholder="Aceleración 0-100 km/h (s)"
             className={styles.formInput}
           />
           <input
             name="velocidad_maxima"
+            value={formData.velocidad_maxima}
+            onChange={handleChange}
             placeholder="Velocidad Máxima (km/h)"
             className={styles.formInput}
           />
           <input
             name="autonomia_km"
+            value={formData.autonomia_km}
+            onChange={handleChange}
             placeholder="Autonomía (km)"
             className={styles.formInput}
           />
           <input
             name="capacidad_bateria_kwh"
+            value={formData.capacidad_bateria_kwh}
+            onChange={handleChange}
             placeholder="Batería (kWh)"
             className={styles.formInput}
           />
           <input
             name="tiempo_carga_ac"
+            value={formData.tiempo_carga_ac}
+            onChange={handleChange}
             placeholder="Tiempo Carga AC (horas)"
             className={styles.formInput}
           />
           <input
             name="tiempo_carga_dc"
+            value={formData.tiempo_carga_dc}
+            onChange={handleChange}
             placeholder="Tiempo Carga DC (mins)"
             className={styles.formInput}
           />
         </div>
       </details>
 
-      {/* --- SECCIÓN DIMENSIONES --- */}
-      <details className={styles.formSection}>
+      <details className={styles.formSection} open>
         <summary>Dimensiones y Peso</summary>
         <div className={styles.sectionContent}>
           <input
             name="largo_mm"
+            value={formData.largo_mm}
+            onChange={handleChange}
             placeholder="Largo (mm)"
             className={styles.formInput}
           />
           <input
             name="ancho_mm"
+            value={formData.ancho_mm}
+            onChange={handleChange}
             placeholder="Ancho (mm)"
             className={styles.formInput}
           />
           <input
             name="alto_mm"
+            value={formData.alto_mm}
+            onChange={handleChange}
             placeholder="Alto (mm)"
             className={styles.formInput}
           />
           <input
             name="distancia_ejes_mm"
+            value={formData.distancia_ejes_mm}
+            onChange={handleChange}
             placeholder="Distancia entre ejes (mm)"
             className={styles.formInput}
           />
           <input
             name="peso_kg"
+            value={formData.peso_kg}
+            onChange={handleChange}
             placeholder="Peso (kg)"
             className={styles.formInput}
           />
           <input
             name="capacidad_maletero_l"
+            value={formData.capacidad_maletero_l}
+            onChange={handleChange}
             placeholder="Maletero (L)"
             className={styles.formInput}
           />
         </div>
       </details>
+      {/* --- 👆 FIN DE LA CORRECCIÓN --- */}
 
-      {/* --- SECCIÓN EQUIPAMIENTO (CAMPOS DE TEXTO LIBRE) --- */}
       <p className={styles.helperText}>
         Para las siguientes secciones, separa cada característica con una coma
         (,).
       </p>
       <textarea
         name="colores_disponibles"
+        value={formData.colores_disponibles}
+        onChange={handleChange}
         placeholder="Colores Disponibles (Rojo, Azul...)"
         className={styles.formTextarea}
       />
       <textarea
         name="seguridad"
+        value={formData.seguridad}
+        onChange={handleChange}
         placeholder="Características de Seguridad..."
         className={styles.formTextarea}
       />
       <textarea
         name="interior"
+        value={formData.interior}
+        onChange={handleChange}
         placeholder="Características Interiores..."
         className={styles.formTextarea}
       />
       <textarea
         name="exterior"
+        value={formData.exterior}
+        onChange={handleChange}
         placeholder="Características Exteriores..."
         className={styles.formTextarea}
       />
       <textarea
         name="tecnologia"
+        value={formData.tecnologia}
+        onChange={handleChange}
         placeholder="Características de Tecnología..."
         className={styles.formTextarea}
       />
@@ -660,7 +681,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         </select>
       )}
 
-      {/* Sección de Imágenes Existentes (solo en modo edición) */}
       {isEditing && existingImages.length > 0 && (
         <div className={styles.existingImagesSection}>
           <h3>Imágenes Actuales (Arrastra para ordenar)</h3>
@@ -708,7 +728,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         </div>
       )}
 
-      {/* Input para Subir Nuevas Imágenes */}
       <div className={styles.fileInputWrapper}>
         <label htmlFor="vehicleImage" className={styles.fileInputLabel}>
           Añadir Nueva(s) Imagen(es)
@@ -729,7 +748,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         />
       </div>
 
-      {/* Botón de Envío y Mensaje de Error */}
       <button
         type="submit"
         className="btn btn-principal"
@@ -741,59 +759,3 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     </form>
   );
 };
-
-/* 
-const handleProfileChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const profileId = e.target.value;
-    const selectedProfile = profiles.find((p) => p.id === Number(profileId));
-
-    if (selectedProfile) {
-      setFormData((prev) => ({
-        ...prev,
-        profileId,
-        marca: selectedProfile.marca,
-        modelo: selectedProfile.modelo,
-        potencia_hp: selectedProfile.potencia_hp.toString(),
-        autonomia_km: selectedProfile.autonomia_km.toString(),
-        capacidad_bateria_kwh: selectedProfile.capacidad_bateria_kwh.toString(),
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        profileId: "",
-        marca: "",
-        modelo: "",
-        potencia_hp: "",
-        autonomia_km: "",
-        capacidad_bateria_kwh: "",
-      }));
-    }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
-    if (!destination || destination.index === source.index) {
-      return;
-    }
-    const items = Array.from(existingImages);
-    const [reorderedItem] = items.splice(source.index, 1);
-    items.splice(destination.index, 0, reorderedItem);
-    setExistingImages(items);
-  };
-
-  const handleRemoveExistingImage = (imageId: number) => {
-    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setSelectedFiles(Array.from(e.target.files));
-    }
-  }; */

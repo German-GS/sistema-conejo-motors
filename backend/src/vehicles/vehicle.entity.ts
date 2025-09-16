@@ -60,29 +60,29 @@ export class Vehicle {
 
   // --- ESPECIFICACIONES TÉCNICAS ---
 
-  @Column({ nullable: true })
-  potencia_hp: number; // Caballos de fuerza
+  @Column({ type: 'int', nullable: true })
+  potencia_hp: number;
 
-  @Column({ nullable: true })
-  torque_nm: number; // Torque en Newton-metro
+  @Column({ type: 'int', nullable: true })
+  torque_nm: number;
 
   @Column({ type: 'decimal', precision: 4, scale: 1, nullable: true })
-  aceleracion_0_100: number; // Tiempo en segundos
+  aceleracion_0_100: number;
 
-  @Column({ nullable: true })
-  velocidad_maxima: number; // En km/h
+  @Column({ type: 'int', nullable: true })
+  velocidad_maxima: number;
 
-  @Column({ nullable: true })
-  autonomia_km: number; // Autonomía en WLTP o CLTC
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  autonomia_km: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 1, nullable: true })
-  capacidad_bateria_kwh: number; // Capacidad de la batería
+  capacidad_bateria_kwh: number;
 
-  @Column({ nullable: true })
-  tiempo_carga_dc: number; // Tiempo de carga rápida (DC) en minutos (ej: 30)
+  @Column({ type: 'int', nullable: true })
+  tiempo_carga_dc: number;
 
-  @Column({ nullable: true })
-  tiempo_carga_ac: number; // Tiempo de carga lenta (AC) en horas (ej: 8)
+  @Column({ type: 'int', nullable: true })
+  tiempo_carga_ac: number;
 
   @Column({
     type: 'enum',

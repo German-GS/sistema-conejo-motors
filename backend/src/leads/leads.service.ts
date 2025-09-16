@@ -1,12 +1,13 @@
 // src/leads/leads.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Lead } from './lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { NotificationsService } from '../notifications/notifications.service';
+import { UpdateLeadStatusDto } from './dto/update-lead-status.dto';
 
 @Injectable()
 export class LeadsService {
@@ -24,6 +25,35 @@ export class LeadsService {
     private vehiclesRepository: Repository<Vehicle>,
     private notificationsService: NotificationsService,
   ) {}
+
+  async findLeadsForSeller(vendedorId: number): Promise<Lead[]> {
+    return this.leadsRepository.find({
+      where: {
+        vendedor_asignado: { id: vendedorId },
+        estado: In(['Nuevo', 'Contactado', 'En Progreso']), // Solo leads activos
+      },
+      order: { fecha_creacion: 'DESC' },
+    });
+  }
+
+  // Método para encontrar un lead por su ID
+  async findOne(id: number): Promise<Lead> {
+    const lead = await this.leadsRepository.findOneBy({ id });
+    if (!lead) {
+      throw new NotFoundException(`Lead con ID #${id} no encontrado.`);
+    }
+    return lead;
+  }
+
+  // Método para actualizar el estado del lead
+  async updateStatus(id: number, dto: UpdateLeadStatusDto): Promise<Lead> {
+    const lead = await this.findOne(id);
+    
+    // Actualiza solo los campos que vienen en el DTO
+    Object.assign(lead, dto);
+    
+    return this.leadsRepository.save(lead);
+  }
 
   async create(createLeadDto: CreateLeadDto): Promise<Lead> {
     const { nombre, email, telefono, vehiculoId } = createLeadDto;
@@ -62,11 +92,9 @@ export class LeadsService {
 
     const leadGuardado = await this.leadsRepository.save(nuevoLead);
 
-    // 5. Enviar notificación al vendedor asignado
-    const message = `Nuevo lead de ${nombre} (${email}).`;
-    // Idealmente, el link llevaría a una página de detalles del lead en el panel
-    const link = `/admin/leads/${leadGuardado.id}`;
-    await this.notificationsService.createForAdmins(message, link); // Asumimos que los vendedores ven notificaciones de "admin" o creamos un método específico.
+     const message = `Nuevo lead asignado: ${nombre} (${email}).`;
+    const link = `/sales/leads/${leadGuardado.id}`; // Ruta para que el vendedor vea sus leads
+    await this.notificationsService.createForUser(vendedorAsignado, message, link);
 
     return leadGuardado;
   }

@@ -17,22 +17,22 @@ export class VehicleProfile {
   @Column({ nullable: true })
   logo_url: string;
 
-  @Column()
+  @Column({ type: 'int' }) 
   potencia_hp: number;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 }) 
   autonomia_km: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 1 })
   capacidad_bateria_kwh: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true }) 
   torque_nm: number;
 
   @Column({ type: 'decimal', precision: 4, scale: 1, nullable: true })
   aceleracion_0_100: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   velocidad_maxima: number;
 
   @Column({
