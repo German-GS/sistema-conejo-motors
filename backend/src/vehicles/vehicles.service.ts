@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 // --- 👇 1. AÑADE 'In' A ESTA LÍNEA 👇 ---
@@ -195,7 +196,7 @@ export class VehiclesService {
       bodega = await this.bodegaRepository.findOneBy({ id: bodegaId });
       if (!bodega) {
         throw new NotFoundException(
-          `La bodega con el ID #${bodegaId} no fue encontrada.`,
+          `La bodega con el ID #${bodegaId} no fue encontrada. No se puede crear el vehículo.`,
         );
       }
       currentLocation = bodega.nombre;
@@ -253,6 +254,18 @@ export class VehiclesService {
     updateVehicleDto: UpdateVehicleDto,
   ): Promise<Vehicle> {
     const { bodegaId, ...vehicleData } = updateVehicleDto;
+    Object.keys(vehicleData).forEach((key) => {
+      const numericKeys = [
+        'potencia_hp', 'torque_nm', 'aceleracion_0_100', 'velocidad_maxima',
+        'autonomia_km', 'capacidad_bateria_kwh', 'tiempo_carga_dc',
+        'tiempo_carga_ac', 'largo_mm', 'ancho_mm', 'alto_mm',
+        'distancia_ejes_mm', 'peso_kg', 'capacidad_maletero_l',
+        'numero_pasajeros', 'precio_costo', 'precio_venta', 'año'
+      ];
+      if (numericKeys.includes(key) && vehicleData[key] === '') {
+        vehicleData[key] = null;
+      }
+    });
     const vehicle = await this.vehiclesRepository.preload({
       id: id,
       ...vehicleData,
