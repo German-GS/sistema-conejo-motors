@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Venta } from '../ventas/venta.entity';
 import { Between, Repository } from 'typeorm';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { ReciboPago } from '../recibos_pago/recibo_pago.entity'; 
 
 @Injectable()
 export class ReportsService {
@@ -11,6 +12,8 @@ export class ReportsService {
     private ventasRepository: Repository<Venta>,
     @InjectRepository(Vehicle)
     private vehicleRepository: Repository<Vehicle>,
+    @InjectRepository(ReciboPago)
+    private recibosRepository: Repository<ReciboPago>,
   ) {}
 
   // ... (otros métodos sin cambios) ...
@@ -30,6 +33,29 @@ export class ReportsService {
         .orderBy('SUM(venta.monto_final)', 'DESC')
         .getRawMany()
     );
+  }
+  async getPayrollReport(startDate: Date, endDate: Date) {
+   
+
+    const recibos = await this.recibosRepository.find({
+      // --- 👇 INICIO DE LA CORRECCIÓN 👇 ---
+      where: {
+        // Cambiamos 'fecha_pago' por 'periodo_fin' para que coincida
+        // con las expectativas del usuario al buscar por un rango.
+        periodo_fin: Between(startDate, endDate),
+      },
+      // --- 👆 FIN DE LA CORRECCIÓN 👆 ---
+      relations: ['usuario'],
+    });
+   
+
+    return recibos.map((recibo) => ({
+      nombre_completo: recibo.usuario.nombre_completo,
+      cedula: recibo.usuario.cedula,
+      banco: recibo.usuario.banco,
+      numero_cuenta: recibo.usuario.numero_cuenta,
+      monto_deposito: recibo.salario_neto,
+    }));
   }
 
   // Informe de Ventas por Vehículo

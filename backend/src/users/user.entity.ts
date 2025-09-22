@@ -35,6 +35,13 @@ export class User {
 
   @Column({ default: 0 })
   cantidad_hijos: number;
+  
+  // --- 👇 CAMPOS NUEVOS AÑADIDOS 👇 ---
+  @Column({ length: 100, nullable: true })
+  banco: string;
+
+  @Column({ length: 50, nullable: true })
+  numero_cuenta: string;
   // ----------------------------------------------------
 
   @ManyToOne(() => Role, (role) => role.usuarios)

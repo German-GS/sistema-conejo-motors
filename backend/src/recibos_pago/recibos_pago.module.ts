@@ -1,5 +1,5 @@
 // backend/src/recibos_pago/recibos_pago.module.ts
-import { Module } from '@nestjs/common';
+import { Module, Controller,Query,ParseIntPipe,BadRequestException } from '@nestjs/common';
 import { RecibosPagoService } from './recibos_pago.service';
 import { RecibosPagoController } from './recibos_pago.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,12 +8,14 @@ import { PlanillaParametrosModule } from '../planilla-parametros/planilla-parame
 import { UsersModule } from '../users/users.module';
 import { PlanillaCalculationService } from './planilla-calculation.service';
 import { PlanillaParametrosService } from '../planilla-parametros/planilla-parametros.service';
+import { Venta } from '../ventas/venta.entity';
+import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
 import { Salario } from '../salarios/salario.entity';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ReciboPago, Salario]),
+    TypeOrmModule.forFeature([ReciboPago, Salario, Venta, PlanillaParametro]),
     // Hacemos que los servicios de otros módulos estén disponibles aquí
     PlanillaParametrosModule,
     UsersModule,

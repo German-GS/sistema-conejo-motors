@@ -1,3 +1,4 @@
+// frontend/src/components/UserForm/index.tsx
 import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import styles from "./UserForm.module.css";
@@ -17,26 +18,27 @@ export const UserForm: React.FC<UserFormProps> = ({
   onSuccess,
   initialData,
 }) => {
-  // 👇 1. AÑADIR 'salario_base' AL ESTADO INICIAL
   const [formData, setFormData] = useState({
     nombre_completo: "",
     email: "",
     cedula: "",
     contrasena: "",
     rol_id: "",
-    salario_base: "", // <-- AÑADIR ESTA LÍNEA
+    salario_base: "",
+    banco: "", // <-- AÑADIDO
+    numero_cuenta: "", // <-- AÑADIDO
   });
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [error, setError] = useState("");
   const isEditing = !!initialData;
 
-  // Carga los roles (sin cambios)
   useEffect(() => {
     const fetchRoles = async () => {
       try {
         const response = await apiClient.get("/roles");
         setRoles(response.data);
+        // Si estamos creando un usuario nuevo y hay roles, seleccionamos el primero por defecto
         if (response.data.length > 0 && !isEditing) {
           setFormData((prev) => ({
             ...prev,
@@ -48,9 +50,9 @@ export const UserForm: React.FC<UserFormProps> = ({
       }
     };
     fetchRoles();
-  }, [isEditing]);
+    // Se ha eliminado [isEditing] de las dependencias para que se ejecute siempre al montar.
+  }, []);
 
-  // Rellena el formulario (sin cambios)
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -59,12 +61,13 @@ export const UserForm: React.FC<UserFormProps> = ({
         cedula: initialData.cedula || "",
         rol_id: initialData.rol?.id?.toString() || "",
         contrasena: "",
-        salario_base: initialData.salario_base || "", // También para editar
+        salario_base: initialData.salario_base || "",
+        banco: initialData.banco || "", // <-- AÑADIDO
+        numero_cuenta: initialData.numero_cuenta || "", // <-- AÑADIDO
       });
     }
   }, [initialData]);
 
-  // Maneja los cambios (sin cambios)
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -72,31 +75,23 @@ export const UserForm: React.FC<UserFormProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Se ejecuta al enviar (sin cambios)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    // Copiamos todo excepto la contraseña si está vacía
+    const { contrasena, ...dataToSubmit } = formData;
+    const finalData: any = { ...dataToSubmit };
+    if (contrasena) {
+      finalData.contrasena = contrasena;
+    }
+
     try {
       if (isEditing) {
-        const dataToSend: { [key: string]: any } = {
-          nombre_completo: formData.nombre_completo,
-          email: formData.email,
-          cedula: formData.cedula,
-          rol_id: Number(formData.rol_id),
-          salario_base: Number(formData.salario_base),
-        };
-        if (formData.contrasena) {
-          dataToSend.contrasena = formData.contrasena;
-        }
-        await apiClient.patch(`/users/${initialData.id}`, dataToSend);
+        await apiClient.patch(`/users/${initialData.id}`, finalData);
         toast.success("Colaborador actualizado con éxito.");
       } else {
-        await apiClient.post("/users", {
-          ...formData,
-          rol_id: Number(formData.rol_id),
-          salario_base: Number(formData.salario_base),
-        });
+        await apiClient.post("/users", finalData);
         toast.success("Colaborador creado con éxito.");
       }
       onSuccess();
@@ -106,7 +101,6 @@ export const UserForm: React.FC<UserFormProps> = ({
     }
   };
 
-  // 👇 2. CORREGIR EL JSX DEL RETURN
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <input
@@ -147,6 +141,20 @@ export const UserForm: React.FC<UserFormProps> = ({
         onChange={handleChange}
         placeholder="Salario Base Mensual"
         required={!isEditing}
+      />
+      <input
+        type="text"
+        name="banco"
+        value={formData.banco}
+        onChange={handleChange}
+        placeholder="Banco"
+      />
+      <input
+        type="text"
+        name="numero_cuenta"
+        value={formData.numero_cuenta}
+        onChange={handleChange}
+        placeholder="Número de Cuenta"
       />
       <select
         name="rol_id"

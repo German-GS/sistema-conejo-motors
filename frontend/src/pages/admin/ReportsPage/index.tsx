@@ -10,7 +10,8 @@ type ReportType =
   | "sales-by-seller"
   | "sales-by-vehicle"
   | "detailed-sales"
-  | "inventory";
+  | "inventory"
+  | "payroll";
 
 const reportOptions = [
   { value: "profit", label: "Informe de Ganancias" },
@@ -18,6 +19,7 @@ const reportOptions = [
   { value: "sales-by-vehicle", label: "Ventas por Vehículo" },
   { value: "detailed-sales", label: "Listado General de Ventas" },
   { value: "inventory", label: "Inventario Actual" },
+  { value: "payroll", label: "Informe de Planilla" },
 ];
 
 export const ReportsPage = () => {
@@ -49,41 +51,66 @@ export const ReportsPage = () => {
       setLoading(false);
     }
   };
+
   const handleExportToExcel = () => {
     if (!reportData || (Array.isArray(reportData) && reportData.length === 0)) {
       toast.error("No hay datos para exportar.");
       return;
     }
-    let dataToExport: any[] = [];
-    let fileName = `Informe_${reportType}_${new Date().toLocaleDateString()}.xlsx`;
 
-    if (reportType === "profit") {
-      dataToExport = [
-        {
-          "Total Ventas": reportData.totalVentas,
-          "Costo de Ventas": reportData.totalCosto,
-          "Ganancia Bruta": reportData.gananciaBruta,
-        },
-      ];
-    } else if (reportType === "inventory") {
-      dataToExport = reportData.vehicles.map((v: any) => ({
-        ID: v.id,
-        Marca: v.marca,
-        Modelo: v.modelo,
-        Año: v.año,
-        VIN: v.vin,
-        "Precio Costo": v.precio_costo,
-      }));
-    } else {
-      dataToExport = reportData;
+    let dataToExport: any[] = [];
+    let fileName = `Informe_${reportType}_${new Date().toLocaleDateString(
+      "es-CR"
+    )}.xlsx`;
+
+    // --- 👇 INICIO DE LA CORRECCIÓN 👇 ---
+
+    switch (reportType) {
+      case "profit":
+        dataToExport = [
+          {
+            "Total Ventas": reportData.totalVentas,
+            "Costo de Ventas": reportData.totalCosto,
+            "Ganancia Bruta": reportData.gananciaBruta,
+          },
+        ];
+        break;
+
+      case "inventory":
+        dataToExport = reportData.vehicles.map((v: any) => ({
+          ID: v.id,
+          Marca: v.marca,
+          Modelo: v.modelo,
+          Año: v.año,
+          VIN: v.vin,
+          "Precio Costo": v.precio_costo,
+        }));
+        break;
+
+      case "payroll":
+        dataToExport = reportData.map((item: any) => ({
+          "Nombre Completo": item.nombre_completo,
+          Cédula: item.cedula,
+          Banco: item.banco,
+          "Número de Cuenta": item.numero_cuenta,
+          "Monto a Depositar": item.monto_deposito,
+        }));
+        break;
+
+      // Para 'sales-by-seller', 'sales-by-vehicle', y 'detailed-sales'
+      // la data ya está en el formato correcto, así que solo la asignamos.
+      default:
+        dataToExport = reportData;
+        break;
     }
+
+    // --- 👆 FIN DE LA CORRECCIÓN 👆 ---
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Informe");
     XLSX.writeFile(workbook, fileName);
   };
-
   const renderReport = () => {
     if (loading) {
       return <p>Cargando datos...</p>;
@@ -233,6 +260,32 @@ export const ReportsPage = () => {
               </tbody>
             </table>
           </>
+        );
+      case "payroll":
+        if (!Array.isArray(reportData)) return null;
+        return (
+          <table className={styles.reportTable}>
+            <thead>
+              <tr>
+                <th>Nombre Completo</th>
+                <th>Cédula</th>
+                <th>Banco</th>
+                <th>Número de Cuenta</th>
+                <th>Monto a Depositar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportData.map((row: any, index: number) => (
+                <tr key={index}>
+                  <td>{row.nombre_completo}</td>
+                  <td>{row.cedula}</td>
+                  <td>{row.banco}</td>
+                  <td>{row.numero_cuenta}</td>
+                  <td>₡{Number(row.monto_deposito).toLocaleString("es-CR")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         );
       default:
         return <p>Selecciona un tipo de informe válido.</p>;

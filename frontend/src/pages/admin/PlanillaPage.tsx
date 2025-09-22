@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // Se elimina 'React' que ya no es necesario
 import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
-import styles from "./UsersPage.module.css"; // Reutilizamos los estilos de la tabla
-import { ReciboModal } from "../../components/ReciboModal"; // Ruta corregida
+import styles from "./UsersPage.module.css";
+import { ReciboModal } from "../../components/ReciboModal";
 import { jwtDecode } from "jwt-decode";
 
 // Definimos los tipos de datos que usaremos
@@ -34,14 +34,13 @@ export const PlanillaPage = () => {
   const [periodoInicio, setPeriodoInicio] = useState("");
   const [periodoFin, setPeriodoFin] = useState("");
   const [comisiones, setComisiones] = useState("");
+  const [isCommissionLoading, setIsCommissionLoading] = useState(false);
   const [otrasDeducciones, setOtrasDeducciones] = useState("");
   const [horasExtra, setHorasExtra] = useState("");
-
-  // CORRECCIÓN 1: Definir el tipo del estado y añadir el estado para abrir/cerrar
   const [selectedRecibo, setSelectedRecibo] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Función para cargar todos los datos necesarios
+  // Carga los datos iniciales (recibos y usuarios)
   const fetchData = async () => {
     try {
       const [recibosRes, usersRes] = await Promise.all([
@@ -58,6 +57,7 @@ export const PlanillaPage = () => {
     }
   };
 
+  // Se ejecuta una vez al cargar la página para obtener el rol y los datos
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
@@ -67,8 +67,36 @@ export const PlanillaPage = () => {
     fetchData();
   }, []);
 
+  // Se ejecuta cada vez que el usuario o las fechas cambian para calcular comisiones
+  useEffect(() => {
+    const fetchCommissions = async () => {
+      if (selectedUserId && periodoInicio && periodoFin) {
+        setIsCommissionLoading(true);
+        try {
+          const response = await apiClient.get(
+            "/recibos-pago/calculate-commissions",
+            {
+              params: {
+                userId: selectedUserId,
+                startDate: periodoInicio,
+                endDate: periodoFin,
+              },
+            }
+          );
+          setComisiones(response.data.totalCommission.toFixed(2));
+        } catch (error) {
+          console.error("Error al calcular comisiones:", error);
+          setComisiones("0.00");
+        } finally {
+          setIsCommissionLoading(false);
+        }
+      }
+    };
+
+    fetchCommissions();
+  }, [selectedUserId, periodoInicio, periodoFin]);
+
   const handleGenerate = async () => {
-    // --- 👇 AÑADIR VALIDACIONES 👇 ---
     if (!selectedUserId || !periodoInicio || !periodoFin) {
       setError(
         "Por favor, selecciona un colaborador y ambas fechas del periodo."
@@ -79,7 +107,6 @@ export const PlanillaPage = () => {
     setMensaje("");
 
     try {
-      // --- 👇 MODIFICAR EL CUERPO DE LA PETICIÓN 👇 ---
       const response = await apiClient.post("/recibos-pago/generate", {
         userId: Number(selectedUserId),
         periodoInicio: periodoInicio,
@@ -88,7 +115,6 @@ export const PlanillaPage = () => {
         otrasDeducciones: Number(otrasDeducciones) || 0,
         horasExtra: Number(horasExtra) || 0,
       });
-      // ----------------------------------------------
 
       setMensaje(`¡Recibo #${response.data.id} generado con éxito!`);
       fetchData(); // Refrescar la lista de recibos
@@ -119,7 +145,7 @@ export const PlanillaPage = () => {
         `/recibos-pago/${reciboId}/desglose`
       );
       setSelectedRecibo(response.data);
-      setIsModalOpen(true); // Usamos el estado que creamos
+      setIsModalOpen(true);
     } catch (error) {
       setError("No se pudo cargar el desglose del recibo.");
     }
@@ -128,9 +154,7 @@ export const PlanillaPage = () => {
   return (
     <>
       <Card title="Generar Recibo de Pago">
-        {/* --- 👇 APLICA LAS NUEVAS CLASES AQUÍ 👇 --- */}
         <div className={styles.formGrid}>
-          {/* Colaborador */}
           <div className={`${styles.formField} ${styles.fullWidth}`}>
             <label className={styles.label}>Colaborador</label>
             <select
@@ -146,7 +170,6 @@ export const PlanillaPage = () => {
             </select>
           </div>
 
-          {/* Fechas */}
           <div className={styles.formField}>
             <label className={styles.label}>Periodo Inicio</label>
             <input
@@ -166,15 +189,18 @@ export const PlanillaPage = () => {
             />
           </div>
 
-          {/* Montos Adicionales */}
           <div className={styles.formField}>
-            <label className={styles.label}>Comisiones Ganadas (₡)</label>
+            <label className={styles.label}>
+              Comisiones Ganadas ($) El valor es el dolares pero se paga en
+              colones {isCommissionLoading && <small>(Calculando...)</small>}
+            </label>
             <input
               type="number"
               placeholder="0.00"
               value={comisiones}
               onChange={(e) => setComisiones(e.target.value)}
               className={styles.input}
+              disabled={isCommissionLoading}
             />
           </div>
           <div className={styles.formField}>
@@ -198,7 +224,6 @@ export const PlanillaPage = () => {
             />
           </div>
 
-          {/* Botón */}
           <div className={styles.buttonContainer}>
             <button className="btn btn-principal" onClick={handleGenerate}>
               Generar Recibo
@@ -229,9 +254,9 @@ export const PlanillaPage = () => {
                 <td>{recibo.id}</td>
                 <td>{recibo.usuario.nombre_completo}</td>
                 <td>{new Date(recibo.fecha_pago).toLocaleDateString()}</td>
-                <td>₡{recibo.salario_bruto.toLocaleString("es-CR")}</td>
+                <td>₡{Number(recibo.salario_bruto).toLocaleString("es-CR")}</td>
                 <td>
-                  <b>₡{recibo.salario_neto.toLocaleString("es-CR")}</b>
+                  <b>₡{Number(recibo.salario_neto).toLocaleString("es-CR")}</b>
                 </td>
                 {userRole === "Administrador" && (
                   <td>

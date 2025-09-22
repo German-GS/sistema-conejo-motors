@@ -12,13 +12,12 @@ export class ReciboPago {
   @Column({ type: 'date' })
   fecha_pago: Date;
 
-  // --- Campos de Período ---
   @Column({ type: 'date' })
-  periodo_inicio: string;
+  periodo_inicio: Date; 
 
   @Column({ type: 'date' })
-  periodo_fin: string;
-  // --- Desglose de Ingresos ---
+  periodo_fin: Date; 
+  
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   salario_base_periodo: number;
 
@@ -31,7 +30,6 @@ export class ReciboPago {
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   salario_bruto: number;
 
-  // --- Desglose Detallado de Deducciones ---
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   deduccion_sem: number;
 
@@ -47,7 +45,6 @@ export class ReciboPago {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   otras_deducciones: number;
 
-  // --- Total Final ---
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   salario_neto: number;
 }

@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { ReciboPago } from './recibo_pago.entity';
 import { PlanillaCalculationService } from './planilla-calculation.service';
 import { UsersService } from '../users/users.service';
 import { Salario } from '../salarios/salario.entity';
 import { AuditLog } from '../audit-logs/audit-log.entity';
 import { User } from '../users/user.entity';
+import { Venta } from '../ventas/venta.entity';
+import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
+
+
 
 @Injectable()
 export class RecibosPagoService {
@@ -17,9 +21,53 @@ export class RecibosPagoService {
     private salariosRepository: Repository<Salario>,
     @InjectRepository(AuditLog)
     private auditLogRepository: Repository<AuditLog>,
+    @InjectRepository(Venta)
+    private ventasRepository: Repository<Venta>,
+    @InjectRepository(PlanillaParametro)
+    private parametrosRepository: Repository<PlanillaParametro>,
     private calculationService: PlanillaCalculationService,
     private usersService: UsersService,
   ) {}
+
+  async calculateCommissionsForPeriod(
+    userId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ totalCommission: number }> {
+    console.log('\n---[ Service: calculateCommissionsForPeriod ]---');
+    console.log(`Buscando ventas para el usuario ID: ${userId}`);
+    console.log('Rango de fecha_venta:', { startDate, endDate });
+    // 1. Buscar el parámetro de comisión
+    const commissionParam = await this.parametrosRepository.findOne({
+      where: { nombre: 'COMISION_VENDEDOR_PORC' },
+    });
+
+    if (!commissionParam) {
+      throw new NotFoundException('Parámetro de comisión no encontrado.');
+    }
+    const commissionPercentage = Number(commissionParam.valor);
+
+    // 2. Buscar todas las ventas del usuario en el período
+    const sales = await this.ventasRepository.find({
+      where: {
+        vendedor: { id: userId },
+        fecha_venta: Between(startDate, endDate),
+      },
+    });
+    console.log(`Se encontraron ${sales.length} ventas en este período.`);
+    if (sales.length > 0) {
+      console.log('Ventas encontradas:', sales.map(s => ({ id: s.id, fecha: s.fecha_venta, monto: s.monto_final })));
+    }
+
+    // 3. Calcular la comisión
+    const totalRevenue = sales.reduce(
+      (sum, venta) => sum + Number(venta.monto_final),
+      0,
+    );
+    const totalCommission = totalRevenue * (commissionPercentage / 100);
+
+    return { totalCommission };
+  }
 
   async generatePayrollForUser(
     userId: number,
@@ -63,8 +111,8 @@ export class RecibosPagoService {
     const nuevoRecibo = new ReciboPago();
     nuevoRecibo.usuario = user;
     nuevoRecibo.fecha_pago = new Date();
-    nuevoRecibo.periodo_inicio = periodoInicio;
-    nuevoRecibo.periodo_fin = periodoFin;
+    nuevoRecibo.periodo_inicio = new Date(`${periodoInicio}T00:00:00`);
+    nuevoRecibo.periodo_fin = new Date(`${periodoFin}T00:00:00`);
     nuevoRecibo.salario_base_periodo = salarioDelPeriodo;
     nuevoRecibo.comisiones_ganadas = comisionesGanadas;
     nuevoRecibo.horas_extra = horasExtra;
