@@ -257,27 +257,10 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       "peso_kg",
       "capacidad_maletero_l",
     ];
-    const arrayFields = [
-      "colores_disponibles",
-      "seguridad",
-      "interior",
-      "exterior",
-      "tecnologia",
-    ];
-
     const vehicleData: { [key: string]: any } = { ...formData };
 
     numericFields.forEach((field) => {
       if (vehicleData[field]) vehicleData[field] = Number(vehicleData[field]);
-    });
-
-    arrayFields.forEach((field) => {
-      if (typeof vehicleData[field] === "string") {
-        vehicleData[field] = vehicleData[field]
-          .split(",")
-          .map((item) => item.trim())
-          .filter((item) => item);
-      }
     });
 
     vehicleData.bodegaId = formData.bodegaId ? Number(formData.bodegaId) : null;
@@ -341,7 +324,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         categoria: selectedProfile.categoria || "",
         traccion: selectedProfile.traccion || "",
         numero_pasajeros: selectedProfile.numero_pasajeros?.toString() || "5",
-        
+
         // Rendimiento y Batería
         potencia_hp: selectedProfile.potencia_hp.toString(),
         autonomia_km: selectedProfile.autonomia_km.toString(),
@@ -453,7 +436,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         required
         className={styles.formInput}
       />
-      
+
       <input
         name="precio_costo"
         type="number"

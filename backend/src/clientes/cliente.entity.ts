@@ -18,6 +18,9 @@ export class Cliente {
   @Column({ nullable: true, length: 100 })
   email: string;
 
+  @Column({ length: 6, nullable: true }) // Añade nullable: true
+  codigo_actividad_economica: string;
+
   @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.cliente)
   cotizaciones: Cotizacion[];
 }

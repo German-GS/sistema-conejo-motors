@@ -1,3 +1,5 @@
+// src/pages/admin/LoginPage.tsx
+
 import React, { useState } from "react";
 import apiClient from "../../api/apiClient";
 import { useNavigate } from "react-router-dom";
@@ -12,11 +14,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Ya tienes useNavigate aquí
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Limpiar errores anteriores
+    setError("");
 
     try {
       const response = await apiClient.post("/auth/login", {
@@ -25,7 +27,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       });
       localStorage.setItem("accessToken", response.data.access_token);
       onLoginSuccess();
-      navigate("/admin"); // Redirigir al dashboard
+      // 👇 **LA LÍNEA PROBLEMÁTICA ORIGINAL SE ELIMINA Y SE REEMPLAZA POR ESTA** 👇
+      navigate("/dashboard-redirect"); // Redirige usando el router, sin recargar la página.
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -33,13 +36,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       );
     }
   };
+
   return (
     <div className={styles.loginContainer}>
-      {" "}
-      {/* Contenedor principal */}
       <div className={styles.loginCard}>
-        {" "}
-        {/* La tarjeta de login */}
         <img
           src={logoConejo}
           alt="Logo Conejo Motors"
@@ -48,8 +48,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         <h1>Bienvenido</h1>
         <p>Introduce tus credenciales para acceder al panel de control.</p>
         <form onSubmit={handleSubmit} className={styles.loginForm}>
-          {" "}
-          {/* El formulario */}
           <input
             type="email"
             placeholder="Correo Electrónico"
@@ -65,8 +63,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             required
           />
           <button type="submit">Iniciar Sesión</button>
-          {error && <p className={styles.error}>{error}</p>}{" "}
-          {/* Mensajes de error */}
+          {error && <p className={styles.error}>{error}</p>}
         </form>
       </div>
     </div>

@@ -29,7 +29,7 @@ import { BodegasPage } from "./pages/admin/BodegasPage";
 import TrackingPage from "./pages/admin/TrackingPage";
 import { SettingsPage } from "./pages/admin/SettingsPage";
 import { ReportsPage } from "./pages/admin/ReportsPage";
-import { PendingBillingPage } from "./pages/admin/PendingBillingPage";
+import PendingBillingPage from "./pages/admin/PendingBillingPage";
 
 // Páginas de Ventas
 import { CatalogPage } from "./pages/admin/sales/CatalogPage";
@@ -82,8 +82,8 @@ const ProtectedRouteByRole = ({ allowedRoles }: { allowedRoles: string[] }) => {
 
 function App() {
   const handleLoginSuccess = () => {
-    // Redirige al componente que decide el dashboard correcto.
-    window.location.href = "/dashboard-redirect";
+    // La redirección ahora se maneja en LoginPage.tsx
+    console.log("Login successful, redirecting...");
   };
 
   return (
@@ -163,7 +163,7 @@ function App() {
             <Route path="quotes" element={<MyQuotesPage />} />
             <Route path="quotes/:quoteId" element={<QuoteDetailsPage />} />
             <Route path="leads" element={<LeadsPage />} />
-  <Route path="leads/:leadId" element={<LeadDetailsPage />} />
+            <Route path="leads/:leadId" element={<LeadDetailsPage />} />
           </Route>
         </Route>
 

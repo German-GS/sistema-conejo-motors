@@ -93,7 +93,7 @@ export class LeadsService {
     const leadGuardado = await this.leadsRepository.save(nuevoLead);
 
      const message = `Nuevo lead asignado: ${nombre} (${email}).`;
-    const link = `/sales/leads/${leadGuardado.id}`; // Ruta para que el vendedor vea sus leads
+    const link = `/sales/leads`; // Ruta para que el vendedor vea sus leads
     await this.notificationsService.createForUser(vendedorAsignado, message, link);
 
     return leadGuardado;

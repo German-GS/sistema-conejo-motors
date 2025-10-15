@@ -8,17 +8,22 @@ import {
   Request,
   Patch,
   Body,
+  Post, // 👈 1. Importa 'Post'
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { LeadsService } from './leads.service';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UpdateLeadStatusDto } from './dto/update-lead-status.dto';
+import { CreateLeadDto } from './dto/create-lead.dto'; // 👈 2. Importa el DTO
 
 @Controller('leads')
+// ❌ NO toques el @UseGuards de aquí
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class LeadsController {
   constructor(private readonly leadsService: LeadsService) {}
+
+  // ... (los métodos existentes Get, Patch, etc., se quedan como están)
 
   // Ruta para que un vendedor obtenga SUS leads asignados
   @Get('my-leads')

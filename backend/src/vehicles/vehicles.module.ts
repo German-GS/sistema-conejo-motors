@@ -12,10 +12,10 @@ import { Venta } from '../ventas/venta.entity';
 // --- 👇 AÑADE ESTOS DOS IMPORTS 👇 ---
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
+import { Lead } from '../leads/lead.entity';
 
 @Module({
   imports: [
-    // --- 👇 AÑADE 'Cotizacion' y 'PlanillaParametro' A ESTA LISTA 👇 ---
     TypeOrmModule.forFeature([
       Vehicle,
       VehicleImage,
@@ -23,6 +23,7 @@ import { PlanillaParametro } from '../planilla-parametros/entities/planilla-para
       Venta,
       Cotizacion,
       PlanillaParametro,
+      Lead
     ]),
     MulterModule.register({
       dest: './uploads',

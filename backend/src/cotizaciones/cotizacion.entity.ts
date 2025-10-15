@@ -13,7 +13,8 @@ export type EstadoCotizacion =
   | 'Borrador'
   | 'Enviada'
   | 'Aceptada'
-  | 'Rechazada';
+  | 'Rechazada'
+  | 'Facturada';
 
 @Entity({ name: 'cotizaciones' })
 export class Cotizacion {
@@ -31,7 +32,7 @@ export class Cotizacion {
 
   @Column({
     type: 'enum',
-    enum: ['Borrador', 'Enviada', 'Aceptada', 'Rechazada'],
+    enum: ['Borrador', 'Enviada', 'Aceptada', 'Rechazada', 'Facturada'],
     default: 'Borrador',
   })
   estado: EstadoCotizacion;

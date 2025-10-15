@@ -1,58 +1,72 @@
-// src/pages/admin/PendingBillingPage/index.tsx
-import { useState, useEffect } from 'react';
-import apiClient from '@/api/apiClient';
-import { Card } from '@/components/Card';
-import toast from 'react-hot-toast';
-import styles from './PendingBillingPage.module.css';
+// frontend/src/pages/admin/PendingBillingPage/index.tsx
 
-interface PendingSale {
+import { useState, useEffect } from "react";
+import apiClient from "@/api/apiClient";
+import toast from "react-hot-toast";
+import { Card } from "@/components/Card";
+import styles from "./PendingBillingPage.module.css";
+
+interface PendingInvoice {
   id: number;
+  precio_final: number;
   cliente: { nombre_completo: string };
   vehiculo: { marca: string; modelo: string };
-  vendedor: { nombre_completo: string };
-  precio_final: number;
 }
 
-export const PendingBillingPage = () => {
-  const [pendingSales, setPendingSales] = useState<PendingSale[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<number | null>(null);
+// 1. Helper de moneda actualizado a Dólares (USD)
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+};
 
-  const fetchPendingSales = () => {
+const PendingBillingPage = () => {
+  const [invoices, setInvoices] = useState<PendingInvoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  // Estado para deshabilitar TODOS los botones mientras se procesa una solicitud
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const fetchPendingInvoices = async () => {
     setLoading(true);
-    apiClient.get('/billing/pending')
-      .then(response => {
-        setPendingSales(response.data);
-      })
-      .catch(() => {
-        toast.error('No se pudieron cargar las ventas pendientes.');
-      })
-      .finally(() => setLoading(false));
+    try {
+      const response = await apiClient.get("/billing/pending");
+      setInvoices(response.data);
+    } catch (error) {
+      toast.error("No se pudieron cargar las facturas pendientes.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchPendingSales();
+    fetchPendingInvoices();
   }, []);
 
-  const handleCreateInvoice = (cotizacionId: number) => {
-    setProcessingId(cotizacionId); // Bloquea el botón
-    toast.loading('Procesando factura...', { id: 'billing-toast' });
+  const handleCreateInvoice = async (cotizacionId: number) => {
+    // 2. Deshabilita todos los botones para prevenir cualquier otro clic
+    setIsProcessing(true);
 
-    apiClient.post('/billing/create', { cotizacionId })
-      .then(() => {
-        toast.success('¡Factura creada y venta completada!', { id: 'billing-toast' });
-        fetchPendingSales(); // Refresca la lista para quitar la que ya se facturó
-      })
-      .catch(error => {
-        toast.error(error.response?.data?.message || 'Error al crear la factura.', { id: 'billing-toast' });
+    toast
+      .promise(apiClient.post("/billing/create", { cotizacionId }), {
+        loading: "Procesando factura...",
+        success: () => {
+          // Si tiene éxito, refrescamos la lista. La fila desaparecerá
+          // gracias a la corrección del backend.
+          fetchPendingInvoices();
+          return "¡Factura creada y venta completada!";
+        },
+        error: (err) =>
+          err.response?.data?.message || "Error al procesar la factura.",
       })
       .finally(() => {
-        setProcessingId(null); // Desbloquea el botón
+        // 3. Al finalizar (éxito o error), se vuelven a habilitar los botones
+        setIsProcessing(false);
       });
   };
 
   return (
-    <Card title="Ventas Pendientes de Facturación">
+    <Card title="Facturación Pendiente">
       {loading ? (
         <p>Cargando...</p>
       ) : (
@@ -62,36 +76,36 @@ export const PendingBillingPage = () => {
               <th>ID Cotización</th>
               <th>Cliente</th>
               <th>Vehículo</th>
-              <th>Vendedor</th>
               <th>Monto Final</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {pendingSales.length > 0 ? (
-              pendingSales.map(sale => (
-                <tr key={sale.id}>
-                  <td>#{sale.id}</td>
-                  <td>{sale.cliente.nombre_completo}</td>
-                  <td>{sale.vehiculo.marca} {sale.vehiculo.modelo}</td>
-                  <td>{sale.vendedor.nombre_completo}</td>
-                  <td>
-                    {new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(sale.precio_final)}
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-principal"
-                      onClick={() => handleCreateInvoice(sale.id)}
-                      disabled={processingId === sale.id}
-                    >
-                      {processingId === sale.id ? 'Procesando...' : 'Crear Factura'}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
+            {invoices.map((invoice) => (
+              <tr key={invoice.id}>
+                <td>{invoice.id}</td>
+                <td>{invoice.cliente.nombre_completo}</td>
+                <td>
+                  {invoice.vehiculo.marca} {invoice.vehiculo.modelo}
+                </td>
+                <td>{formatCurrency(invoice.precio_final)}</td>
+                <td>
+                  <button
+                    className={styles.facturarBtn}
+                    onClick={() => handleCreateInvoice(invoice.id)}
+                    // El botón se deshabilita si CUALQUIER operación está en curso
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? "Procesando..." : "Facturar y Vender"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {invoices.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center' }}>No hay ventas pendientes de facturar.</td>
+                <td colSpan={5} style={{ textAlign: "center" }}>
+                  No hay cotizaciones aceptadas pendientes de facturación.
+                </td>
               </tr>
             )}
           </tbody>
@@ -100,3 +114,5 @@ export const PendingBillingPage = () => {
     </Card>
   );
 };
+
+export default PendingBillingPage;

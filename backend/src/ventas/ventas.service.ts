@@ -59,7 +59,7 @@ export class VentasService {
 
     const vehicle = cotizacion.vehiculo;
     const message = `Venta de ${vehicle.marca} ${vehicle.modelo} (VIN: ${vehicle.vin}) está lista para ser facturada.`;
-    const link = `/admin/billing/pending`; // Futura ruta de facturación
+    const link = `/admin/billing`; // Futura ruta de facturación
     await this.notificationsService.createForAdmins(message, link);
 
     

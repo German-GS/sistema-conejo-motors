@@ -20,7 +20,7 @@ interface SalesDashboardStats {
   monthlySalesCount: number;
   monthlyRevenue: number;
   estimatedCommissions: number;
-  pendingQuotes: number;
+  pendingItemsCount: number;
   salesData: { month: string; vendidos: number }[];
 }
 
@@ -88,7 +88,7 @@ export const SalesDashboardPage = () => {
             <h2>{formatCurrency(stats?.estimatedCommissions ?? 0)}</h2>
           </Card>
           <Card title="Cotizaciones Pendientes">
-            <h2>{stats?.pendingQuotes ?? 0}</h2>
+            <h2>{stats?.pendingItemsCount ?? 0}</h2>
           </Card>
         </div>
 

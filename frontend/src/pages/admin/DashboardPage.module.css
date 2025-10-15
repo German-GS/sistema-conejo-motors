@@ -88,3 +88,17 @@
   font-size: 0.8rem;
   border-radius: 4px;
 }
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamaño */
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Para que se apilen en pantallas más pequeñas */
+@media (max-width: 1200px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+}

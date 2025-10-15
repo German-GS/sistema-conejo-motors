@@ -122,6 +122,23 @@
   color: #333;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Aumenta el espacio entre la campana y el botón */
+}
+
+.notificationBell {
+  position: relative; /* Necesario para posicionar la insignia correctamente */
+  cursor: pointer;
+  color: var(--texto-secundario);
+  transition: color 0.2s;
+}
+
+.notificationBell:hover {
+  color: var(--azul-principal);
+}
+
 .logoutButton {
   background: none;
   border: 1px solid #ccc;
@@ -231,4 +248,73 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Reemplaza tu .notificationBadge existente con este bloque */
+
+.notificationBadge {
+  position: absolute;
+  top: -8px;    /* Sube la insignia un poco */
+  right: -10px;   /* La mueve un poco a la derecha */
+  background-color: var(--warning); /* Un rojo vibrante */
+  color: white;
+  border-radius: 50%; /* La hace perfectamente redonda */
+  width: 22px;        /* Aumenta el tamaño */
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border: 2px solid white; /* Borde blanco para que resalte */
+  box-shadow: 0 0 10px rgba(231, 8, 30, 0.7); /* Sombra roja */
+
+  /* Animación de pulso */
+  animation: pulse 1.5s infinite;
+}
+
+/* Animación para el efecto de pulso */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(231, 8, 30, 0.7);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(231, 8, 30, 1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(231, 8, 30, 0.7);
+  }
+}
+
+/* Nuevos estilos para el menú desplegable de notificaciones */
+.notificationDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 300px;
+  z-index: 100;
+  margin-top: 10px;
+  border: 1px solid var(--borde-suave);
+}
+
+.notificationItem {
+  padding: 1rem;
+  border-bottom: 1px solid var(--borde-suave);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.9rem;
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+.notificationItem:hover {
+  background-color: #f7f7f7;
 }

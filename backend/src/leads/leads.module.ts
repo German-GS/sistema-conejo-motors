@@ -11,9 +11,11 @@ import { NotificationsModule } from '../notifications/notifications.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Lead, User, Vehicle]),
-    NotificationsModule, // Importamos el módulo de notificaciones para usar su servicio
+    NotificationsModule,
   ],
   controllers: [LeadsController],
   providers: [LeadsService],
+  // --- 👇 AÑADE ESTA LÍNEA 👇 ---
+  exports: [LeadsService], // Hace que LeadsService esté disponible para otros módulos.
 })
 export class LeadsModule {}

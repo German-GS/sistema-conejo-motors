@@ -21,21 +21,30 @@ export class UsersService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // Esta función creará el admin si la base de datos está vacía
-    const userCount = await this.usersRepository.count();
-    if (userCount === 0) {
-      console.log('Base de datos de usuarios vacía, creando administrador...');
-      const adminDto: CreateUserDto = {
-        nombre_completo: 'Administrador Principal',
-        email: 'admin@conejomotors.com',
-        contrasena: 'password123',
-      };
-      await this.create(adminDto);
-      console.log(
-        `Usuario administrador creado con el email: ${adminDto.email}`,
-      );
+  const userCount = await this.usersRepository.count();
+  if (userCount === 0) {
+    // Busca el rol 'Administrador'
+    const adminRole = await this.rolesRepository.findOne({
+      where: { nombre: 'Administrador' },
+    });
+
+    if (!adminRole) {
+      // Si el rol no existe, detiene el proceso.
+      return;
     }
+
+    const adminDto: CreateUserDto = {
+      nombre_completo: 'Administrador Principal',
+      email: 'admin@conejomotors.com',
+      contrasena: 'password123',
+      rol_id: adminRole.id, // <-- Asigna el ID del rol encontrado
+      salario_base: 500000,
+    };
+
+    // Llama a la función 'create' con todos los datos necesarios.
+    await this.create(adminDto);
   }
+}
 
   // --- NUEVO MÉTODO AÑADIDO ---
   async findOneById(id: number): Promise<User> {
