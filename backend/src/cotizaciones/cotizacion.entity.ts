@@ -1,3 +1,5 @@
+// En: src/cotizaciones/cotizacion.entity.ts
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -21,6 +23,10 @@ export class Cotizacion {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ length: 255, nullable: true })
+  vehiculo_descripcion: string;
+  
+
   @CreateDateColumn()
   fecha_creacion: Date;
 
@@ -43,6 +49,10 @@ export class Cotizacion {
   @ManyToOne(() => Cliente, (cliente) => cliente.cotizaciones)
   cliente: Cliente;
 
-  @ManyToOne(() => Vehicle)
+  @ManyToOne(() => Vehicle, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   vehiculo: Vehicle;
+  
 }

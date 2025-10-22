@@ -5,16 +5,27 @@ import type {
   VehicleCategory,
   Drivetrain,
 } from '../vehicle.entity';
+import { Type } from 'class-transformer';
 import {
   IsString,
+  IsArray,
   IsNotEmpty,
   IsNumber,
   IsPositive,
   IsOptional,
   IsIn,
   Length,
+  ValidateNested,
   Matches, // 👈 Importa Matches
 } from 'class-validator';
+
+class VehicleImageDto {
+  @IsString()
+  url: string;
+
+  @IsNumber()
+  order: number;
+}
 
 export class CreateVehicleDto {
   @IsString()
@@ -22,11 +33,17 @@ export class CreateVehicleDto {
   @Length(17, 17, { message: 'El VIN debe tener exactamente 17 caracteres.' })
   vin: string;
 
+  @IsNumber()
+  @IsNotEmpty({ message: 'Se debe seleccionar un perfil de modelo.' })
+  profileId: number;
+
   @IsString()
+  @IsOptional()
   @IsNotEmpty({ message: 'La marca es obligatoria.' })
   marca: string;
 
   @IsString()
+  @IsOptional()
   @IsNotEmpty({ message: 'El modelo es obligatorio.' })
   modelo: string;
 
@@ -47,14 +64,17 @@ export class CreateVehicleDto {
   precio_venta: number;
 
   @IsNumber()
+  @IsOptional()
   @IsPositive()
   autonomia_km: number;
 
   @IsNumber()
+  @IsOptional()
   @IsPositive()
   potencia_hp: number;
 
   @IsNumber()
+  @IsOptional()
   @IsPositive()
   capacidad_bateria_kwh: number;
 
@@ -80,9 +100,83 @@ export class CreateVehicleDto {
 
   @IsOptional()
   // 👇 CAMBIO AQUÍ: Añade "as const" al final del array 👇
-  @IsIn(['Disponible', 'Reservado', 'Vendido'] as const)
-  estado?: VehicleStatus;
+  @IsOptional()
+  @IsString()
+  colores_disponibles?: string;
+
+  @IsOptional()
+  @IsString()
+  seguridad?: string;
+
+  @IsOptional()
+  @IsString()
+  interior?: string;
+
+  @IsOptional()
+  @IsString()
+  exterior?: string;
+
+  @IsOptional()
+  @IsString()
+  tecnologia?: string;
+
+  @IsOptional()
+  @IsNumber()
+  bodegaId?: number;
+
    @IsOptional()
+  @IsNumber()
+  torque_nm?: number;
+
+  @IsOptional()
+  @IsNumber()
+  aceleracion_0_100?: number;
+
+  @IsOptional()
+  @IsNumber()
+  velocidad_maxima?: number;
+
+  @IsOptional()
+  @IsNumber()
+  tiempo_carga_dc?: number;
+
+  @IsOptional()
+  @IsNumber()
+  tiempo_carga_ac?: number;
+  
+  @IsOptional()
+  @IsNumber()
+  largo_mm?: number;
+
+  @IsOptional()
+  @IsNumber()
+  ancho_mm?: number;
+
+  @IsOptional()
+  @IsNumber()
+  alto_mm?: number;
+
+  @IsOptional()
+  @IsNumber()
+  distancia_ejes_mm?: number;
+
+  @IsOptional()
+  @IsNumber()
+  peso_kg?: number;
+
+  @IsOptional()
+  @IsNumber()
+  capacidad_maletero_l?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => VehicleImageDto)
+  imagenes?: VehicleImageDto[];
+
+  /* @IsIn(['Disponible', 'Reservado', 'Vendido'] as const)
+  estado?: VehicleStatus;
+  @IsOptional()
   @IsString()
   @Matches(/^[\w\s]+(,\s*[\w\s]+)*(,\s*)?$/, {
     message: 'Los colores deben ser palabras separadas por comas (ej: Rojo, Blanco, Azul).',
@@ -115,9 +209,7 @@ export class CreateVehicleDto {
   @Matches(/^[\w\s]+(,\s*[\w\s]+)*(,\s*)?$/, {
     message: 'La tecnología debe ser una lista de características separadas por comas.',
   })
-  tecnologia?: string;
+  tecnologia?: string; */
 
-  @IsOptional()
-  @IsNumber()
-  bodegaId?: number;
+  
 }

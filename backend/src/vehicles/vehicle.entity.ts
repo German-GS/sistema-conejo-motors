@@ -9,8 +9,8 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Bodega } from '../bodegas/bodega.entity';
-import { VehicleImage } from './vehicle-image.entity';
 import { TrackingHistory } from '../tracking/tracking.entity';
+import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 
 export type VehicleStatus = 'Disponible' | 'Reservado' | 'Vendido';
 export type VehicleCategory =
@@ -123,25 +123,27 @@ export class Vehicle {
   @Column({ nullable: true })
   numero_pasajeros: number;
 
-  @Column({ type: 'text', nullable: true, array: true })
-  colores_disponibles: string[]; // Lista de colores como "Rojo,Azul,Blanco"
+  @Column({ type: 'text', nullable: true })
+  colores_disponibles: string; 
 
-  @Column({ type: 'text', nullable: true, array: true })
-  seguridad: string[]; // Lista de características de seguridad
+  @Column({ type: 'text', nullable: true })
+  seguridad: string; 
 
-  @Column({ type: 'text', nullable: true, array: true })
-  interior: string[]; // Lista de características interiores
+  @Column({ type: 'text', nullable: true })
+  interior: string; 
 
-  @Column({ type: 'text', nullable: true, array: true })
-  exterior: string[]; // Lista de características exteriores
+  @Column({ type: 'text', nullable: true })
+  exterior: string; 
 
-  @Column({ type: 'text', nullable: true, array: true })
-  tecnologia: string[]; // Lista de características de tecnología
+  @Column({ type: 'text', nullable: true })
+  tecnologia: string;
 
   // --- RELACIONES ---
 
-  @OneToMany(() => VehicleImage, (image) => image.vehicle)
-  imagenes: VehicleImage[];
+  
+
+  @ManyToOne(() => VehicleProfile)
+  profile: VehicleProfile;
 
   @Column({ nullable: true })
   currentLocation: string;

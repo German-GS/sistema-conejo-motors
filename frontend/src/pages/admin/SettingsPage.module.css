@@ -1,4 +1,21 @@
 /* Estilos existentes para la tabla de parámetros y roles */
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.profileForm textarea {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--texto-principal);
+  background-color: var(--fondo-tarjeta);
+  box-sizing: border-box;
+  min-height: 80px;
+  resize: vertical;
+}
+
 .settingsTable {
   width: 100%;
   border-collapse: collapse;

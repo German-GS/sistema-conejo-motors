@@ -5,24 +5,9 @@ import { Card } from "../../components/Card";
 import styles from "./DashboardPage.module.css";
 import { Modal } from "../../components/Modal";
 import toast from "react-hot-toast";
+import { Vehicle } from "../../interfaces";
 
 // Interfaz para el tipo de dato Vehicle
-interface Vehicle {
-  id: number;
-  marca: string;
-  modelo: string;
-  año: number;
-  vin: string;
-  color: string;
-  precio_costo: number;
-  precio_venta: number;
-  autonomia_km: number;
-  potencia_hp: number;
-  capacidad_bateria_kwh: number;
-  estado: string;
-  imagenes?: { id: number; url: string }[];
-  bodega?: { id: number; nombre: string };
-}
 
 export const DashboardPage = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -107,9 +92,15 @@ export const DashboardPage = () => {
             {vehicles.map((vehicle) => (
               <tr key={vehicle.id}>
                 <td>
-                  {vehicle.imagenes && vehicle.imagenes.length > 0 ? (
+                  {vehicle.profile?.imagenes &&
+                  vehicle.profile.imagenes.length > 0 ? (
                     <img
-                      src={`${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}`}
+                      // Ordena por 'order' por si acaso y toma la primera
+                      src={`${apiClient.defaults.baseURL}/${
+                        [...vehicle.profile.imagenes].sort(
+                          (a, b) => a.order - b.order
+                        )[0].url
+                      }`}
                       alt={`${vehicle.marca} ${vehicle.modelo}`}
                       className={styles.thumbnail}
                     />

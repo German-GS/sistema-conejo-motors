@@ -6,12 +6,28 @@ import {
   IsPositive,
   IsOptional,
   IsIn,
+  IsUrl,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import type {
   VehicleCategory,
   Drivetrain,
 } from '../../vehicles/vehicle.entity';
+
+export class VehicleProfileImageDto {
+  @IsOptional()
+  @IsNumber()
+  id?: number;
+
+  @IsString()
+  @IsUrl()
+  url: string;
+
+  @IsNumber()
+  @Min(0)
+  order: number;
+}
 
 export class CreateVehicleProfileDto {
   @IsString()
@@ -22,7 +38,6 @@ export class CreateVehicleProfileDto {
   @IsNotEmpty()
   modelo: string;
 
-  // 👇 2. Añade @Type para transformar el string a número antes de validar
   @Type(() => Number)
   @IsNumber()
   @IsPositive()
@@ -95,4 +110,25 @@ export class CreateVehicleProfileDto {
   @Type(() => Number)
   @IsNumber()
   numero_pasajeros?: number;
+
+  @IsOptional()
+  @IsString()
+  colores_disponibles?: string;
+
+  @IsOptional()
+  @IsString()
+  seguridad?: string;
+
+  @IsOptional()
+  @IsString()
+  interior?: string;
+
+  @IsOptional()
+  @IsString()
+  exterior?: string;
+
+  @IsOptional()
+  @IsString()
+  tecnologia?: string;
+
 }

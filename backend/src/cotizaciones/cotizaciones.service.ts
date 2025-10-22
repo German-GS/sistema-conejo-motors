@@ -51,13 +51,15 @@ export class CotizacionesService {
         `Vehículo con ID #${createDto.vehiculoId} no encontrado.`,
       );
     }
-
     const nuevaCotizacion = this.cotizacionesRepository.create({
       ...createDto,
       cliente,
       vehiculo,
       vendedor,
+
+      vehiculo_descripcion: `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.año})`,
     });
+  
 
     return this.cotizacionesRepository.save(nuevaCotizacion);
   }

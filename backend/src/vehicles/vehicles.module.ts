@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Vehicle } from './vehicle.entity';
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesService } from './vehicles.service';
-import { VehicleImage } from './vehicle-image.entity';
 import { MulterModule } from '@nestjs/platform-express';
 import { Bodega } from '../bodegas/bodega.entity';
 import { Venta } from '../ventas/venta.entity';
@@ -13,17 +12,18 @@ import { Venta } from '../ventas/venta.entity';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
 import { Lead } from '../leads/lead.entity';
+import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Vehicle,
-      VehicleImage,
       Bodega,
       Venta,
       Cotizacion,
       PlanillaParametro,
-      Lead
+      Lead,
+      VehicleProfile
     ]),
     MulterModule.register({
       dest: './uploads',

@@ -7,7 +7,6 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { Vehicle } from './vehicles/vehicle.entity';
-import { VehicleImage } from './vehicles/vehicle-image.entity';
 import { RolesModule } from './roles/roles.module';
 import { Role } from './roles/role.entity';
 import { Salario } from './salarios/salario.entity';
@@ -42,6 +41,7 @@ import { SiteSetting } from './site-settings/site-setting.entity';
 import { SiteSettingsModule } from './site-settings/site-settings.module';
 import { Factura } from './facturacion/factura.entity';
 import { FacturacionModule } from './facturacion/facturacion.module';
+import { VehicleProfileImage } from './vehicle-profiles/vehicle-profile-image.entity';
 
 
 @Module({
@@ -60,7 +60,6 @@ import { FacturacionModule } from './facturacion/facturacion.module';
       entities: [
         User,
         Vehicle,
-        VehicleImage,
         Role,
         Salario,
         ReciboPago,
@@ -76,7 +75,8 @@ import { FacturacionModule } from './facturacion/facturacion.module';
         Lead,
         Customer,
         SiteSetting,
-        Factura
+        Factura,
+        VehicleProfileImage
       ],
       synchronize: true,
     }),

@@ -1,19 +1,27 @@
+// backend/src/vehicle-profiles/vehicle-profiles.module.ts
+
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MulterModule } from '@nestjs/platform-express'; // 👈 1. Importa MulterModule
-import { VehicleProfile } from './vehicle-profile.entity';
-import { VehicleProfilesController } from './vehicle-profiles.controller';
 import { VehicleProfilesService } from './vehicle-profiles.service';
+import { VehicleProfilesController } from './vehicle-profiles.controller';
+import { VehicleProfile } from './vehicle-profile.entity';
+// --- 👇 IMPORTAR LA NUEVA ENTIDAD 👇 ---
+import { VehicleProfileImage } from './vehicle-profile-image.entity';
+import { MulterModule } from '@nestjs/platform-express'; // Asegúrate de tenerlo importado si vas a subir archivos
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([VehicleProfile]),
-    // 👇 2. Configura Multer para guardar los logos en 'uploads/logos'
+    TypeOrmModule.forFeature([
+      VehicleProfile,
+      // --- 👇 AÑADIR LA NUEVA ENTIDAD AQUÍ 👇 ---
+      VehicleProfileImage,
+    ]),
     MulterModule.register({
-      dest: './uploads/logos',
+      dest: './uploads', // Directorio temporal para las subidas
     }),
   ],
   controllers: [VehicleProfilesController],
   providers: [VehicleProfilesService],
+  exports: [VehicleProfilesService], // Asegúrate de exportar el servicio si otros módulos lo usan
 })
 export class VehicleProfilesModule {}

@@ -23,11 +23,11 @@ interface VehicleProfile {
   id: number;
   marca: string;
   modelo: string;
-  logo_url?: string;
+  imagenes?: { url: string }[];
 }
 
-// --- COMPONENTES INTERNOS ---
-const ParametrosTable = ({
+// --- COMPONENTES INTERNOS (Helper para la tabla de parámetros) ---
+const ParametrosTable: React.FC<any> = ({
   parametros,
   editId,
   editValue,
@@ -35,7 +35,7 @@ const ParametrosTable = ({
   onCancel,
   onSave,
   onValueChange,
-}: any) => {
+}) => {
   if (!parametros || parametros.length === 0) {
     return <p>No hay parámetros de este tipo para mostrar.</p>;
   }
@@ -102,6 +102,7 @@ const ParametrosTable = ({
 
 // --- COMPONENTE PRINCIPAL ---
 export const SettingsPage = () => {
+  // --- ESTADOS DEL COMPONENTE ---
   const [cargasPatronales, setCargasPatronales] = useState<Parametro[]>([]);
   const [deduccionesEmpleado, setDeduccionesEmpleado] = useState<Parametro[]>(
     []
@@ -111,7 +112,7 @@ export const SettingsPage = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState(0);
   const [profiles, setProfiles] = useState<VehicleProfile[]>([]);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [profileImages, setProfileImages] = useState<File[]>([]); // Estado para las imágenes del perfil
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initialProfileState = {
@@ -120,6 +121,8 @@ export const SettingsPage = () => {
     potencia_hp: "",
     autonomia_km: "",
     capacidad_bateria_kwh: "",
+    tiempo_carga_dc: "",
+    tiempo_carga_ac: "",
     torque_nm: "",
     aceleracion_0_100: "",
     velocidad_maxima: "",
@@ -132,9 +135,16 @@ export const SettingsPage = () => {
     peso_kg: "",
     capacidad_maletero_l: "",
     numero_pasajeros: "",
+    colores_disponibles: "",
+    seguridad: "",
+    interior: "",
+    exterior: "",
+    tecnologia: "",
   };
+
   const [newProfile, setNewProfile] = useState(initialProfileState);
 
+  // --- FUNCIONES Y EFECTOS ---
   const fetchParametros = async () => {
     try {
       const response = await apiClient.get("/planilla-parametros");
@@ -180,36 +190,56 @@ export const SettingsPage = () => {
   };
 
   const handleProfileFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     setNewProfile((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setLogoFile(e.target.files[0]);
+    if (e.target.files) {
+      setProfileImages(Array.from(e.target.files));
     }
   };
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(newProfile).forEach(([key, value]) => {
-      if (value) formData.append(key, value);
-    });
-    if (logoFile) formData.append("logo", logoFile);
 
     try {
-      await apiClient.post("/vehicle-profiles", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("Perfil de vehículo creado con éxito.");
+      // --- 👇 INICIO DE LA CORRECCIÓN: Envía un objeto JSON, no FormData 👇 ---
+      // 1. Primero, crea el perfil enviando el objeto 'newProfile' directamente.
+      //    Axios (apiClient) lo convertirá a JSON automáticamente.
+      const profileResponse = await apiClient.post(
+        "/vehicle-profiles",
+        newProfile
+      );
+      const newProfileId = profileResponse.data.id;
+      toast.success("Perfil creado, subiendo imágenes...");
+
+      if (profileImages.length > 0) {
+        const imagesFormData = new FormData();
+        profileImages.forEach((file) => {
+          imagesFormData.append("files", file);
+        });
+        await apiClient.post(
+          `/vehicle-profiles/${newProfileId}/upload-images`,
+          imagesFormData
+        );
+      }
+
+      toast.success("¡Perfil e imágenes guardados con éxito!");
+
       setNewProfile(initialProfileState);
-      setLogoFile(null);
+      setProfileImages([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
       fetchVehicleProfiles();
-    } catch (err) {
-      toast.error("Error al crear el perfil.");
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || "Error al crear el perfil.";
+      toast.error(
+        Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
+      );
     }
   };
 
@@ -225,12 +255,14 @@ export const SettingsPage = () => {
     }
   };
 
+  // --- RENDERIZADO DEL COMPONENTE ---
   return (
     <>
       {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
 
       <Card title="Perfiles de Modelos de Vehículos">
         <form onSubmit={handleCreateProfile} className={styles.profileForm}>
+          {/* Inputs de texto y selects */}
           <input
             name="marca"
             value={newProfile.marca}
@@ -305,6 +337,20 @@ export const SettingsPage = () => {
             required
           />
           <input
+            name="tiempo_carga_dc"
+            type="number"
+            value={newProfile.tiempo_carga_dc}
+            onChange={handleProfileFormChange}
+            placeholder="Carga Rápida (min)"
+          />
+          <input
+            name="tiempo_carga_ac"
+            type="number"
+            value={newProfile.tiempo_carga_ac}
+            onChange={handleProfileFormChange}
+            placeholder="Carga Lenta (h)"
+          />
+          <input
             name="torque_nm"
             type="number"
             value={newProfile.torque_nm}
@@ -368,9 +414,49 @@ export const SettingsPage = () => {
             placeholder="Maletero (L)"
           />
 
-          <div className={styles.fileInputContainer}>
+          {/* Textareas */}
+          <textarea
+            name="colores_disponibles"
+            value={newProfile.colores_disponibles}
+            onChange={handleProfileFormChange}
+            placeholder="Colores disponibles (ej: Rojo, Blanco, Azul)"
+            className={styles.fullWidth}
+          />
+          <textarea
+            name="seguridad"
+            value={newProfile.seguridad}
+            onChange={handleProfileFormChange}
+            placeholder="Características de seguridad (ej: 6 airbags, Frenos ABS)"
+            className={styles.fullWidth}
+          />
+          <textarea
+            name="interior"
+            value={newProfile.interior}
+            onChange={handleProfileFormChange}
+            placeholder="Características interiores (ej: Asientos de cuero, Pantalla táctil)"
+            className={styles.fullWidth}
+          />
+          <textarea
+            name="exterior"
+            value={newProfile.exterior}
+            onChange={handleProfileFormChange}
+            placeholder="Características exteriores (ej: Faros LED, Techo panorámico)"
+            className={styles.fullWidth}
+          />
+          <textarea
+            name="tecnologia"
+            value={newProfile.tecnologia}
+            onChange={handleProfileFormChange}
+            placeholder="Características de tecnología (ej: Carga inalámbrica, Android Auto)"
+            className={styles.fullWidth}
+          />
+
+          {/* Input de archivo */}
+          <div className={`${styles.fileInputContainer} ${styles.fullWidth}`}>
             <label htmlFor="logo-upload" className={styles.fileInputLabel}>
-              {logoFile ? `Archivo: ${logoFile.name}` : "Subir Logo (Opcional)"}
+              {profileImages.length > 0
+                ? `${profileImages.length} imágen(es) seleccionada(s)`
+                : "Añadir Fotos del Modelo (hasta 10)"}
             </label>
             <input
               id="logo-upload"
@@ -378,17 +464,23 @@ export const SettingsPage = () => {
               onChange={handleFileChange}
               ref={fileInputRef}
               accept="image/*"
+              multiple
             />
           </div>
-          <button type="submit" className="btn btn-principal">
+
+          <button
+            type="submit"
+            className={`btn btn-principal ${styles.fullWidth}`}
+          >
             Añadir Perfil
           </button>
         </form>
 
+        {/* Tabla de perfiles existentes */}
         <table className={styles.settingsTable} style={{ marginTop: "2rem" }}>
           <thead>
             <tr>
-              <th>Logo</th>
+              <th>Imagen</th>
               <th>Marca</th>
               <th>Modelo</th>
               <th>Acciones</th>
@@ -398,14 +490,15 @@ export const SettingsPage = () => {
             {profiles.map((profile) => (
               <tr key={profile.id}>
                 <td>
-                  {profile.logo_url ? (
+                  {/* Revisa si hay imágenes y muestra la primera */}
+                  {profile.imagenes && profile.imagenes.length > 0 ? (
                     <img
-                      src={`${apiClient.defaults.baseURL}/${profile.logo_url}`}
+                      src={`${apiClient.defaults.baseURL}/${profile.imagenes[0].url}`}
                       alt={profile.marca}
-                      className={styles.logoImage}
+                      className={styles.logoImage} // Reutilizamos el estilo del logo para la miniatura
                     />
                   ) : (
-                    <div className={styles.noLogo}>Sin logo</div>
+                    <div className={styles.noLogo}>Sin imagen</div> // Mensaje actualizado
                   )}
                 </td>
                 <td>{profile.marca}</td>

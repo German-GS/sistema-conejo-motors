@@ -1,3 +1,5 @@
+// En: src/vehicle-profiles/vehicle-profiles.controller.ts
+
 import {
   Controller,
   Get,
@@ -7,10 +9,11 @@ import {
   Param,
   ParseIntPipe,
   UseGuards,
-  UseInterceptors, // 👈 1. Importa interceptors
-  UploadedFile, // 👈 2. Importa UploadedFile
+  UseInterceptors,
+  UploadedFiles,
+  Patch
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express'; // 👈 3. Importa FileInterceptor
+import { FilesInterceptor } from '@nestjs/platform-express'; // <-- Importa esto
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -29,13 +32,30 @@ export class VehicleProfilesController {
 
   @Post()
   @Roles('Administrador')
-  @UseInterceptors(FileInterceptor('logo')) // 👈 4. Intercepta el archivo con el campo 'logo'
-  create(
-    @Body() createDto: CreateVehicleProfileDto,
-    @UploadedFile() file: Express.Multer.File, // 👈 5. Recibe el archivo
+  create(@Body() createDto: CreateVehicleProfileDto) {
+    return this.profilesService.create(createDto);
+  }
+
+  @Post(':id/upload-images')
+  @Roles('Administrador')
+  @UseInterceptors(FilesInterceptor('files', 10)) 
+  uploadProfileImages(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    // 6. Pasa la ruta del archivo (si existe) al servicio 👇
-    return this.profilesService.create(createDto, file?.path);
+
+    return this.profilesService.addImages(
+      id,
+      files.map((file) => file.path),
+    );
+  }
+  @Patch(':id/images/reorder') // Nueva ruta
+  @Roles('Administrador') // Asumiendo rol necesario
+  reorderProfileImages(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { images: { id: number; order: number }[] } // Espera un array de {id, order}
+  ) {
+    return this.profilesService.reorderProfileImages(id, body.images);
   }
 
   @Delete(':id')

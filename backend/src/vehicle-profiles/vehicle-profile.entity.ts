@@ -1,7 +1,9 @@
 // backend/src/vehicle-profiles/vehicle-profile.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 // 👇 LA CORRECCIÓN ES AÑADIR LA PALABRA 'type' AQUÍ 👇
 import type { VehicleCategory, Drivetrain } from '../vehicles/vehicle.entity';
+import { VehicleProfileImage } from './vehicle-profile-image.entity';
+
 
 @Entity({ name: 'vehicle_profiles' })
 export class VehicleProfile {
@@ -54,6 +56,14 @@ export class VehicleProfile {
   @Column({ nullable: true })
   alto_mm: number;
 
+ @OneToMany(() => VehicleProfileImage, (image) => image.profile, {
+    // --- 👇 AÑADE ESTA LÍNEA ---
+    cascade: true, // Esto habilita el borrado (y guardado/actualización) en cascada
+    // --- 👆 FIN DE LA LÍNEA AÑADIDA ---
+    eager: true, // Mantén eager si quieres cargar las imágenes automáticamente
+  })
+  imagenes: VehicleProfileImage[];
+
   @Column({ nullable: true })
   distancia_ejes_mm: number;
 
@@ -65,4 +75,6 @@ export class VehicleProfile {
 
   @Column({ nullable: true })
   numero_pasajeros: number;
+
+  
 }

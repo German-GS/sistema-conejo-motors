@@ -96,6 +96,12 @@ export const VehicleDetailPage = () => {
   };
 
   if (!vehicle) return <p>Cargando detalles del vehículo...</p>;
+  console.log("Vehicle data received by component:", vehicle);
+  console.log(
+    "Seguridad data type:",
+    typeof vehicle.seguridad,
+    vehicle.seguridad
+  ); // Verifica tipo y contenido
 
   return (
     <div className={styles.detailContainer}>

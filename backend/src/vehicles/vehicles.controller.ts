@@ -62,35 +62,6 @@ export class VehiclesController {
   getSalespersonDashboardStats(@Req() req) {
     return this.vehiclesService.getSalespersonDashboardStats(req.user);
   }
-
-  @Patch(':id/images')
-  @UseGuards(AuthGuard('jwt'))
-  updateImagesOrder(
-    @Param('id') id: string,
-    @Body()
-    body: {
-      imagesToUpdate: { id: number; order: number }[];
-      idsToDelete: number[];
-    },
-  ) {
-    return this.vehiclesService.updateImages(
-      +id,
-      body.imagesToUpdate,
-      body.idsToDelete,
-    );
-  }
-
-  @Post(':id/upload')
-  @UseGuards(AuthGuard('jwt'))
-  @UseInterceptors(FilesInterceptor('files', 7))
-  uploadImages(
-    @Param('id') id: string,
-    @UploadedFiles() files: Array<Express.Multer.File>,
-  ) {
-    const normalizedPaths = files.map((file) => file.path.replace(/\\/g, '/'));
-    return this.vehiclesService.addImages(+id, normalizedPaths);
-  }
-
   // --- MÉTODOS PÚBLICOS (SIN GUARDIANES) ---
 
   @Get('sales/catalog')

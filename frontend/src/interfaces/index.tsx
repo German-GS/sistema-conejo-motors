@@ -1,25 +1,50 @@
+// src/interfaces/index.tsx
+
+export interface Bodega {
+  id: number;
+  nombre: string;
+}
+
+export interface ProfileImage {
+  id: number;
+  url: string;
+  order: number;
+}
+
+export interface VehicleProfile {
+  id: number;
+  marca: string;
+  modelo: string;
+  imagenes?: ProfileImage[];
+}
+
+// This is the main, centralized Vehicle interface
 export interface Vehicle {
   id: number;
   marca: string;
   modelo: string;
-  year: number;
+  año: number;
   vin: string;
   color: string;
-  currentLocation: string;
-  // Agrega aquí cualquier otra propiedad que tengan tus vehículos
+  precio_costo: number;
+  precio_venta: number;
+  estado: string;
+  bodega?: Bodega;
+  profile?: VehicleProfile;
+  imagenes?: ProfileImage[]; // Vehicle's own specific images
 }
 
+// Keep your other interfaces like User and TrackingLog
 export interface User {
   id: number;
   email: string;
-  // Agrega aquí cualquier otra propiedad que tengan tus usuarios
 }
 
 export interface TrackingLog {
   id: number;
   origin: string;
   destination: string;
-  departureTime: string; // El backend lo envía como string, lo convertiremos a Date si es necesario
-  vehicle: Vehicle;
+  departureTime: string;
+  vehicle: Vehicle; // Note: This now uses the full Vehicle type
   departureUser: User;
 }
