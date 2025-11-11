@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./SiteHomepageSettings.module.css";
+import { Card } from "@/components/Card";
 
 // --- INTERFACES ---
 interface Setting {
@@ -31,36 +32,59 @@ export const SiteHomepageSettings = () => {
   const [featuredVehicleIds, setFeaturedVehicleIds] = useState<Set<number>>(
     new Set()
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // --- EFECTOS ---
   useEffect(() => {
-    // Carga la configuración actual del sitio
-    apiClient
-      .get("/site-settings")
-      .then((res) => {
-        const settings: Setting[] = res.data;
+    setLoading(true); // Ponemos el estado de carga
+
+    const loadInitialData = async () => {
+      try {
+        // 1. Hacemos ambas peticiones al mismo tiempo
+        const [settingsRes, vehiclesRes] = await Promise.all([
+          apiClient.get("/site-settings/public"), // Usamos /public por si acaso
+          apiClient.get("/vehicles"), // Obtenemos TODOS los vehículos
+        ]);
+
+        // 2. Procesamos los vehículos PRIMERO
+        const allVehiclesData: Vehicle[] = vehiclesRes.data;
+        setAllVehicles(allVehiclesData);
+        // Creamos un Set (mapa) de todos los IDs que SÍ existen
+        const existingVehicleIds = new Set(allVehiclesData.map((v) => v.id));
+
+        // 3. Procesamos los settings
+        const settings: Setting[] = settingsRes.data;
         const slidesSetting = settings.find((s) => s.key === "carousel_slides");
         const featuredSetting = settings.find(
           (s) => s.key === "featured_vehicles"
         );
 
         if (slidesSetting) {
-          setCarouselSlides(JSON.parse(slidesSetting.value));
+          setCarouselSlides(JSON.parse(slidesSetting.value || "[]"));
         }
-        if (featuredSetting) {
-          setFeaturedVehicleIds(new Set(JSON.parse(featuredSetting.value)));
-        }
-      })
-      .catch(() =>
-        toast.error("No se pudo cargar la configuración del sitio.")
-      );
 
-    // Carga todos los vehículos para el selector
-    apiClient
-      .get("/vehicles")
-      .then((res) => setAllVehicles(res.data))
-      .catch(() => toast.error("No se pudieron cargar los vehículos."));
+        if (featuredSetting) {
+          // 4. Obtenemos la lista "sucia" de IDs desde la BD
+          const dirtyIds: number[] = JSON.parse(featuredSetting.value || "[]");
+
+          // 5. LIMPIEZA: Filtramos la lista sucia y nos quedamos solo
+          //    con los IDs que SÍ existen en 'existingVehicleIds'.
+          const cleanIds = dirtyIds.filter((id) => existingVehicleIds.has(id));
+
+          // 6. Iniciamos el estado SÓLO con los IDs limpios
+          setFeaturedVehicleIds(new Set(cleanIds));
+        }
+      } catch (error) {
+        // Usamos setTimeout para evitar el error de renderizado si falla
+        setTimeout(() => {
+          toast.error("No se pudo cargar la configuración o los vehículos.");
+        }, 0);
+      } finally {
+        setLoading(false); // Quitamos el estado de carga
+      }
+    };
+
+    loadInitialData();
   }, []);
 
   // --- MANEJADORES ---
@@ -103,16 +127,27 @@ export const SiteHomepageSettings = () => {
   };
 
   const handleFeaturedVehicleChange = (vehicleId: number) => {
+    const currentSet = featuredVehicleIds;
+    const isAdding = !currentSet.has(vehicleId);
+    const isAtLimit = currentSet.size >= 3;
+
+    // 1. Si intenta AÑADIR y YA está en el límite
+    if (isAdding && isAtLimit) {
+      // 2. Muestra el toast
+      toast("Puedes seleccionar un máximo de 3 vehículos.", {
+        icon: "⚠️",
+      });
+      // 3. Y no hace nada más
+      return;
+    }
+
+    // 4. Si no, actualiza el estado
     setFeaturedVehicleIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(vehicleId)) {
         newSet.delete(vehicleId);
-      } else if (newSet.size < 3) {
-        newSet.add(vehicleId);
       } else {
-        toast("Puedes seleccionar un máximo de 3 vehículos.", {
-          icon: "⚠️",
-        });
+        newSet.add(vehicleId);
       }
       return newSet;
     });
@@ -168,6 +203,14 @@ export const SiteHomepageSettings = () => {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Card title="Configuración de Página Principal">
+        <p>Cargando configuración y vehículos...</p>
+      </Card>
+    );
+  }
 
   return (
     <div className={styles.container}>

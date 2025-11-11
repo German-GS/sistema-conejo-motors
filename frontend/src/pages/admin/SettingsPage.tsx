@@ -158,9 +158,11 @@ export const SettingsPage = () => {
         response.data.filter((p: Parametro) => p.tipo === "COMISION")
       );
     } catch (err) {
-      setError(
-        "No se pudo cargar la configuración. Asegúrate de tener permisos de Administrador."
-      );
+      setTimeout(() => {
+        setError(
+          "No se pudo cargar la configuración. Asegúrate de tener permisos de Administrador."
+        );
+      }, 0);
     }
   };
 

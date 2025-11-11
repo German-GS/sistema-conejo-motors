@@ -18,7 +18,9 @@ interface Vehicle {
   modelo: string;
   año: number;
   precio_venta: number;
-  imagenes?: { url: string }[];
+  profile?: {
+    imagenes?: { url: string }[];
+  };
 }
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("es-CR", {
@@ -115,8 +117,8 @@ export const HomePage = () => {
               <div key={vehicle.id} className={catalogStyles.vehicleCard}>
                 <img
                   src={
-                    vehicle.imagenes?.[0]
-                      ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}`
+                    vehicle.profile?.imagenes?.[0]
+                      ? `${apiClient.defaults.baseURL}/${vehicle.profile.imagenes[0].url}`
                       : "/placeholder.png"
                   }
                   alt={`${vehicle.marca} ${vehicle.modelo}`}
