@@ -160,9 +160,6 @@ export class VehiclesService {
       }
     }
 
-    // Añade/Sobrescribe con los datos copiados del perfil
-    // Object.assign(finalVehicleData, profileDataToCopy); // Cuidado, esto puede sobreescribir datos de instanceData
-    // Mejor copiar selectivamente si es necesario, o asegurar que profileDataToCopy no colisione
     for (const key in profileDataToCopy) {
       if (
         !(key in finalVehicleData) ||
@@ -229,22 +226,16 @@ export class VehiclesService {
       order: { profile: { imagenes: { order: 'ASC' } } },
     });
 
-    // --- 👇 CHECK FOR NULL FIRST ---
     if (!vehicle) {
       this.logger.error(`findOne: Vehicle with ID #${id} not found.`);
       throw new NotFoundException(`Vehículo con ID #${id} no encontrado.`);
     }
-    // --- END CHECK ---
 
-    // --- 👇 LOG MOVED HERE (Now vehicle is guaranteed not null) ---
     this.logger.log(
       `findOne: Vehicle ID #${id} found (before transform). Profile loaded: ${!!vehicle.profile}, Profile Images loaded: ${!!vehicle.profile
         ?.imagenes}, Image count: ${vehicle.profile?.imagenes?.length ?? 'N/A'}`,
     );
-    // this.logger.debug(`findOne: Raw vehicle data: ${JSON.stringify(vehicle)}`);
-    // --- END MOVED LOG ---
-
-    // Apply transformation
+ 
     try {
       const transformedVehicle: TransformedVehicle = {
         ...vehicle,
@@ -265,8 +256,7 @@ export class VehiclesService {
     }
   }
 
-  // --- Método findAll ---
-  // --- 👇 Update return type ---
+  
   async findAll(): Promise<TransformedVehicle[]> {
     this.logger.log('findAll: Attempting to find all vehicles...');
     const vehicles = await this.vehiclesRepository.find({
@@ -303,9 +293,7 @@ export class VehiclesService {
           `findAll: Error transforming vehicle ID ${vehicle.id}`,
           error,
         );
-        // Decide cómo manejar el error. Lanzarlo romperá toda la lista.
-        // Podrías devolver 'null' y filtrar después, o un objeto con error.
-        // Por simplicidad ahora, lanzamos para saber dónde falla.
+       
         throw new InternalServerErrorException(
           `Error procesando datos del vehículo ID ${vehicle.id} en la lista.`,
         );
@@ -314,8 +302,6 @@ export class VehiclesService {
     });
   }
 
-  // --- Método findCatalog ---
-  // --- 👇 Update return type ---
   async findCatalog(): Promise<TransformedCatalogVehicle[]> {
     this.logger.log(
       'findCatalog: Attempting to find available vehicles for catalog...',
@@ -335,9 +321,9 @@ export class VehiclesService {
     );
 
     return vehicles.map(({ precio_costo, ...vehicle }) => {
-      // this.logger.debug(`findCatalog: Transforming vehicle ID: ${vehicle.id}`);
+
       try {
-        // --- 👇 Ensure the returned object matches TransformedCatalogVehicle ---
+     
         const transformed: TransformedCatalogVehicle = {
           ...vehicle, // vehicle ya es Omit<Vehicle, 'precio_costo'>
           seguridad: splitStringToArray(vehicle.seguridad),
@@ -356,14 +342,11 @@ export class VehiclesService {
         throw new InternalServerErrorException(
           `Error procesando datos del catálogo para el vehículo ID ${vehicle.id}.`,
         );
-        // const {seguridad, interior, exterior, tecnologia, colores_disponibles, ...rest} = vehicle;
-        // return rest as any; // Alternativa menos segura
+     
       }
     });
   }
 
-  // --- Método update ---
-  // No necesita cambiar el tipo de retorno si devuelve el resultado de findOneOrFail
   async update(
     id: number,
     updateVehicleDto: UpdateVehicleDto,
