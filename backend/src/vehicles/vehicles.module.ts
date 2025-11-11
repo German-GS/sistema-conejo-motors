@@ -13,7 +13,6 @@ import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
 import { Lead } from '../leads/lead.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([

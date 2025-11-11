@@ -124,23 +124,22 @@ export class Vehicle {
   numero_pasajeros: number;
 
   @Column({ type: 'text', nullable: true })
-  colores_disponibles: string; 
+  colores_disponibles: string;
 
   @Column({ type: 'text', nullable: true })
-  seguridad: string; 
+  seguridad: string;
 
   @Column({ type: 'text', nullable: true })
-  interior: string; 
+  interior: string;
 
   @Column({ type: 'text', nullable: true })
-  exterior: string; 
+  exterior: string;
+  // --- FIN DE LA CORRECCIÓN ---
 
   @Column({ type: 'text', nullable: true })
   tecnologia: string;
 
   // --- RELACIONES ---
-
-  
 
   @ManyToOne(() => VehicleProfile)
   profile: VehicleProfile;
@@ -156,7 +155,8 @@ export class Vehicle {
 
   @ManyToOne(() => Bodega, (bodega) => bodega.vehiculos, {
     nullable: true,
-    eager: true,
+    eager: true, // eager: true en bodega es correcto como lo tenías
   })
   bodega: Bodega | null;
-}
+
+} 

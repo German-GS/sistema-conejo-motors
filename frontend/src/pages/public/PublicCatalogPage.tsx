@@ -12,8 +12,9 @@ interface CatalogVehicle {
   modelo: string;
   año: number;
   precio_venta: number;
-  imagenes?: { url: string }[];
-  categoria?: string; // Es opcional por si algún vehículo no la tiene
+  // imagenes?: { url: string }[]; // <-- ELIMINA o comenta esta línea
+  profile?: { imagenes?: { url: string }[] }; // <-- AÑADE esta línea
+  categoria?: string;
 }
 
 const formatCurrency = (value: number) => {
@@ -76,8 +77,9 @@ export const PublicCatalogPage = () => {
               <div key={vehicle.id} className={styles.vehicleCard}>
                 <img
                   src={
-                    vehicle.imagenes?.[0]
-                      ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}`
+                    // 👇 CORRECCIÓN AQUÍ: Cambia 'vehicle.imagenes' por 'vehicle.profile?.imagenes'
+                    vehicle.profile?.imagenes?.[0]
+                      ? `${apiClient.defaults.baseURL}/${vehicle.profile.imagenes[0].url}`
                       : "/placeholder.png"
                   }
                   alt={`${vehicle.marca} ${vehicle.modelo}`}

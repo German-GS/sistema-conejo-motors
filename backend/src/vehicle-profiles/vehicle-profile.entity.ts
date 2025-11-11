@@ -57,10 +57,10 @@ export class VehicleProfile {
   alto_mm: number;
 
  @OneToMany(() => VehicleProfileImage, (image) => image.profile, {
-    // --- 👇 AÑADE ESTA LÍNEA ---
-    cascade: true, // Esto habilita el borrado (y guardado/actualización) en cascada
-    // --- 👆 FIN DE LA LÍNEA AÑADIDA ---
-    eager: true, // Mantén eager si quieres cargar las imágenes automáticamente
+
+    cascade: true, 
+    
+    eager: true, 
   })
   imagenes: VehicleProfileImage[];
 

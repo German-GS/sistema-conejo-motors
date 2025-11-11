@@ -42,12 +42,14 @@ import { SiteSettingsModule } from './site-settings/site-settings.module';
 import { Factura } from './facturacion/factura.entity';
 import { FacturacionModule } from './facturacion/facturacion.module';
 import { VehicleProfileImage } from './vehicle-profiles/vehicle-profile-image.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env.development.local', '.env.development'],
     }),
     // --- INICIO DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
     TypeOrmModule.forRoot({
@@ -57,6 +59,7 @@ import { VehicleProfileImage } from './vehicle-profiles/vehicle-profile-image.en
       username: 'admin', // El usuario que definimos en docker-compose.yml
       password: 'password123', // La contraseña que definimos en docker-compose.yml
       database: 'conejo_motors_dev', // El nombre de la BD que definimos en docker-compose.yml
+      autoLoadEntities: true,
       entities: [
         User,
         Vehicle,
