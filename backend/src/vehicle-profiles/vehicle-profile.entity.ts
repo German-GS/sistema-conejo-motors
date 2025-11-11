@@ -1,8 +1,8 @@
 // backend/src/vehicle-profiles/vehicle-profile.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-// 👇 LA CORRECCIÓN ES AÑADIR LA PALABRA 'type' AQUÍ 👇
 import type { VehicleCategory, Drivetrain } from '../vehicles/vehicle.entity';
-import { VehicleProfileImage } from './vehicle-profile-image.entity';
+// 👇 CORRECCIÓN AQUÍ: Quita la palabra 'type'
+import { VehicleProfileImage } from './vehicle-profile-image.entity'; 
 
 
 @Entity({ name: 'vehicle_profiles' })
@@ -12,7 +12,8 @@ export class VehicleProfile {
 
   @Column({ length: 50 })
   marca: string;
-
+  
+  // ... (todos tus otros campos como modelo, potencia_hp, etc., van aquí) ...
   @Column({ length: 50 })
   modelo: string;
 
@@ -56,10 +57,9 @@ export class VehicleProfile {
   @Column({ nullable: true })
   alto_mm: number;
 
- @OneToMany(() => VehicleProfileImage, (image) => image.profile, {
-
+  // Mantenemos la sintaxis 'type =>' que te di antes
+  @OneToMany(type => VehicleProfileImage, (image) => image.profile, {
     cascade: true, 
-    
     eager: true, 
   })
   imagenes: VehicleProfileImage[];
@@ -76,5 +76,18 @@ export class VehicleProfile {
   @Column({ nullable: true })
   numero_pasajeros: number;
 
+  @Column({ type: 'text', nullable: true })
+  colores_disponibles: string;
+
+  @Column({ type: 'text', nullable: true })
+  seguridad: string;
+
+  @Column({ type: 'text', nullable: true })
+  interior: string;
+
+  @Column({ type: 'text', nullable: true })
+  exterior: string;
   
+  @Column({ type: 'text', nullable: true })
+  tecnologia: string;
 }
