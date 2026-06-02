@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./VehicleDetailPage.module.css";
@@ -10,7 +10,9 @@ interface VehicleDetail {
   marca: string;
   modelo: string;
   año: number;
+  color?: string;
   precio_venta: number;
+  imagenes?: { id: number; url: string }[];
   profile?: { imagenes?: { url: string }[] };
   categoria?: string;
   traccion?: string;
@@ -68,9 +70,10 @@ const FeatureList: React.FC<{ title: string; features?: string[] }> = ({
 
 export const VehicleDetailPage = () => {
   const { vehicleId } = useParams<{ vehicleId: string }>();
-  // --- 3. ESTADOS CON TIPOS DEFINIDOS Y SIN CÓDIGO ANTIGUO ---
+  const navigate = useNavigate();
   const [vehicle, setVehicle] = useState<VehicleDetail | null>(null);
   const [activeTab, setActiveTab] = useState("rendimiento");
+  const [activeImg, setActiveImg] = useState(0);
   const [lead, setLead] = useState({ nombre: "", email: "", telefono: "" });
 
   useEffect(() => {
@@ -96,51 +99,49 @@ export const VehicleDetailPage = () => {
   };
 
   if (!vehicle) return <p>Cargando detalles del vehículo...</p>;
-  console.log("Vehicle data received by component:", vehicle);
-  console.log(
-    "Seguridad data type:",
-    typeof vehicle.seguridad,
-    vehicle.seguridad
-  ); // Verifica tipo y contenido
 
   return (
     <div className={styles.detailContainer}>
       {/* --- HERO SECTION --- */}
       <div className={styles.hero}>
         <div className={styles.heroImage}>
+          {/* Imagen principal */}
           <img
             src={
-              // 👇 CORRECIÓN AQUÍ: Cambia 'vehicle.imagenes' por 'vehicle.profile?.imagenes'
-              vehicle.profile?.imagenes?.[0]
-                ? `${apiClient.defaults.baseURL}/${vehicle.profile.imagenes[0].url}`
-                : "/placeholder.png"
+              vehicle.imagenes?.[activeImg]
+                ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[activeImg].url}`
+                : vehicle.profile?.imagenes?.[activeImg]
+                  ? `${apiClient.defaults.baseURL}/${vehicle.profile.imagenes[activeImg].url}`
+                  : "/placeholder.png"
             }
             alt={`${vehicle.marca} ${vehicle.modelo}`}
           />
+          {/* Galería de miniaturas */}
+          {(vehicle.imagenes?.length ?? 0) > 1 && (
+            <div className={styles.thumbnailRow}>
+              {vehicle.imagenes!.map((img, i) => (
+                <img
+                  key={img.id ?? i}
+                  src={`${apiClient.defaults.baseURL}/${img.url}`}
+                  alt={`Vista ${i + 1}`}
+                  className={i === activeImg ? styles.thumbActive : styles.thumb}
+                  onClick={() => setActiveImg(i)}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <div className={styles.heroInfo}>
-          <h1>
-            {vehicle.marca} {vehicle.modelo}
-          </h1>
+          <h1>{vehicle.marca} {vehicle.modelo} {vehicle.año && `(${vehicle.año})`}</h1>
+          {vehicle.color && <p className={styles.colorBadge}>🎨 {vehicle.color}</p>}
           <p className={styles.price}>
-            {new Intl.NumberFormat("es-CR", {
-              style: "currency",
-              currency: "CRC",
-            }).format(vehicle.precio_venta)}
+            {new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC" }).format(vehicle.precio_venta)}
           </p>
           <div className={styles.keySpecs}>
-            <div>
-              <span>{vehicle.autonomia_km} km</span>
-              <p>Autonomía</p>
-            </div>
-            <div>
-              <span>{vehicle.aceleracion_0_100} s</span>
-              <p>0-100 km/h</p>
-            </div>
-            <div>
-              <span>{vehicle.potencia_hp} HP</span>
-              <p>Potencia</p>
-            </div>
+            {vehicle.autonomia_km && <div><span>{vehicle.autonomia_km} km</span><p>Autonomía</p></div>}
+            {vehicle.aceleracion_0_100 && <div><span>{vehicle.aceleracion_0_100} s</span><p>0-100 km/h</p></div>}
+            {vehicle.potencia_hp && <div><span>{vehicle.potencia_hp} HP</span><p>Potencia</p></div>}
+            {vehicle.capacidad_bateria_kwh && <div><span>{vehicle.capacidad_bateria_kwh} kWh</span><p>Batería</p></div>}
           </div>
           <div className={styles.contactForm}>
             <h3>¿Interesado? Contáctanos</h3>

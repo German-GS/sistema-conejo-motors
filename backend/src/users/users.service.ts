@@ -1,5 +1,5 @@
 // backend/src/users/users.service.ts
-import { Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -8,9 +8,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Salario } from '../salarios/salario.entity';
 import { Role } from '../roles/role.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class UsersService implements OnModuleInit {
+export class UsersService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -18,33 +21,38 @@ export class UsersService implements OnModuleInit {
     private salariosRepository: Repository<Salario>,
     @InjectRepository(Role)
     private rolesRepository: Repository<Role>,
+    private configService: ConfigService,
   ) {}
 
-  async onModuleInit() {
-  const userCount = await this.usersRepository.count();
-  if (userCount === 0) {
-    // Busca el rol 'Administrador'
+  // onApplicationBootstrap se ejecuta DESPUÉS de que todos los módulos
+  // (incluyendo RolesService) han terminado su onModuleInit.
+  async onApplicationBootstrap() {
+    const userCount = await this.usersRepository.count();
+    if (userCount > 0) return;
+
     const adminRole = await this.rolesRepository.findOne({
       where: { nombre: 'Administrador' },
     });
 
     if (!adminRole) {
-      // Si el rol no existe, detiene el proceso.
+      this.logger.error('No se encontró el rol Administrador. No se pudo crear el usuario admin.');
       return;
     }
 
+    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') ?? 'admin@conejomotors.com';
+    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD') ?? 'password123';
+
     const adminDto: CreateUserDto = {
       nombre_completo: 'Administrador Principal',
-      email: 'admin@conejomotors.com',
-      contrasena: 'password123',
-      rol_id: adminRole.id, // <-- Asigna el ID del rol encontrado
+      email: adminEmail,
+      contrasena: adminPassword,
+      rol_id: adminRole.id,
       salario_base: 500000,
     };
 
-    // Llama a la función 'create' con todos los datos necesarios.
     await this.create(adminDto);
+    this.logger.log(`✅ Usuario admin creado: ${adminEmail}`);
   }
-}
 
   // --- NUEVO MÉTODO AÑADIDO ---
   async findOneById(id: number): Promise<User> {
@@ -164,7 +172,18 @@ export class UsersService implements OnModuleInit {
   }
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
-      select: ['id', 'nombre_completo', 'email', 'activo'],
+      select: ['id', 'nombre_completo', 'email', 'activo', 'cedula', 'banco', 'numero_cuenta'],
+      relations: ['rol'],
     });
+  }
+
+  async findOneByIdFull(id: number): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      select: ['id', 'nombre_completo', 'email', 'activo', 'cedula', 'banco', 'numero_cuenta'],
+      relations: ['rol', 'salarios'],
+    });
+    if (!user) throw new NotFoundException(`Usuario con ID #${id} no encontrado`);
+    return user;
   }
 }

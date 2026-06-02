@@ -1,0 +1,162 @@
+.section {
+  background: #ffffff;
+  padding: 5rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Header */
+.header { text-align: center; }
+.pill {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #024f7d;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+.header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0a2540;
+  margin: 0 0 0.75rem;
+}
+.lead {
+  color: #475569;
+  font-size: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Stats */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 768px) { .statsGrid { grid-template-columns: repeat(2, 1fr); } }
+
+.statCard {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(2,79,125,0.08);
+  border: 1px solid #bae6fd;
+}
+.statIcon { font-size: 1.5rem; }
+.statValue { font-size: 1.4rem; font-weight: 800; margin: 0.3rem 0 0; }
+.statLabel { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 2px 0; }
+.statSub { font-size: 0.8rem; color: #94a3b8; margin: 0; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab {
+  padding: 0.6rem 1.2rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.15s;
+}
+.tab:hover { border-color: #024f7d; color: #024f7d; }
+.tabActive {
+  padding: 0.6rem 1.2rem;
+  border: 1.5px solid #024f7d;
+  border-radius: 8px;
+  background: #e0f2fe;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #024f7d;
+}
+
+/* Chart card */
+.chartCard {
+  background: white;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 2px 16px rgba(2,79,125,0.08);
+  border: 1px solid #bae6fd;
+}
+.chartCard h3 { font-size: 1.05rem; font-weight: 700; color: #0a2540; margin: 0 0 0.25rem; }
+.chartSub { font-size: 0.83rem; color: #94a3b8; margin: 0 0 1.25rem; }
+
+/* Tooltip */
+.tooltip {
+  background: white;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(2,79,125,0.12);
+}
+.tooltipLabel { font-weight: 700; color: #024f7d; margin: 0 0 4px; }
+
+/* Cost per km */
+.kmGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 1.25rem;
+}
+.kmCard {
+  border: 2px solid;
+  border-radius: 10px;
+  padding: 0.75rem;
+  text-align: center;
+  background: #f8fbff;
+}
+.kmValue { font-size: 1.4rem; font-weight: 800; margin: 0; }
+.kmLabel { font-size: 0.75rem; color: #64748b; margin: 4px 0 0; }
+
+/* Maintenance note */
+.maintNote {
+  margin-top: 1.25rem;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: #024f7d;
+}
+
+/* Saving highlight */
+.savingHighlight {
+  margin-top: 1.25rem;
+  background: #e0f2fe;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+.savingHighlight strong { font-size: 1.3rem; color: #024f7d; font-weight: 800; }
+
+/* Assumptions */
+.assumptions {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+.assumptions p { margin: 0 0 0.4rem; }
+.assumptions ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 3px; }

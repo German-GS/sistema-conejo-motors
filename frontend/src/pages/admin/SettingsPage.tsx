@@ -457,7 +457,7 @@ export const SettingsPage = () => {
           <div className={`${styles.fileInputContainer} ${styles.fullWidth}`}>
             <label htmlFor="logo-upload" className={styles.fileInputLabel}>
               {profileImages.length > 0
-                ? `${profileImages.length} imágen(es) seleccionada(s)`
+                ? `${profileImages.length} imágen(es) seleccionada(s) — haz clic para cambiar`
                 : "Añadir Fotos del Modelo (hasta 10)"}
             </label>
             <input
@@ -469,6 +469,34 @@ export const SettingsPage = () => {
               multiple
             />
           </div>
+
+          {/* Previsualización de imágenes seleccionadas */}
+          {profileImages.length > 0 && (
+            <div className={`${styles.fullWidth}`} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+              {profileImages.map((file, index) => (
+                <div key={index} style={{ position: 'relative', width: '80px', height: '80px' }}>
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`Preview ${index + 1}`}
+                    style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '2px solid #024f7d' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setProfileImages(prev => prev.filter((_, i) => i !== index))}
+                    style={{
+                      position: 'absolute', top: '-6px', right: '-6px',
+                      background: '#e53e3e', color: 'white', border: 'none',
+                      borderRadius: '50%', width: '20px', height: '20px',
+                      cursor: 'pointer', fontSize: '12px', lineHeight: '20px', textAlign: 'center', padding: 0
+                    }}
+                    title="Quitar esta imagen"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <button
             type="submit"

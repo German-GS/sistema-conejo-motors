@@ -9,19 +9,25 @@ import {
   Delete,
   UseGuards,
   Req,
-  // Quité UploadedFiles y UseInterceptors porque no se usan aquí
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { AuthGuard } from '@nestjs/passport';
 import { VehiclesService } from './vehicles.service';
+import { VehiclesImportService } from './vehicles-import.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-// Corregido: Se importa 'RolesGuard' (con 's')
-import { RolesGuard } from '../auth/guards/roles.guard'; 
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('vehicles')
 export class VehiclesController {
-  constructor(private readonly vehiclesService: VehiclesService) {}
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly vehiclesImportService: VehiclesImportService,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard) 
@@ -41,6 +47,16 @@ export class VehiclesController {
   @UseGuards(AuthGuard('jwt'))
   update(@Param('id') id: string, @Body() updateVehicleDto: UpdateVehicleDto) {
     return this.vehiclesService.update(+id, updateVehicleDto);
+  }
+
+  @Patch(':id/pricing')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  updatePricing(
+    @Param('id') id: string,
+    @Body() body: { precio_venta?: number; descuento_porcentaje?: number },
+  ) {
+    return this.vehiclesService.updatePricing(+id, body);
   }
 
   @Delete(':id')
@@ -75,6 +91,21 @@ export class VehiclesController {
     return this.vehiclesService.findOne(+id);
   }
 
-  // Se eliminaron los métodos 'uploadImages' y 'deleteImage' que yo había
-  // sugerido incorrectamente y que no existen en tu 'vehicles.service.ts'.
+  // --- IMPORTACIÓN DESDE EXCEL ---
+
+  @Post('import/preview')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  previewImport(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new Error('No se recibió ningún archivo.');
+    return this.vehiclesImportService.parseExcel(file.buffer);
+  }
+
+  @Post('import/confirm')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  confirmImport(@Body() body: { rows: any[] }) {
+    return this.vehiclesImportService.importRows(body.rows);
+  }
 }

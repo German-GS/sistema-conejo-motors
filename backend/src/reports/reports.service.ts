@@ -101,6 +101,7 @@ export class ReportsService {
   async getInventoryReport() {
     const vehicles = await this.vehicleRepository.find({
       where: { estado: 'Disponible' },
+      relations: ['bodega'],
     });
     const totalVehicles = vehicles.length;
     const inventoryCost = vehicles.reduce(

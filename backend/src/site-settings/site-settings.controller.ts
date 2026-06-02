@@ -1,5 +1,8 @@
 // src/site-settings/site-settings.controller.ts
-import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Post, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { SiteSettingsService } from './site-settings.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -39,10 +42,28 @@ export class SiteSettingsController {
    * @param updateDto - DTO con el array de configuraciones a actualizar.
    */
   @Patch()
-  // 3. AÑADIMOS LA SEGURIDAD AQUÍ TAMBIÉN
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('Administrador')
   updateSettings(@Body() updateDto: UpdateSiteSettingsDto) {
     return this.settingsService.updateSettings(updateDto);
+  }
+
+  /**
+   * Endpoint para subir imágenes del carrusel y assets del sitio.
+   */
+  @Post('upload')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  @UseInterceptors(FilesInterceptor('files', 10, {
+    storage: diskStorage({
+      destination: './uploads/site',
+      filename: (req, file, cb) => {
+        const unique = Date.now() + '-' + Math.round(Math.random() * 1e6);
+        cb(null, `site-${unique}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  uploadSiteImages(@UploadedFiles() files: Array<Express.Multer.File>) {
+    return files.map(f => ({ url: f.path.replace(/\\/g, '/') }));
   }
 }

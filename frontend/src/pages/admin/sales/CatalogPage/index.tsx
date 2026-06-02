@@ -11,6 +11,8 @@ interface CatalogVehicle {
   año: number;
   color: string;
   precio_venta: number;
+  precio_venta_final: number | null;
+  descuento_porcentaje: number | null;
   autonomia_km: number;
   potencia_hp: number;
   capacidad_bateria_kwh: number;
@@ -18,13 +20,8 @@ interface CatalogVehicle {
   bodega?: { nombre: string };
 }
 
-// Helper para formatear el precio a colones costarricenses
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-};
+const formatCRC = (value: number) =>
+  new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(value);
 
 export const CatalogPage = () => {
   const [vehicles, setVehicles] = useState<CatalogVehicle[]>([]);
@@ -75,18 +72,21 @@ export const CatalogPage = () => {
                 {vehicle.marca} {vehicle.modelo} ({vehicle.año})
               </h3>
               <p className={styles.price}>
-                {formatCurrency(vehicle.precio_venta)}
+                {formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
               </p>
+              {vehicle.descuento_porcentaje ? (
+                <p className={styles.discount}>🏷️ {vehicle.descuento_porcentaje}% dto · Antes: {formatCRC(Number(vehicle.precio_venta))}</p>
+              ) : null}
               <div className={styles.specs}>
                 <span>🔋 {vehicle.capacidad_bateria_kwh} kWh</span>
                 <span>⚡️ {vehicle.potencia_hp} HP</span>
                 <span>📍 {vehicle.bodega?.nombre || "N/A"}</span>
               </div>
               <Link
-                to={`${basePath}/catalog/${vehicle.id}/quote`}
+                to={`${basePath}/catalog/${vehicle.id}`}
                 className="btn btn-principal"
               >
-                Ver Detalles y Cotizar
+                Ver Detalles
               </Link>
             </div>
           </div>

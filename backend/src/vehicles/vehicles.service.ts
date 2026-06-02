@@ -31,6 +31,7 @@ type TransformedVehicle = Omit<
   exterior: string[];
   tecnologia: string[];
   colores_disponibles: string[];
+  imagenes?: any[];
 };
 
 // Define uno para el Catálogo que también omite precio_costo
@@ -237,13 +238,29 @@ export class VehiclesService {
     );
  
     try {
+      const p = vehicle.profile;
       const transformedVehicle: TransformedVehicle = {
         ...vehicle,
-        seguridad: splitStringToArray(vehicle.seguridad),
-        interior: splitStringToArray(vehicle.interior),
-        exterior: splitStringToArray(vehicle.exterior),
-        tecnologia: splitStringToArray(vehicle.tecnologia),
-        colores_disponibles: splitStringToArray(vehicle.colores_disponibles),
+        imagenes: p?.imagenes ?? [],
+        potencia_hp:           vehicle.potencia_hp           ?? p?.potencia_hp           ?? null,
+        torque_nm:             vehicle.torque_nm             ?? p?.torque_nm             ?? null,
+        aceleracion_0_100:     vehicle.aceleracion_0_100     ?? p?.aceleracion_0_100     ?? null,
+        velocidad_maxima:      vehicle.velocidad_maxima      ?? p?.velocidad_maxima      ?? null,
+        autonomia_km:          vehicle.autonomia_km          ?? p?.autonomia_km          ?? null,
+        capacidad_bateria_kwh: vehicle.capacidad_bateria_kwh ?? p?.capacidad_bateria_kwh ?? null,
+        numero_pasajeros:      vehicle.numero_pasajeros      ?? p?.numero_pasajeros      ?? null,
+        largo_mm:              vehicle.largo_mm              ?? p?.largo_mm              ?? null,
+        ancho_mm:              vehicle.ancho_mm              ?? p?.ancho_mm              ?? null,
+        alto_mm:               vehicle.alto_mm               ?? p?.alto_mm               ?? null,
+        peso_kg:               vehicle.peso_kg               ?? p?.peso_kg               ?? null,
+        capacidad_maletero_l:  vehicle.capacidad_maletero_l  ?? p?.capacidad_maletero_l  ?? null,
+        categoria:             vehicle.categoria             ?? p?.categoria             ?? null,
+        traccion:              vehicle.traccion              ?? p?.traccion              ?? null,
+        seguridad:        splitStringToArray(vehicle.seguridad        || p?.seguridad),
+        interior:         splitStringToArray(vehicle.interior         || p?.interior),
+        exterior:         splitStringToArray(vehicle.exterior         || p?.exterior),
+        tecnologia:       splitStringToArray(vehicle.tecnologia       || p?.tecnologia),
+        colores_disponibles: splitStringToArray(vehicle.colores_disponibles || p?.colores_disponibles),
       };
       this.logger.log(`findOne: Vehicle ID #${id} transformed successfully.`);
       // ... (debug logs for specific fields if needed) ...
@@ -281,6 +298,7 @@ export class VehiclesService {
         // --- 👇 Ensure the returned object matches TransformedVehicle ---
         const transformed: TransformedVehicle = {
           ...vehicle,
+          imagenes: vehicle.profile?.imagenes ?? [],
           seguridad: splitStringToArray(vehicle.seguridad),
           interior: splitStringToArray(vehicle.interior),
           exterior: splitStringToArray(vehicle.exterior),
@@ -324,13 +342,30 @@ export class VehiclesService {
 
       try {
      
+        const p = vehicle.profile; // shorthand
         const transformed: TransformedCatalogVehicle = {
-          ...vehicle, // vehicle ya es Omit<Vehicle, 'precio_costo'>
-          seguridad: splitStringToArray(vehicle.seguridad),
-          interior: splitStringToArray(vehicle.interior),
-          exterior: splitStringToArray(vehicle.exterior),
-          tecnologia: splitStringToArray(vehicle.tecnologia),
-          colores_disponibles: splitStringToArray(vehicle.colores_disponibles),
+          ...vehicle,
+          // Specs técnicos: usar los del vehículo si existen, sino los del perfil
+          potencia_hp:            vehicle.potencia_hp            ?? p?.potencia_hp            ?? null,
+          torque_nm:              vehicle.torque_nm              ?? p?.torque_nm              ?? null,
+          aceleracion_0_100:      vehicle.aceleracion_0_100      ?? p?.aceleracion_0_100      ?? null,
+          velocidad_maxima:       vehicle.velocidad_maxima       ?? p?.velocidad_maxima       ?? null,
+          autonomia_km:           vehicle.autonomia_km           ?? p?.autonomia_km           ?? null,
+          capacidad_bateria_kwh:  vehicle.capacidad_bateria_kwh  ?? p?.capacidad_bateria_kwh  ?? null,
+          numero_pasajeros:       vehicle.numero_pasajeros       ?? p?.numero_pasajeros       ?? null,
+          largo_mm:               vehicle.largo_mm               ?? p?.largo_mm               ?? null,
+          ancho_mm:               vehicle.ancho_mm               ?? p?.ancho_mm               ?? null,
+          alto_mm:                vehicle.alto_mm                ?? p?.alto_mm                ?? null,
+          peso_kg:                vehicle.peso_kg                ?? p?.peso_kg                ?? null,
+          capacidad_maletero_l:   vehicle.capacidad_maletero_l   ?? p?.capacidad_maletero_l   ?? null,
+          categoria:              vehicle.categoria              ?? p?.categoria              ?? null,
+          traccion:               vehicle.traccion               ?? p?.traccion               ?? null,
+          imagenes: vehicle.profile?.imagenes ?? [],
+          seguridad: splitStringToArray(vehicle.seguridad || p?.seguridad),
+          interior:  splitStringToArray(vehicle.interior  || p?.interior),
+          exterior:  splitStringToArray(vehicle.exterior  || p?.exterior),
+          tecnologia:splitStringToArray(vehicle.tecnologia|| p?.tecnologia),
+          colores_disponibles: splitStringToArray(vehicle.colores_disponibles || p?.colores_disponibles),
         };
         return transformed; // Coincide con TransformedCatalogVehicle[]
       } catch (error) {
@@ -439,6 +474,28 @@ export class VehiclesService {
       throw new NotFoundException(`Vehículo con ID #${id} no encontrado.`);
     }
     this.logger.log(`Vehicle ID #${id} removed successfully.`);
+  }
+
+  async updatePricing(id: number, data: { precio_venta?: number; descuento_porcentaje?: number }) {
+    const vehicle = await this.vehiclesRepository.findOneBy({ id });
+    if (!vehicle) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+
+    if (data.precio_venta !== undefined) vehicle.precio_venta = data.precio_venta;
+    if (data.descuento_porcentaje !== undefined) vehicle.descuento_porcentaje = data.descuento_porcentaje;
+
+    // Calcular precio final con descuento
+    const descuento = Number(vehicle.descuento_porcentaje ?? 0);
+    vehicle.precio_venta_final = Number(vehicle.precio_venta) * (1 - descuento / 100);
+
+    // Alerta si precio final < costo
+    const precioCosto = Number(vehicle.precio_costo);
+    const alerta = vehicle.precio_venta_final < precioCosto;
+    if (alerta) {
+      this.logger.warn(`⚠️ Vehículo #${id}: precio de venta (${vehicle.precio_venta_final}) INFERIOR al costo (${precioCosto})`);
+    }
+
+    const saved = await this.vehiclesRepository.save(vehicle);
+    return { ...saved, alerta_precio_bajo: alerta };
   }
 
   // --- Métodos de Dashboard ---

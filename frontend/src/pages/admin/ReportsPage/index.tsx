@@ -242,8 +242,18 @@ export const ReportsPage = () => {
                   <th>Marca</th>
                   <th>Modelo</th>
                   <th>Año</th>
+                  <th>Color</th>
                   <th>VIN</th>
-                  <th>Precio Costo</th>
+                  <th>Cuenta</th>
+                  <th>Costo Factura USD</th>
+                  <th>T/C ₡/USD</th>
+                  <th>Tasa Caldera</th>
+                  <th>Acarreo</th>
+                  <th>Nacionalización</th>
+                  <th>Inscripción + Traspaso</th>
+                  <th>Marchamo</th>
+                  <th>Costo Total CRC</th>
+                  <th>Ubicación</th>
                 </tr>
               </thead>
               <tbody>
@@ -253,8 +263,18 @@ export const ReportsPage = () => {
                     <td>{v.marca}</td>
                     <td>{v.modelo}</td>
                     <td>{v.año}</td>
-                    <td>{v.vin}</td>
-                    <td>₡{Number(v.precio_costo).toLocaleString("es-CR")}</td>
+                    <td>{v.color}</td>
+                    <td style={{fontFamily:'monospace', fontSize:'0.8rem'}}>{v.vin}</td>
+                    <td>{v.cuenta_contable || '1030'}</td>
+                    <td>${Number(v.costo_factura_usd || 0).toLocaleString("es-CR")}</td>
+                    <td>₡{Number(v.tipo_cambio || 0).toLocaleString("es-CR")}</td>
+                    <td>₡{Number(v.tasa_caldera || 0).toLocaleString("es-CR")}</td>
+                    <td>₡{Number(v.acarreo || 0).toLocaleString("es-CR")}</td>
+                    <td>₡{Number(v.costo_nacionalizacion || 0).toLocaleString("es-CR")}</td>
+                    <td>₡{Number(v.inscripcion_traspaso || 0).toLocaleString("es-CR")}</td>
+                    <td>₡{Number(v.marchamo || 0).toLocaleString("es-CR")}</td>
+                    <td><strong>₡{Number(v.precio_costo).toLocaleString("es-CR")}</strong></td>
+                    <td>{v.bodega?.nombre || 'N/A'}</td>
                   </tr>
                 ))}
               </tbody>

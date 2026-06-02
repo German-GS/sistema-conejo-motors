@@ -13,6 +13,9 @@ import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
 import { Lead } from '../leads/lead.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
+import { VehiclesImportService } from './vehicles-import.service';
+import { AccesorioVehiculo } from '../accesorios/accesorio.entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -22,13 +25,12 @@ import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
       Cotizacion,
       PlanillaParametro,
       Lead,
-      VehicleProfile
+      VehicleProfile,
+      AccesorioVehiculo,
     ]),
-    MulterModule.register({
-      dest: './uploads',
-    }),
+    MulterModule.register({ dest: './uploads' }),
   ],
   controllers: [VehiclesController],
-  providers: [VehiclesService],
+  providers: [VehiclesService, VehiclesImportService],
 })
 export class VehiclesModule {}

@@ -12,17 +12,15 @@ interface CatalogVehicle {
   modelo: string;
   año: number;
   precio_venta: number;
-  // imagenes?: { url: string }[]; // <-- ELIMINA o comenta esta línea
-  profile?: { imagenes?: { url: string }[] }; // <-- AÑADE esta línea
+  precio_venta_final: number | null;
+  descuento_porcentaje: number | null;
+  imagenes?: { url: string }[];
+  profile?: { imagenes?: { url: string }[] };
   categoria?: string;
 }
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("es-CR", {
-    style: "currency",
-    currency: "CRC",
-  }).format(value);
-};
+const formatCRC = (value: number) =>
+  new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(value);
 
 export const PublicCatalogPage = () => {
   // Estado para guardar los vehículos agrupados por categoría
@@ -90,8 +88,13 @@ export const PublicCatalogPage = () => {
                     {vehicle.marca} {vehicle.modelo} ({vehicle.año})
                   </h3>
                   <p className={styles.price}>
-                    {formatCurrency(vehicle.precio_venta)}
+                    {formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
                   </p>
+                  {vehicle.descuento_porcentaje ? (
+                    <p style={{ fontSize: "0.8rem", color: "#e8a800", margin: "0 0 0.5rem" }}>
+                      🏷️ {vehicle.descuento_porcentaje}% dto
+                    </p>
+                  ) : null}
                   <Link
                     to={`/catalog/${vehicle.id}`}
                     className="btn btn-principal"

@@ -55,15 +55,17 @@ export const UserForm: React.FC<UserFormProps> = ({
 
   useEffect(() => {
     if (initialData) {
+      // El salario más reciente es el último del array
+      const ultimoSalario = initialData.salarios?.at(-1)?.salario_base || "";
       setFormData({
         nombre_completo: initialData.nombre_completo || "",
         email: initialData.email || "",
         cedula: initialData.cedula || "",
         rol_id: initialData.rol?.id?.toString() || "",
         contrasena: "",
-        salario_base: initialData.salario_base || "",
-        banco: initialData.banco || "", // <-- AÑADIDO
-        numero_cuenta: initialData.numero_cuenta || "", // <-- AÑADIDO
+        salario_base: ultimoSalario,
+        banco: initialData.banco || "",
+        numero_cuenta: initialData.numero_cuenta || "",
       });
     }
   }, [initialData]);
@@ -125,7 +127,7 @@ export const UserForm: React.FC<UserFormProps> = ({
         value={formData.cedula}
         onChange={handleChange}
         placeholder="Cédula"
-        required
+        required={!isEditing}
       />
       <input
         type="password"

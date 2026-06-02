@@ -89,8 +89,11 @@ export const UsersPage = () => {
                 <td>{user.email}</td>
                 <td>{user.activo ? "Sí" : "No"}</td>
                 <td>
-                  {/* Al hacer clic, establecemos el usuario que se va a editar */}
-                  <button onClick={() => setEditingUser(user)}>Editar</button>
+                  <button onClick={async () => {
+                    const res = await apiClient.get(`/users/${user.id}`);
+                    setEditingUser(res.data);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}>Editar</button>
                   <button onClick={() => handleDelete(user.id)}>
                     Eliminar
                   </button>

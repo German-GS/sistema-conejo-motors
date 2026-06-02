@@ -224,21 +224,6 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         }
 
         onSuccess();
-
-        // 2. Prepara los datos del nuevo orden para el endpoint de imágenes
-        const imagesToUpdate = currentImages.map((img, index) => ({
-          id: img.id, // El ID de la VehicleImage específica de esta instancia
-          order: index, // El nuevo orden según la posición en el array
-        }));
-
-        const idsToDelete: number[] = []; // No permitimos eliminar desde aquí
-
-        // 3. Llama al endpoint específico para actualizar el orden
-        await apiClient.patch(`/vehicles/${initialData.id}/images`, {
-          imagesToUpdate,
-          idsToDelete,
-        });
-        toast.success("Orden de imágenes guardado.");
         // --- Fin Modo Edición ---
       } else {
         // --- Modo Creación ---

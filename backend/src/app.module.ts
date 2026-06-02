@@ -43,6 +43,8 @@ import { Factura } from './facturacion/factura.entity';
 import { FacturacionModule } from './facturacion/facturacion.module';
 import { VehicleProfileImage } from './vehicle-profiles/vehicle-profile-image.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { AccesoriosModule } from './accesorios/accesorios.module';
+import { AccesorioVehiculo } from './accesorios/accesorio.entity';
 
 
 @Module({
@@ -79,7 +81,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         Customer,
         SiteSetting,
         Factura,
-        VehicleProfileImage
+        VehicleProfileImage,
+        AccesorioVehiculo,
       ],
       synchronize: true,
     }),
@@ -102,7 +105,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     LeadsModule,
     CustomersModule,
     SiteSettingsModule,
-    FacturacionModule
+    FacturacionModule,
+    AccesoriosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

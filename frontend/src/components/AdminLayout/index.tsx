@@ -16,6 +16,9 @@ import {
   LuChartColumnStacked,
   LuBell,
   LuReceipt,
+  LuUpload,
+  LuPackage,
+  LuTag,
 } from "react-icons/lu";
 
 // Interfaz para el objeto de notificación
@@ -155,6 +158,24 @@ export const AdminLayout = () => {
           {/* CORRECCIÓN APLICADA AQUÍ */}
           {userRole === "Administrador" && (
             <>
+              <Link to="/admin/pricing">
+                <LuTag size={20} />
+                {!isCollapsed && (
+                  <span className={styles.linkText}>Precios</span>
+                )}
+              </Link>
+              <Link to="/admin/import">
+                <LuUpload size={20} />
+                {!isCollapsed && (
+                  <span className={styles.linkText}>Importar Excel</span>
+                )}
+              </Link>
+              <Link to="/admin/accesorios">
+                <LuPackage size={20} />
+                {!isCollapsed && (
+                  <span className={styles.linkText}>Accesorios</span>
+                )}
+              </Link>
               <Link to="/admin/reports">
                 <LuChartColumnStacked size={20} />
                 {!isCollapsed && (

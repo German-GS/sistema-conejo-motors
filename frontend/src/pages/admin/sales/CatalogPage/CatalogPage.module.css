@@ -69,3 +69,4 @@
   border-bottom: 2px solid var(--borde-suave);
   text-align: left; /* Alinea el título a la izquierda */
 }
+.discount { font-size: 0.78rem; color: #e8a800; margin: -0.3rem 0 0.4rem; }

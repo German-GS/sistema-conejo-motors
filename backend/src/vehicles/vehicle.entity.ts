@@ -43,10 +43,16 @@ export class Vehicle {
   color: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
-  precio_costo: number;
+  precio_costo: number;  // Costo real de inventario (cuenta 1030)
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
-  precio_venta: number;
+  precio_venta: number;  // Precio de lista al cliente
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, default: 0 })
+  descuento_porcentaje: number;  // % de descuento aplicado
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  precio_venta_final: number;  // precio_venta con descuento aplicado (calculado)
 
   @CreateDateColumn({ type: 'timestamp' })
   fecha_ingreso: Date;
@@ -138,6 +144,38 @@ export class Vehicle {
 
   @Column({ type: 'text', nullable: true })
   tecnologia: string;
+
+  // --- DATOS CONTABLES (Cuenta 1030) ---
+
+  @Column({ length: 20, nullable: true, default: '1030' })
+  cuenta_contable: string;
+
+  @Column({ length: 10, nullable: true })
+  incoterm: string;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  costo_factura_usd: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  tipo_cambio: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  tasa_caldera: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  acarreo: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  costo_nacionalizacion: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  inscripcion_traspaso: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  marchamo: number;
+
+  @Column({ type: 'text', nullable: true })
+  observaciones: string;
 
   // --- RELACIONES ---
 

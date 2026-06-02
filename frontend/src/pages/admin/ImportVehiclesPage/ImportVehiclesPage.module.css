@@ -1,0 +1,85 @@
+.container { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+.container h1 { font-size: 1.6rem; color: #024f7d; margin-bottom: 0.4rem; }
+.subtitle { color: #555; margin-bottom: 1.5rem; }
+
+.uploadSection { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
+
+.fileLabel {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1.2rem; border: 2px dashed #024f7d; border-radius: 8px;
+  cursor: pointer; color: #024f7d; font-weight: 500; transition: background 0.2s;
+}
+.fileLabel:hover { background: #e8f4fd; }
+
+.summary { display: flex; gap: 1.5rem; margin-bottom: 1rem; font-weight: 600; }
+.valid { color: #2f855a; }
+.errors { color: #c05621; }
+
+.tableWrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.table th { background: #024f7d; color: white; padding: 0.6rem 0.8rem; text-align: left; white-space: nowrap; }
+.table td { padding: 0.55rem 0.8rem; border-bottom: 1px solid #e2e8f0; }
+.table tbody tr:hover { background: #f7fafc; }
+
+.errorRow { background: #fff5f5 !important; }
+.vin { font-family: monospace; font-size: 0.8rem; color: #444; }
+
+.errorBadge { background: #fed7d7; color: #c53030; padding: 2px 8px; border-radius: 4px; font-size: 0.78rem; white-space: nowrap; }
+.okBadge { background: #c6f6d5; color: #276749; padding: 2px 8px; border-radius: 4px; font-size: 0.78rem; }
+
+.profileSelect { width: 100%; padding: 4px 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.82rem; }
+
+.colorInput {
+  width: 110px; padding: 3px 6px; border: 2px solid #f6ad55;
+  border-radius: 4px; font-size: 0.82rem; background: #fffbeb;
+}
+.colorInput::placeholder { color: #c05621; font-size: 0.78rem; }
+
+.removeRowBtn {
+  background: none; border: none; cursor: pointer;
+  color: #a0aec0; font-size: 1rem; padding: 2px 6px;
+  border-radius: 4px; transition: color 0.15s, background 0.15s;
+}
+.removeRowBtn:hover { color: #e53e3e; background: #fff5f5; }
+
+.actions { display: flex; gap: 1rem; align-items: center; }
+.cancelBtn { padding: 0.6rem 1.4rem; border: 1px solid #cbd5e0; border-radius: 6px; background: white; cursor: pointer; color: #555; }
+.cancelBtn:hover { background: #f7fafc; }
+
+.resultBanner {
+  background: #c6f6d5; color: #22543d; padding: 1rem 1.5rem;
+  border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.95rem;
+}
+
+/* Leyenda de formato */
+.formatGuide {
+  border: 1px solid #bee3f8; border-radius: 8px;
+  margin-bottom: 1.8rem; overflow: hidden;
+}
+.formatGuideHeader {
+  background: #ebf8ff; padding: 0.7rem 1.2rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.95rem; color: #2b6cb0; border-bottom: 1px solid #bee3f8;
+}
+.formatGuideBody { padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+
+.formatSection { display: flex; flex-direction: column; gap: 0.4rem; }
+.formatSectionTitle { font-size: 0.88rem; margin: 0; }
+.formatSectionTitle code { background: #edf2f7; padding: 1px 6px; border-radius: 4px; font-size: 0.85rem; }
+.required { color: #c53030; font-size: 0.78rem; font-weight: 600; }
+.optional { color: #276749; font-size: 0.78rem; font-weight: 600; }
+
+.formatSection p { margin: 0; font-size: 0.83rem; color: #4a5568; }
+
+.columnList { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.colBadge {
+  background: #edf2f7; color: #2d3748; padding: 2px 8px;
+  border-radius: 4px; font-size: 0.75rem; font-family: monospace;
+}
+
+.formatNote {
+  background: #fffbeb; border: 1px solid #f6e05e;
+  border-radius: 6px; padding: 0.6rem 0.9rem;
+  font-size: 0.82rem; color: #744210;
+}

@@ -30,6 +30,9 @@ import TrackingPage from "./pages/admin/TrackingPage";
 import { SettingsPage } from "./pages/admin/SettingsPage";
 import { ReportsPage } from "./pages/admin/ReportsPage";
 import PendingBillingPage from "./pages/admin/PendingBillingPage";
+import { ImportVehiclesPage } from "./pages/admin/ImportVehiclesPage";
+import { AccesoriosPage } from "./pages/admin/AccesoriosPage";
+import { PricingPage } from "./pages/admin/PricingPage";
 
 // Páginas de Ventas
 import { CatalogPage } from "./pages/admin/sales/CatalogPage";
@@ -39,6 +42,7 @@ import { QuoteDetailsPage } from "./pages/admin/QuoteDetailsPage";
 import { SalesDashboardPage } from "./pages/admin/sales/SalesDashboardPage";
 import { LeadsPage } from "./pages/admin/sales/LeadsPage";
 import { LeadDetailsPage } from "./pages/admin/sales/LeadDetailsPage";
+import { VehicleDetailSalesPage } from "./pages/admin/sales/VehicleDetailSalesPage";
 
 // --- COMPONENTES DE LÓGICA DE RUTAS ---
 
@@ -131,8 +135,12 @@ function App() {
             <Route path="tracking" element={<TrackingPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            <Route path="import" element={<ImportVehiclesPage />} />
+            <Route path="accesorios" element={<AccesoriosPage />} />
+            <Route path="pricing" element={<PricingPage />} />
             {/* Rutas de ventas accesibles para el admin */}
             <Route path="sales/catalog" element={<CatalogPage />} />
+            <Route path="sales/catalog/:vehicleId" element={<VehicleDetailSalesPage />} />
             <Route
               path="sales/catalog/:vehicleId/quote"
               element={<CreateQuotePage />}
@@ -156,6 +164,7 @@ function App() {
           <Route path="/sales" element={<SalesLayout />}>
             <Route index element={<SalesDashboardPage />} />
             <Route path="catalog" element={<CatalogPage />} />
+            <Route path="catalog/:vehicleId" element={<VehicleDetailSalesPage />} />
             <Route
               path="catalog/:vehicleId/quote"
               element={<CreateQuotePage />}

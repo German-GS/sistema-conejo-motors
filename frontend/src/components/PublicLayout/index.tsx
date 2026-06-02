@@ -1,9 +1,22 @@
 // src/components/PublicLayout/index.tsx
-import { NavLink, Link, Outlet } from "react-router-dom";
+import { NavLink, Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import styles from "./PublicLayout.module.css";
 import logo from "@/img/Logos/Logo-Conejo-Motors-Texto-al-lado.png";
 
 export const PublicLayout = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleContactClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => document.getElementById("contacto")?.scrollIntoView({ behavior: "smooth" }), 300);
+    } else {
+      document.getElementById("contacto")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className={styles.publicLayout}>
       <header className={styles.header}>
@@ -31,12 +44,9 @@ export const PublicLayout = () => {
           >
             Comparador
           </NavLink>
-          <NavLink
-            to="/contact"
-            className={({ isActive }) => (isActive ? styles.activeLink : "")}
-          >
+          <a href="#contacto" onClick={handleContactClick} className={styles.navLink}>
             Contacto
-          </NavLink>
+          </a>
         </nav>
         <Link to="/login" className="btn btn-secondary">
           Ingresar

@@ -163,7 +163,7 @@ export const SiteHomepageSettings = () => {
           const formData = new FormData();
           formData.append("files", slide.file!); // 'files' porque el backend espera un array
           const res = await apiClient.post(
-            `/vehicles/${allVehicles[0].id}/upload`, // Endpoint genérico para subir, usamos un ID cualquiera
+            `/site-settings/upload`,
             formData
           );
           // Reemplazamos la URL temporal por la definitiva del backend
