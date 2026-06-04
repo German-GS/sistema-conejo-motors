@@ -6,13 +6,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CustomersModule } from '../customers/customers.module';
+// CustomersModule desactivado — no se usa en AuthService
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    CustomersModule,
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

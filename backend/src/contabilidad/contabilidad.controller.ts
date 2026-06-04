@@ -1,0 +1,71 @@
+import {
+  Controller, Get, Post, Patch, Param, Body, Query,
+  UseGuards, Request, ParseIntPipe,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { ContabilidadService } from './contabilidad.service';
+
+@Controller('contabilidad')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Roles('Administrador', 'Contador')
+export class ContabilidadController {
+  constructor(private readonly svc: ContabilidadService) {}
+
+  // ── Plan de Cuentas ───────────────────────────────────────────────────────
+
+  @Get('cuentas')
+  getCuentas() { return this.svc.getCuentas(); }
+
+  @Post('cuentas')
+  @Roles('Administrador')
+  createCuenta(@Body() body: any) { return this.svc.createCuenta(body); }
+
+  @Patch('cuentas/:id')
+  @Roles('Administrador')
+  updateCuenta(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
+    return this.svc.updateCuenta(id, body);
+  }
+
+  @Post('cuentas/seed')
+  @Roles('Administrador')
+  seedCuentas() { return this.svc.seedCuentasEstandar(); }
+
+  // ── Asientos ──────────────────────────────────────────────────────────────
+
+  @Get('asientos')
+  getAsientos(
+    @Query('startDate') startDate?: string,
+    @Query('endDate')   endDate?:   string,
+  ) { return this.svc.getAsientos(startDate, endDate); }
+
+  @Get('asientos/:id')
+  getAsiento(@Param('id', ParseIntPipe) id: number) { return this.svc.getAsiento(id); }
+
+  @Post('asientos')
+  crearAsiento(@Body() body: any, @Request() req) {
+    return this.svc.crearAsiento(req.user, body);
+  }
+
+  // ── Balance ───────────────────────────────────────────────────────────────
+
+  @Get('balance')
+  getBalance(
+    @Query('startDate') startDate?: string,
+    @Query('endDate')   endDate?:   string,
+  ) { return this.svc.getBalance(startDate, endDate); }
+
+  // ── Cierre Diario ─────────────────────────────────────────────────────────
+
+  @Get('cierres')
+  getCierres() { return this.svc.getCierres(); }
+
+  @Get('cierres/preview')
+  previewCierre(@Query('fecha') fecha?: string) { return this.svc.previewCierre(fecha); }
+
+  @Post('cierres')
+  generarCierre(@Body() body: { fecha?: string; notas?: string }, @Request() req) {
+    return this.svc.generarCierre(req.user, body.fecha, body.notas);
+  }
+}

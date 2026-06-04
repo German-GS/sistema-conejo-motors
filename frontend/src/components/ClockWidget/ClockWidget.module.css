@@ -1,0 +1,88 @@
+.widget {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.4rem 0.85rem;
+  flex-wrap: wrap;
+}
+
+/* Reloj */
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.time {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #024f7d;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+.date {
+  font-size: 0.68rem;
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+/* Pill de estado */
+.statusPill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.inside  { background: #10b981; color: white; }
+.outside { background: #ef4444; color: white; }
+.lunch   { background: #f59e0b; color: white; }
+
+.lastTime {
+  font-size: 0.68rem;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* Botones */
+.btns {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.btn {
+  padding: 0.35rem 0.85rem;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnEntrada {
+  background: #10b981;
+  color: white;
+}
+
+.btnSalida {
+  background: #ef4444;
+  color: white;
+}
+
+.btnAlmuerzo {
+  background: #f59e0b;
+  color: white;
+  padding: 0.35rem 0.6rem;
+}

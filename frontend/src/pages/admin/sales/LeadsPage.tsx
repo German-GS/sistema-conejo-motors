@@ -1,66 +1,231 @@
 // frontend/src/pages/admin/sales/LeadsPage.tsx
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import apiClient from '@/api/apiClient';
-import { Card } from '@/components/Card';
-import styles from './LeadsPage.module.css'; // Crearemos este archivo a continuación
+import { useState, useEffect, useMemo } from "react";
+import { Link, useLocation } from "react-router-dom";
+import apiClient from "@/api/apiClient";
+import { Card } from "@/components/Card";
+import styles from "./LeadsPage.module.css";
+import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 
 interface Lead {
   id: number;
   nombre_cliente: string;
   email_cliente: string;
+  telefono_cliente?: string;
   estado: string;
+  fuente: string;
+  fecha_followup?: string;
   fecha_creacion: string;
+  vehiculo_interes?: { marca: string; modelo: string };
+  vendedor_asignado?: { nombre_completo: string };
 }
+
+const ESTADO_COLORS: Record<string, string> = {
+  Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
+  Cerrado: "#10b981", Perdido: "#ef4444",
+};
+
+const FUENTE_ICONS: Record<string, string> = {
+  Web: "🌐", Instagram: "📸", Facebook: "👍", WhatsApp: "💬",
+  TikTok: "🎵", Referido: "🤝", Presencial: "🏢", Otro: "📋",
+};
 
 export const LeadsPage = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterEstado, setFilterEstado] = useState("Todos");
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
+
+  // Base path para el detalle del lead
+  const basePath = isAdmin ? "/admin" : "/sales";
+  // Admin ve todos los leads, vendedor solo los suyos
+  const endpoint = isAdmin ? "/leads" : "/leads/my-leads";
 
   useEffect(() => {
     setLoading(true);
-    apiClient.get('/leads/my-leads')
-      .then(response => setLeads(response.data))
-      .catch(error => console.error("Error al cargar leads:", error))
+    apiClient.get(endpoint)
+      .then((res) => setLeads(res.data))
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [endpoint]);
+
+  const filtered = filterEstado === "Todos"
+    ? leads
+    : leads.filter((l) => l.estado === filterEstado);
+
+  const countByEstado = leads.reduce((acc, l) => {
+    acc[l.estado] = (acc[l.estado] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Métricas CRM (solo admin)
+  const metrics = useMemo(() => {
+    if (!isAdmin || !leads.length) return null;
+    const total = leads.length;
+    const cerrados = countByEstado["Cerrado"] ?? 0;
+    const tasaConversion = total > 0 ? ((cerrados / total) * 100).toFixed(1) : "0";
+    const hoy = new Date();
+    const vencidos = leads.filter(l => {
+      const f = l.fecha_followup ? new Date(l.fecha_followup) : null;
+      return f && f < hoy && l.estado !== "Cerrado" && l.estado !== "Perdido";
+    }).length;
+
+    // Por fuente
+    const porFuente = leads.reduce((acc, l) => {
+      const f = l.fuente || "Otro";
+      acc[f] = (acc[f] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const topFuente = Object.entries(porFuente).sort((a, b) => b[1] - a[1])[0];
+
+    return { total, cerrados, tasaConversion, vencidos, topFuente, porFuente };
+  }, [leads, isAdmin, countByEstado]);
 
   return (
-    <Card title="Mis Leads Pendientes">
-      {loading ? (
-        <p>Cargando leads...</p>
-      ) : (
-        <table className={styles.leadsTable}>
-          <thead>
-            <tr>
-              <th>Nombre Cliente</th>
-              <th>Email</th>
-              <th>Estado</th>
-              <th>Fecha de Creación</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map(lead => (
-              <tr key={lead.id}>
-                <td>{lead.nombre_cliente}</td>
-                <td>{lead.email_cliente}</td>
-                <td>
-                  <span className={`${styles.status} ${styles[lead.estado.toLowerCase().replace(' ', '')]}`}>
-                    {lead.estado}
-                  </span>
-                </td>
-                <td>{new Date(lead.fecha_creacion).toLocaleDateString()}</td>
-                <td>
-                  <Link to={`/sales/leads/${lead.id}`} className="btn btn-secondary">
-                    Ver Detalles
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div>
+      {/* Panel de métricas CRM (solo admin) */}
+      {isAdmin && metrics && (
+        <div className={styles.metricsPanel}>
+          <div className={styles.metricCard}>
+            <span className={styles.metricNum}>{metrics.total}</span>
+            <span className={styles.metricLabel}>Total Leads</span>
+          </div>
+          <div className={styles.metricCard}>
+            <span className={styles.metricNum} style={{ color: "#10b981" }}>{metrics.tasaConversion}%</span>
+            <span className={styles.metricLabel}>Tasa de Conversión</span>
+          </div>
+          <div className={styles.metricCard}>
+            <span className={styles.metricNum} style={{ color: "#10b981" }}>{metrics.cerrados}</span>
+            <span className={styles.metricLabel}>Cerrados / Vendidos</span>
+          </div>
+          <div className={styles.metricCard}>
+            <span className={styles.metricNum} style={{ color: metrics.vencidos > 0 ? "#ef4444" : "#10b981" }}>
+              {metrics.vencidos}
+            </span>
+            <span className={styles.metricLabel}>Follow-ups Vencidos</span>
+          </div>
+          {metrics.topFuente && (
+            <div className={styles.metricCard}>
+              <span className={styles.metricNum} style={{ fontSize: "1.1rem" }}>
+                {FUENTE_ICONS[metrics.topFuente[0]] ?? "📋"} {metrics.topFuente[0]}
+              </span>
+              <span className={styles.metricLabel}>Fuente principal ({metrics.topFuente[1]} leads)</span>
+            </div>
+          )}
+          {/* Barras por fuente */}
+          <div className={`${styles.metricCard} ${styles.metricFuentes}`}>
+            <span className={styles.metricLabel} style={{ marginBottom: "0.5rem" }}>Leads por Fuente</span>
+            {Object.entries(metrics.porFuente)
+              .sort((a, b) => b[1] - a[1])
+              .map(([fuente, count]) => (
+                <div key={fuente} className={styles.fuenteBar}>
+                  <span className={styles.fuenteLabel}>{FUENTE_ICONS[fuente] ?? "📋"} {fuente}</span>
+                  <div className={styles.barTrack}>
+                    <div
+                      className={styles.barFill}
+                      style={{ width: `${(count / metrics.total) * 100}%` }}
+                    />
+                  </div>
+                  <span className={styles.fuenteCount}>{count}</span>
+                </div>
+              ))}
+          </div>
+        </div>
       )}
-    </Card>
+
+      {/* KPIs rápidos */}
+      <div className={styles.kpiRow}>
+        {["Nuevo", "Contactado", "En Progreso", "Cerrado", "Perdido"].map((e) => (
+          <button
+            key={e}
+            className={`${styles.kpi} ${filterEstado === e ? styles.kpiActive : ""}`}
+            style={{ borderColor: filterEstado === e ? ESTADO_COLORS[e] : undefined }}
+            onClick={() => setFilterEstado(filterEstado === e ? "Todos" : e)}
+          >
+            <span className={styles.kpiNum} style={{ color: ESTADO_COLORS[e] }}>
+              {countByEstado[e] ?? 0}
+            </span>
+            <span className={styles.kpiLabel}>{e}</span>
+          </button>
+        ))}
+        {filterEstado !== "Todos" && (
+          <button className={styles.clearFilter} onClick={() => setFilterEstado("Todos")}>✕</button>
+        )}
+      </div>
+
+      <Card title={isAdmin ? `Todos los Leads (${filtered.length})` : `Mis Leads (${filtered.length})`}>
+        {loading ? (
+          <p>Cargando leads...</p>
+        ) : filtered.length === 0 ? (
+          <p className={styles.empty}>No hay leads con ese estado.</p>
+        ) : (
+          <table className={styles.leadsTable}>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Fuente</th>
+                <th>Vehículo</th>
+                {isAdmin && <th>Vendedor</th>}
+                <th>Estado</th>
+                <th>Seguimiento</th>
+                <th>Registrado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((lead) => {
+                const hoy = new Date();
+                const followup = lead.fecha_followup ? new Date(lead.fecha_followup) : null;
+                const followupVencido = followup && followup < hoy && lead.estado !== "Cerrado";
+                return (
+                  <tr key={lead.id} className={followupVencido ? styles.rowAlert : ""}>
+                    <td>
+                      <strong>{lead.nombre_cliente}</strong>
+                      <br />
+                      <span className={styles.sub}>{lead.email_cliente}</span>
+                    </td>
+                    <td className={styles.fuente}>
+                      {FUENTE_ICONS[lead.fuente] ?? "📋"} {lead.fuente}
+                    </td>
+                    <td>
+                      {lead.vehiculo_interes
+                        ? `${lead.vehiculo_interes.marca} ${lead.vehiculo_interes.modelo}`
+                        : <span className={styles.sub}>—</span>}
+                    </td>
+                    {isAdmin && (
+                      <td>{lead.vendedor_asignado?.nombre_completo ?? <span className={styles.sub}>Sin asignar</span>}</td>
+                    )}
+                    <td>
+                      <span
+                        className={styles.status}
+                        style={{ background: ESTADO_COLORS[lead.estado] ?? "#64748b" }}
+                      >
+                        {lead.estado}
+                      </span>
+                    </td>
+                    <td>
+                      {followup ? (
+                        <span className={followupVencido ? styles.followupAlert : styles.followup}>
+                          {followupVencido ? "⚠️ " : "📅 "}
+                          {fmtFechaLocal(lead.fecha_followup)}
+                        </span>
+                      ) : <span className={styles.sub}>—</span>}
+                    </td>
+                    <td className={styles.sub}>
+                      {fmtFecha(lead.fecha_creacion)}
+                    </td>
+                    <td>
+                      <Link to={`${basePath}/leads/${lead.id}`} className="btn btn-secondary">
+                        Ver
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </Card>
+    </div>
   );
 };

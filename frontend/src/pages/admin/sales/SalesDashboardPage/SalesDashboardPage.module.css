@@ -1,57 +1,190 @@
-.welcomeMessage {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--azul-principal);
-  margin-bottom: 0.5rem;
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.page { padding: 0.25rem 0 2rem; }
+
+.loadingWrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 4rem; gap: 1rem; color: #64748b;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #e2e8f0; border-top-color: #024f7d;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Bienvenida ─────────────────────────────────────────────────────────── */
+.welcomeBar {
+  display: flex; justify-content: space-between;
+  align-items: flex-end; margin-bottom: 1.5rem;
 }
 
-.subtitle {
-  font-size: 1.1rem;
-  color: var(--texto-secundario);
-  margin-top: 0;
-  margin-bottom: 2rem;
+.welcomeTitle {
+  font-size: 1.55rem; font-weight: 800; color: #0a2540; margin: 0 0 0.25rem;
 }
 
-.kpiGrid {
+.welcomeSub {
+  font-size: 0.85rem; color: #64748b; margin: 0;
+  display: flex; align-items: center; gap: 0.75rem;
+  text-transform: capitalize;
+}
+
+.connectedBadge {
+  background: #dcfce7; color: #166534;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px;
+}
+
+.refreshBtn {
+  background: #f1f5f9; border: 1px solid #e2e8f0;
+  border-radius: 6px; width: 30px; height: 30px;
+  font-size: 1.1rem; cursor: pointer; color: #475569;
+  transition: background 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.refreshBtn:hover { background: #e2e8f0; }
+
+/* ── KPIs ───────────────────────────────────────────────────────────────── */
+.kpiRow {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+@media (max-width: 1200px) { .kpiRow { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 768px)  { .kpiRow { grid-template-columns: repeat(2, 1fr); } }
+
+.kpi {
+  background: white; border: 1.5px solid #e2e8f0;
+  border-radius: 12px; padding: 0.9rem 1rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  border-left: 4px solid var(--accent, #024f7d);
+  transition: box-shadow 0.15s, transform 0.12s;
+}
+.kpiClickable { cursor: pointer; }
+.kpiClickable:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+.kpiIcon { font-size: 1.5rem; flex-shrink: 0; }
+
+.kpiRight { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+.kpiValue { font-size: 1.3rem; font-weight: 800; color: #0a2540; line-height: 1.1; }
+
+.kpiLabel {
+  font-size: 0.7rem; font-weight: 700; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.04em;
 }
 
-.kpiGrid h2 {
-  color: var(--azul-principal);
-  font-size: 2.5rem;
-  margin: 0;
-}
+.kpiSub { font-size: 0.68rem; color: #94a3b8; margin-top: 1px; }
 
-.dashboardGrid {
+/* ── Grid principal ─────────────────────────────────────────────────────── */
+.mainGrid {
   display: grid;
-  grid-template-columns: 1fr 2fr; /* Columna de KPIs más pequeña, gráfico más grande */
-  gap: 1.5rem;
-  align-items: flex-start;
+  grid-template-columns: 320px 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+@media (max-width: 900px) { .mainGrid { grid-template-columns: 1fr; } }
+
+/* ── Panel ──────────────────────────────────────────────────────────────── */
+.panel {
+  background: white; border: 1.5px solid #e2e8f0;
+  border-radius: 14px; overflow: hidden;
 }
 
-/* El grid de KPIs ahora es una columna vertical */
-.kpiGrid {
-  display: grid;
-  grid-template-columns: 1fr; /* Una sola columna para los KPIs */
-  gap: 1.5rem;
+.panelHeader {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.kpiGrid h2 {
-  color: var(--azul-principal);
-  font-size: 2rem; /* Tamaño de fuente ligeramente reducido */
-  margin: 0;
+.panelTitle { font-size: 0.88rem; font-weight: 700; color: #0a2540; }
+
+.onlineDot {
+  width: 8px; height: 8px; background: #10b981;
+  border-radius: 50%; margin-left: auto;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
 }
 
-/* Contenedor para el gráfico */
-.chartContainer {
-  width: 100%;
+.onlineCount { font-size: 0.75rem; color: #10b981; font-weight: 700; }
+
+.emptyPanel {
+  padding: 2rem; text-align: center;
+  color: #94a3b8; font-size: 0.85rem;
+}
+.emptyPanel span { font-size: 1.75rem; display: block; margin-bottom: 0.5rem; }
+.emptyPanel p { margin: 0; }
+
+/* ── Lista avatares ─────────────────────────────────────────────────────── */
+.avatarList {
+  padding: 0.75rem 1rem;
+  display: flex; flex-direction: column; gap: 0.55rem;
+  max-height: 290px; overflow-y: auto;
+}
+.avatarList::-webkit-scrollbar { width: 4px; }
+.avatarList::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
+
+.avatarRow {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.4rem 0.5rem; border-radius: 8px;
+  transition: background 0.1s;
+}
+.avatarRow:hover { background: #f8fafc; }
+.avatarMuted { opacity: 0.65; }
+
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 800; color: white; flex-shrink: 0;
 }
 
-/* Media query para hacer el layout responsivo en pantallas pequeñas */
-@media (max-width: 992px) {
-  .dashboardGrid {
-    grid-template-columns: 1fr; /* Se apilan en una sola columna */
-  }
+.avatarInfo { flex: 1; min-width: 0; }
+
+.avatarName {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.83rem; font-weight: 600; color: #0a2540;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+
+.youBadge {
+  background: #dbeafe; color: #1d4ed8;
+  font-size: 0.62rem; font-weight: 800;
+  padding: 0 5px; border-radius: 6px;
+}
+
+.avatarSub {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.71rem; color: #94a3b8; margin-top: 1px;
+}
+
+.rolChip {
+  font-size: 0.62rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 6px;
+}
+.rolAdmin   { background: #ede9fe; color: #6d28d9; }
+.rolVendedor { background: #dbeafe; color: #1d4ed8; }
+
+.statusDot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Accesos rápidos ────────────────────────────────────────────────────── */
+.quickLinks {
+  display: flex; gap: 0.75rem; flex-wrap: wrap;
+}
+
+.quickLink {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: white; border: 1.5px solid #e2e8f0;
+  border-radius: 10px; padding: 0.65rem 1.1rem;
+  font-size: 0.85rem; font-weight: 600; color: #0a2540;
+  cursor: pointer; transition: all 0.15s;
+}
+.quickLink:hover {
+  background: #024f7d; color: white;
+  border-color: #024f7d; transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2,79,125,0.25);
+}
+
+.quickIcon { font-size: 1rem; }

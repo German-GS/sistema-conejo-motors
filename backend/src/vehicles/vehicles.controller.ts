@@ -65,10 +65,33 @@ export class VehiclesController {
     return this.vehiclesService.remove(+id);
   }
 
+  /** PATCH /vehicles/:id/liberar — Admin libera un vehículo reservado */
+  @Patch(':id/liberar')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  liberarVehiculo(@Param('id') id: string) {
+    return this.vehiclesService.liberarVehiculo(+id);
+  }
+
+  /** GET /vehicles/reservados — Admin: vehículos reservados con info de cotización */
+  @Get('reservados')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador', 'Contador')
+  getReservados() {
+    return this.vehiclesService.getReservados();
+  }
+
   @Get('dashboard/stats')
   @UseGuards(AuthGuard('jwt'))
   getDashboardStats() {
     return this.vehiclesService.getDashboardStats();
+  }
+
+  @Get('dashboard/extended')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador', 'Contador')
+  getAdminDashboardExtended() {
+    return this.vehiclesService.getAdminDashboardExtended();
   }
 
   @Get('dashboard/sales-stats')

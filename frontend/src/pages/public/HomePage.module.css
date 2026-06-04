@@ -13,40 +13,49 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-size: cover;
-  background-position: center;
   opacity: 0;
   transition: opacity 1s ease-in-out;
-  display: flex; /* Mantener flex para la superposición de contenido */
-  align-items: flex-end; /* Alinear contenido al final (abajo) */
-  justify-content: center; /* Centrar contenido horizontalmente */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   text-align: center;
-  padding-bottom: 3rem; /* Espacio desde la parte inferior */
+  padding-bottom: 3rem;
 }
 .slide.active {
   opacity: 1;
 }
 
+/* Imagen del slide como <img> real para mejor calidad */
+.slideImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  /* Mejora la nitidez en pantallas de alta densidad */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
 .slide::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* 👇 REEMPLAZA EL FONDO SÓLIDO POR UN DEGRADADO 👇 */
+  inset: 0;
+  z-index: 1;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.1) 0%,
-    rgba(0, 0, 0, 0.6) 100%
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(0, 0, 0, 0.55) 100%
   );
 }
 .slideContent {
   position: relative;
-  z-index: 2;
+  z-index: 2; /* sobre el ::before overlay */
   color: white;
   padding: 2rem;
-  max-width: 800px; /* Limitar ancho para que el texto no sea demasiado largo */
+  max-width: 800px;
 }
 
 .slideContent h1 {

@@ -1,0 +1,217 @@
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+.topBar h1 { margin: 0; }
+
+.newBtn {
+  background: #024f7d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.newBtn:hover { background: #013a5e; }
+
+/* Formulario */
+.formCard {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.formCard h3 { margin: 0 0 1.25rem; font-size: 1rem; color: #0a2540; }
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #475569;
+}
+.field input, .field select, .field textarea {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: white;
+  font-family: inherit;
+  box-sizing: border-box;
+  width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: #024f7d;
+}
+.field textarea { resize: vertical; }
+
+.fullWidth { grid-column: 1 / -1; }
+
+.formActions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0;
+}
+.tab {
+  padding: 0.55rem 1.1rem;
+  background: none; border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-size: 0.88rem; font-weight: 600;
+  color: #64748b; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  border-radius: 6px 6px 0 0;
+}
+.tab:hover { color: #024f7d; }
+.tabActive { color: #024f7d; border-bottom-color: #024f7d; }
+
+.badge {
+  background: #ef4444; color: white;
+  font-size: 0.65rem; font-weight: 800;
+  border-radius: 10px; padding: 0 6px;
+}
+
+/* Cards de solicitudes */
+.list { display: flex; flex-direction: column; gap: 1rem; }
+
+.card {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.card_pendiente { border-left: 4px solid #f59e0b; }
+.card_aprobada  { border-left: 4px solid #10b981; }
+.card_rechazada { border-left: 4px solid #ef4444; }
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tipo { font-size: 0.95rem; font-weight: 700; color: #0a2540; }
+.empleado {
+  margin-left: 0.75rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.estadoBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: white;
+}
+
+.cardBody {
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fechas { font-size: 0.85rem; color: #475569; }
+.motivo { font-size: 0.9rem; color: #374151; margin: 0; }
+.respuesta {
+  font-size: 0.82rem;
+  background: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: #475569;
+  border-left: 3px solid #cbd5e1;
+}
+.fecha { font-size: 0.76rem; color: #94a3b8; }
+.sub { color: #94a3b8; }
+
+/* Resolución admin */
+.resolveArea {
+  padding: 0.85rem 1.25rem;
+  background: #fffbeb;
+  border-top: 1px solid #fde68a;
+}
+
+.respuestaInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 0.65rem;
+  box-sizing: border-box;
+}
+.respuestaInput:focus { outline: none; border-color: #024f7d; }
+
+.resolveActions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.btnResolver {
+  background: none;
+  border: 1.5px solid #024f7d;
+  color: #024f7d;
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnResolver:hover { background: #f0f9ff; }
+
+.btnAprobar {
+  background: #10b981; color: white;
+  border: none; border-radius: 8px;
+  padding: 0.4rem 1rem; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer;
+}
+.btnAprobar:hover { background: #059669; }
+
+.btnRechazar {
+  background: #ef4444; color: white;
+  border: none; border-radius: 8px;
+  padding: 0.4rem 1rem; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer;
+}
+.btnRechazar:hover { background: #dc2626; }
+
+.btnCancelar {
+  background: none; border: 1.5px solid #e2e8f0;
+  border-radius: 8px; padding: 0.4rem 0.85rem;
+  font-size: 0.85rem; color: #64748b; cursor: pointer;
+}
+
+.empty { text-align: center; padding: 3rem; color: #64748b; }
+.empty p { margin-bottom: 1rem; }

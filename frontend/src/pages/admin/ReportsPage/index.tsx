@@ -10,262 +10,259 @@ type ReportType =
   | "sales-by-seller"
   | "sales-by-vehicle"
   | "detailed-sales"
+  | "leads-by-seller"
+  | "most-quoted"
   | "inventory"
   | "payroll";
 
-const reportOptions = [
-  { value: "profit", label: "Informe de Ganancias" },
-  { value: "sales-by-seller", label: "Ventas por Vendedor" },
-  { value: "sales-by-vehicle", label: "Ventas por Vehículo" },
-  { value: "detailed-sales", label: "Listado General de Ventas" },
-  { value: "inventory", label: "Inventario Actual" },
-  { value: "payroll", label: "Informe de Planilla" },
+const reportOptions: { value: ReportType; label: string; icon: string; needsDates: boolean }[] = [
+  { value: "profit",           label: "Ganancias del Período",      icon: "💰", needsDates: true  },
+  { value: "sales-by-seller",  label: "Ventas por Vendedor",         icon: "🏆", needsDates: true  },
+  { value: "sales-by-vehicle", label: "Ventas por Vehículo",         icon: "🚗", needsDates: true  },
+  { value: "detailed-sales",   label: "Listado General de Ventas",   icon: "📋", needsDates: true  },
+  { value: "leads-by-seller",  label: "Leads por Vendedor",          icon: "👥", needsDates: true  },
+  { value: "most-quoted",      label: "Vehículos Más Cotizados",     icon: "📊", needsDates: true  },
+  { value: "inventory",        label: "Inventario Actual",           icon: "📦", needsDates: false },
+  { value: "payroll",          label: "Informe de Planilla",         icon: "💼", needsDates: true  },
 ];
+
+const fmtCRC = (v: number) =>
+  new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
+
+// Mini barra de progreso para comparar filas
+const Bar = ({ value, max, color = "#024f7d" }: { value: number; max: number; color?: string }) => (
+  <div style={{ background: "#f1f5f9", borderRadius: 4, height: 8, width: "100%", minWidth: 80 }}>
+    <div style={{ width: `${max > 0 ? (value / max) * 100 : 0}%`, background: color, height: "100%", borderRadius: 4, transition: "width 0.3s" }} />
+  </div>
+);
 
 export const ReportsPage = () => {
   const [reportType, setReportType] = useState<ReportType>("profit");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date(); d.setDate(1);
+    return d.toISOString().split("T")[0];
+  });
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleReportTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setReportType(e.target.value as ReportType);
-    setReportData(null);
-  };
-  const handleGenerateReport = async () => {
-    if (reportType !== "inventory" && (!startDate || !endDate)) {
+  const selectedOpt = reportOptions.find(o => o.value === reportType)!;
+
+  const handleGenerate = async () => {
+    if (selectedOpt.needsDates && (!startDate || !endDate)) {
       toast.error("Por favor, selecciona un rango de fechas.");
       return;
     }
     setLoading(true);
     setReportData(null);
     try {
-      const response = await apiClient.get("/reports/summary", {
+      const res = await apiClient.get("/reports/summary", {
         params: { type: reportType, startDate, endDate },
       });
-      setReportData(response.data);
-    } catch (error) {
+      setReportData(res.data);
+    } catch {
       toast.error("Error al generar el informe.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExportToExcel = () => {
-    if (!reportData || (Array.isArray(reportData) && reportData.length === 0)) {
-      toast.error("No hay datos para exportar.");
-      return;
+  const handleExport = () => {
+    if (!reportData || (Array.isArray(reportData) && !reportData.length)) {
+      toast.error("No hay datos para exportar."); return;
     }
-
-    let dataToExport: any[] = [];
-    let fileName = `Informe_${reportType}_${new Date().toLocaleDateString(
-      "es-CR"
-    )}.xlsx`;
-
-    // --- 👇 INICIO DE LA CORRECCIÓN 👇 ---
-
+    let rows: any[] = [];
     switch (reportType) {
       case "profit":
-        dataToExport = [
-          {
-            "Total Ventas": reportData.totalVentas,
-            "Costo de Ventas": reportData.totalCosto,
-            "Ganancia Bruta": reportData.gananciaBruta,
-          },
-        ];
-        break;
-
+        rows = [{ "Total Ventas": reportData.totalVentas, "Costo": reportData.totalCosto, "Ganancia": reportData.gananciaBruta }]; break;
       case "inventory":
-        dataToExport = reportData.vehicles.map((v: any) => ({
-          ID: v.id,
-          Marca: v.marca,
-          Modelo: v.modelo,
-          Año: v.año,
-          VIN: v.vin,
-          "Precio Costo": v.precio_costo,
-        }));
-        break;
-
+        rows = reportData.vehicles.map((v: any) => ({ ID: v.id, Marca: v.marca, Modelo: v.modelo, Año: v.año, VIN: v.vin, "Costo CRC": v.precio_costo })); break;
       case "payroll":
-        dataToExport = reportData.map((item: any) => ({
-          "Nombre Completo": item.nombre_completo,
-          Cédula: item.cedula,
-          Banco: item.banco,
-          "Número de Cuenta": item.numero_cuenta,
-          "Monto a Depositar": item.monto_deposito,
-        }));
-        break;
-
-      // Para 'sales-by-seller', 'sales-by-vehicle', y 'detailed-sales'
-      // la data ya está en el formato correcto, así que solo la asignamos.
+        rows = reportData.map((r: any) => ({ Nombre: r.nombre_completo, Cédula: r.cedula, Banco: r.banco, Cuenta: r.numero_cuenta, Monto: r.monto_deposito })); break;
       default:
-        dataToExport = reportData;
-        break;
+        rows = reportData;
     }
-
-    // --- 👆 FIN DE LA CORRECCIÓN 👆 ---
-
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Informe");
-    XLSX.writeFile(workbook, fileName);
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Informe");
+    XLSX.writeFile(wb, `Informe_${reportType}_${new Date().toLocaleDateString("es-CR")}.xlsx`);
   };
+
   const renderReport = () => {
-    if (loading) {
-      return <p>Cargando datos...</p>;
-    }
-    if (!reportData) {
-      return <p>No hay datos para mostrar. Por favor, genera un informe.</p>;
-    }
-    if (Array.isArray(reportData) && reportData.length === 0) {
-      return (
-        <p>No se encontraron resultados para los filtros seleccionados.</p>
-      );
-    }
+    if (loading) return <div className={styles.loading}>⏳ Generando informe...</div>;
+    if (!reportData) return <div className={styles.empty}>Selecciona el tipo de informe y el período, luego haz clic en Generar.</div>;
+    if (Array.isArray(reportData) && !reportData.length)
+      return <div className={styles.empty}>No se encontraron resultados para ese período.</div>;
 
     switch (reportType) {
-      case "profit":
-        const {
-          totalVentas = 0,
-          totalCosto = 0,
-          gananciaBruta = 0,
-        } = reportData || {};
+
+      // ── GANANCIAS ───────────────────────────────────────────────
+      case "profit": {
+        const { totalVentas = 0, totalCosto = 0, gananciaBruta = 0 } = reportData;
+        const margen = totalVentas > 0 ? ((gananciaBruta / totalVentas) * 100).toFixed(1) : "0";
         return (
-          <div className={styles.kpiGrid}>
-            <Card title="Total Ventas">
-              <h2>₡{totalVentas.toLocaleString("es-CR")}</h2>
-            </Card>
-            <Card title="Costo Inventario Vendido">
-              <h2>₡{totalCosto.toLocaleString("es-CR")}</h2>
-            </Card>
-            <Card title="Ganancia Bruta">
-              <h2>₡{gananciaBruta.toLocaleString("es-CR")}</h2>
-            </Card>
+          <div className={styles.kpiRow}>
+            <div className={styles.kpiCard}>
+              <span className={styles.kpiIcon}>💰</span>
+              <span className={styles.kpiNum}>{fmtCRC(totalVentas)}</span>
+              <span className={styles.kpiLabel}>Total Vendido</span>
+            </div>
+            <div className={styles.kpiCard}>
+              <span className={styles.kpiIcon}>📦</span>
+              <span className={styles.kpiNum}>{fmtCRC(totalCosto)}</span>
+              <span className={styles.kpiLabel}>Costo Inventario</span>
+            </div>
+            <div className={`${styles.kpiCard} ${styles.kpiGreen}`}>
+              <span className={styles.kpiIcon}>📈</span>
+              <span className={styles.kpiNum}>{fmtCRC(gananciaBruta)}</span>
+              <span className={styles.kpiLabel}>Ganancia Bruta</span>
+            </div>
+            <div className={styles.kpiCard}>
+              <span className={styles.kpiIcon}>%</span>
+              <span className={styles.kpiNum}>{margen}%</span>
+              <span className={styles.kpiLabel}>Margen Bruto</span>
+            </div>
           </div>
         );
+      }
 
-      case "sales-by-seller":
-        if (!Array.isArray(reportData)) return null;
+      // ── VENTAS POR VENDEDOR ─────────────────────────────────────
+      case "sales-by-seller": {
+        const maxVendido = Math.max(...reportData.map((r: any) => Number(r.totalvendido)));
         return (
           <table className={styles.reportTable}>
-            <thead>
-              <tr>
-                <th>Vendedor</th>
-                <th>Unidades Vendidas</th>
-                <th>Total Vendido</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Vendedor</th><th>Unidades</th><th>Total Vendido</th><th style={{width:120}}></th></tr></thead>
             <tbody>
-              {reportData.map((row: any, index: number) => (
-                <tr key={index}>
-                  <td>{row.vendedor}</td>
-                  <td>{row.unidadesvendidas}</td>
-                  <td>₡{Number(row.totalvendido).toLocaleString("es-CR")}</td>
+              {reportData.map((r: any, i: number) => (
+                <tr key={i}>
+                  <td>{r.vendedor}</td>
+                  <td><strong>{r.unidadesvendidas}</strong></td>
+                  <td>{fmtCRC(Number(r.totalvendido))}</td>
+                  <td><Bar value={Number(r.totalvendido)} max={maxVendido} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         );
+      }
 
-      case "sales-by-vehicle":
-        if (!Array.isArray(reportData)) return null;
+      // ── VENTAS POR VEHÍCULO ─────────────────────────────────────
+      case "sales-by-vehicle": {
+        const maxV = Math.max(...reportData.map((r: any) => Number(r.totalvendido)));
         return (
           <table className={styles.reportTable}>
-            <thead>
-              <tr>
-                <th>Vehículo</th>
-                <th>Unidades Vendidas</th>
-                <th>Total Vendido</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Vehículo</th><th>Unidades</th><th>Total Vendido</th><th style={{width:120}}></th></tr></thead>
             <tbody>
-              {reportData.map((row: any, index: number) => (
-                <tr key={index}>
-                  <td>{row.vehiculo}</td>
-                  <td>{row.unidadesvendidas}</td>
-                  <td>₡{Number(row.totalvendido).toLocaleString("es-CR")}</td>
+              {reportData.map((r: any, i: number) => (
+                <tr key={i}>
+                  <td>{r.vehiculo}</td>
+                  <td><strong>{r.unidadesvendidas}</strong></td>
+                  <td>{fmtCRC(Number(r.totalvendido))}</td>
+                  <td><Bar value={Number(r.totalvendido)} max={maxV} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         );
+      }
 
+      // ── VENTAS DETALLADAS ───────────────────────────────────────
       case "detailed-sales":
-        if (!Array.isArray(reportData)) return null;
         return (
           <table className={styles.reportTable}>
-            <thead>
-              <tr>
-                <th>ID Venta</th>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Vehículo</th>
-                <th>Vendedor</th>
-                <th>Monto Final</th>
-              </tr>
-            </thead>
+            <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Vehículo</th><th>Vendedor</th><th>Monto</th></tr></thead>
             <tbody>
-              {reportData.map((venta: any) => (
-                <tr key={venta.id}>
-                  <td>{venta.id}</td>
-                  <td>{new Date(venta.fecha_venta).toLocaleDateString()}</td>
-                  <td>{venta.cotizacion.cliente.nombre_completo}</td>
-                  <td>{`${venta.cotizacion.vehiculo.marca} ${venta.cotizacion.vehiculo.modelo}`}</td>
-                  <td>{venta.vendedor.nombre_completo}</td>
-                  <td>₡{Number(venta.monto_final).toLocaleString("es-CR")}</td>
+              {reportData.map((v: any) => (
+                <tr key={v.id}>
+                  <td>{v.id}</td>
+                  <td>{new Date(v.fecha_venta).toLocaleDateString("es-CR")}</td>
+                  <td>{v.cotizacion?.cliente?.nombre_completo}</td>
+                  <td>{v.cotizacion?.vehiculo ? `${v.cotizacion.vehiculo.marca} ${v.cotizacion.vehiculo.modelo}` : "—"}</td>
+                  <td>{v.vendedor?.nombre_completo}</td>
+                  <td>{fmtCRC(Number(v.monto_final))}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         );
+
+      // ── LEADS POR VENDEDOR ──────────────────────────────────────
+      case "leads-by-seller": {
+        const maxLeads = Math.max(...reportData.map((r: any) => Number(r.total)));
+        return (
+          <table className={styles.reportTable}>
+            <thead>
+              <tr><th>Vendedor</th><th>Total</th><th>Activos</th><th>Cerrados</th><th>Perdidos</th><th>Conversión</th><th style={{width:120}}></th></tr>
+            </thead>
+            <tbody>
+              {reportData.map((r: any, i: number) => {
+                const conv = Number(r.total) > 0 ? ((Number(r.cerrados) / Number(r.total)) * 100).toFixed(0) : "0";
+                return (
+                  <tr key={i}>
+                    <td>{r.vendedor}</td>
+                    <td><strong>{r.total}</strong></td>
+                    <td><span className={styles.badgeBlue}>{r.activos}</span></td>
+                    <td><span className={styles.badgeGreen}>{r.cerrados}</span></td>
+                    <td><span className={styles.badgeRed}>{r.perdidos}</span></td>
+                    <td><strong>{conv}%</strong></td>
+                    <td><Bar value={Number(r.total)} max={maxLeads} color="#8b5cf6" /></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        );
+      }
+
+      // ── VEHÍCULOS MÁS COTIZADOS ─────────────────────────────────
+      case "most-quoted": {
+        const maxCot = Math.max(...reportData.map((r: any) => Number(r.cotizaciones)));
+        return (
+          <table className={styles.reportTable}>
+            <thead><tr><th>#</th><th>Vehículo</th><th>Cotizaciones</th><th>Monto Total</th><th style={{width:120}}></th></tr></thead>
+            <tbody>
+              {reportData.map((r: any, i: number) => (
+                <tr key={i}>
+                  <td className={i < 3 ? styles.rankTop : ""}>{i + 1}</td>
+                  <td>{r.vehiculo}</td>
+                  <td><strong>{r.cotizaciones}</strong></td>
+                  <td>{fmtCRC(Number(r.monto_total))}</td>
+                  <td><Bar value={Number(r.cotizaciones)} max={maxCot} color="#f59e0b" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      }
+
+      // ── INVENTARIO ──────────────────────────────────────────────
       case "inventory":
-        if (
-          typeof reportData !== "object" ||
-          !Array.isArray(reportData.vehicles)
-        )
-          return null;
+        if (!Array.isArray(reportData?.vehicles)) return null;
         return (
           <>
-            <p>
-              <strong>Total de vehículos en stock:</strong>{" "}
-              {reportData.totalVehicles}
-            </p>
-            <p>
-              <strong>Costo total del inventario:</strong> ₡
-              {Number(reportData.inventoryCost).toLocaleString("es-CR")}
-            </p>
+            <div className={styles.kpiRow}>
+              <div className={styles.kpiCard}>
+                <span className={styles.kpiIcon}>🚗</span>
+                <span className={styles.kpiNum}>{reportData.totalVehicles}</span>
+                <span className={styles.kpiLabel}>Vehículos en Stock</span>
+              </div>
+              <div className={styles.kpiCard}>
+                <span className={styles.kpiIcon}>💰</span>
+                <span className={styles.kpiNum}>{fmtCRC(Number(reportData.inventoryCost))}</span>
+                <span className={styles.kpiLabel}>Costo Total Inventario</span>
+              </div>
+            </div>
             <table className={styles.reportTable}>
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Marca</th>
-                  <th>Modelo</th>
-                  <th>Año</th>
-                  <th>Color</th>
-                  <th>VIN</th>
-                  <th>Cuenta</th>
-                  <th>Costo Factura USD</th>
-                  <th>T/C ₡/USD</th>
-                  <th>Tasa Caldera</th>
-                  <th>Acarreo</th>
-                  <th>Nacionalización</th>
-                  <th>Inscripción + Traspaso</th>
-                  <th>Marchamo</th>
-                  <th>Costo Total CRC</th>
-                  <th>Ubicación</th>
-                </tr>
+                <tr><th>ID</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Color</th><th>VIN</th><th>Cuenta</th><th>Costo USD</th><th>T/C</th><th>Tasa Caldera</th><th>Acarreo</th><th>Nac.</th><th>Inscripción</th><th>Marchamo</th><th>Costo CRC</th><th>Ubicación</th></tr>
               </thead>
               <tbody>
                 {reportData.vehicles.map((v: any) => (
                   <tr key={v.id}>
-                    <td>{v.id}</td>
-                    <td>{v.marca}</td>
-                    <td>{v.modelo}</td>
-                    <td>{v.año}</td>
+                    <td>{v.id}</td><td>{v.marca}</td><td>{v.modelo}</td><td>{v.año}</td>
                     <td>{v.color}</td>
-                    <td style={{fontFamily:'monospace', fontSize:'0.8rem'}}>{v.vin}</td>
-                    <td>{v.cuenta_contable || '1030'}</td>
+                    <td style={{ fontFamily: "monospace", fontSize: "0.78rem" }}>{v.vin}</td>
+                    <td>{v.cuenta_contable || "1030"}</td>
                     <td>${Number(v.costo_factura_usd || 0).toLocaleString("es-CR")}</td>
                     <td>₡{Number(v.tipo_cambio || 0).toLocaleString("es-CR")}</td>
                     <td>₡{Number(v.tasa_caldera || 0).toLocaleString("es-CR")}</td>
@@ -274,86 +271,80 @@ export const ReportsPage = () => {
                     <td>₡{Number(v.inscripcion_traspaso || 0).toLocaleString("es-CR")}</td>
                     <td>₡{Number(v.marchamo || 0).toLocaleString("es-CR")}</td>
                     <td><strong>₡{Number(v.precio_costo).toLocaleString("es-CR")}</strong></td>
-                    <td>{v.bodega?.nombre || 'N/A'}</td>
+                    <td>{v.bodega?.nombre || "N/A"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </>
         );
+
+      // ── PLANILLA ────────────────────────────────────────────────
       case "payroll":
-        if (!Array.isArray(reportData)) return null;
         return (
           <table className={styles.reportTable}>
-            <thead>
-              <tr>
-                <th>Nombre Completo</th>
-                <th>Cédula</th>
-                <th>Banco</th>
-                <th>Número de Cuenta</th>
-                <th>Monto a Depositar</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Nombre</th><th>Cédula</th><th>Banco</th><th>Cuenta</th><th>Monto</th></tr></thead>
             <tbody>
-              {reportData.map((row: any, index: number) => (
-                <tr key={index}>
-                  <td>{row.nombre_completo}</td>
-                  <td>{row.cedula}</td>
-                  <td>{row.banco}</td>
-                  <td>{row.numero_cuenta}</td>
-                  <td>₡{Number(row.monto_deposito).toLocaleString("es-CR")}</td>
+              {reportData.map((r: any, i: number) => (
+                <tr key={i}>
+                  <td>{r.nombre_completo}</td><td>{r.cedula}</td>
+                  <td>{r.banco}</td><td>{r.numero_cuenta}</td>
+                  <td>{fmtCRC(Number(r.monto_deposito))}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         );
+
       default:
         return <p>Selecciona un tipo de informe válido.</p>;
     }
   };
 
   return (
-    <>
-      <Card title="Generador de Informes">
-        <div className={styles.filters}>
-          <select value={reportType} onChange={handleReportTypeChange}>
-            {reportOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {reportType !== "inventory" && (
+    <div>
+      {/* ── Selector de tipo ── */}
+      <div className={styles.typeGrid}>
+        {reportOptions.map((opt) => (
+          <button
+            key={opt.value}
+            className={`${styles.typeBtn} ${reportType === opt.value ? styles.typeBtnActive : ""}`}
+            onClick={() => { setReportType(opt.value); setReportData(null); }}
+          >
+            <span className={styles.typeIcon}>{opt.icon}</span>
+            <span>{opt.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Controles de fecha ── */}
+      <Card title={`${selectedOpt.icon} ${selectedOpt.label}`}>
+        <div className={styles.controls}>
+          {selectedOpt.needsDates && (
             <>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
+              <div className={styles.dateField}>
+                <label>Desde</label>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              </div>
+              <div className={styles.dateField}>
+                <label>Hasta</label>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              </div>
             </>
           )}
-          <button
-            className="btn btn-principal"
-            onClick={handleGenerateReport}
-            disabled={loading}
-          >
-            {loading ? "Generando..." : "Generar Informe"}
+          <button className="btn btn-principal" onClick={handleGenerate} disabled={loading}>
+            {loading ? "Generando..." : "▶ Generar Informe"}
           </button>
-          <button
-            className="btn btn-secondary"
-            onClick={handleExportToExcel}
-            disabled={!reportData}
-          >
-            Exportar a Excel
+          <button className="btn btn-secondary" onClick={handleExport} disabled={!reportData}>
+            📥 Exportar Excel
           </button>
         </div>
       </Card>
-      <Card title="Resultados del Informe">{renderReport()}</Card>
-    </>
+
+      {/* ── Resultados ── */}
+      <Card title="Resultados">
+        {renderReport()}
+      </Card>
+    </div>
   );
 };

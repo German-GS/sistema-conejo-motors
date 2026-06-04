@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import apiClient from "../../api/apiClient";
 import { VehicleForm } from "../../components/VechicleForm/VehicleForm";
 import { Card } from "../../components/Card";
@@ -6,6 +6,7 @@ import styles from "./DashboardPage.module.css";
 import { Modal } from "../../components/Modal";
 import toast from "react-hot-toast";
 import { Vehicle } from "../../interfaces";
+import { Pagination } from "@/components/Pagination";
 
 // Interfaz para el tipo de dato Vehicle
 
@@ -14,6 +15,10 @@ export const DashboardPage = () => {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterEstado, setFilterEstado] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const fetchVehicles = async () => {
     try {
@@ -62,6 +67,22 @@ export const DashboardPage = () => {
     }
   };
 
+  const filtered = useMemo(() => {
+    let list = vehicles;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(v => `${v.marca} ${v.modelo} ${v.año} ${v.vin} ${v.color}`.toLowerCase().includes(q));
+    }
+    if (filterEstado) list = list.filter(v => v.estado === filterEstado);
+    return list;
+  }, [vehicles, search, filterEstado]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
+
   return (
     <>
       <div className={styles.header}>
@@ -71,8 +92,37 @@ export const DashboardPage = () => {
         </button>
       </div>
 
-      <Card title="Inventario de Vehículos">
+      <Card title={`Inventario (${filtered.length} vehículos)`}>
         {error && <p style={{ color: "red" }}>{error}</p>}
+
+        {/* Filtros rápidos */}
+        <div className={styles.filterBar}>
+          <input
+            type="text"
+            placeholder="🔍 Buscar por marca, modelo, VIN, color..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className={styles.searchInput}
+          />
+          <select
+            value={filterEstado}
+            onChange={(e) => { setFilterEstado(e.target.value); setPage(1); }}
+            className={styles.filterSelect}
+          >
+            <option value="">Todos los estados</option>
+            <option value="Disponible">Disponible</option>
+            <option value="Reservado">Reservado</option>
+            <option value="Vendido">Vendido</option>
+          </select>
+          {(search || filterEstado) && (
+            <button
+              className={styles.clearBtn}
+              onClick={() => { setSearch(""); setFilterEstado(""); setPage(1); }}
+            >
+              ✕ Limpiar
+            </button>
+          )}
+        </div>
 
         <table className={styles.inventoryTable}>
           <thead>
@@ -89,7 +139,7 @@ export const DashboardPage = () => {
             </tr>
           </thead>
           <tbody>
-            {vehicles.map((vehicle) => (
+            {paginated.map((vehicle) => (
               <tr key={vehicle.id}>
                 <td>
                   {vehicle.profile?.imagenes &&
@@ -127,6 +177,12 @@ export const DashboardPage = () => {
             ))}
           </tbody>
         </table>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPage={setPage}
+          totalItems={filtered.length}
+        />
       </Card>
 
       {/* Este es el modal que se mostrará al hacer clic */}

@@ -1,0 +1,357 @@
+/* ── Layout general ─────────────────────────────────────────────────────── */
+.page {
+  padding: 0.25rem 0 1.5rem;
+}
+
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+  color: #64748b;
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #024f7d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Bienvenida ─────────────────────────────────────────────────────────── */
+.welcomeBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.welcomeTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0a2540;
+  margin: 0 0 0.2rem;
+}
+
+.welcomeSub {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.refreshArea {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lastUpdate {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.refreshBtn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  width: 30px; height: 30px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.refreshBtn:hover { background: #e2e8f0; }
+
+/* ── KPI Cards ──────────────────────────────────────────────────────────── */
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .kpiRow { grid-template-columns: repeat(2, 1fr); }
+}
+
+.kpi {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border-left: 4px solid var(--accent, #024f7d);
+  transition: box-shadow 0.15s, transform 0.12s;
+}
+
+.kpiClickable {
+  cursor: pointer;
+}
+.kpiClickable:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.kpiLeft {
+  flex-shrink: 0;
+}
+
+.kpiIcon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.kpiRight {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.kpiValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0a2540;
+  line-height: 1.1;
+}
+
+.kpiLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpiSub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Grid inferior ──────────────────────────────────────────────────────── */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 1200px) {
+  .bottomGrid { grid-template-columns: 1fr 1fr; }
+  .chartPanel { grid-column: 1 / -1; }
+}
+
+/* ── Panel genérico ─────────────────────────────────────────────────────── */
+.panel {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.panelTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0a2540;
+}
+
+/* Online dot animado */
+.onlineDot {
+  width: 8px; height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  margin-left: auto;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
+}
+
+.onlineCount {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 700;
+}
+
+.emptyPanel {
+  padding: 2rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+.emptyPanel span { font-size: 1.75rem; display: block; margin-bottom: 0.5rem; }
+.emptyPanel p { margin: 0; }
+
+/* ── Lista de avatares (conectados) ─────────────────────────────────────── */
+.avatarList {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  transition: background 0.1s;
+}
+.avatarRow:hover { background: #f8fafc; }
+
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.avatarInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.avatarName {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0a2540;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.avatarSub {
+  display: block;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.statusDot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* chips de estado en panel equipo */
+.teamChip {
+  font-size: 0.72rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px;
+}
+.statusChipGreen {
+  font-size: 0.72rem; font-weight: 700;
+  color: #166534; background: #dcfce7;
+  padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
+}
+.statusChipAmber {
+  font-size: 0.72rem; font-weight: 700;
+  color: #92400e; background: #fef3c7;
+  padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
+}
+.avatarRowAlmuerzo {
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+}
+
+/* ── Ranking vendedores ─────────────────────────────────────────────────── */
+.rankList {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rankRow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.rank {
+  font-size: 1.1rem;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.rankInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.rankName {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #0a2540;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+
+.rankBar {
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rankBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #024f7d, #0891b2);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.rankCount {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #024f7d;
+  min-width: 20px;
+  text-align: right;
+}
+
+.rankIngresos {
+  font-size: 0.72rem; color: #059669; font-weight: 600; margin-top: 2px;
+}
+
+.gold   { filter: none; }
+.silver { filter: none; }
+.bronze { filter: none; }
+
+/* ── Chart panel ────────────────────────────────────────────────────────── */
+.chartPanel .panelHeader {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.chartPanel > :last-child {
+  padding: 1rem 0.5rem 0.5rem;
+}

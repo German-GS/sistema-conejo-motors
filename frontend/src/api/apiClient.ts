@@ -1,26 +1,47 @@
 // frontend/src/api/apiClient.ts
 import axios from "axios";
 
-// Creamos una instancia de Axios
 const apiClient = axios.create({
-  // 👇 La baseURL se define aquí, al crear la instancia
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-// Esto es un "interceptor": se ejecuta antes de cada petición
+// ── Interceptor de REQUEST: adjunta el JWT ────────────────────────────────────
 apiClient.interceptors.request.use(
   (config) => {
-    // Obtenemos el token del localStorage
     const token = localStorage.getItem("accessToken");
-    if (token) {
-      // Si el token existe, lo añadimos a la cabecera de autorización
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
+  (error) => Promise.reject(error),
+);
+
+// ── Interceptor de RESPONSE: manejo global de errores ────────────────────────
+apiClient.interceptors.response.use(
+  (response) => response,
   (error) => {
+    const status = error.response?.status;
+
+    // 401 Unauthorized → sesión expirada o token inválido
+    if (status === 401) {
+      localStorage.removeItem("accessToken");
+      // Solo redirigir si no estamos ya en /login para evitar loop
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login?expired=1";
+      }
+    }
+
+    // 403 Forbidden → mostrar en consola (el componente maneja el toast)
+    if (status === 403) {
+      console.warn("[API] Acceso denegado:", error.config?.url);
+    }
+
+    // 500+ → log para debugging
+    if (status >= 500) {
+      console.error("[API] Error del servidor:", status, error.config?.url);
+    }
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

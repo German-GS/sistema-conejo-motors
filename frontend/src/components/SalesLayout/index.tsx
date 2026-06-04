@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import styles from "../AdminLayout/AdminLayout.module.css"; // Reutilizamos los estilos
-import apiClient from "@/api/apiClient"; // Necesitamos el apiClient
+import styles from "../AdminLayout/AdminLayout.module.css";
+import apiClient from "@/api/apiClient";
 import { jwtDecode } from "jwt-decode";
 import conejoLogo from "../../img/Logos/Logo-Blanco.png";
-import { LuLayoutDashboard, LuCar, LuFileText, LuBell, LuContact } from "react-icons/lu";
+import { LuLayoutDashboard, LuCar, LuFileText, LuBell, LuContact, LuCalendarClock } from "react-icons/lu";
+import { ClockWidget } from "@/components/ClockWidget";
+import { ChatWidget } from "@/components/ChatWidget";
 
 // Interfaz para el objeto de notificación
 interface Notification {
@@ -91,9 +93,15 @@ export const SalesLayout = () => {
           </Link>
           <Link to="/sales/leads">
     <LuContact size={20} />
-    {!isCollapsed && (
-      <span className={styles.linkText}>Leads</span>
-    )}
+    {!isCollapsed && <span className={styles.linkText}>Leads</span>}
+  </Link>
+  <Link to="/sales/asistencia">
+    <LuCalendarClock size={20} />
+    {!isCollapsed && <span className={styles.linkText}>Mi Asistencia</span>}
+  </Link>
+  <Link to="/sales/solicitudes">
+    <LuFileText size={20} />
+    {!isCollapsed && <span className={styles.linkText}>Mis Solicitudes</span>}
   </Link>
         </nav>
       </aside>
@@ -106,6 +114,7 @@ export const SalesLayout = () => {
         <header className={styles.header}>
           <div className={styles.headerTitle}>Portal de Ventas</div>
           <div className={styles.headerActions}>
+            <ClockWidget />
             <div
               className={styles.notificationBell}
               onClick={() => setShowNotifications(!showNotifications)}
@@ -146,6 +155,7 @@ export const SalesLayout = () => {
           <Outlet />
         </main>
       </div>
+      <ChatWidget />
     </div>
   );
 };

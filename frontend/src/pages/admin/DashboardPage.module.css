@@ -1,3 +1,46 @@
+/* Barra de filtros del inventario */
+.filterBar {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem 0.85rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: white;
+}
+.searchInput:focus { outline: none; border-color: #024f7d; }
+
+.filterSelect {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+}
+.filterSelect:focus { outline: none; border-color: #024f7d; }
+
+.clearBtn {
+  background: none;
+  border: 1.5px solid #fca5a5;
+  color: #ef4444;
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.clearBtn:hover { background: #fef2f2; }
+
 /* Estilos generales del contenedor del dashboard */
 .dashboardContainer {
   padding: 2rem;

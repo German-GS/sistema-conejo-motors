@@ -26,6 +26,10 @@ export class User {
   @Column({ default: true })
   activo: boolean;
 
+  /** Cuenta de sistema (admin de arranque). Oculto en vistas de equipo. */
+  @Column({ default: false })
+  es_sistema: boolean;
+
   @Column({ unique: true, nullable: true })
   cedula: string;
 

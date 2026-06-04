@@ -1,12 +1,6 @@
-// backend/src/facturacion/facturacion.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  Request,
-  ParseIntPipe,
+  Controller, Get, Post, Body, Query,
+  UseGuards, Request, ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -15,23 +9,64 @@ import { FacturacionService } from './facturacion.service';
 
 @Controller('billing')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles('Administrador') // Solo los administradores pueden acceder a este módulo
 export class FacturacionController {
-  constructor(private readonly facturacionService: FacturacionService) {}
+  constructor(private readonly svc: FacturacionService) {}
 
-  // Endpoint para obtener la lista de cotizaciones aceptadas (pendientes de facturar)
+  /** GET /billing/pending — cotizaciones listas para facturar */
   @Get('pending')
-  getPendingInvoices() {
-    return this.facturacionService.getPendingInvoices();
+  @Roles('Administrador', 'Contador', 'Vendedor')
+  getPending() {
+    return this.svc.getPendingInvoices();
   }
 
-  // Endpoint para crear la factura de una cotización específica
+  /** GET /billing/buscar?q=cedula — buscar cotizaciones por cliente */
+  @Get('buscar')
+  @Roles('Administrador', 'Contador', 'Vendedor')
+  buscar(@Query('q') q: string) {
+    return this.svc.buscarCotizacionesCliente(q ?? '');
+  }
+
+  /** GET /billing/cotizacion/:id — detalle completo de una cotización */
+  @Get('cotizacion/:id')
+  @Roles('Administrador', 'Contador', 'Vendedor')
+  detalle(@Query('id', ParseIntPipe) id: number) {
+    return this.svc.getDetalleCotizacion(id);
+  }
+
+  /** GET /billing/ventas — historial de ventas completadas */
+  @Get('ventas')
+  @Roles('Administrador', 'Contador', 'Vendedor')
+  getVentas() {
+    return this.svc.getVentas();
+  }
+
+  /**
+   * POST /billing/solicitar — vendedor solicita facturación.
+   * Notifica a Admins y Contadores sin completar la venta.
+   */
+  @Post('solicitar')
+  @Roles('Administrador', 'Contador', 'Vendedor')
+  solicitar(
+    @Body() body: { leadId?: number; cotizacionId?: number; nota?: string },
+    @Request() req,
+  ) {
+    return this.svc.solicitarFacturacion(req.user, body);
+  }
+
+  /** POST /billing/facturar — procesar factura con datos de facturación */
+  @Post('facturar')
+  @Roles('Administrador', 'Contador')
+  facturar(@Body() body: { cotizacionId: number; datos: any }, @Request() req) {
+    return this.svc.facturar(body.cotizacionId, body.datos, req.user);
+  }
+
+  /** POST /billing/create — endpoint legacy (compatibilidad) */
   @Post('create')
+  @Roles('Administrador', 'Contador')
   createInvoice(
     @Body('cotizacionId', ParseIntPipe) cotizacionId: number,
     @Request() req,
   ) {
-    // Pasamos el usuario admin para un posible registro en el futuro
-    return this.facturacionService.createInvoiceForSale(cotizacionId, req.user);
+    return this.svc.createInvoiceForSale(cotizacionId, req.user);
   }
 }

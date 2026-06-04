@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Venta } from '../ventas/venta.entity';
 import { Between, Repository } from 'typeorm';
 import { Vehicle } from '../vehicles/vehicle.entity';
-import { ReciboPago } from '../recibos_pago/recibo_pago.entity'; 
+import { ReciboPago } from '../recibos_pago/recibo_pago.entity';
+import { Lead } from '../leads/lead.entity';
+import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 
 @Injectable()
 export class ReportsService {
@@ -14,6 +16,10 @@ export class ReportsService {
     private vehicleRepository: Repository<Vehicle>,
     @InjectRepository(ReciboPago)
     private recibosRepository: Repository<ReciboPago>,
+    @InjectRepository(Lead)
+    private leadsRepository: Repository<Lead>,
+    @InjectRepository(Cotizacion)
+    private cotizacionesRepository: Repository<Cotizacion>,
   ) {}
 
   // ... (otros métodos sin cambios) ...
@@ -98,6 +104,38 @@ export class ReportsService {
       order: { fecha_venta: 'ASC' },
     });
   }
+  /** Leads por vendedor: conteo por estado */
+  async getLeadsBySellerReport(startDate: Date, endDate: Date) {
+    return this.leadsRepository
+      .createQueryBuilder('lead')
+      .leftJoin('lead.vendedor_asignado', 'vendedor')
+      .select('vendedor.nombre_completo', 'vendedor')
+      .addSelect('COUNT(lead.id)', 'total')
+      .addSelect("SUM(CASE WHEN lead.estado = 'Cerrado' THEN 1 ELSE 0 END)", 'cerrados')
+      .addSelect("SUM(CASE WHEN lead.estado = 'Perdido' THEN 1 ELSE 0 END)", 'perdidos')
+      .addSelect("SUM(CASE WHEN lead.estado NOT IN ('Cerrado','Perdido') THEN 1 ELSE 0 END)", 'activos')
+      .where('lead.fecha_creacion BETWEEN :start AND :end', { start: startDate, end: endDate })
+      .groupBy('vendedor.nombre_completo')
+      .orderBy('COUNT(lead.id)', 'DESC')
+      .getRawMany();
+  }
+
+  /** Vehículos más cotizados */
+  async getMostQuotedReport(startDate: Date, endDate: Date) {
+    return this.cotizacionesRepository
+      .createQueryBuilder('cot')
+      .leftJoin('cot.vehiculo', 'vehiculo')
+      .select("vehiculo.marca || ' ' || vehiculo.modelo || ' (' || vehiculo.año || ')'", 'vehiculo')
+      .addSelect('COUNT(cot.id)', 'cotizaciones')
+      .addSelect('SUM(cot.precio_final)', 'monto_total')
+      .where('cot.fecha_creacion BETWEEN :start AND :end', { start: startDate, end: endDate })
+      .andWhere('vehiculo.id IS NOT NULL')
+      .groupBy('vehiculo.marca, vehiculo.modelo, vehiculo.año')
+      .orderBy('COUNT(cot.id)', 'DESC')
+      .limit(20)
+      .getRawMany();
+  }
+
   async getInventoryReport() {
     const vehicles = await this.vehicleRepository.find({
       where: { estado: 'Disponible' },

@@ -5,11 +5,13 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 
-export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Cerrado';
+export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Cerrado' | 'Perdido';
+export type LeadFuente = 'Web' | 'Instagram' | 'Facebook' | 'WhatsApp' | 'TikTok' | 'Referido' | 'Presencial' | 'Llamada' | 'Otro';
 
 @Entity({ name: 'leads' })
 export class Lead {
@@ -27,25 +29,39 @@ export class Lead {
 
   @Column({
     type: 'enum',
-    enum: ['Nuevo', 'Contactado', 'En Progreso', 'Cerrado'],
+    enum: ['Nuevo', 'Contactado', 'En Progreso', 'Cerrado', 'Perdido'],
     default: 'Nuevo',
   })
   estado: LeadStatus;
 
-  // --- 👇 INICIO DE LA MODIFICACIÓN 👇 ---
+  @Column({
+    type: 'enum',
+    enum: ['Web', 'Instagram', 'Facebook', 'WhatsApp', 'TikTok', 'Referido', 'Presencial', 'Llamada', 'Otro'],
+    default: 'Web',
+  })
+  fuente: LeadFuente;
+
+  @Column({ type: 'text', nullable: true })
+  notas?: string;
+
+  @Column({ type: 'date', nullable: true })
+  fecha_followup?: string;
+
   @Column({ default: false })
   contacted_by_email: boolean;
 
   @Column({ default: false })
   contacted_by_phone: boolean;
-  // --- 👆 FIN DE LA MODIFICACIÓN 👆 ---
 
   @CreateDateColumn()
   fecha_creacion: Date;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: true, eager: false })
   vendedor_asignado: User;
 
-  @ManyToOne(() => Vehicle, { nullable: true, eager: true }) // eager: true carga el vehículo automáticamente
+  @ManyToOne(() => Vehicle, { nullable: true, eager: true })
   vehiculo_interes?: Vehicle;
+
+  @OneToMany('LeadActividad', 'lead', { cascade: true })
+  actividades: any[];
 }

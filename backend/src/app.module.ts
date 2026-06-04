@@ -27,16 +27,18 @@ import { CotizacionesModule } from './cotizaciones/cotizaciones.module';
 import { Cotizacion } from './cotizaciones/cotizacion.entity';
 import { VentasModule } from './ventas/ventas.module';
 import { Venta } from './ventas/venta.entity';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { VehicleProfile } from './vehicle-profiles/vehicle-profile.entity';
 import { VehicleProfilesModule } from './vehicle-profiles/vehicle-profiles.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { Notification } from './notifications/notification.entity';
 import { ReportsModule } from './reports/reports.module';
 import { Lead } from './leads/lead.entity';
+import { LeadActividad } from './leads/lead-actividad.entity';
 import { LeadsModule } from './leads/leads.module';
-import { Customer } from './customers/customer.entity';
-import { CustomersModule } from './customers/customers.module';
+// CustomersModule desactivado — era un duplicado de ClientesModule (portal web sin uso)
+// import { Customer } from './customers/customer.entity';
+// import { CustomersModule } from './customers/customers.module';
 import { SiteSetting } from './site-settings/site-setting.entity';
 import { SiteSettingsModule } from './site-settings/site-settings.module';
 import { Factura } from './facturacion/factura.entity';
@@ -45,6 +47,19 @@ import { VehicleProfileImage } from './vehicle-profiles/vehicle-profile-image.en
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { AccesoriosModule } from './accesorios/accesorios.module';
 import { AccesorioVehiculo } from './accesorios/accesorio.entity';
+import { AsistenciaModule } from './asistencia/asistencia.module';
+import { Asistencia } from './asistencia/asistencia.entity';
+import { SolicitudesModule } from './solicitudes/solicitudes.module';
+import { Solicitud } from './solicitudes/solicitud.entity';
+import { ChatModule } from './chat/chat.module';
+import { ChatMensaje } from './chat/chat.entity';
+import { ProductosModule } from './productos/productos.module';
+import { Producto } from './productos/producto.entity';
+import { OrdenProducto, LineaOrden } from './productos/orden-producto.entity';
+import { ContabilidadModule } from './contabilidad/contabilidad.module';
+import { CuentaContable } from './contabilidad/cuenta.entity';
+import { AsientoContable, LineaAsiento } from './contabilidad/asiento.entity';
+import { CierreDiario } from './contabilidad/cierre-diario.entity';
 
 
 @Module({
@@ -53,16 +68,20 @@ import { AccesorioVehiculo } from './accesorios/accesorio.entity';
       isGlobal: true,
       envFilePath: ['.env.development.local', '.env.development'],
     }),
-    // --- INICIO DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost', // O '127.0.0.1'
-      port: 5432,
-      username: 'admin', // El usuario que definimos en docker-compose.yml
-      password: 'password123', // La contraseña que definimos en docker-compose.yml
-      database: 'conejo_motors_dev', // El nombre de la BD que definimos en docker-compose.yml
-      autoLoadEntities: true,
-      entities: [
+    // --- CONFIGURACIÓN DE LA BASE DE DATOS (usa variables de entorno) ---
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host:     config.get<string>('DB_HOST', 'localhost'),
+        port:     config.get<number>('DB_PORT', 5432),
+        username: config.get<string>('DB_USERNAME', 'admin'),
+        password: config.get<string>('DB_PASSWORD', 'password123'),
+        database: config.get<string>('DB_NAME', 'conejo_motors_dev'),
+        autoLoadEntities: true,
+        synchronize: config.get<string>('NODE_ENV') !== 'production', // false en prod
+        entities: [
         User,
         Vehicle,
         Role,
@@ -78,13 +97,23 @@ import { AccesorioVehiculo } from './accesorios/accesorio.entity';
         VehicleProfile,
         Notification,
         Lead,
-        Customer,
+        LeadActividad,
         SiteSetting,
         Factura,
         VehicleProfileImage,
         AccesorioVehiculo,
+        Asistencia,
+        Solicitud,
+        ChatMensaje,
+        Producto,
+        OrdenProducto,
+        LineaOrden,
+        CuentaContable,
+        AsientoContable,
+        LineaAsiento,
+        CierreDiario,
       ],
-      synchronize: true,
+      }),
     }),
     UsersModule,
     AuthModule,
@@ -103,10 +132,15 @@ import { AccesorioVehiculo } from './accesorios/accesorio.entity';
     NotificationsModule,
     ReportsModule,
     LeadsModule,
-    CustomersModule,
+    // CustomersModule, // desactivado — duplicado de ClientesModule
     SiteSettingsModule,
     FacturacionModule,
     AccesoriosModule,
+    AsistenciaModule,
+    SolicitudesModule,
+    ChatModule,
+    ProductosModule,
+    ContabilidadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

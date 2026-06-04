@@ -19,6 +19,7 @@ import { UpdateVehicleDto } from './dto/update-vehicle.dto'; // Corregido: Ruta 
 import { Bodega } from '../bodegas/bodega.entity';
 import { Lead } from '../leads/lead.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
+import { OrdenProducto } from '../productos/orden-producto.entity';
 
 // --- 👇 DEFINE LOS NUEVOS TIPOS AQUÍ (o impórtalos si los pones en otro lado) ---
 // Define un tipo que extiende Vehicle pero sobreescribe campos específicos a string[]
@@ -76,7 +77,8 @@ export class VehiclesService {
     private readonly leadRepository: Repository<Lead>,
     @InjectRepository(VehicleProfile)
     private readonly vehicleProfilesRepository: Repository<VehicleProfile>,
-    // private dataSource: DataSource // Descomenta si necesitas transacciones complejas aquí
+    @InjectRepository(OrdenProducto)
+    private readonly ordenesRepo: Repository<OrdenProducto>,
   ) {}
 
   // --- Método Create ---
@@ -526,7 +528,7 @@ export class VehiclesService {
 
       const monthlySales = monthlySalesData.length;
       const monthlyRevenue = monthlySalesData.reduce(
-        (sum, venta) => sum + Number(venta.monto_final),
+        (sum, venta) => sum + Number((venta as any).total_con_iva || venta.monto_final || 0),
         0,
       );
       const monthlyCostOfGoodsSold = monthlySalesData.reduce(
@@ -611,6 +613,150 @@ export class VehiclesService {
         'Error al obtener estadísticas del dashboard.',
       );
     }
+  }
+
+  /** Admin: libera un vehículo Reservado → vuelve a Disponible */
+  async liberarVehiculo(id: number): Promise<{ ok: boolean; message: string }> {
+    const vehiculo = await this.vehiclesRepository.findOneBy({ id });
+    if (!vehiculo) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+    if (vehiculo.estado !== 'Reservado') {
+      return { ok: false, message: `El vehículo ya está en estado "${vehiculo.estado}".` };
+    }
+    await this.vehiclesRepository.update(id, { estado: 'Disponible' });
+    return { ok: true, message: `Vehículo #${id} liberado exitosamente.` };
+  }
+
+  /** Admin: vehículos Reservados con su cotización activa más reciente */
+  async getReservados(): Promise<any[]> {
+    const vehiculos = await this.vehiclesRepository.find({
+      where: { estado: 'Reservado' },
+      relations: ['profile'],
+      order: { id: 'DESC' },
+    });
+
+    // Para cada vehículo, buscar la cotización activa más reciente
+    const result = await Promise.all(vehiculos.map(async (v) => {
+      const cot = await this.cotizacionesRepository.findOne({
+        where: { vehiculo: { id: v.id } },
+        relations: ['cliente', 'vendedor'],
+        order: { fecha_creacion: 'DESC' },
+      });
+      return {
+        id: v.id,
+        marca: v.marca,
+        modelo: v.modelo,
+        año: v.año,
+        color: v.color,
+        imagen: (v as any).profile?.imagen_principal ?? null,
+        cotizacion: cot ? {
+          id: cot.id,
+          cliente: cot.cliente?.nombre_completo ?? '—',
+          vendedor: (cot as any).vendedor?.nombre_completo ?? '—',
+          fecha_creacion: cot.fecha_creacion,
+          fecha_expiracion: cot.fecha_expiracion,
+          estado: cot.estado,
+        } : null,
+      };
+    }));
+
+    return result;
+  }
+
+  /** Dashboard admin extendido: KPIs de leads, cotizaciones, inventario */
+  async getAdminDashboardExtended(): Promise<any> {
+    // Costa Rica timezone offset
+    const offset = -6 * 60;
+    const ahora  = new Date();
+    const crNow  = new Date(ahora.getTime() + (offset - ahora.getTimezoneOffset()) * 60000);
+    const startOfMonth = new Date(crNow.getFullYear(), crNow.getMonth(), 1);
+    const hoyInicio    = new Date(crNow); hoyInicio.setHours(0, 0, 0, 0);
+
+    // ── Vehículos ─────────────────────────────────────────────────────────────
+    const [disponibles, reservados, vendidosMes] = await Promise.all([
+      this.vehiclesRepository.count({ where: { estado: 'Disponible' } }),
+      this.vehiclesRepository.count({ where: { estado: 'Reservado' } }),
+      this.ventasRepository.count({ where: { fecha_venta: MoreThanOrEqual(startOfMonth) } }),
+    ]);
+
+    // Ingresos vehículos este mes (total_con_iva o monto_final como fallback)
+    const ventasMes = await this.ventasRepository.find({
+      where: { fecha_venta: MoreThanOrEqual(startOfMonth) },
+      select: ['monto_final', 'iva_monto', 'total_con_iva'],
+    });
+    const ingresosVehiculosMes = ventasMes.reduce(
+      (s, v) => s + Number(v.total_con_iva || v.monto_final || 0), 0,
+    );
+
+    // ── Leads — estados reales del sistema ────────────────────────────────────
+    const leadsActivos = await this.leadRepository.count({
+      where: { estado: In(['Nuevo', 'Contactado', 'En Progreso']) },
+    });
+    const leadsCerradosMes = await this.leadRepository.count({
+      where: { estado: 'Cerrado', fecha_creacion: MoreThanOrEqual(startOfMonth) },
+    });
+    const leadsPerdidosMes = await this.leadRepository.count({
+      where: { estado: 'Perdido', fecha_creacion: MoreThanOrEqual(startOfMonth) },
+    });
+    const leadsHoy = await this.leadRepository.count({
+      where: { fecha_creacion: MoreThanOrEqual(hoyInicio) },
+    });
+
+    // ── Cotizaciones ──────────────────────────────────────────────────────────
+    const cotizacionesActivas = await this.cotizacionesRepository.count({
+      where: [{ estado: 'Borrador' }, { estado: 'Enviada' }],
+    });
+    const cotizacionesVencidas = await this.cotizacionesRepository
+      .createQueryBuilder('c')
+      .where('c.fecha_expiracion < :hoy', { hoy: crNow })
+      .andWhere("c.estado NOT IN ('Aceptada','Facturada','Rechazada')")
+      .getCount();
+    const cotizacionesMes = await this.cotizacionesRepository.count({
+      where: { fecha_creacion: MoreThanOrEqual(startOfMonth) },
+    });
+
+    // ── Repuestos / Accesorios ────────────────────────────────────────────────
+    const ordenesMes = await this.ordenesRepo.find({
+      where: { estado: 'Completada', fecha_creacion: MoreThanOrEqual(startOfMonth) },
+      select: ['total'],
+    });
+    const repuestosVentasMes  = ordenesMes.length;
+    const repuestosIngresosMes = ordenesMes.reduce((s, o) => s + Number(o.total || 0), 0);
+
+    // ── Top vendedores (por ventas de vehículos cerradas este mes) ────────────
+    const topVendedores = await this.ventasRepository
+      .createQueryBuilder('venta')
+      .leftJoin('venta.vendedor', 'v')
+      .select('v.nombre_completo', 'nombre')
+      .addSelect('COUNT(venta.id)', 'total')
+      .addSelect('SUM(COALESCE(venta.total_con_iva, venta.monto_final))', 'ingresos')
+      .where('venta.fecha_venta >= :inicio', { inicio: startOfMonth })
+      .groupBy('v.nombre_completo')
+      .orderBy('COUNT(venta.id)', 'DESC')
+      .limit(5)
+      .getRawMany();
+
+    // ── Historial de ventas 6 meses (vehículos + repuestos) ──────────────────
+    const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const salesData: { month: string; vehiculos: number; repuestos: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(crNow.getFullYear(), crNow.getMonth() - i, 1);
+      const ini = new Date(d.getFullYear(), d.getMonth(), 1);
+      const fin = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+      const [veh, rep] = await Promise.all([
+        this.ventasRepository.count({ where: { fecha_venta: Between(ini, fin) } }),
+        this.ordenesRepo.count({ where: { estado: 'Completada', fecha_creacion: Between(ini, fin) } }),
+      ]);
+      salesData.push({ month: monthNames[d.getMonth()], vehiculos: veh, repuestos: rep });
+    }
+
+    return {
+      inventario: { disponibles, reservados, vendidosMes, ingresosVehiculosMes },
+      leads: { activos: leadsActivos, cerradosMes: leadsCerradosMes, perdidosMes: leadsPerdidosMes, hoy: leadsHoy },
+      cotizaciones: { activas: cotizacionesActivas, vencidas: cotizacionesVencidas, mes: cotizacionesMes },
+      repuestos: { ventasMes: repuestosVentasMes, ingresosMes: repuestosIngresosMes },
+      topVendedores,
+      salesData,
+    };
   }
 
   async getSalespersonDashboardStats(user: User): Promise<any> {

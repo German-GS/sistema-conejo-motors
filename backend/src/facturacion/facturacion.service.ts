@@ -1,187 +1,319 @@
-// backend/src/facturacion/facturacion.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { HttpService } from '@nestjs/axios';
+import { Repository, In } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { Venta } from '../ventas/venta.entity';
 import { Factura } from './factura.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { Lead } from '../leads/lead.entity';
 import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
+import { ContabilidadService } from '../contabilidad/contabilidad.service';
+import { NotificationsService } from '../notifications/notifications.service';
+
+export interface DatosFacturacion {
+  factura_nombre: string;
+  factura_tipo_cedula: 'fisica' | 'juridica' | 'extranjero';
+  factura_cedula: string;
+  factura_email: string;
+  factura_telefono?: string;
+  metodo_pago: string;
+  factura_notas?: string;
+}
 
 @Injectable()
 export class FacturacionService {
   constructor(
-    @InjectRepository(Cotizacion) private readonly cotizacionesRepository: Repository<Cotizacion>,
-    @InjectRepository(Venta) private readonly ventasRepository: Repository<Venta>,
-    @InjectRepository(Factura) private readonly facturasRepository: Repository<Factura>,
-    @InjectRepository(Vehicle) private readonly vehiclesRepository: Repository<Vehicle>,
+    @InjectRepository(Cotizacion)
+    private cotizacionesRepo: Repository<Cotizacion>,
+    @InjectRepository(Venta)
+    private ventasRepo: Repository<Venta>,
+    @InjectRepository(Factura)
+    private facturasRepo: Repository<Factura>,
+    @InjectRepository(Vehicle)
+    private vehiclesRepo: Repository<Vehicle>,
+    @InjectRepository(Lead)
+    private leadsRepo: Repository<Lead>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly xmlGenerator: XmlGeneratorService,
     private readonly cryptoService: CryptoService,
+    private readonly contabilidad: ContabilidadService,
+    private readonly notifications: NotificationsService,
   ) {}
 
+  // ── Lista de cotizaciones listas para facturar ────────────────────────────
+
+  /** Cotizaciones Aceptadas o Enviadas (cualquier estado facturable) */
   async getPendingInvoices(): Promise<Cotizacion[]> {
-    return this.cotizacionesRepository.find({
-      where: { estado: 'Aceptada' },
-      relations: ['cliente', 'vehiculo', 'vendedor'],
+    return this.cotizacionesRepo.find({
+      where: { estado: In(['Aceptada', 'Enviada', 'Borrador']) },
+      relations: ['cliente', 'vehiculo', 'vendedor', 'lead'],
+      order: { fecha_creacion: 'DESC' },
     });
   }
 
-  async createInvoiceForSale(cotizacionId: number, adminUser: any): Promise<Venta> {
-    const cotizacion = await this.cotizacionesRepository.findOne({
+  /** Buscar cotizaciones activas por cédula, nombre del cliente o leadId (lead:123) */
+  async buscarCotizacionesCliente(q: string): Promise<Cotizacion[]> {
+    const qb = this.cotizacionesRepo
+      .createQueryBuilder('c')
+      .innerJoinAndSelect('c.cliente', 'cliente')
+      .leftJoinAndSelect('c.vehiculo', 'vehiculo')
+      .leftJoinAndSelect('c.vendedor', 'vendedor')
+      .leftJoinAndSelect('c.lead', 'lead')
+      .where("c.estado NOT IN ('Facturada','Rechazada')")
+      .orderBy('c.fecha_creacion', 'DESC');
+
+    // Soporte para búsqueda por lead: "lead:123"
+    if (q.toLowerCase().startsWith('lead:')) {
+      const leadId = parseInt(q.split(':')[1], 10);
+      if (!isNaN(leadId)) {
+        qb.andWhere('lead.id = :leadId', { leadId });
+        return qb.getMany();
+      }
+    }
+
+    qb.andWhere(
+      '(LOWER(cliente.nombre_completo) LIKE :s OR cliente.cedula LIKE :s OR LOWER(cliente.email) LIKE :s)',
+      { s: `%${q.toLowerCase()}%` },
+    );
+    return qb.getMany();
+  }
+
+  /** Detalle completo de una cotización para el formulario de facturación */
+  async getDetalleCotizacion(id: number): Promise<Cotizacion> {
+    const c = await this.cotizacionesRepo.findOne({
+      where: { id },
+      relations: ['cliente', 'vehiculo', 'vendedor', 'lead'],
+    });
+    if (!c) throw new NotFoundException(`Cotización #${id} no encontrada.`);
+    return c;
+  }
+
+  /** Historial de ventas completadas */
+  async getVentas(): Promise<Venta[]> {
+    return this.ventasRepo.find({
+      relations: ['cotizacion', 'cotizacion.cliente', 'cotizacion.vehiculo', 'vendedor'],
+      order: { fecha_venta: 'DESC' },
+      take: 100,
+    });
+  }
+
+  // ── Procesar la venta/factura ─────────────────────────────────────────────
+
+  async facturar(
+    cotizacionId: number,
+    datos: DatosFacturacion,
+    adminUser: any,
+  ): Promise<Venta> {
+    const cotizacion = await this.cotizacionesRepo.findOne({
       where: { id: cotizacionId },
       relations: ['cliente', 'vehiculo', 'vendedor'],
     });
 
-    if (!cotizacion || cotizacion.estado !== 'Aceptada') {
-      throw new NotFoundException(`Cotización #${cotizacionId} no está lista para facturar.`);
+    if (!cotizacion) {
+      throw new NotFoundException(`Cotización #${cotizacionId} no encontrada.`);
+    }
+    if (cotizacion.estado === 'Facturada') {
+      throw new BadRequestException('Esta cotización ya fue facturada.');
     }
 
-    // --- FLUJO DE FACTURACIÓN SIMULADO ---
-
-    // 1. Generar el XML v4.4 (esto sigue igual)
+    // Generar XML y firma (modo simulado para desarrollo)
     const xmlSinFirma = await this.xmlGenerator.generateXml(cotizacion);
-    
-    // 2. "Firmar" el XML (ahora usará nuestra función simulada)
     const xmlFirmadoBase64 = await this.cryptoService.signXml(xmlSinFirma);
-
-    // 3. Omitimos el envío a Hacienda.
-    console.log('--- MODO SIMULACIÓN: Omitiendo envío a Hacienda ---');
-    
-    // 4. Extraer datos clave para guardar en la BD (esto sigue igual)
     const payload = await this.xmlGenerator.buildPayload(cotizacion);
     const { Clave: clave_numerica, NumeroConsecutivo: consecutivo } = payload.FacturaElectronica;
 
-    // --- FIN DEL FLUJO SIMULADO ---
+    const venta = await this.ventasRepo.manager.transaction(async (manager) => {
+      const ivaMonto    = Number(cotizacion.iva_monto)    || +(Number(cotizacion.precio_final) * 0.13).toFixed(2);
+      const totalConIva = Number(cotizacion.total_con_iva) || +(Number(cotizacion.precio_final) * 1.13).toFixed(2);
 
-    const transactionResult = await this.ventasRepository.manager.transaction(async (manager) => {
-        const nuevaVenta = manager.create(Venta, {
-            cotizacion,
-            vendedor: cotizacion.vendedor,
-            monto_final: cotizacion.precio_final,
-            metodo_pago: 'Facturado',
-        });
-        await manager.save(nuevaVenta);
+      const nuevaVenta = manager.create(Venta, {
+        cotizacion,
+        vendedor:            cotizacion.vendedor ?? adminUser,
+        monto_final:         cotizacion.precio_final,  // base imponible (sin IVA)
+        iva_monto:           ivaMonto,
+        total_con_iva:       totalConIva,
+        metodo_pago:         datos.metodo_pago,
+        factura_nombre:      datos.factura_nombre,
+        factura_tipo_cedula: datos.factura_tipo_cedula,
+        factura_cedula:      datos.factura_cedula,
+        factura_email:       datos.factura_email,
+        factura_telefono:    datos.factura_telefono,
+        factura_notas:       datos.factura_notas,
+        estado:              'Completada',
+      });
+      await manager.save(nuevaVenta);
 
-        const nuevaFactura = manager.create(Factura, {
-            clave_numerica,
-            consecutivo,
-            // Guardamos el XML "firmado" simulado
-            xml_enviado: xmlFirmadoBase64,
-            // Dejamos la respuesta como simulada y el estado en Procesando
-            xml_respuesta: '<RespuestaSimulada>Aceptado</RespuestaSimulada>', 
-            estado: 'Procesando', // Puedes usar 'Procesando' o un estado custom como 'Simulado'
-            venta: nuevaVenta,
-        });
-        await manager.save(nuevaFactura);
+      const nuevaFactura = manager.create(Factura, {
+        clave_numerica,
+        consecutivo,
+        xml_enviado:   xmlFirmadoBase64,
+        xml_respuesta: '<RespuestaSimulada>Aceptado</RespuestaSimulada>',
+        estado:        'Procesando',
+        venta:         nuevaVenta,
+      });
+      await manager.save(nuevaFactura);
 
-        // Marcamos el vehículo como Vendido
-        await manager.update(Vehicle, cotizacion.vehiculo.id, { estado: 'Vendido' });
+      // Marcar vehículo como Vendido
+      await manager.update(Vehicle, cotizacion.vehiculo.id, { estado: 'Vendido' });
+      // Marcar cotización como Facturada
+      await manager.update(Cotizacion, cotizacion.id, { estado: 'Facturada' });
 
-        await manager.update(Cotizacion, cotizacion.id, { estado: 'Facturada' });
-        
-        return nuevaVenta;
+      // Si la cotización tiene lead → marcar como Cerrado
+      if (cotizacion.lead?.id) {
+        await manager.update(Lead, cotizacion.lead.id, { estado: 'Cerrado' });
+      }
+
+      return nuevaVenta;
     });
-    
-    return transactionResult;
+
+    // ── Asiento contable automático ───────────────────────────────────────────
+    // Solo si el plan de cuentas ya fue inicializado
+    try {
+      await this._registrarAsientoVenta(venta, cotizacion, datos, adminUser);
+    } catch (e) {
+      // No bloquear la venta si la contabilidad falla (ej: cuentas no inicializadas)
+      console.warn('[Facturacion] No se pudo crear asiento contable:', (e as Error).message);
+    }
+
+    // Recargar la venta con relaciones para devolverla al frontend
+    return this.ventasRepo.findOne({
+      where: { id: venta.id },
+      relations: ['cotizacion', 'cotizacion.cliente', 'cotizacion.vehiculo', 'vendedor'],
+    }) as Promise<Venta>;
+  }
+
+  /** Crea el asiento contable de partida doble al registrar una venta de vehículo */
+  private async _registrarAsientoVenta(
+    venta: Venta,
+    cotizacion: Cotizacion,
+    datos: DatosFacturacion,
+    adminUser: any,
+  ): Promise<void> {
+    const cuentas = await this.contabilidad['cuentasRepo'].find();
+    if (!cuentas.length) return; // Plan de cuentas no inicializado
+
+    const porCodigo = (codigo: string) => cuentas.find((c: any) => c.codigo === codigo);
+
+    // Cuenta de cobro según método de pago
+    const cuentaCobro =
+      datos.metodo_pago === 'Efectivo'
+        ? porCodigo('1100')  // Caja
+        : datos.metodo_pago === 'Tarjeta' || datos.metodo_pago === 'SINPE' || datos.metodo_pago === 'Transferencia'
+        ? porCodigo('1110')  // Banco Cuenta Corriente
+        : porCodigo('1200'); // Cuentas por Cobrar (crédito/financiamiento)
+
+    const cuentaIngreso   = porCodigo('4100'); // Ventas de Vehículos
+    const cuentaCostoVtas = porCodigo('5100'); // Costo de Ventas — Vehículos
+    const cuentaInventario = porCodigo('1300'); // Inventario Vehículos
+
+    if (!cuentaCobro || !cuentaIngreso) return;
+
+    const baseImponible = Number(cotizacion.precio_final) || 0;
+    const ivaMonto      = Number(venta.iva_monto)    || +(baseImponible * 0.13).toFixed(2);
+    const totalCobrado  = Number(venta.total_con_iva) || +(baseImponible * 1.13).toFixed(2);
+    const costo = Number(cotizacion.vehiculo?.precio_costo) || 0;
+    const cuentaIva = porCodigo('2200'); // IVA por Pagar
+
+    const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [
+      // Cobro total (incluye IVA)
+      { cuentaId: cuentaCobro.id,   debe: totalCobrado,  haber: 0,
+        descripcion: `Cobro venta — ${cotizacion.vehiculo?.marca ?? ''} ${cotizacion.vehiculo?.modelo ?? ''} (inc. IVA)` },
+      // Ingreso neto (base imponible)
+      { cuentaId: cuentaIngreso.id, debe: 0, haber: baseImponible,
+        descripcion: `Venta vehículo VIN ${cotizacion.vehiculo?.vin ?? '—'}` },
+    ];
+
+    // IVA → cuenta de pasivo 2200
+    if (ivaMonto > 0 && cuentaIva) {
+      lineas.push({
+        cuentaId: cuentaIva.id, debe: 0, haber: ivaMonto,
+        descripcion: `IVA 13% — venta vehículo`,
+      });
+    }
+
+    // Si hay costo de inventario registrado → asiento del costo
+    if (costo > 0 && cuentaCostoVtas && cuentaInventario) {
+      lineas.push(
+        { cuentaId: cuentaCostoVtas.id,  debe: costo, haber: 0,
+          descripcion: `Costo de venta — ${cotizacion.vehiculo?.marca ?? ''} ${cotizacion.vehiculo?.modelo ?? ''}` },
+        { cuentaId: cuentaInventario.id, debe: 0, haber: costo,
+          descripcion: `Salida de inventario — placa ${cotizacion.vehiculo?.vin ?? '—'}` },
+      );
+    }
+
+    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+
+    await this.contabilidad.crearAsiento(adminUser, {
+      fecha: hoy,
+      descripcion: `Venta vehículo — ${cotizacion.vehiculo?.marca ?? ''} ${cotizacion.vehiculo?.modelo ?? ''} (${cotizacion.vehiculo?.vin ?? '—'}) a ${datos.factura_nombre}`,
+      tipo: 'Venta_Vehiculo',
+      referencia_id: venta.id,
+      referencia_tipo: 'Venta',
+      lineas,
+    });
+  }
+
+  // ── Solicitud de facturación desde vendedor ───────────────────────────────
+
+  /**
+   * El vendedor envía una solicitud de facturación.
+   * Se notifica a todos los Admins y Contadores con un link directo a billing.
+   * No requiere privilegios de Admin.
+   */
+  async solicitarFacturacion(
+    vendedor: any,
+    body: { leadId?: number; cotizacionId?: number; nota?: string },
+  ): Promise<{ ok: true; mensaje: string }> {
+    const nombreVendedor: string = vendedor.nombre_completo ?? vendedor.email ?? 'Un vendedor';
+
+    // Construir descripción del item
+    let detalle = '';
+    let linkBilling = '/admin/billing';
+
+    if (body.cotizacionId) {
+      const cot = await this.cotizacionesRepo.findOne({
+        where: { id: body.cotizacionId },
+        relations: ['cliente', 'vehiculo'],
+      });
+      if (cot) {
+        detalle = `Cotización #${cot.id} — ${cot.vehiculo?.marca ?? ''} ${cot.vehiculo?.modelo ?? ''} — ${cot.cliente?.nombre_completo ?? ''}`;
+        linkBilling = `/admin/billing?cotizacionId=${cot.id}`;
+      } else {
+        detalle = `Cotización #${body.cotizacionId}`;
+        linkBilling = `/admin/billing?cotizacionId=${body.cotizacionId}`;
+      }
+    } else if (body.leadId) {
+      linkBilling = `/admin/billing?leadId=${body.leadId}`;
+      const lead = await this.leadsRepo.findOne({ where: { id: body.leadId } });
+      detalle = lead ? `Lead de ${lead.nombre_cliente}` : `Lead #${body.leadId}`;
+    }
+
+    const notaExtra = body.nota ? ` · "${body.nota}"` : '';
+    const mensaje = `💼 ${nombreVendedor} envió ${detalle} para facturación${notaExtra}`;
+
+    await this.notifications.createForAdminsAndContadores(mensaje, linkBilling);
+
+    return { ok: true, mensaje: '✅ Solicitud enviada al equipo de contabilidad.' };
+  }
+
+  // Mantener compatibilidad con endpoint antiguo
+  async createInvoiceForSale(cotizacionId: number, adminUser: any): Promise<Venta> {
+    const cotizacion = await this.cotizacionesRepo.findOne({
+      where: { id: cotizacionId },
+      relations: ['cliente', 'vehiculo', 'vendedor'],
+    });
+    if (!cotizacion) throw new NotFoundException(`Cotización #${cotizacionId} no encontrada.`);
+
+    return this.facturar(cotizacionId, {
+      factura_nombre:      cotizacion.cliente?.nombre_completo ?? 'Cliente',
+      factura_tipo_cedula: 'fisica',
+      factura_cedula:      cotizacion.cliente?.cedula ?? '',
+      factura_email:       cotizacion.cliente?.email ?? '',
+      metodo_pago:         'Efectivo',
+    }, adminUser);
   }
 }
-
-
-//**************************************************************/
-//        Facturacion con logica para conectar con tribu-cr    */
-//************************************************************ */
-
-// backend/src/facturacion/facturacion.service.ts
-// import { Injectable, NotFoundException } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-// import { HttpService } from '@nestjs/axios';
-// import { ConfigService } from '@nestjs/config';
-// import { Cotizacion } from '../cotizaciones/cotizacion.entity';
-// import { Venta } from '../ventas/venta.entity';
-// import { Factura } from './factura.entity';
-// import { Vehicle } from '../vehicles/vehicle.entity';
-
-// // --- 👇 1. Importa los nuevos servicios 👇 ---
-// import { CryptoService } from './crypto.service';
-// import { XmlGeneratorService } from './xml-generator.service';
-
-// @Injectable()
-// export class FacturacionService {
-//   constructor(
-//     @InjectRepository(Cotizacion) private readonly cotizacionesRepository: Repository<Cotizacion>,
-//     @InjectRepository(Venta) private readonly ventasRepository: Repository<Venta>,
-//     @InjectRepository(Factura) private readonly facturasRepository: Repository<Factura>,
-//     @InjectRepository(Vehicle) private readonly vehiclesRepository: Repository<Vehicle>,
-//     private readonly httpService: HttpService,
-//     private readonly configService: ConfigService,
-//     // --- 👇 2. Inyéctalos en el constructor 👇 ---
-//     private readonly xmlGenerator: XmlGeneratorService,
-//     private readonly cryptoService: CryptoService,
-//   ) {}
-
-//   async getPendingInvoices(): Promise<Cotizacion[]> {
-//     return this.cotizacionesRepository.find({
-//         where: { estado: 'Aceptada' },
-//         relations: ['cliente', 'vehiculo', 'vendedor'],
-//     });
-//   }
-
-//   async createInvoiceForSale(cotizacionId: number, adminUser: any): Promise<Venta> {
-//     const cotizacion = await this.cotizacionesRepository.findOne({
-//       where: { id: cotizacionId },
-//       relations: ['cliente', 'vehiculo', 'vendedor'],
-//     });
-
-//     if (!cotizacion || cotizacion.estado !== 'Aceptada') {
-//       throw new NotFoundException(`Cotización #${cotizacionId} no está lista para facturar.`);
-//     }
-
-//     // --- ✨ INICIA EL NUEVO FLUJO DE FACTURACIÓN ✨ ---
-
-//     // 1. Generar el XML v4.4
-//     const xmlSinFirma = await this.xmlGenerator.generateXml(cotizacion);
-    
-//     // 2. Firmar el XML con la Llave Criptográfica
-//     const xmlFirmadoBase64 = await this.cryptoService.signXml(xmlSinFirma);
-
-//     // 3. (Futuro) Obtener Token de Acceso y enviar a Hacienda
-    
-//     // 4. Extraer datos clave para guardar en la BD
-//     const payload = await this.xmlGenerator.buildPayload(cotizacion);
-//     const { Clave: clave_numerica, NumeroConsecutivo: consecutivo } = payload.FacturaElectronica;
-
-//     // --- FIN DEL NUEVO FLUJO ---
-
-//     const transactionResult = await this.ventasRepository.manager.transaction(async (manager) => {
-//         const nuevaVenta = manager.create(Venta, {
-//             cotizacion,
-//             vendedor: cotizacion.vendedor,
-//             monto_final: cotizacion.precio_final,
-//             metodo_pago: 'Facturado',
-//         });
-//         await manager.save(nuevaVenta);
-
-//         // 👇 Guardamos los datos reales en la factura
-//         const nuevaFactura = manager.create(Factura, {
-//             clave_numerica,
-//             consecutivo,
-//             xml_enviado: xmlFirmadoBase64,
-//             xml_respuesta: '<Respuesta Simulada>', // Placeholder
-//             venta: nuevaVenta,
-//         });
-//         await manager.save(nuevaFactura);
-
-//         await manager.update(Vehicle, cotizacion.vehiculo.id, { estado: 'Vendido' });
-        
-//         return nuevaVenta;
-//     });
-    
-//     return transactionResult;
-//   }
-// }

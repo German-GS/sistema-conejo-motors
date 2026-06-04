@@ -1,45 +1,124 @@
-.filters {
+/* ── Selector de tipo de informe ────────────────────────── */
+.typeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.typeBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.65rem 1rem;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  text-align: left;
+  transition: all 0.15s;
+}
+.typeBtn:hover { border-color: #024f7d; color: #024f7d; background: #f0f9ff; }
+.typeBtnActive { background: #024f7d; color: white; border-color: #024f7d; }
+.typeBtnActive:hover { background: #013a5e; }
+
+.typeIcon { font-size: 1.1rem; }
+
+/* ── Controles de fecha ─────────────────────────────────── */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dateField label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+}
+.dateField input {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: white;
+}
+.dateField input:focus { outline: none; border-color: #024f7d; }
+
+/* ── KPIs ───────────────────────────────────────────────── */
+.kpiRow {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.filters select,
-.filters input {
-  padding: 0.75rem;
-  border: 1px solid var(--borde-suave);
-  border-radius: 6px;
-  font-size: 1rem;
+.kpiCard {
+  flex: 1;
+  min-width: 140px;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
 }
 
+.kpiGreen { border-color: #bbf7d0; background: #f0fdf4; }
+
+.kpiIcon { font-size: 1.4rem; }
+.kpiNum { font-size: 1.5rem; font-weight: 800; color: #0a2540; line-height: 1; }
+.kpiLabel { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+
+/* ── Tabla ──────────────────────────────────────────────── */
 .reportTable {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
+  font-size: 0.88rem;
 }
 
 .reportTable th,
 .reportTable td {
   border-bottom: 1px solid var(--borde-suave);
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 0.9rem;
   text-align: left;
+  vertical-align: middle;
 }
 
 .reportTable th {
-  font-weight: 600;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
 }
 
-/* Nuevo estilo para las tarjetas de KPIs en el informe de ganancias */
-.kpiGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
+.reportTable tbody tr:hover { background: #f8fafc; }
 
-.kpiGrid h2 {
-  color: var(--azul-principal);
-  font-size: 2rem;
-  margin: 0;
+/* Badges de estado */
+.badgeBlue  { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; }
+.badgeGreen { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; }
+.badgeRed   { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; }
+
+/* Ranking top 3 */
+.rankTop { font-weight: 800; color: #f59e0b; font-size: 1rem; }
+
+/* Estados vacío / cargando */
+.loading, .empty {
+  padding: 2.5rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.95rem;
 }
+.loading { color: #024f7d; }

@@ -18,7 +18,25 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter()); // <-- 2. Registrar el filtro globalmente
   // -------------------------
 
-  app.enableCors();
+  // CORS: en producción solo permite el dominio del frontend
+  const allowedOrigins = (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
+    .split(',')
+    .map((o) => o.trim());
+
+  app.enableCors({
+    origin: (origin, callback) => {
+      // Permitir peticiones sin origen (apps móviles, Postman, mismo servidor)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origen no permitido → ${origin}`));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

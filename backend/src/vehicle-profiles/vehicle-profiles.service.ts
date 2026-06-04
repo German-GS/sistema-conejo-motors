@@ -30,10 +30,33 @@ export class VehicleProfilesService {
 
   async findOne(id: number): Promise<VehicleProfile> {
     const profile = await this.profileRepository.findOne({ where: { id } });
-    if (!profile) {
-      throw new NotFoundException(`Profile with ID ${id} not found`);
-    }
+    if (!profile) throw new NotFoundException(`Profile with ID ${id} not found`);
     return profile;
+  }
+
+  async findOneWithImages(id: number): Promise<VehicleProfile> {
+    const profile = await this.profileRepository.findOne({
+      where: { id },
+      relations: ['imagenes'],
+    });
+    if (!profile) throw new NotFoundException(`Profile with ID ${id} not found`);
+    return profile;
+  }
+
+  /** Actualiza solo los campos de specs (sin tocar imágenes) */
+  async updateSpecs(id: number, updateDto: UpdateVehicleProfileDto): Promise<VehicleProfile> {
+    const profile = await this.findOne(id);
+    const updated = this.profileRepository.merge(profile, updateDto);
+    return this.profileRepository.save(updated);
+  }
+
+  /** Elimina una imagen individual */
+  async deleteImage(profileId: number, imageId: number): Promise<void> {
+    const image = await this.imagesRepository.findOne({
+      where: { id: imageId, profile: { id: profileId } },
+    });
+    if (!image) throw new NotFoundException(`Image #${imageId} not found`);
+    await this.imagesRepository.remove(image);
   }
 
   async addImages(profileId: number, imagePaths: string[]): Promise<VehicleProfileImage[]> {

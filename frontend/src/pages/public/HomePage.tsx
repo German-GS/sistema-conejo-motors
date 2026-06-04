@@ -79,29 +79,28 @@ export const HomePage = () => {
       {/* Carrusel */}
       {slides.length > 0 && (
         <div className={styles.carousel}>
-          {slides.map((slide, index) => {
-            const bgImage = slide.imageUrl
-              ? `url(${apiClient.defaults.baseURL}/${slide.imageUrl})`
-              : "none";
-
-            return (
-              <div
-                key={index}
-                className={`${styles.slide} ${
-                  index === currentSlide ? styles.active : ""
-                }`}
-                style={{ backgroundImage: bgImage }}
-              >
-                <div className={styles.slideContent}>
-                  <h1>{slide.title}</h1>
-                  <p>{slide.subtitle}</p>
-                  <Link to="/catalog" className={styles.carouselButton}>
-                    Ver Modelos
-                  </Link>
-                </div>
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className={`${styles.slide} ${index === currentSlide ? styles.active : ""}`}
+            >
+              {slide.imageUrl && (
+                <img
+                  src={`${apiClient.defaults.baseURL}/${slide.imageUrl}`}
+                  alt={slide.title}
+                  className={styles.slideImg}
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
+              )}
+              <div className={styles.slideContent}>
+                <h1>{slide.title}</h1>
+                <p>{slide.subtitle}</p>
+                <Link to="/catalog" className={styles.carouselButton}>
+                  Ver Modelos
+                </Link>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 

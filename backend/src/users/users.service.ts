@@ -27,6 +27,18 @@ export class UsersService implements OnApplicationBootstrap {
   // onApplicationBootstrap se ejecuta DESPUÉS de que todos los módulos
   // (incluyendo RolesService) han terminado su onModuleInit.
   async onApplicationBootstrap() {
+    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') ?? 'admin@conejomotors.com';
+
+    // Si el admin de sistema ya existe pero sin el flag, marcarlo ahora
+    const existing = await this.usersRepository.findOne({ where: { email: adminEmail } });
+    if (existing) {
+      if (!existing.es_sistema) {
+        await this.usersRepository.update(existing.id, { es_sistema: true });
+        this.logger.log(`✅ Admin de sistema marcado como oculto: ${adminEmail}`);
+      }
+      return;
+    }
+
     const userCount = await this.usersRepository.count();
     if (userCount > 0) return;
 
@@ -39,7 +51,6 @@ export class UsersService implements OnApplicationBootstrap {
       return;
     }
 
-    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') ?? 'admin@conejomotors.com';
     const adminPassword = this.configService.get<string>('ADMIN_PASSWORD') ?? 'password123';
 
     const adminDto: CreateUserDto = {
@@ -50,8 +61,10 @@ export class UsersService implements OnApplicationBootstrap {
       salario_base: 500000,
     };
 
-    await this.create(adminDto);
-    this.logger.log(`✅ Usuario admin creado: ${adminEmail}`);
+    const created = await this.create(adminDto);
+    // Marcar como cuenta de sistema (oculta en vistas de equipo)
+    await this.usersRepository.update(created.id, { es_sistema: true });
+    this.logger.log(`✅ Usuario admin de sistema creado: ${adminEmail}`);
   }
 
   // --- NUEVO MÉTODO AÑADIDO ---
@@ -172,6 +185,7 @@ export class UsersService implements OnApplicationBootstrap {
   }
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
+      where: { es_sistema: false },
       select: ['id', 'nombre_completo', 'email', 'activo', 'cedula', 'banco', 'numero_cuenta'],
       relations: ['rol'],
     });

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./VehicleDetailPage.module.css";
+import { LoanCalculator } from "@/components/LoanCalculator";
 
 // --- 1. INTERFAZ COMPLETA Y CORRECTA ---
 interface VehicleDetail {
@@ -173,6 +174,11 @@ export const VehicleDetailPage = () => {
             </form>
           </div>
         </div>
+      </div>
+
+      {/* --- CALCULADORA DE FINANCIAMIENTO --- */}
+      <div style={{ maxWidth: "860px", margin: "2rem auto 0", padding: "0 1rem" }}>
+        <LoanCalculator precioBase={vehicle.precio_venta} />
       </div>
 
       {/* --- TABS DE ESPECIFICACIONES --- */}

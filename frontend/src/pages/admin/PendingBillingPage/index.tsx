@@ -1,117 +1,526 @@
-// frontend/src/pages/admin/PendingBillingPage/index.tsx
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
-import { Card } from "@/components/Card";
 import styles from "./PendingBillingPage.module.css";
+import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 
-interface PendingInvoice {
+// ── Tipos ─────────────────────────────────────────────────────────────────────
+interface Cotizacion {
   id: number;
-  precio_final: number;
-  cliente: { nombre_completo: string };
-  vehiculo: { marca: string; modelo: string };
+  estado: string;
+  fecha_creacion: string;
+  fecha_expiracion: string;
+  precio_lista: number;
+  descuento_monto: number;
+  precio_final: number;        // base imponible (sin IVA)
+  iva_porcentaje: number;      // 13 por defecto
+  iva_monto: number;           // precio_final × iva_porcentaje / 100
+  total_con_iva: number;       // precio_final + iva_monto
+  gasto_marchamo: number;
+  gasto_inscripcion: number;
+  gasto_placas: number;
+  gasto_otros: number;
+  gasto_otros_descripcion?: string;
+  regalias?: string;
+  cliente: { id: number; nombre_completo: string; cedula: string; email: string; telefono?: string };
+  vehiculo: { id: number; marca: string; modelo: string; año: number; color: string; vin?: string };
+  vendedor?: { nombre_completo: string };
+  lead?: { id: number };
 }
 
-// 1. Helper de moneda actualizado a Dólares (USD)
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
+interface Venta {
+  id: number;
+  fecha_venta: string;
+  monto_final: number;
+  iva_monto: number;
+  total_con_iva: number;
+  metodo_pago: string;
+  factura_nombre: string;
+  factura_cedula: string;
+  estado: string;
+  cotizacion: { id: number; cliente: { nombre_completo: string }; vehiculo: { marca: string; modelo: string } };
+  vendedor?: { nombre_completo: string };
+}
+
+/** Lee el rol del JWT sin hacer request adicional */
+const getRolActual = (): string => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return "";
+    const decoded: { rol?: { nombre: string } } = jwtDecode(token);
+    return decoded.rol?.nombre ?? "";
+  } catch { return ""; }
 };
 
+type TipoCedula = "fisica" | "juridica" | "extranjero";
+type Tab = "pendientes" | "historial" | "buscar";
+
+const fmtCRC = (v: number) =>
+  "₡ " + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(Number(v) || 0);
+
+const ESTADO_COLORS: Record<string, string> = {
+  Borrador: "#64748b", Enviada: "#0891b2", Aceptada: "#059669",
+  Rechazada: "#dc2626", Facturada: "#7c3aed",
+};
+
+const METODOS_PAGO = ["Efectivo", "Tarjeta Débito", "Tarjeta Crédito", "Transferencia bancaria", "SINPE Móvil", "Cheque", "Otro"];
+
+// ── Componente principal ──────────────────────────────────────────────────────
 const PendingBillingPage = () => {
-  const [invoices, setInvoices] = useState<PendingInvoice[]>([]);
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState<Tab>("pendientes");
+  const rolActual = getRolActual();
+  const puedeFacturar = rolActual === "Administrador" || rolActual === "Contador";
+
+  const [pendientes, setPendientes] = useState<Cotizacion[]>([]);
+  const [historial, setHistorial] = useState<Venta[]>([]);
   const [loading, setLoading] = useState(true);
-  // Estado para deshabilitar TODOS los botones mientras se procesa una solicitud
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  const fetchPendingInvoices = async () => {
-    setLoading(true);
+  // Búsqueda
+  const [busqueda, setBusqueda] = useState("");
+  const [resultados, setResultados] = useState<Cotizacion[]>([]);
+  const [buscando, setBuscando] = useState(false);
+
+  // Cotización seleccionada para facturar
+  const [cotSeleccionada, setCotSeleccionada] = useState<Cotizacion | null>(null);
+
+  // Formulario de facturación
+  const [form, setForm] = useState({
+    factura_nombre:      "",
+    factura_tipo_cedula: "fisica" as TipoCedula,
+    factura_cedula:      "",
+    factura_email:       "",
+    factura_telefono:    "",
+    metodo_pago:         "Efectivo",
+    factura_notas:       "",
+  });
+  const [procesando, setProcesando] = useState(false);
+
+  // Filtro pendientes
+  const [filtroPend, setFiltroPend] = useState("");
+
+  const fetchAll = async () => {
     try {
-      const response = await apiClient.get("/billing/pending");
-      setInvoices(response.data);
-    } catch (error) {
-      toast.error("No se pudieron cargar las facturas pendientes.");
-    } finally {
-      setLoading(false);
-    }
+      const [p, v] = await Promise.all([
+        apiClient.get("/billing/pending"),
+        apiClient.get("/billing/ventas"),
+      ]);
+      setPendientes(Array.isArray(p.data) ? p.data : []);
+      setHistorial(Array.isArray(v.data) ? v.data : []);
+    } catch { toast.error("Error al cargar datos."); }
+    finally { setLoading(false); }
   };
 
+  useEffect(() => { fetchAll(); }, []);
+
+  // Si viene desde un lead (?leadId=X) → buscar cotizaciones de ese cliente automáticamente
+  // Si viene desde una cotización directa (?cotizacionId=X) → seleccionarla
   useEffect(() => {
-    fetchPendingInvoices();
-  }, []);
+    const cotId  = searchParams.get("cotizacionId");
+    const leadId = searchParams.get("leadId");
 
-  const handleCreateInvoice = async (cotizacionId: number) => {
-    // 2. Deshabilita todos los botones para prevenir cualquier otro clic
-    setIsProcessing(true);
+    if (cotId && Number(cotId) > 0) {
+      apiClient.get(`/billing/pending`).then(res => {
+        const cots = Array.isArray(res.data) ? res.data : [];
+        const found = cots.find((c: Cotizacion) => c.id === Number(cotId));
+        if (found) seleccionarCotizacion(found);
+      }).catch(() => {});
+    } else if (leadId) {
+      // Viene del lead → cambiar a tab "buscar" y buscar las cotizaciones del lead
+      setTab("buscar");
+      apiClient.get(`/billing/buscar?q=lead:${leadId}`)
+        .then(res => {
+          if (Array.isArray(res.data) && res.data.length > 0) {
+            setResultados(res.data);
+          }
+        }).catch(() => {});
+    }
+  }, []); // eslint-disable-line
 
-    toast
-      .promise(apiClient.post("/billing/create", { cotizacionId }), {
-        loading: "Procesando factura...",
-        success: () => {
-          // Si tiene éxito, refrescamos la lista. La fila desaparecerá
-          // gracias a la corrección del backend.
-          fetchPendingInvoices();
-          return "¡Factura creada y venta completada!";
-        },
-        error: (err) =>
-          err.response?.data?.message || "Error al procesar la factura.",
-      })
-      .finally(() => {
-        // 3. Al finalizar (éxito o error), se vuelven a habilitar los botones
-        setIsProcessing(false);
-      });
+  const pendientesFiltrados = useMemo(() => {
+    if (!filtroPend) return pendientes;
+    const q = filtroPend.toLowerCase();
+    return pendientes.filter(c =>
+      `${c.cliente.nombre_completo} ${c.cliente.cedula} ${c.vehiculo.marca} ${c.vehiculo.modelo}`.toLowerCase().includes(q)
+    );
+  }, [pendientes, filtroPend]);
+
+  const buscarCotizaciones = async () => {
+    if (!busqueda.trim()) return;
+    setBuscando(true);
+    try {
+      const res = await apiClient.get(`/billing/buscar?q=${encodeURIComponent(busqueda)}`);
+      setResultados(Array.isArray(res.data) ? res.data : []);
+    } catch { toast.error("Error en la búsqueda."); }
+    finally { setBuscando(false); }
   };
+
+  const seleccionarCotizacion = (cot: Cotizacion) => {
+    setCotSeleccionada(cot);
+    // Pre-llenar con datos del cliente de la cotización
+    setForm({
+      factura_nombre:      cot.cliente.nombre_completo,
+      factura_tipo_cedula: "fisica",
+      factura_cedula:      cot.cliente.cedula,
+      factura_email:       cot.cliente.email,
+      factura_telefono:    cot.cliente.telefono ?? "",
+      metodo_pago:         "Efectivo",
+      factura_notas:       "",
+    });
+  };
+
+  const handleFacturar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cotSeleccionada) return;
+    if (!form.factura_nombre || !form.factura_cedula || !form.factura_email) {
+      toast.error("Nombre, cédula y email son requeridos para la factura.");
+      return;
+    }
+    setProcesando(true);
+    try {
+      await apiClient.post("/billing/facturar", {
+        cotizacionId: cotSeleccionada.id,
+        datos: form,
+      });
+      toast.success("✅ Venta completada y factura generada exitosamente.");
+      setCotSeleccionada(null);
+      setResultados([]);
+      setBusqueda("");
+      fetchAll();
+      setTab("historial");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error al procesar la factura.");
+    } finally { setProcesando(false); }
+  };
+
+  if (loading) return <div className={styles.loading}><div className={styles.spinner}/><p>Cargando...</p></div>;
 
   return (
-    <Card title="Facturación Pendiente">
-      {loading ? (
-        <p>Cargando...</p>
-      ) : (
-        <table className={styles.billingTable}>
-          <thead>
-            <tr>
-              <th>ID Cotización</th>
-              <th>Cliente</th>
-              <th>Vehículo</th>
-              <th>Monto Final</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoices.map((invoice) => (
-              <tr key={invoice.id}>
-                <td>{invoice.id}</td>
-                <td>{invoice.cliente.nombre_completo}</td>
-                <td>
-                  {invoice.vehiculo.marca} {invoice.vehiculo.modelo}
-                </td>
-                <td>{formatCurrency(invoice.precio_final)}</td>
-                <td>
-                  <button
-                    className={styles.facturarBtn}
-                    onClick={() => handleCreateInvoice(invoice.id)}
-                    // El botón se deshabilita si CUALQUIER operación está en curso
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? "Procesando..." : "Facturar y Vender"}
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1>💼 Facturación</h1>
+        <div className={styles.kpis}>
+          <span className={styles.kpiChip} style={{ background: "#e0f2fe", color: "#0891b2" }}>
+            📋 {pendientes.length} pendientes
+          </span>
+          <span className={styles.kpiChip} style={{ background: "#dcfce7", color: "#166534" }}>
+            ✅ {historial.length} completadas
+          </span>
+        </div>
+      </div>
+
+      {/* Formulario de Facturación — aparece cuando se selecciona una cotización */}
+      {cotSeleccionada && (
+        <div className={styles.facturaPanel}>
+          <div className={styles.facturaPanelHeader}>
+            <h2>Facturar Cotización #{cotSeleccionada.id}</h2>
+            <button className={styles.closeFactura} onClick={() => setCotSeleccionada(null)}>✕ Cancelar</button>
+          </div>
+
+          <div className={styles.facturaBody}>
+            {/* ── Detalle de la cotización ── */}
+            <div className={styles.cotResumen}>
+              <div className={styles.cotResumenHeader}>📄 Detalle de la Cotización</div>
+              <div className={styles.cotResumenGrid}>
+                <div>
+                  <div className={styles.label}>Vehículo</div>
+                  <div className={styles.value}>{cotSeleccionada.vehiculo.marca} {cotSeleccionada.vehiculo.modelo} ({cotSeleccionada.vehiculo.año})</div>
+                  <div className={styles.subValue}>{cotSeleccionada.vehiculo.color}{cotSeleccionada.vehiculo.vin ? ` · VIN: ${cotSeleccionada.vehiculo.vin}` : ""}</div>
+                </div>
+                <div>
+                  <div className={styles.label}>Cliente Original</div>
+                  <div className={styles.value}>{cotSeleccionada.cliente.nombre_completo}</div>
+                  <div className={styles.subValue}>{cotSeleccionada.cliente.cedula} · {cotSeleccionada.cliente.email}</div>
+                </div>
+                <div>
+                  <div className={styles.label}>Vendedor</div>
+                  <div className={styles.value}>{cotSeleccionada.vendedor?.nombre_completo ?? "—"}</div>
+                </div>
+                <div>
+                  <div className={styles.label}>Fecha Cotización</div>
+                  <div className={styles.value}>{fmtFecha(cotSeleccionada.fecha_creacion)}</div>
+                </div>
+              </div>
+
+              {/* Desglose de precios */}
+              <div className={styles.preciosDesglose}>
+                {Number(cotSeleccionada.descuento_monto) > 0 && (
+                  <>
+                    <div className={styles.precioRow}><span>Precio de lista:</span><span>{fmtCRC(cotSeleccionada.precio_lista)}</span></div>
+                    <div className={`${styles.precioRow} ${styles.descuento}`}><span>Descuento:</span><span>− {fmtCRC(cotSeleccionada.descuento_monto)}</span></div>
+                  </>
+                )}
+                {Number(cotSeleccionada.gasto_marchamo) > 0 && <div className={styles.precioRow}><span>Marchamo:</span><span>{fmtCRC(cotSeleccionada.gasto_marchamo)}</span></div>}
+                {Number(cotSeleccionada.gasto_inscripcion) > 0 && <div className={styles.precioRow}><span>Inscripción:</span><span>{fmtCRC(cotSeleccionada.gasto_inscripcion)}</span></div>}
+                {Number(cotSeleccionada.gasto_placas) > 0 && <div className={styles.precioRow}><span>Placas:</span><span>{fmtCRC(cotSeleccionada.gasto_placas)}</span></div>}
+                {Number(cotSeleccionada.gasto_otros) > 0 && <div className={styles.precioRow}><span>{cotSeleccionada.gasto_otros_descripcion || "Otros"}:</span><span>{fmtCRC(cotSeleccionada.gasto_otros)}</span></div>}
+                <div className={`${styles.precioRow} ${styles.subtotalRow}`}>
+                  <span>Subtotal (sin IVA):</span><span>{fmtCRC(cotSeleccionada.precio_final)}</span>
+                </div>
+                <div className={`${styles.precioRow} ${styles.ivaRow}`}>
+                  <span>IVA ({Number(cotSeleccionada.iva_porcentaje) || 13}%):</span>
+                  <span>{fmtCRC(Number(cotSeleccionada.iva_monto) || Number(cotSeleccionada.precio_final) * 0.13)}</span>
+                </div>
+                <div className={`${styles.precioRow} ${styles.totalFinal}`}>
+                  <span>TOTAL CON IVA:</span>
+                  <strong>{fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}</strong>
+                </div>
+              </div>
+
+              {cotSeleccionada.regalias && (
+                <div className={styles.regalias}>🎁 <strong>Regalías:</strong> {cotSeleccionada.regalias}</div>
+              )}
+            </div>
+
+            {/* ── Formulario de datos de facturación ── */}
+            <form onSubmit={handleFacturar} className={styles.facturaForm}>
+              <div className={styles.facturaFormHeader}>
+                🏢 Datos para la Factura
+                <span className={styles.facturaHint}>
+                  Puede ser diferente al cliente de la cotización (ej: empresa que paga)
+                </span>
+              </div>
+
+              {/* Tipo de entidad */}
+              <div className={styles.tipoRow}>
+                {([
+                  { val: "fisica",    label: "👤 Persona Física" },
+                  { val: "juridica",  label: "🏢 Persona Jurídica" },
+                  { val: "extranjero", label: "🌎 Extranjero" },
+                ] as { val: TipoCedula; label: string }[]).map(t => (
+                  <button key={t.val} type="button"
+                    className={`${styles.tipoBtn} ${form.factura_tipo_cedula === t.val ? styles.tipoBtnActive : ""}`}
+                    onClick={() => setForm(f => ({ ...f, factura_tipo_cedula: t.val }))}>
+                    {t.label}
                   </button>
-                </td>
-              </tr>
-            ))}
-            {invoices.length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ textAlign: "center" }}>
-                  No hay cotizaciones aceptadas pendientes de facturación.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                ))}
+              </div>
+
+              <div className={styles.facturaGrid}>
+                <div className={styles.field}>
+                  <label>{form.factura_tipo_cedula === "juridica" ? "Razón Social *" : "Nombre Completo *"}</label>
+                  <input value={form.factura_nombre}
+                    onChange={e => setForm(f => ({ ...f, factura_nombre: e.target.value }))} required />
+                </div>
+                <div className={styles.field}>
+                  <label>{form.factura_tipo_cedula === "juridica" ? "Cédula Jurídica *" : form.factura_tipo_cedula === "extranjero" ? "Pasaporte/DIMEX *" : "Cédula *"}</label>
+                  <input value={form.factura_cedula}
+                    onChange={e => setForm(f => ({ ...f, factura_cedula: e.target.value }))} required />
+                </div>
+                <div className={styles.field}>
+                  <label>Correo Electrónico *</label>
+                  <input type="email" value={form.factura_email}
+                    onChange={e => setForm(f => ({ ...f, factura_email: e.target.value }))} required />
+                </div>
+                <div className={styles.field}>
+                  <label>Teléfono</label>
+                  <input value={form.factura_telefono}
+                    onChange={e => setForm(f => ({ ...f, factura_telefono: e.target.value }))} />
+                </div>
+                <div className={styles.field}>
+                  <label>Método de Pago *</label>
+                  <select value={form.metodo_pago} onChange={e => setForm(f => ({ ...f, metodo_pago: e.target.value }))}>
+                    {METODOS_PAGO.map(m => <option key={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div className={`${styles.field} ${styles.fullWidth}`}>
+                  <label>Notas adicionales</label>
+                  <textarea rows={2} value={form.factura_notas}
+                    onChange={e => setForm(f => ({ ...f, factura_notas: e.target.value }))}
+                    placeholder="Observaciones para la factura..." />
+                </div>
+              </div>
+
+              {/* Resumen final */}
+              <div className={styles.facturaResumen}>
+                <div className={styles.facturaResumenRow}>
+                  <span>Facturar a:</span>
+                  <strong>{form.factura_nombre || "—"}</strong>
+                </div>
+                <div className={styles.facturaResumenRow}>
+                  <span>{form.factura_tipo_cedula === "juridica" ? "C.Jurídica:" : "Cédula:"}</span>
+                  <strong>{form.factura_cedula || "—"}</strong>
+                </div>
+                <div className={styles.facturaResumenRow}>
+                  <span>Método de pago:</span>
+                  <strong>{form.metodo_pago}</strong>
+                </div>
+                <div className={styles.facturaResumenRow}>
+                  <span>Subtotal sin IVA:</span>
+                  <span>{fmtCRC(cotSeleccionada.precio_final)}</span>
+                </div>
+                <div className={`${styles.facturaResumenRow} ${styles.ivaResumenRow}`}>
+                  <span>IVA ({Number(cotSeleccionada.iva_porcentaje) || 13}%):</span>
+                  <span>{fmtCRC(Number(cotSeleccionada.iva_monto) || Number(cotSeleccionada.precio_final) * 0.13)}</span>
+                </div>
+                <div className={`${styles.facturaResumenRow} ${styles.totalRow}`}>
+                  <span>TOTAL A COBRAR:</span>
+                  <strong className={styles.totalMonto}>
+                    {fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Bloquear si el usuario es Vendedor */}
+              {!puedeFacturar ? (
+                <div className={styles.rolBloqueado}>
+                  🔒 Solo un <strong>Administrador</strong> o <strong>Contador</strong> puede completar la venta.
+                  Solicite la aprobación a su supervisor.
+                </div>
+              ) : (
+                <button type="submit" className={styles.facturarBtn} disabled={procesando}>
+                  {procesando ? "Procesando..." : `💼 Completar Venta · ${fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}`}
+                </button>
+              )}
+            </form>
+          </div>
+        </div>
       )}
-    </Card>
+
+      {/* ── Tabs ── */}
+      {!cotSeleccionada && (
+        <>
+          <div className={styles.tabBar}>
+            <button className={`${styles.tab} ${tab === "pendientes" ? styles.tabActive : ""}`} onClick={() => setTab("pendientes")}>
+              📋 Pendientes ({pendientes.length})
+            </button>
+            <button className={`${styles.tab} ${tab === "buscar" ? styles.tabActive : ""}`} onClick={() => setTab("buscar")}>
+              🔍 Buscar Cliente
+            </button>
+            <button className={`${styles.tab} ${tab === "historial" ? styles.tabActive : ""}`} onClick={() => setTab("historial")}>
+              ✅ Historial ({historial.length})
+            </button>
+          </div>
+
+          {/* ══ TAB: Pendientes ══════════════════════════════════════════════ */}
+          {tab === "pendientes" && (
+            <>
+              <input className={styles.filterInput} placeholder="🔍 Filtrar por cliente, cédula o vehículo..."
+                value={filtroPend} onChange={e => setFiltroPend(e.target.value)} />
+              {pendientesFiltrados.length === 0 && (
+                <div className={styles.empty}>
+                  <span>📭</span>
+                  <p>No hay cotizaciones pendientes de facturación.</p>
+                </div>
+              )}
+              <div className={styles.cotGrid}>
+                {pendientesFiltrados.map(c => (
+                  <CotizacionCard key={c.id} cot={c} onSelect={seleccionarCotizacion} />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ══ TAB: Buscar ══════════════════════════════════════════════════ */}
+          {tab === "buscar" && (
+            <>
+              <div className={styles.buscarRow}>
+                <input className={styles.buscarInput} placeholder="Buscar por nombre, cédula o email del cliente..."
+                  value={busqueda} onChange={e => setBusqueda(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") buscarCotizaciones(); }} />
+                <button className={styles.buscarBtn} onClick={buscarCotizaciones} disabled={buscando}>
+                  {buscando ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+              {resultados.length === 0 && busqueda && !buscando && (
+                <div className={styles.empty}><span>🔍</span><p>No se encontraron cotizaciones activas para esa búsqueda.</p></div>
+              )}
+              <div className={styles.cotGrid}>
+                {resultados.map(c => (
+                  <CotizacionCard key={c.id} cot={c} onSelect={seleccionarCotizacion} />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ══ TAB: Historial ═══════════════════════════════════════════════ */}
+          {tab === "historial" && (
+            <div className={styles.historialTable}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th><th>Fecha</th><th>Facturado a</th><th>Vehículo</th>
+                    <th>Vendedor</th><th>Pago</th><th>Monto</th><th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historial.length === 0 && (
+                    <tr><td colSpan={8} style={{ textAlign: "center", color: "#94a3b8", padding: "2rem" }}>Sin ventas aún.</td></tr>
+                  )}
+                  {historial.map(v => (
+                    <tr key={v.id}>
+                      <td>#{v.id}</td>
+                      <td>{fmtFecha(v.fecha_venta)}</td>
+                      <td>
+                        <strong>{v.factura_nombre || v.cotizacion?.cliente?.nombre_completo || "—"}</strong>
+                        {v.factura_cedula && <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{v.factura_cedula}</div>}
+                      </td>
+                      <td>{v.cotizacion?.vehiculo ? `${v.cotizacion.vehiculo.marca} ${v.cotizacion.vehiculo.modelo}` : "—"}</td>
+                      <td style={{ fontSize: "0.82rem" }}>{v.vendedor?.nombre_completo ?? "—"}</td>
+                      <td style={{ fontSize: "0.82rem" }}>{v.metodo_pago}</td>
+                      <td>
+                        <strong style={{ color: "#059669" }}>{fmtCRC(Number(v.total_con_iva) || Number(v.monto_final))}</strong>
+                        {Number(v.iva_monto) > 0 && <div style={{ fontSize: "0.72rem", color: "#64748b" }}>IVA: {fmtCRC(v.iva_monto)}</div>}
+                      </td>
+                      <td><span className={styles.estadoOk}>✅ {v.estado}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// ── Sub-componente: Tarjeta de cotización ─────────────────────────────────────
+const CotizacionCard = ({ cot, onSelect }: { cot: Cotizacion; onSelect: (c: Cotizacion) => void }) => {
+  const totalGastos = [cot.gasto_marchamo, cot.gasto_inscripcion, cot.gasto_placas, cot.gasto_otros]
+    .reduce((s, v) => s + Number(v || 0), 0);
+  const expirado = new Date(cot.fecha_expiracion) < new Date();
+
+  const fmtCRC = (v: number) => "₡ " + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(Number(v) || 0);
+
+  return (
+    <div className={`${styles.cotCard} ${expirado ? styles.cotExpirada : ""}`}>
+      <div className={styles.cotCardHeader}>
+        <span className={styles.cotId}>#{cot.id}</span>
+        <span className={styles.cotEstado} style={{ background: ESTADO_COLORS[cot.estado] ?? "#64748b" }}>
+          {cot.estado}
+        </span>
+        {cot.lead && <span className={styles.leadBadge} title={`Lead #${cot.lead.id}`}>🔗 Lead</span>}
+      </div>
+
+      <div className={styles.cotCardBody}>
+        <div className={styles.cotCliente}>
+          <strong>{cot.cliente.nombre_completo}</strong>
+          <span>{cot.cliente.cedula}</span>
+        </div>
+        <div className={styles.cotVehiculo}>
+          🚗 {cot.vehiculo.marca} {cot.vehiculo.modelo} ({cot.vehiculo.año}) — {cot.vehiculo.color}
+        </div>
+        <div className={styles.cotMeta}>
+          <span>📅 {fmtFecha(cot.fecha_creacion)}</span>
+          <span className={expirado ? styles.expiradoText : ""}>
+            {expirado ? "⚠️ Venció" : "⏳ Vence"}: {fmtFechaLocal(cot.fecha_expiracion as unknown as string)}
+          </span>
+          {cot.vendedor && <span>🧑‍💼 {cot.vendedor.nombre_completo}</span>}
+        </div>
+        <div className={styles.cotTotal}>
+          <span>Total al cliente:</span>
+          <strong>{fmtCRC(cot.precio_final)}</strong>
+          {totalGastos > 0 && <span className={styles.incGastos}>incl. inscripción</span>}
+        </div>
+      </div>
+
+      <button className={styles.facturarCardBtn} onClick={() => onSelect(cot)}>
+        💼 Iniciar Facturación →
+      </button>
+    </div>
   );
 };
 

@@ -4,9 +4,11 @@ import {
   Route,
   Navigate,
   Outlet,
+  useSearchParams,
 } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+import { useEffect } from "react";
 
 // Layouts
 import { AdminLayout } from "./components/AdminLayout";
@@ -33,6 +35,10 @@ import PendingBillingPage from "./pages/admin/PendingBillingPage";
 import { ImportVehiclesPage } from "./pages/admin/ImportVehiclesPage";
 import { AccesoriosPage } from "./pages/admin/AccesoriosPage";
 import { PricingPage } from "./pages/admin/PricingPage";
+import { AsistenciaPage } from "./pages/admin/AsistenciaPage";
+import { SolicitudesPage } from "./pages/admin/SolicitudesPage";
+import { ProductosPage } from "./pages/admin/ProductosPage";
+import { ContabilidadPage } from "./pages/admin/ContabilidadPage";
 
 // Páginas de Ventas
 import { CatalogPage } from "./pages/admin/sales/CatalogPage";
@@ -84,9 +90,20 @@ const ProtectedRouteByRole = ({ allowedRoles }: { allowedRoles: string[] }) => {
 
 // --- COMPONENTE PRINCIPAL DE LA APLICACIÓN ---
 
+/** Muestra aviso de sesión expirada si viene con ?expired=1 */
+const SessionExpiredNotice = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("expired") === "1") {
+      toast.error("Tu sesión expiró. Por favor inicia sesión nuevamente.", { duration: 5000, icon: "🔒" });
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line
+  return null;
+};
+
 function App() {
   const handleLoginSuccess = () => {
-    // La redirección ahora se maneja en LoginPage.tsx
     console.log("Login successful, redirecting...");
   };
 
@@ -111,7 +128,7 @@ function App() {
         {/* --- 2. Ruta de Login para Empleados --- */}
         <Route
           path="/login"
-          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+          element={<><SessionExpiredNotice /><LoginPage onLoginSuccess={handleLoginSuccess} /></>}
         />
 
         {/* --- 3. Ruta Intermedia para Redirección Post-Login --- */}
@@ -141,15 +158,15 @@ function App() {
             {/* Rutas de ventas accesibles para el admin */}
             <Route path="sales/catalog" element={<CatalogPage />} />
             <Route path="sales/catalog/:vehicleId" element={<VehicleDetailSalesPage />} />
-            <Route
-              path="sales/catalog/:vehicleId/quote"
-              element={<CreateQuotePage />}
-            />
+            <Route path="sales/catalog/:vehicleId/quote" element={<CreateQuotePage />} />
             <Route path="sales/quotes" element={<MyQuotesPage />} />
-            <Route
-              path="sales/quotes/:quoteId"
-              element={<QuoteDetailsPage />}
-            />
+            <Route path="sales/quotes/:quoteId" element={<QuoteDetailsPage />} />
+            <Route path="leads" element={<LeadsPage />} />
+            <Route path="leads/:leadId" element={<LeadDetailsPage />} />
+            <Route path="asistencia" element={<AsistenciaPage />} />
+            <Route path="solicitudes" element={<SolicitudesPage />} />
+            <Route path="productos" element={<ProductosPage />} />
+            <Route path="contabilidad" element={<ContabilidadPage />} />
           </Route>
         </Route>
 
@@ -173,6 +190,9 @@ function App() {
             <Route path="quotes/:quoteId" element={<QuoteDetailsPage />} />
             <Route path="leads" element={<LeadsPage />} />
             <Route path="leads/:leadId" element={<LeadDetailsPage />} />
+            <Route path="asistencia" element={<AsistenciaPage />} />
+            <Route path="solicitudes" element={<SolicitudesPage />} />
+            <Route path="billing" element={<PendingBillingPage />} />
           </Route>
         </Route>
 

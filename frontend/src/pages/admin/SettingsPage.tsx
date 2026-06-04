@@ -4,6 +4,7 @@ import { Card } from "../../components/Card";
 import styles from "./SettingsPage.module.css";
 import toast from "react-hot-toast";
 import { SiteHomepageSettings } from "../../components/SiteHomepageSettings";
+import { EditProfileModal } from "./EditProfileModal";
 
 // --- INTERFACES ---
 interface Parametro {
@@ -100,6 +101,79 @@ const ParametrosTable: React.FC<any> = ({
   );
 };
 
+// --- COMPONENTE DE CALCULADORA ---
+const CalcSettings: React.FC = () => {
+  const [tasa, setTasa] = useState(12);
+  const [plazo, setPlazo] = useState(60);
+  const [primaPct, setPrimaPct] = useState(20);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    apiClient.get("/site-settings/public").then((res) => {
+      const s = res.data;
+      const get = (key: string, def: number) =>
+        Number(s.find((x: any) => x.key === key)?.value ?? def);
+      setTasa(get("calc_tasa_default", 12));
+      setPlazo(get("calc_plazo_default", 60));
+      setPrimaPct(get("calc_prima_pct_default", 20));
+    }).catch(() => {});
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await Promise.all([
+        apiClient.post("/site-settings", { key: "calc_tasa_default",    value: String(tasa) }),
+        apiClient.post("/site-settings", { key: "calc_plazo_default",   value: String(plazo) }),
+        apiClient.post("/site-settings", { key: "calc_prima_pct_default", value: String(primaPct) }),
+      ]);
+      toast.success("Parámetros de calculadora guardados.");
+    } catch {
+      toast.error("Error al guardar.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <p style={{ color: "#64748b", fontSize: "0.88rem", margin: 0 }}>
+        Estos valores se usan como predeterminados cuando el vendedor abre la calculadora de financiamiento.
+      </p>
+      <div className={styles.calcGrid}>
+        <div className={styles.calcField}>
+          <label>Tasa anual predeterminada (%)</label>
+          <input
+            type="number" value={tasa} min={0} max={50} step={0.5}
+            onChange={e => setTasa(Number(e.target.value))}
+          />
+          <p className={styles.calcHint}>Tasa del banco central / financiera típica</p>
+        </div>
+        <div className={styles.calcField}>
+          <label>Plazo predeterminado (meses)</label>
+          <select value={plazo} onChange={e => setPlazo(Number(e.target.value))}>
+            {[12, 24, 36, 48, 60, 72, 84].map(p => (
+              <option key={p} value={p}>{p} meses</option>
+            ))}
+          </select>
+          <p className={styles.calcHint}>Plazo más común ofrecido</p>
+        </div>
+        <div className={styles.calcField}>
+          <label>Prima predeterminada (% del precio)</label>
+          <input
+            type="number" value={primaPct} min={0} max={80} step={5}
+            onChange={e => setPrimaPct(Number(e.target.value))}
+          />
+          <p className={styles.calcHint}>Porcentaje de enganche recomendado</p>
+        </div>
+      </div>
+      <button onClick={save} disabled={saving} className="btn btn-principal" style={{ alignSelf: "flex-start" }}>
+        {saving ? "Guardando..." : "Guardar parámetros"}
+      </button>
+    </div>
+  );
+};
+
 // --- COMPONENTE PRINCIPAL ---
 export const SettingsPage = () => {
   // --- ESTADOS DEL COMPONENTE ---
@@ -143,6 +217,7 @@ export const SettingsPage = () => {
   };
 
   const [newProfile, setNewProfile] = useState(initialProfileState);
+  const [editingProfileId, setEditingProfileId] = useState<number | null>(null);
 
   // --- FUNCIONES Y EFECTOS ---
   const fetchParametros = async () => {
@@ -534,12 +609,20 @@ export const SettingsPage = () => {
                 <td>{profile.marca}</td>
                 <td>{profile.modelo}</td>
                 <td>
-                  <button
-                    onClick={() => handleDeleteProfile(profile.id)}
-                    className={`${styles.actionButton} ${styles.deleteButton}`}
-                  >
-                    Eliminar
-                  </button>
+                  <div className={styles.actionGroup}>
+                    <button
+                      onClick={() => setEditingProfileId(profile.id)}
+                      className={`${styles.actionButton} ${styles.editButton}`}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProfile(profile.id)}
+                      className={`${styles.actionButton} ${styles.deleteButton}`}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -597,6 +680,19 @@ export const SettingsPage = () => {
           onValueChange={setEditValue}
         />
       </Card>
+
+      <Card title="🧮 Calculadora de Financiamiento — Parámetros predeterminados">
+        <CalcSettings />
+      </Card>
+
+      {/* Modal de edición de perfil */}
+      {editingProfileId !== null && (
+        <EditProfileModal
+          profileId={editingProfileId}
+          onClose={() => setEditingProfileId(null)}
+          onSaved={() => { fetchVehicleProfiles(); setEditingProfileId(null); }}
+        />
+      )}
     </>
   );
 };

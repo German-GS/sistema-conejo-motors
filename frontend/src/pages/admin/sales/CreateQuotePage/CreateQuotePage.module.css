@@ -1,27 +1,218 @@
 .formGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
 }
 
-.formGrid input {
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.field input,
+.field textarea {
   width: 100%;
-  padding: 0.8rem;
-  border: 1px solid var(--borde-suave);
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: 0.55rem 0.8rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: white;
   box-sizing: border-box;
+  transition: border-color 0.15s;
+  font-family: inherit;
 }
 
-.formGrid label {
-  display: block;
-  margin-bottom: 0.5rem;
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #024f7d;
+}
+
+.field input:read-only {
+  background: #f0f9ff;
+  color: #024f7d;
+  font-weight: 700;
+  border-color: #bae6fd;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.highlight input {
+  background: #f0f9ff;
+  color: #024f7d;
+  font-weight: 700;
+  border-color: #bae6fd;
+  font-size: 1rem;
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+}
+
+.leadBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e0f2fe;
+  color: #024f7d;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--texto-secundario);
+  margin-bottom: 1rem;
 }
 
-.formGrid input:disabled {
-  background-color: #f2f2f2;
-  color: #888;
-  cursor: not-allowed;
+/* ── Selector de fuente / medio de contacto ─────────────────────────────── */
+.fuenteCard {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-left: 4px solid #024f7d;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.fuenteTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 0.25rem;
+}
+
+.fuenteHint {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+}
+
+.fuenteGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fuenteBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.9rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.fuenteBtn:hover {
+  border-color: #024f7d;
+  color: #024f7d;
+  background: #f0f9ff;
+}
+
+.fuenteBtnActive {
+  background: #024f7d !important;
+  color: white !important;
+  border-color: #024f7d !important;
+}
+
+.fuenteBtnIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Resumen de proforma */
+.summary {
+  background: #0a2540;
+  color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.summary h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #93c5fd;
+  margin: 0 0 1rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.92rem;
+  color: #cbd5e1;
+}
+
+.discount {
+  color: #86efac;
+}
+
+.total {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-bottom: none;
+  font-size: 1.05rem;
+  color: white;
+  font-weight: 700;
+  border-top: 2px solid rgba(255,255,255,0.2);
+}
+
+.total span:last-child {
+  color: #4ade80;
+  font-size: 1.2rem;
+}
+
+.summaryNote {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0.75rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-style: italic;
+}
+
+/* Filas IVA en resumen */
+.subtotalRow { color: #cbd5e1 !important; }
+.ivaRow span:last-child { color: #7dd3fc !important; }
+
+/* Campo hint debajo del input */
+.fieldHint { font-size: 0.73rem; color: #94a3b8; margin-top: 3px; display: block; }
+
+/* Campo IVA */
+.ivaField input { background: #f0f9ff !important; color: #0369a1 !important; font-weight: 600; border-color: #bae6fd !important; }
+
+/* Campo total con IVA */
+.totalIvaField input {
+  background: #022b4d !important; color: #4ade80 !important;
+  font-weight: 800; font-size: 1.05rem !important;
+  border-color: #024f7d !important;
 }

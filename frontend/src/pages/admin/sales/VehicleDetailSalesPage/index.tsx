@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./VehicleDetailSalesPage.module.css";
+import { LoanCalculator } from "@/components/LoanCalculator";
 
 interface VehicleDetail {
   id: number;
@@ -192,6 +193,13 @@ export const VehicleDetailSalesPage = () => {
             <p className={styles.noData}>No hay especificaciones registradas para este vehículo. Puedes agregarlas editando el perfil del modelo.</p>
           ) : null
         )}
+      </div>
+
+      {/* CALCULADORA DE FINANCIAMIENTO */}
+      <div className={styles.calculatorSection}>
+        <h2>Calculadora de Financiamiento</h2>
+        <p className={styles.calcSubtitle}>Simule las cuotas mensuales según el plazo y la tasa de interés.</p>
+        <LoanCalculator precioBase={Number(vehicle.precio_venta)} />
       </div>
     </div>
   );

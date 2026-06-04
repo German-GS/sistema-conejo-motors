@@ -5,10 +5,12 @@ import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import { Venta } from '../ventas/venta.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
-import { ReciboPago } from '../recibos_pago/recibo_pago.entity'; // <-- Importar ReciboPago
+import { ReciboPago } from '../recibos_pago/recibo_pago.entity';
+import { Lead } from '../leads/lead.entity';
+import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Venta, Vehicle, ReciboPago])], // <-- Añadir ReciboPago
+  imports: [TypeOrmModule.forFeature([Venta, Vehicle, ReciboPago, Lead, Cotizacion])],
   controllers: [ReportsController],
   providers: [ReportsService],
 })

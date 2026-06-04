@@ -19,7 +19,13 @@ import {
   LuUpload,
   LuPackage,
   LuTag,
+  LuUserCheck,
+  LuCalendarClock,
+  LuShoppingCart,
+  LuCalculator,
 } from "react-icons/lu";
+import { ClockWidget } from "@/components/ClockWidget";
+import { ChatWidget } from "@/components/ChatWidget";
 
 // Interfaz para el objeto de notificación
 interface Notification {
@@ -34,6 +40,7 @@ export const AdminLayout = () => {
   const [userRole, setUserRole] = useState("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [overdueLeads, setOverdueLeads] = useState(0);
   const navigate = useNavigate();
 
   const fetchNotifications = async () => {
@@ -53,12 +60,22 @@ export const AdminLayout = () => {
       setUserEmail(decodedToken.email);
       setUserRole(decodedToken.rol?.nombre || "");
 
-      // Solo buscamos notificaciones si es admin
+      // Notificaciones solo para admin
       if (decodedToken.rol?.nombre === "Administrador") {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 60000); // Refresca cada minuto
+        const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
       }
+
+      // Follow-ups vencidos para todos los roles con acceso a leads
+      const fetchOverdue = () => {
+        apiClient.get("/leads/followup/overdue-count")
+          .then((res) => setOverdueLeads(res.data.count))
+          .catch(() => {});
+      };
+      fetchOverdue();
+      const overdueInterval = setInterval(fetchOverdue, 120000);
+      return () => clearInterval(overdueInterval);
     }
   }, []);
 
@@ -100,93 +117,110 @@ export const AdminLayout = () => {
         </div>
 
         <nav className={styles.nav}>
+          {/* Dashboard */}
           <Link to="/admin">
-            <LuLayoutDashboard size={20} />
+            <LuLayoutDashboard size={18} />
             {!isCollapsed && <span className={styles.linkText}>Dashboard</span>}
           </Link>
 
-          <hr
-            style={{ borderColor: "rgba(255,255,255,0.1)", margin: "1rem 0" }}
-          />
-
+          {/* ── VENTAS ── */}
+          <div className={styles.sectionLabel}>Ventas</div>
           <Link to="/admin/sales/catalog">
-            <LuBookMarked size={20} />
-            {!isCollapsed && (
-              <span className={styles.linkText}>Catálogo Ventas</span>
-            )}
+            <LuBookMarked size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Catálogo</span>}
           </Link>
           <Link to="/admin/sales/quotes">
-            <LuFileText size={20} />
-            {!isCollapsed && (
-              <span className={styles.linkText}>Cotizaciones</span>
+            <LuFileText size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Cotizaciones</span>}
+          </Link>
+          <Link to="/admin/leads">
+            <LuUserCheck size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Leads / CRM</span>}
+            {overdueLeads > 0 && (
+              <span className={styles.menuBadge} title={`${overdueLeads} follow-up(s) vencidos`}>
+                {overdueLeads}
+              </span>
             )}
           </Link>
 
-          <hr
-            style={{ borderColor: "rgba(255,255,255,0.1)", margin: "1rem 0" }}
-          />
-
+          {/* ── INVENTARIO ── */}
+          <div className={styles.sectionLabel}>Inventario</div>
           <Link to="/admin/inventory">
-            <LuCar size={20} />
-            {!isCollapsed && (
-              <span className={styles.linkText}>Inventario</span>
-            )}
+            <LuCar size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Vehículos</span>}
           </Link>
+          <Link to="/admin/pricing">
+            <LuTag size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Precios</span>}
+          </Link>
+          <Link to="/admin/accesorios">
+            <LuPackage size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Accesorios</span>}
+          </Link>
+          <Link to="/admin/import">
+            <LuUpload size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Importar Excel</span>}
+          </Link>
+
+          {/* ── RRHH ── */}
+          <div className={styles.sectionLabel}>RRHH</div>
           <Link to="/admin/users">
-            <LuUsers size={20} />
-            {!isCollapsed && (
-              <span className={styles.linkText}>Colaboradores</span>
-            )}
+            <LuUsers size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Colaboradores</span>}
           </Link>
           <Link to="/admin/planilla">
-            <LuFileText size={20} />
+            <LuFileText size={18} />
             {!isCollapsed && <span className={styles.linkText}>Planilla</span>}
           </Link>
+          <Link to="/admin/asistencia">
+            <LuCalendarClock size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Asistencia</span>}
+          </Link>
+          <Link to="/admin/solicitudes">
+            <LuFileText size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Solicitudes</span>}
+          </Link>
+
+          {/* ── PRODUCTOS ── */}
+          <div className={styles.sectionLabel}>Repuestos</div>
+          <Link to="/admin/productos">
+            <LuShoppingCart size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Repuestos & Accesorios</span>}
+          </Link>
+
+          {/* ── CONTABILIDAD ── */}
+          <div className={styles.sectionLabel}>Contabilidad</div>
+          <Link to="/admin/contabilidad">
+            <LuCalculator size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Contabilidad</span>}
+          </Link>
+
+          {/* ── OPERACIONES ── */}
+          <div className={styles.sectionLabel}>Operaciones</div>
           <Link to="/admin/bodegas">
-            <LuWarehouse size={20} />
+            <LuWarehouse size={18} />
             {!isCollapsed && <span className={styles.linkText}>Bodegas</span>}
           </Link>
           <Link to="/admin/billing">
-        <LuReceipt size={20} />
-        {!isCollapsed && <span className={styles.linkText}>Facturación</span>}
-    </Link>
+            <LuReceipt size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Facturación</span>}
+          </Link>
           <Link to="/admin/tracking">
-            <LuMapPin size={20} />
+            <LuMapPin size={18} />
             {!isCollapsed && <span className={styles.linkText}>Rastreo</span>}
           </Link>
 
-          {/* CORRECCIÓN APLICADA AQUÍ */}
+          {/* ── SISTEMA (solo admin) ── */}
           {userRole === "Administrador" && (
             <>
-              <Link to="/admin/pricing">
-                <LuTag size={20} />
-                {!isCollapsed && (
-                  <span className={styles.linkText}>Precios</span>
-                )}
-              </Link>
-              <Link to="/admin/import">
-                <LuUpload size={20} />
-                {!isCollapsed && (
-                  <span className={styles.linkText}>Importar Excel</span>
-                )}
-              </Link>
-              <Link to="/admin/accesorios">
-                <LuPackage size={20} />
-                {!isCollapsed && (
-                  <span className={styles.linkText}>Accesorios</span>
-                )}
-              </Link>
+              <div className={styles.sectionLabel}>Sistema</div>
               <Link to="/admin/reports">
-                <LuChartColumnStacked size={20} />
-                {!isCollapsed && (
-                  <span className={styles.linkText}>Informes</span>
-                )}
+                <LuChartColumnStacked size={18} />
+                {!isCollapsed && <span className={styles.linkText}>Informes</span>}
               </Link>
               <Link to="/admin/settings">
-                <LuSettings size={20} />
-                {!isCollapsed && (
-                  <span className={styles.linkText}>Configuración</span>
-                )}
+                <LuSettings size={18} />
+                {!isCollapsed && <span className={styles.linkText}>Configuración</span>}
               </Link>
             </>
           )}
@@ -201,6 +235,7 @@ export const AdminLayout = () => {
         <header className={styles.header}>
           <div className={styles.headerTitle}>Panel de Control</div>
           <div className={styles.headerActions}>
+            <ClockWidget />
             {userRole === "Administrador" && (
               <div
                 className={styles.notificationBell}
@@ -242,6 +277,7 @@ export const AdminLayout = () => {
           <Outlet />
         </main>
       </div>
+      <ChatWidget />
     </div>
   );
 };

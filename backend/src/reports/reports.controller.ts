@@ -36,6 +36,10 @@ export class ReportsController {
           return this.reportsService.getSalesByVehicleReport(start, end);
         case 'payroll':
           return this.reportsService.getPayrollReport(start, end);
+        case 'leads-by-seller':
+          return this.reportsService.getLeadsBySellerReport(start, end);
+        case 'most-quoted':
+          return this.reportsService.getMostQuotedReport(start, end);
         default:
           return { error: 'Tipo de informe no válido' };
       }

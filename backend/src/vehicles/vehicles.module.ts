@@ -15,6 +15,7 @@ import { Lead } from '../leads/lead.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 import { VehiclesImportService } from './vehicles-import.service';
 import { AccesorioVehiculo } from '../accesorios/accesorio.entity';
+import { OrdenProducto } from '../productos/orden-producto.entity';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AccesorioVehiculo } from '../accesorios/accesorio.entity';
       Lead,
       VehicleProfile,
       AccesorioVehiculo,
+      OrdenProducto,
     ]),
     MulterModule.register({ dest: './uploads' }),
   ],

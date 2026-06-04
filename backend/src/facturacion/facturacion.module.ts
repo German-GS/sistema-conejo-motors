@@ -12,13 +12,17 @@ import { Vehicle } from '../vehicles/vehicle.entity';
 // --- 👇 1. Importa los nuevos servicios 👇 ---
 import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
+import { Lead } from '../leads/lead.entity';
+import { ContabilidadModule } from '../contabilidad/contabilidad.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle]),
+    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead]),
     HttpModule,
+    ContabilidadModule,
+    NotificationsModule,
   ],
-  // --- 👇 2. Añádelos a la lista de 'providers' 👇 ---
   providers: [FacturacionService, CryptoService, XmlGeneratorService],
   controllers: [FacturacionController],
 })

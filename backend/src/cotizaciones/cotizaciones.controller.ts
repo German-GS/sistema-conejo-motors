@@ -19,6 +19,12 @@ import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 export class CotizacionesController {
   constructor(private readonly cotizacionesService: CotizacionesService) {}
 
+  @Get()
+  @Roles('Administrador')
+  findAll() {
+    return this.cotizacionesService.findAll();
+  }
+
   // 👇 RUTA ESPECÍFICA PRIMERO 👇
   @Get('my')
   @Roles('Vendedor', 'Administrador')
