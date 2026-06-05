@@ -6,6 +6,7 @@ import {
   Tooltip, XAxis, YAxis, Legend,
 } from "recharts";
 import styles from "./DashboardHomePage.module.css";
+import { LeadsFollowUpWidget } from "../../components/LeadsFollowUpWidget";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 interface BasicStats {
@@ -306,6 +307,11 @@ export const DashboardHomePage = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* ── Widget Leads semáforo ─────────────────────────────────────── */}
+      <div style={{ marginTop: "1.25rem" }}>
+        <LeadsFollowUpWidget basePath="/admin" showVendedor={true} />
       </div>
 
       {/* ── Gráfico ventas por vendedor ───────────────────────────────────── */}

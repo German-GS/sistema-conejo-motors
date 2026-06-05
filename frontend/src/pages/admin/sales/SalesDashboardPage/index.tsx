@@ -7,6 +7,7 @@ import {
   Tooltip, XAxis, YAxis, Legend,
 } from "recharts";
 import styles from "./SalesDashboardPage.module.css";
+import { LeadsFollowUpWidget } from "@/components/LeadsFollowUpWidget";
 
 interface SalesStats {
   totalVehicles: number;
@@ -200,6 +201,11 @@ export const SalesDashboardPage = () => {
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
+
+      {/* ── Leads con semáforo ──────────────────────────────────────────── */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <LeadsFollowUpWidget basePath="/sales" showVendedor={false} />
       </div>
 
       {/* ── Accesos rápidos ─────────────────────────────────────────────── */}

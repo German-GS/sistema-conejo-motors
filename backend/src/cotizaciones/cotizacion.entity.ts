@@ -86,6 +86,11 @@ export class Cotizacion {
   @Column({ type: 'text', nullable: true })
   notas_cliente: string;
 
+
+  /** Tipo de combustible del vehículo (requerido por algunos bancos) */
+  @Column({ length: 50, default: 'Electrico' })
+  tipo_combustible: string;
+
   @Column({
     type: 'enum',
     enum: ['Borrador', 'Enviada', 'Aceptada', 'Rechazada', 'Facturada'],

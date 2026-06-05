@@ -31,6 +31,7 @@ interface QuoteDetails {
   gasto_placas: number;
   gasto_otros: number;
   gasto_otros_descripcion: string;
+  tipo_combustible?: string;
   regalias: string;
   notas_cliente: string;
   fecha_creacion: string;
@@ -102,7 +103,7 @@ export const QuoteDetailsPage = () => {
       head: [["DATOS DEL CLIENTE", "VEHÍCULO COTIZADO"]],
       body: [[
         `${cliente.nombre_completo}\nCédula/ID: ${cliente.cedula}${cliente.telefono ? "\nTel: " + cliente.telefono : ""}${cliente.email ? "\nEmail: " + cliente.email : ""}`,
-        `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.año}${vehiculo.color ? "\nColor: " + vehiculo.color : ""}${vehiculo.autonomia_km ? "\nAutonomía: " + vehiculo.autonomia_km + " km" : ""}${vehiculo.potencia_hp ? "\nPotencia: " + vehiculo.potencia_hp + " HP" : ""}`,
+        `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.año}${vehiculo.color ? "\nColor: " + vehiculo.color : ""}\nTipo combustible: ${quote.tipo_combustible || "Electrico"}${vehiculo.autonomia_km ? "\nAutonomía: " + vehiculo.autonomia_km + " km" : ""}${vehiculo.potencia_hp ? "\nPotencia: " + vehiculo.potencia_hp + " HP" : ""}`,
       ]],
       theme: "grid",
       headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: "bold", fontSize: 9 },
@@ -285,6 +286,7 @@ export const QuoteDetailsPage = () => {
           <p>{quote.vehiculo.marca} {quote.vehiculo.modelo} ({quote.vehiculo.año})</p>
           <span>Estado: {quote.vehiculo.estado}</span>
           {quote.vehiculo.color && <span>Color: {quote.vehiculo.color}</span>}
+          <span>Combustible: <strong>{quote.tipo_combustible || "Eléctrico"}</strong></span>
         </div>
         <div className={styles.detailCard}>
           <h4>Validez</h4>

@@ -1,0 +1,158 @@
+.widget {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.widgetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.alertBadge {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.verTodos {
+  background: none;
+  border: none;
+  color: #024f7d;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.verTodos:hover { background: #e0f2fe; }
+
+.loading, .empty {
+  text-align: center;
+  color: #94a3b8;
+  padding: 24px;
+  font-size: 0.85rem;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+/* Filas con color de fondo según urgencia */
+.leadRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.15s;
+}
+.leadRow:hover { background: #f8fafc !important; }
+.leadRow:last-child { border-bottom: none; }
+
+.row_rojo     { background: #fff5f5; }
+.row_amarillo { background: #fffbeb; }
+.row_verde    { background: white; }
+.row_sin_fecha { background: white; }
+
+/* Círculo semáforo */
+.semaforo {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+}
+.sf_rojo     { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+.sf_amarillo { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+.sf_verde    { background: #10b981; }
+.sf_sin_fecha { background: #cbd5e1; }
+
+.leadInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.nombre {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metaRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.estadoPill {
+  font-size: 0.7rem;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.vendedor {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.followupCol {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.semaforoLabel {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lbl_rojo     { color: #dc2626; }
+.lbl_amarillo { color: #d97706; }
+.lbl_verde    { color: #059669; }
+.lbl_sin_fecha { color: #94a3b8; font-weight: 400; }
+
+.fecha {
+  display: block;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 1px;
+}

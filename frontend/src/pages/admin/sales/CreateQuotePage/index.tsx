@@ -54,6 +54,9 @@ export const CreateQuotePage = () => {
   // IVA
   const [ivaPorcentaje, setIvaPorcentaje] = useState(13);
 
+  // Tipo de combustible (requerido por bancos para financiamiento)
+  const [tipoCombustible, setTipoCombustible] = useState("Electrico");
+
   useEffect(() => {
     if (!vehicleId) return;
     apiClient.get(`/vehicles/${vehicleId}`)
@@ -101,6 +104,7 @@ export const CreateQuotePage = () => {
         gasto_placas: gastoPlacas,
         gasto_otros: gastoOtros,
         gasto_otros_descripcion: gastoOtrosDesc,
+        tipo_combustible: tipoCombustible,
         regalias,
         notas_cliente: notasCliente,
         leadId: leadId ? Number(leadId) : undefined,
@@ -202,6 +206,18 @@ export const CreateQuotePage = () => {
           <div className={`${styles.field} ${styles.highlight}`}>
             <label>Subtotal sin IVA</label>
             <input type="text" value={fmtCRC(precioFinal)} readOnly />
+          </div>
+          <div className={styles.field}>
+            <label>Tipo de Combustible</label>
+            <select value={tipoCombustible} onChange={(e) => setTipoCombustible(e.target.value)}>
+              <option value="Electrico">Eléctrico</option>
+              <option value="Hibrido">Híbrido</option>
+              <option value="Hibrido Enchufable">Híbrido Enchufable (PHEV)</option>
+              <option value="Gasolina">Gasolina</option>
+              <option value="Diesel">Diésel</option>
+              <option value="Gas">Gas</option>
+            </select>
+            <span className={styles.fieldHint}>Requerido por entidades financieras</span>
           </div>
           <div className={styles.field}>
             <label>IVA (%)</label>
