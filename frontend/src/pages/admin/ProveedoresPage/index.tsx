@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./ProveedoresPage.module.css";
-import { LuPlus, LuPencil, LuBuildingStorefront } from "react-icons/lu";
+import { LuPlus, LuPencil, LuBuilding2 } from "react-icons/lu";
 
 interface Proveedor {
   id: number; nombre: string; cedula_juridica?: string; email?: string; telefono?: string;
@@ -53,7 +53,7 @@ export default function ProveedoresPage() {
           </div>
           {proveedores.filter(p => p.activo).map(p => (
             <div key={p.id} className={styles.tablaRow}>
-              <span className={styles.nombre}><LuBuildingStorefront size={14} className={styles.rowIcon} />{p.nombre}</span>
+              <span className={styles.nombre}><LuBuilding2 size={14} className={styles.rowIcon} />{p.nombre}</span>
               <span>{p.cedula_juridica || '-'}</span>
               <span>{p.pais || '-'}</span>
               <span>{p.contacto_nombre || p.email || '-'}</span>
