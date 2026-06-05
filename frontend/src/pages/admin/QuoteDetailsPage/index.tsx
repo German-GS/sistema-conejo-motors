@@ -140,9 +140,9 @@ export const QuoteDetailsPage = () => {
       head: [["DESCRIPCIÓN", "COMBUSTIBLE", "MONTO (CRC)"]],
       body: priceRows,
       foot: [
-        ["Subtotal (sin IVA)", "", fmtPDF(Number(quote.precio_final))],
-        [`IVA (${pdfIvaPct}%)`, "", fmtPDF(pdfIvaMonto)],
-        ["TOTAL CON IVA", "", fmtPDF(pdfTotalIva)],
+        ["Base imponible (sin IVA)", "", fmtPDF(Number(quote.precio_final))],
+        [`IVA (${pdfIvaPct}% desglosado)`, "", fmtPDF(pdfIvaMonto)],
+        ["PRECIO TOTAL (IVA incluido)", "", fmtPDF(pdfTotalIva)],
       ],
       theme: "striped",
       headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: "bold", fontSize: 9 },
@@ -284,12 +284,12 @@ export const QuoteDetailsPage = () => {
         {/* Precio del vehículo — limpio, sin desglose de gastos para el cliente */}
         <div className={`${styles.priceRow} ${styles.subtotal}`}>
           <span>{quote.vehiculo.marca} {quote.vehiculo.modelo} {quote.vehiculo.año}</span>
-          <span>{fmtCRC(Number(quote.precio_final))}</span>
+          <span>{fmtCRC(Number(quote.total_con_iva) || Number(quote.precio_final))}</span>
         </div>
 
         {/* Desglose IVA */}
         <div className={`${styles.priceRow} ${styles.subtotalLine}`}>
-          <span>Subtotal (sin IVA)</span>
+          <span>Base imponible (sin IVA)</span>
           <span>{fmtCRC(Number(quote.precio_final))}</span>
         </div>
         <div className={`${styles.priceRow} ${styles.ivaLine}`}>

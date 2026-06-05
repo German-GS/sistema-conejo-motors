@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import { Card } from "@/components/Card";
@@ -57,6 +58,18 @@ export const CreateQuotePage = () => {
   // Tipo de combustible (requerido por bancos para financiamiento)
   const [tipoCombustible, setTipoCombustible] = useState("Electrico");
 
+  // Rol del usuario — solo Admin puede cambiar IVA
+  const [rolActual, setRolActual] = useState("");
+  useEffect(() => {
+    try {
+      const tok = localStorage.getItem("accessToken");
+      if (tok) {
+        const d = jwtDecode<{ rol?: { nombre: string } }>(tok);
+        setRolActual(d.rol?.nombre || "");
+      }
+    } catch { /* silencioso */ }
+  }, []);
+
   useEffect(() => {
     if (!vehicleId) return;
     apiClient.get(`/vehicles/${vehicleId}`)
@@ -72,13 +85,12 @@ export const CreateQuotePage = () => {
       .finally(() => setLoading(false));
   }, [vehicleId]);
 
-  // precio_final = base imponible (sin IVA)
-  const precioFinal = precioLista - descuentoMonto;
-  const totalGastos = gastoMarchamo + gastoInscripcion + gastoPlacas + gastoOtros;
-  const precioBaseVehiculo = precioFinal - totalGastos;
-  // IVA se aplica sobre el precio_final del vehículo
-  const ivaMonto    = Math.round(precioFinal * ivaPorcentaje / 100);
-  const totalConIva = precioFinal + ivaMonto;
+  // El precio de venta YA incluye IVA — hacemos back-calculation
+  const precioConIva   = precioLista - descuentoMonto;          // precio que paga el cliente (con IVA)
+  const divisor        = 1 + ivaPorcentaje / 100;               // 1.13 para IVA 13%
+  const precioFinal    = Math.round(precioConIva / divisor);    // base imponible (sin IVA) → va a BD
+  const ivaMonto       = precioConIva - precioFinal;            // IVA desglosado
+  const totalConIva    = precioConIva;                          // total = lo que ingresó el usuario
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,10 +205,10 @@ export const CreateQuotePage = () => {
       <Card title="Precio del Vehículo e IVA">
         <div className={styles.formGrid}>
           <div className={styles.field}>
-            <label>Precio de Lista — Base Imponible (₡)</label>
+            <label>Precio de Venta — incluye IVA (₡)</label>
             <input type="number" value={precioLista}
               onChange={(e) => setPrecioLista(Number(e.target.value))} />
-            <span className={styles.fieldHint}>Precio sin IVA</span>
+            <span className={styles.fieldHint}>Precio final al cliente con IVA incluido</span>
           </div>
           <div className={styles.field}>
             <label>Descuento (₡)</label>
@@ -204,8 +216,9 @@ export const CreateQuotePage = () => {
               onChange={(e) => setDescuentoMonto(Number(e.target.value))} />
           </div>
           <div className={`${styles.field} ${styles.highlight}`}>
-            <label>Subtotal sin IVA</label>
+            <label>Base Imponible (sin IVA) — calculada</label>
             <input type="text" value={fmtCRC(precioFinal)} readOnly />
+            <span className={styles.fieldHint}>Se calcula automáticamente: Precio ÷ {(1 + ivaPorcentaje/100).toFixed(2)}</span>
           </div>
           <div className={styles.field}>
             <label>Tipo de Combustible</label>
@@ -220,15 +233,27 @@ export const CreateQuotePage = () => {
             <span className={styles.fieldHint}>Requerido por entidades financieras</span>
           </div>
           <div className={styles.field}>
-            <label>IVA (%)</label>
-            <select value={ivaPorcentaje} onChange={(e) => setIvaPorcentaje(Number(e.target.value))}>
+            <label>
+              IVA (%)
+              {rolActual === "Vendedor" && <span className={styles.lockBadge}>🔒 Solo Admin</span>}
+            </label>
+            <select
+              value={ivaPorcentaje}
+              onChange={(e) => setIvaPorcentaje(Number(e.target.value))}
+              disabled={rolActual === "Vendedor"}
+              title={rolActual === "Vendedor" ? "Solo los Administradores pueden cambiar el porcentaje de IVA" : ""}
+            >
               <option value={13}>13% — General (vehículos)</option>
               <option value={4}>4% — Reducido</option>
               <option value={2}>2% — Canasta básica</option>
               <option value={1}>1% — Especial</option>
               <option value={0}>0% — Exento</option>
             </select>
-            <span className={styles.fieldHint}>Ley del IVA, Costa Rica</span>
+            <span className={styles.fieldHint}>
+              {rolActual === "Vendedor"
+                ? "El IVA está configurado al " + ivaPorcentaje + "% — contacta a un administrador para cambiarlo"
+                : "Ley del IVA, Costa Rica"}
+            </span>
           </div>
           <div className={`${styles.field} ${styles.ivaField}`}>
             <label>IVA ({ivaPorcentaje}%)</label>
@@ -314,43 +339,30 @@ export const CreateQuotePage = () => {
           </>
         )}
 
-        {/* El precio del vehículo que ve el cliente = precioFinal − gastos desglosados */}
-        {totalGastos > 0 && (
-          <div className={styles.summaryRow}>
-            <span>Precio del vehículo:</span>
-            <span>{fmtCRC(precioBaseVehiculo > 0 ? precioBaseVehiculo : precioFinal)}</span>
+        <div className={styles.summaryRow}>
+          <span>Precio con IVA ingresado:</span>
+          <span>{fmtCRC(precioLista)}</span>
+        </div>
+        {descuentoMonto > 0 && (
+          <div className={`${styles.summaryRow} ${styles.discountRow}`}>
+            <span>Descuento:</span>
+            <span>− {fmtCRC(descuentoMonto)}</span>
           </div>
         )}
-        {gastoMarchamo > 0 && (
-          <div className={styles.summaryRow}><span>+ Marchamo:</span><span>{fmtCRC(gastoMarchamo)}</span></div>
-        )}
-        {gastoInscripcion > 0 && (
-          <div className={styles.summaryRow}><span>+ Inscripción:</span><span>{fmtCRC(gastoInscripcion)}</span></div>
-        )}
-        {gastoPlacas > 0 && (
-          <div className={styles.summaryRow}><span>+ Placas:</span><span>{fmtCRC(gastoPlacas)}</span></div>
-        )}
-        {gastoOtros > 0 && (
-          <div className={styles.summaryRow}>
-            <span>+ {gastoOtrosDesc || "Otros gastos"}:</span>
-            <span>{fmtCRC(gastoOtros)}</span>
-          </div>
-        )}
-
         <div className={`${styles.summaryRow} ${styles.subtotalRow}`}>
-          <span>Subtotal (sin IVA):</span>
+          <span>Base imponible (sin IVA {ivaPorcentaje}%):</span>
           <span>{fmtCRC(precioFinal)}</span>
         </div>
         <div className={`${styles.summaryRow} ${styles.ivaRow}`}>
-          <span>IVA ({ivaPorcentaje}%):</span>
-          <span>+ {fmtCRC(ivaMonto)}</span>
+          <span>IVA ({ivaPorcentaje}%) desglosado:</span>
+          <span>{fmtCRC(ivaMonto)}</span>
         </div>
         <div className={`${styles.summaryRow} ${styles.total}`}>
-          <span>💰 Total con IVA:</span>
+          <span>💰 Total al cliente:</span>
           <span>{fmtCRC(totalConIva)}</span>
         </div>
         <p className={styles.summaryNote}>
-          ℹ️ Precio base imponible: {fmtCRC(precioFinal)} · IVA {ivaPorcentaje}%: {fmtCRC(ivaMonto)}
+          ✅ El precio ingresado ya incluye IVA — el sistema lo desglosa automáticamente
         </p>
       </div>
 
