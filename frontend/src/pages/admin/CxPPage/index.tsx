@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./CxPPage.module.css";
-import { LuPlus, LuDollarSign, LuAlertTriangle } from "react-icons/lu";
+import { LuPlus, LuDollarSign, LuTriangleAlert } from "react-icons/lu";
 
 interface CxP {
   id: number; numero: string; concepto: string; factura_proveedor?: string;
@@ -51,7 +51,7 @@ export default function CxPPage() {
 
       <div className={styles.kpis}>
         <div className={styles.kpiCard}><LuDollarSign size={24} className={styles.kpiIcon} /><div><div className={styles.kpiVal}>₡{resumen.totalPendiente?.toLocaleString('es-CR') || 0}</div><div className={styles.kpiLabel}>Total por Pagar</div></div></div>
-        <div className={`${styles.kpiCard} ${styles.kpiDanger}`}><LuAlertTriangle size={24} className={styles.kpiIcon} /><div><div className={styles.kpiVal}>{resumen.vencidas || 0}</div><div className={styles.kpiLabel}>Pagos Vencidos</div></div></div>
+        <div className={`${styles.kpiCard} ${styles.kpiDanger}`}><LuTriangleAlert size={24} className={styles.kpiIcon} /><div><div className={styles.kpiVal}>{resumen.vencidas || 0}</div><div className={styles.kpiLabel}>Pagos Vencidos</div></div></div>
       </div>
 
       {loading ? <p>Cargando...</p> : (

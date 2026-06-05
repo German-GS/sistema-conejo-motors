@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./CxCPage.module.css";
-import { LuPlus, LuDollarSign, LuAlertTriangle } from "react-icons/lu";
+import { LuPlus, LuDollarSign, LuTriangleAlert } from "react-icons/lu";
 
 interface CxC {
   id: number; numero: string; concepto: string; tipo: string;
@@ -52,7 +52,7 @@ export default function CxCPage() {
 
       <div className={styles.kpis}>
         <div className={styles.kpiCard}><LuDollarSign size={24} className={styles.kpiIcon} /><div><div className={styles.kpiVal}>₡{resumen.totalPendiente?.toLocaleString('es-CR') || 0}</div><div className={styles.kpiLabel}>Saldo Pendiente</div></div></div>
-        <div className={`${styles.kpiCard} ${styles.kpiDanger}`}><LuAlertTriangle size={24} className={styles.kpiIcon} /><div><div className={styles.kpiVal}>{resumen.vencidas || 0}</div><div className={styles.kpiLabel}>Facturas Vencidas</div></div></div>
+        <div className={`${styles.kpiCard} ${styles.kpiDanger}`}><LuTriangleAlert size={24} className={styles.kpiIcon} /><div><div className={styles.kpiVal}>{resumen.vencidas || 0}</div><div className={styles.kpiLabel}>Facturas Vencidas</div></div></div>
         <div className={styles.kpiCard}><div><div className={styles.kpiVal}>{resumen.total || 0}</div><div className={styles.kpiLabel}>Total Cuentas</div></div></div>
       </div>
 

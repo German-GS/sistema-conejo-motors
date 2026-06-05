@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./CajaChicaPage.module.css";
-import { LuPlus, LuWallet, LuArrowDownCircle, LuArrowUpCircle } from "react-icons/lu";
+import { LuPlus, LuWallet, LuCircleMinus, LuCirclePlus } from "react-icons/lu";
 
 interface CajaChica {
   id: number; nombre: string; monto_inicial: number; saldo_actual: number; estado: string;
@@ -95,7 +95,7 @@ export default function CajaChicaPage() {
                 {movimientos.map(m => (
                   <div key={m.id} className={styles.movRow}>
                     <div className={styles.movIcon} style={{ background: m.tipo === 'Ingreso' ? '#d1fae5' : '#fee2e2' }}>
-                      {m.tipo === 'Ingreso' ? <LuArrowUpCircle size={16} color="#059669" /> : <LuArrowDownCircle size={16} color="#ef4444" />}
+                      {m.tipo === 'Ingreso' ? <LuCirclePlus size={16} color="#059669" /> : <LuCircleMinus size={16} color="#ef4444" />}
                     </div>
                     <div className={styles.movInfo}>
                       <div className={styles.movDesc}>{m.descripcion}</div>
