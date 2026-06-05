@@ -113,18 +113,8 @@ export const QuoteDetailsPage = () => {
 
     y = (doc as any).lastAutoTable.finalY + 8;
 
-    // ── DESGLOSE DEL PRECIO ─────────────────────
-    // El precio_final YA incluye marchamo, inscripción, etc.
-    // Los gastos se muestran desglosados pero el total NO cambia.
-    const gastos: [string, number][] = [];
-    if (Number(quote.gasto_marchamo) > 0)    gastos.push(["Marchamo (primer año)", Number(quote.gasto_marchamo)]);
-    if (Number(quote.gasto_inscripcion) > 0) gastos.push(["Inscripción / Derechos de registro", Number(quote.gasto_inscripcion)]);
-    if (Number(quote.gasto_placas) > 0)      gastos.push(["Placas / Derechos de circulación", Number(quote.gasto_placas)]);
-    if (Number(quote.gasto_otros) > 0)       gastos.push([quote.gasto_otros_descripcion || "Otros gastos", Number(quote.gasto_otros)]);
-
-    const totalGastos = gastos.reduce((s, [, m]) => s + m, 0);
-    const precioBaseVehiculo = Number(quote.precio_final) - totalGastos;
-
+    // ── DESGLOSE DEL PRECIO (limpio para el cliente) ────────────────────
+    // Los gastos de inscripción son internos — no se muestran en la proforma
     const priceRows: [string, string, string][] = [];
 
     // Si hay descuento, mostrar precio de lista y descuento
@@ -133,18 +123,12 @@ export const QuoteDetailsPage = () => {
       priceRows.push(["Descuento aplicado", "", `– ${fmtPDF(Number(quote.descuento_monto))}`]);
     }
 
-    // Precio del vehículo (sin gastos de inscripción)
-    if (totalGastos > 0) {
-      priceRows.push([
-        "Precio del vehículo",
-        "",
-        fmtPDF(precioBaseVehiculo > 0 ? precioBaseVehiculo : Number(quote.precio_final)),
-      ]);
-      // Gastos desglosados
-      gastos.forEach(([desc, monto]) => priceRows.push([`+ ${desc}`, "", fmtPDF(monto)]));
-    } else {
-      priceRows.push(["Vehículo eléctrico " + vehiculo.marca + " " + vehiculo.modelo, "", fmtPDF(Number(quote.precio_final))]);
-    }
+    // Línea del vehículo — precio final (ya incluye todo internamente)
+    priceRows.push([
+      `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.año}`,
+      quote.tipo_combustible || "Eléctrico",
+      fmtPDF(Number(quote.precio_final)),
+    ]);
 
     // Calcular IVA para el PDF
     const pdfIvaPct   = Number(quote.iva_porcentaje) || 13;
@@ -153,7 +137,7 @@ export const QuoteDetailsPage = () => {
 
     autoTable(doc, {
       startY: y,
-      head: [["DESCRIPCIÓN", "NOTAS", "MONTO (CRC)"]],
+      head: [["DESCRIPCIÓN", "COMBUSTIBLE", "MONTO (CRC)"]],
       body: priceRows,
       foot: [
         ["Subtotal (sin IVA)", "", fmtPDF(Number(quote.precio_final))],
@@ -170,20 +154,6 @@ export const QuoteDetailsPage = () => {
         2: { cellWidth: colWidth * 0.25, halign: "right" },
       },
     });
-
-    // Nota aclaratoria
-    if (totalGastos > 0) {
-      const noteY = (doc as any).lastAutoTable.finalY + 4;
-      doc.setFontSize(7.5);
-      doc.setTextColor(120, 120, 120);
-      doc.setFont("helvetica", "italic");
-      doc.text(
-        "* Los gastos de inscripción (marchamo, derechos de registro, etc.) están incluidos en el precio de venta del vehículo.",
-        margin, noteY
-      );
-      doc.setFont("helvetica", "normal");
-      (doc as any).lastAutoTable.finalY = noteY + 5;
-    }
 
     y = (doc as any).lastAutoTable.finalY + 8;
 
@@ -203,8 +173,6 @@ export const QuoteDetailsPage = () => {
     // ── NOTAS ADICIONALES ───────────────────────
     const notas: string[] = [
       `• Esta proforma es válida hasta el: ${fmtFechaLocal(quote.fecha_expiracion)}.`,
-      "• Los precios de inscripción son estimados y pueden variar según tarifas vigentes del Registro Nacional.",
-      "• El precio del vehículo no incluye los gastos de inscripción detallados.",
     ];
     if (quote.notas_cliente?.trim()) {
       notas.push(`• ${quote.notas_cliente}`);
@@ -313,34 +281,11 @@ export const QuoteDetailsPage = () => {
           </>
         )}
 
-        {/* Precio vehículo base = precio_final − gastos desglosados */}
-        {totalGastos > 0 ? (
-          <div className={styles.priceRow}>
-            <span>Precio del vehículo</span>
-            <span>{fmtCRC(precioBaseVehiculo > 0 ? precioBaseVehiculo : Number(quote.precio_final))}</span>
-          </div>
-        ) : (
-          <div className={`${styles.priceRow} ${styles.subtotal}`}>
-            <span>Precio del vehículo</span>
-            <span>{fmtCRC(Number(quote.precio_final))}</span>
-          </div>
-        )}
-
-        {Number(quote.gasto_marchamo) > 0 && (
-          <div className={styles.priceRow}><span>+ Marchamo</span><span>{fmtCRC(Number(quote.gasto_marchamo))}</span></div>
-        )}
-        {Number(quote.gasto_inscripcion) > 0 && (
-          <div className={styles.priceRow}><span>+ Inscripción</span><span>{fmtCRC(Number(quote.gasto_inscripcion))}</span></div>
-        )}
-        {Number(quote.gasto_placas) > 0 && (
-          <div className={styles.priceRow}><span>+ Placas</span><span>{fmtCRC(Number(quote.gasto_placas))}</span></div>
-        )}
-        {Number(quote.gasto_otros) > 0 && (
-          <div className={styles.priceRow}>
-            <span>+ {quote.gasto_otros_descripcion || "Otros gastos"}</span>
-            <span>{fmtCRC(Number(quote.gasto_otros))}</span>
-          </div>
-        )}
+        {/* Precio del vehículo — limpio, sin desglose de gastos para el cliente */}
+        <div className={`${styles.priceRow} ${styles.subtotal}`}>
+          <span>{quote.vehiculo.marca} {quote.vehiculo.modelo} {quote.vehiculo.año}</span>
+          <span>{fmtCRC(Number(quote.precio_final))}</span>
+        </div>
 
         {/* Desglose IVA */}
         <div className={`${styles.priceRow} ${styles.subtotalLine}`}>
@@ -355,11 +300,7 @@ export const QuoteDetailsPage = () => {
           <span>💰 Total con IVA</span>
           <span>{fmtCRC(totalIva)}</span>
         </div>
-        {totalGastos > 0 && (
-          <p className={styles.note}>
-            Los gastos de inscripción están incluidos en el precio de venta.
-          </p>
-        )}
+
       </div>
 
       {quote.regalias && (

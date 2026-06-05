@@ -17,6 +17,7 @@
 }
 
 .field input,
+.field select,
 .field textarea {
   width: 100%;
   padding: 0.55rem 0.8rem;
@@ -31,6 +32,7 @@
 }
 
 .field input:focus,
+.field select:focus,
 .field textarea:focus {
   outline: none;
   border-color: #024f7d;
