@@ -10,7 +10,7 @@ import {
 import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 
-export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Cerrado' | 'Perdido';
+export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Prueba de Manejo' | 'Cotizacion Enviada' | 'Negociacion' | 'Cerrado' | 'Perdido';
 export type LeadFuente = 'Web' | 'Instagram' | 'Facebook' | 'WhatsApp' | 'TikTok' | 'Referido' | 'Presencial' | 'Llamada' | 'Otro';
 
 @Entity({ name: 'leads' })
@@ -29,7 +29,7 @@ export class Lead {
 
   @Column({
     type: 'enum',
-    enum: ['Nuevo', 'Contactado', 'En Progreso', 'Cerrado', 'Perdido'],
+    enum: ['Nuevo', 'Contactado', 'En Progreso', 'Prueba de Manejo', 'Cotizacion Enviada', 'Negociacion', 'Cerrado', 'Perdido'],
     default: 'Nuevo',
   })
   estado: LeadStatus;

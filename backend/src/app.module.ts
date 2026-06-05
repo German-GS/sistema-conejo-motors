@@ -60,6 +60,39 @@ import { ContabilidadModule } from './contabilidad/contabilidad.module';
 import { CuentaContable } from './contabilidad/cuenta.entity';
 import { AsientoContable, LineaAsiento } from './contabilidad/asiento.entity';
 import { CierreDiario } from './contabilidad/cierre-diario.entity';
+// Nuevos módulos
+import { AgendaModule } from './agenda/agenda.module';
+import { Cita } from './agenda/cita.entity';
+import { CosteoVehiculosModule } from './costeo-vehiculos/costeo-vehiculos.module';
+import { CosteoVehiculo } from './costeo-vehiculos/costeo-vehiculo.entity';
+import { ImportacionesModule } from './importaciones/importaciones.module';
+import { Importacion } from './importaciones/importacion.entity';
+import { ImportacionVehiculo } from './importaciones/importacion-vehiculo.entity';
+import { ProveedoresModule } from './proveedores/proveedores.module';
+import { Proveedor } from './proveedores/proveedor.entity';
+import { ComprasModule } from './compras/compras.module';
+import { OrdenCompra } from './compras/orden-compra.entity';
+import { LineaCompra } from './compras/linea-compra.entity';
+import { CxcModule } from './cxc/cxc.module';
+import { CuentaCobrar } from './cxc/cuenta-cobrar.entity';
+import { PagoCxC } from './cxc/pago-cxc.entity';
+import { CxpModule } from './cxp/cxp.module';
+import { CuentaPagar } from './cxp/cuenta-pagar.entity';
+import { PagoCxP } from './cxp/pago-cxp.entity';
+import { CajaChicaModule } from './caja-chica/caja-chica.module';
+import { CajaChica } from './caja-chica/caja-chica.entity';
+import { MovimientoCaja } from './caja-chica/movimiento-caja.entity';
+import { GastosModule } from './gastos/gastos.module';
+import { Gasto } from './gastos/gasto.entity';
+import { TallerModule } from './taller/taller.module';
+import { OrdenTrabajo } from './taller/orden-trabajo.entity';
+import { DetalleTaller } from './taller/detalle-taller.entity';
+import { GarantiasModule } from './garantias/garantias.module';
+import { Garantia } from './garantias/garantia.entity';
+import { ReclamoGarantia } from './garantias/reclamo-garantia.entity';
+import { TesoreriaModule } from './tesoreria/tesoreria.module';
+import { CuentaBancaria } from './tesoreria/cuenta-bancaria.entity';
+import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
 
 
 @Module({
@@ -112,6 +145,27 @@ import { CierreDiario } from './contabilidad/cierre-diario.entity';
         AsientoContable,
         LineaAsiento,
         CierreDiario,
+        // Nuevas entidades
+        Cita,
+        CosteoVehiculo,
+        Importacion,
+        ImportacionVehiculo,
+        Proveedor,
+        OrdenCompra,
+        LineaCompra,
+        CuentaCobrar,
+        PagoCxC,
+        CuentaPagar,
+        PagoCxP,
+        CajaChica,
+        MovimientoCaja,
+        Gasto,
+        OrdenTrabajo,
+        DetalleTaller,
+        Garantia,
+        ReclamoGarantia,
+        CuentaBancaria,
+        MovimientoBancario,
       ],
       }),
     }),
@@ -141,6 +195,19 @@ import { CierreDiario } from './contabilidad/cierre-diario.entity';
     ChatModule,
     ProductosModule,
     ContabilidadModule,
+    // Nuevos módulos
+    AgendaModule,
+    CosteoVehiculosModule,
+    ImportacionesModule,
+    ProveedoresModule,
+    ComprasModule,
+    CxcModule,
+    CxpModule,
+    CajaChicaModule,
+    GastosModule,
+    TallerModule,
+    GarantiasModule,
+    TesoreriaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

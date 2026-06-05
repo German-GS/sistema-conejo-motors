@@ -39,6 +39,16 @@ import { AsistenciaPage } from "./pages/admin/AsistenciaPage";
 import { SolicitudesPage } from "./pages/admin/SolicitudesPage";
 import { ProductosPage } from "./pages/admin/ProductosPage";
 import { ContabilidadPage } from "./pages/admin/ContabilidadPage";
+import AgendaPage from "./pages/admin/AgendaPage";
+import ProveedoresPage from "./pages/admin/ProveedoresPage";
+import CxCPage from "./pages/admin/CxCPage";
+import CxPPage from "./pages/admin/CxPPage";
+import CajaChicaPage from "./pages/admin/CajaChicaPage";
+import GastosPage from "./pages/admin/GastosPage";
+import TallerPage from "./pages/admin/TallerPage";
+import GarantiasPage from "./pages/admin/GarantiasPage";
+import TesoreriaPage from "./pages/admin/TesoreriaPage";
+import ImportacionesPage from "./pages/admin/ImportacionesPage";
 
 // Páginas de Ventas
 import { CatalogPage } from "./pages/admin/sales/CatalogPage";
@@ -167,6 +177,17 @@ function App() {
             <Route path="solicitudes" element={<SolicitudesPage />} />
             <Route path="productos" element={<ProductosPage />} />
             <Route path="contabilidad" element={<ContabilidadPage />} />
+            {/* Nuevos módulos */}
+            <Route path="agenda" element={<AgendaPage />} />
+            <Route path="proveedores" element={<ProveedoresPage />} />
+            <Route path="cxc" element={<CxCPage />} />
+            <Route path="cxp" element={<CxPPage />} />
+            <Route path="caja-chica" element={<CajaChicaPage />} />
+            <Route path="gastos" element={<GastosPage />} />
+            <Route path="taller" element={<TallerPage />} />
+            <Route path="garantias" element={<GarantiasPage />} />
+            <Route path="tesoreria" element={<TesoreriaPage />} />
+            <Route path="importaciones" element={<ImportacionesPage />} />
           </Route>
         </Route>
 

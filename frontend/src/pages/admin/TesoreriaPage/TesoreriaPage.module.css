@@ -1,0 +1,44 @@
+.page { padding: 24px; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.header h1 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.header p { color: #64748b; font-size: 0.875rem; margin: 0; }
+.totales { display: flex; gap: 16px; margin-bottom: 24px; }
+.totalCard { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 28px; }
+.totalLabel { font-size: 0.78rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+.totalVal { font-size: 1.6rem; font-weight: 700; color: #0f172a; }
+.layout { display: grid; grid-template-columns: 240px 1fr; gap: 20px; }
+.cuentasList { display: flex; flex-direction: column; gap: 12px; }
+.cuentaCard { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+.cuentaCard:hover, .activa { border-color: #024f7d; }
+.activa { box-shadow: 0 0 0 2px #024f7d22; }
+.cuentaTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.bancoIcon { color: #024f7d; }
+.monedaBadge { font-size: 0.7rem; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+.banco { font-weight: 700; font-size: 0.95rem; }
+.cuenta { font-family: monospace; font-size: 0.78rem; color: #94a3b8; }
+.saldo { font-size: 1.1rem; font-weight: 700; color: #024f7d; margin-top: 4px; }
+.tipo { font-size: 0.75rem; color: #94a3b8; }
+.movPanel { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; }
+.placeholder { color: #94a3b8; text-align: center; padding: 60px 0; font-size: 0.9rem; }
+.movHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.movHeader h2 { font-size: 1rem; font-weight: 700; margin: 0; }
+.movLista { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; }
+.movRow { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 8px; background: #f8fafc; }
+.movIcon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.movInfo { flex: 1; }
+.movDesc { font-weight: 600; font-size: 0.85rem; color: #0f172a; }
+.movMeta { font-size: 0.75rem; color: #94a3b8; }
+.movMonto { font-weight: 700; font-size: 0.95rem; }
+.entrada { color: #059669; }
+.salida { color: #ef4444; }
+.btnPrimary { background: #024f7d; color: white; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; }
+.btnSecondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 18px; cursor: pointer; }
+.empty { text-align: center; padding: 30px; color: #94a3b8; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: white; border-radius: 12px; padding: 28px; width: min(480px, 95vw); display: flex; flex-direction: column; gap: 14px; }
+.modal h2 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg label { font-size: 0.8rem; font-weight: 600; color: #475569; }
+.fg input, .fg select { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.875rem; }
+.mActions { display: flex; gap: 12px; justify-content: flex-end; }

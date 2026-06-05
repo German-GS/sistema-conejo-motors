@@ -23,6 +23,16 @@ import {
   LuCalendarClock,
   LuShoppingCart,
   LuCalculator,
+  LuCalendarDays,
+  LuBuilding2,
+  LuTrendingDown,
+  LuTrendingUp,
+  LuWallet,
+  LuReceiptText,
+  LuWrench,
+  LuShield,
+  LuBanknote,
+  LuShip,
 } from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -142,6 +152,10 @@ export const AdminLayout = () => {
               </span>
             )}
           </Link>
+          <Link to="/admin/agenda">
+            <LuCalendarDays size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Agenda</span>}
+          </Link>
 
           {/* ── INVENTARIO ── */}
           <div className={styles.sectionLabel}>Inventario</div>
@@ -156,6 +170,10 @@ export const AdminLayout = () => {
           <Link to="/admin/accesorios">
             <LuPackage size={18} />
             {!isCollapsed && <span className={styles.linkText}>Accesorios</span>}
+          </Link>
+          <Link to="/admin/importaciones">
+            <LuShip size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Importaciones</span>}
           </Link>
           <Link to="/admin/import">
             <LuUpload size={18} />
@@ -188,11 +206,52 @@ export const AdminLayout = () => {
             {!isCollapsed && <span className={styles.linkText}>Repuestos & Accesorios</span>}
           </Link>
 
+          {/* ── COMPRAS ── */}
+          <div className={styles.sectionLabel}>Compras</div>
+          <Link to="/admin/proveedores">
+            <LuBuilding2 size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Proveedores</span>}
+          </Link>
+          <Link to="/admin/gastos">
+            <LuReceiptText size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Gastos</span>}
+          </Link>
+
+          {/* ── FINANZAS ── */}
+          <div className={styles.sectionLabel}>Finanzas</div>
+          <Link to="/admin/cxc">
+            <LuTrendingUp size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Cuentas x Cobrar</span>}
+          </Link>
+          <Link to="/admin/cxp">
+            <LuTrendingDown size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Cuentas x Pagar</span>}
+          </Link>
+          <Link to="/admin/caja-chica">
+            <LuWallet size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Caja Chica</span>}
+          </Link>
+          <Link to="/admin/tesoreria">
+            <LuBanknote size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Tesorería</span>}
+          </Link>
+
           {/* ── CONTABILIDAD ── */}
           <div className={styles.sectionLabel}>Contabilidad</div>
           <Link to="/admin/contabilidad">
             <LuCalculator size={18} />
             {!isCollapsed && <span className={styles.linkText}>Contabilidad</span>}
+          </Link>
+
+          {/* ── POSTVENTA ── */}
+          <div className={styles.sectionLabel}>Postventa</div>
+          <Link to="/admin/taller">
+            <LuWrench size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Taller</span>}
+          </Link>
+          <Link to="/admin/garantias">
+            <LuShield size={18} />
+            {!isCollapsed && <span className={styles.linkText}>Garantías</span>}
           </Link>
 
           {/* ── OPERACIONES ── */}
