@@ -626,15 +626,27 @@ export class VehiclesService {
     }
   }
 
-  /** Admin: libera un vehículo Reservado → vuelve a Disponible */
+  /** Admin: libera un vehículo Reservado → vuelve a Disponible y cancela la cotización activa */
   async liberarVehiculo(id: number): Promise<{ ok: boolean; message: string }> {
     const vehiculo = await this.vehiclesRepository.findOneBy({ id });
     if (!vehiculo) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
     if (vehiculo.estado !== 'Reservado') {
       return { ok: false, message: `El vehículo ya está en estado "${vehiculo.estado}".` };
     }
+
+    // Liberar vehículo
     await this.vehiclesRepository.update(id, { estado: 'Disponible' });
-    return { ok: true, message: `Vehículo #${id} liberado exitosamente.` };
+
+    // Cancelar cotizaciones activas asociadas a este vehículo
+    await this.cotizacionesRepository
+      .createQueryBuilder()
+      .update()
+      .set({ estado: 'Cancelada' })
+      .where('vehiculoId = :id', { id })
+      .andWhere("estado IN ('Borrador', 'Enviada')")
+      .execute();
+
+    return { ok: true, message: `Vehículo #${id} liberado y cotización cancelada.` };
   }
 
   /** Admin: vehículos Reservados con su cotización activa más reciente */
