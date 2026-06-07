@@ -31,7 +31,7 @@ export class Cotizacion {
   @CreateDateColumn()
   fecha_creacion: Date;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   fecha_expiracion: Date;
 
   /** Precio de lista del vehículo (sin descuento) */
@@ -93,7 +93,7 @@ export class Cotizacion {
   color_solicitado: string;
 
   /** Tipo de combustible del vehículo (requerido por algunos bancos) */
-  @Column({ length: 50, default: 'Electrico' })
+  @Column({ length: 50, nullable: true, default: 'Electrico' })
   tipo_combustible: string;
 
   @Column({

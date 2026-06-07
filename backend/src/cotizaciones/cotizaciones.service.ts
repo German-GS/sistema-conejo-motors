@@ -166,6 +166,7 @@ export class CotizacionesService {
       gasto_placas:            createDto.gasto_placas            ?? 0,
       gasto_otros:             createDto.gasto_otros             ?? 0,
       gasto_otros_descripcion: createDto.gasto_otros_descripcion ?? '',
+      tipo_combustible: createDto.tipo_combustible ?? 'Electrico',
       regalias:        createDto.regalias      ?? '',
       notas_cliente:   createDto.notas_cliente ?? '',
     });

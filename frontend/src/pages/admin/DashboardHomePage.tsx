@@ -68,16 +68,16 @@ export const DashboardHomePage = () => {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [b, e, c, a] = await Promise.all([
+      const [b, e, c, a] = await Promise.allSettled([
         apiClient.get("/vehicles/dashboard/stats"),
         apiClient.get("/vehicles/dashboard/extended"),
         apiClient.get("/asistencia/conectados-hoy"),
         apiClient.get("/quotes/alertas/vencimiento"),
       ]);
-      setBasic(b.data);
-      setExtended(e.data);
-      setConectados(Array.isArray(c.data) ? c.data : []);
-      setAlertas(a.data);
+      if (b.status === "fulfilled") setBasic(b.value.data);
+      if (e.status === "fulfilled") setExtended(e.value.data);
+      if (c.status === "fulfilled") setConectados(Array.isArray(c.value.data) ? c.value.data : []);
+      if (a.status === "fulfilled") setAlertas(a.value.data);
       setLastUpdate(new Date());
     } catch {
       // silencioso — no rompe la UI

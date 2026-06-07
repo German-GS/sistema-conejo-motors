@@ -8,7 +8,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, MoreThanOrEqual, Repository, DataSource } from 'typeorm';
+import { Between, In, MoreThanOrEqual, Not, Repository, DataSource } from 'typeorm';
 import { Vehicle } from './vehicle.entity'; // Corregido: Ruta relativa
 import { Venta } from '../ventas/venta.entity';
 import { User } from '../users/user.entity';
@@ -517,7 +517,7 @@ export class VehiclesService {
     this.logger.log('getDashboardStats: Fetching general dashboard stats...');
     try {
       const vehiclesInStock = await this.vehiclesRepository.find({
-        where: { estado: 'Disponible' },
+        where: { estado: 'Disponible', visibilidad: Not('Agotado') },
         relations: { profile: true, bodega: true }, // Carga básica suficiente
       });
       const totalVehicles = vehiclesInStock.length;
@@ -696,7 +696,8 @@ export class VehiclesService {
 
     // ── Vehículos ─────────────────────────────────────────────────────────────
     const [disponibles, reservados, vendidosMes] = await Promise.all([
-      this.vehiclesRepository.count({ where: { estado: 'Disponible' } }),
+      // Agotado = sin stock físico → no cuenta como disponible en el dashboard
+      this.vehiclesRepository.count({ where: { estado: 'Disponible', visibilidad: Not('Agotado') } }),
       this.vehiclesRepository.count({ where: { estado: 'Reservado' } }),
       this.ventasRepository.count({ where: { fecha_venta: MoreThanOrEqual(startOfMonth) } }),
     ]);

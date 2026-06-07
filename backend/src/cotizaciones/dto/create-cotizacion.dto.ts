@@ -28,6 +28,7 @@ export class CreateCotizacionDto {
   gasto_otros_descripcion?: string;
 
   // Extras
+  tipo_combustible?: string;
   regalias?: string;
   notas_cliente?: string;
 

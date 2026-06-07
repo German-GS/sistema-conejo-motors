@@ -48,7 +48,6 @@ export const CreateQuotePage = () => {
   // Extras
   const [regalias, setRegalias] = useState("");
   const [notasCliente, setNotasCliente] = useState("");
-  const [colorSolicitado, setColorSolicitado] = useState("");
 
   // Medio de contacto (solo si no viene de un lead existente)
   const [fuenteLead, setFuenteLead] = useState("Presencial");
@@ -111,7 +110,6 @@ export const CreateQuotePage = () => {
         descuento_monto: descuentoMonto,
         precio_final: precioFinal,
         iva_porcentaje: ivaPorcentaje,
-        color_solicitado: colorSolicitado || undefined,
         // fecha_expiracion omitida → backend calcula automáticamente hoy + 4 días
         gasto_marchamo: gastoMarchamo,
         gasto_inscripcion: gastoInscripcion,
@@ -304,22 +302,6 @@ export const CreateQuotePage = () => {
             <label>Descripción de Otros Gastos</label>
             <input type="text" placeholder="Ej: Transporte, seguro de entrega..."
               value={gastoOtrosDesc} onChange={(e) => setGastoOtrosDesc(e.target.value)} />
-          </div>
-        </div>
-      </Card>
-
-      {/* Color solicitado */}
-      <Card title="🎨 Preferencia de Color">
-        <div className={styles.formGrid}>
-          <div className={`${styles.field} ${styles.fullWidth}`}>
-            <label>Color preferido por el cliente</label>
-            <input
-              type="text"
-              placeholder="Ej: Blanco perla, Azul marino, Negro azabache..."
-              value={colorSolicitado}
-              onChange={(e) => setColorSolicitado(e.target.value)}
-            />
-            <span className={styles.fieldHint}>Sujeto a disponibilidad. Se incluirá en la cotización.</span>
           </div>
         </div>
       </Card>
