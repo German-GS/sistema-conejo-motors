@@ -58,7 +58,7 @@ const UpdateLocationModal: React.FC<UpdateLocationModalProps> = ({
 
   // --- Filtramos la lista de bodegas aquí ---
   const availableBodegas = bodegas.filter(
-    (bodega) => bodega.nombre !== vehicle.currentLocation
+    (bodega) => bodega.nombre !== vehicle?.bodega?.nombre
   );
 
   return (
@@ -69,7 +69,7 @@ const UpdateLocationModal: React.FC<UpdateLocationModalProps> = ({
           <strong>Vehículo:</strong> {vehicle.marca} {vehicle.modelo}
         </p>
         <p>
-          <strong>Ubicación Actual:</strong> {vehicle.currentLocation}
+          <strong>Ubicación Actual:</strong> {vehicle?.bodega?.nombre}
         </p>
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>

@@ -9,6 +9,7 @@ interface Garantia {
   vehiculo?: { marca: string; modelo: string; año: number; vin: string };
   cliente?: { nombre_completo: string };
   reclamos?: any[];
+  condiciones?: string;
   vin?: string;
 }
 

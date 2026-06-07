@@ -65,7 +65,7 @@ export const SolicitudesPage = () => {
   const [resolvingId, setResolvingId] = useState<number | null>(null);
   const [respuesta, setRespuesta] = useState("");
 
-  const fetchData = (currentTab: "mis" | "todas") => {
+  const fetchData = (currentTab?: "mis" | "todas") => {
     setLoading(true);
     const endpoint = currentTab === "todas" ? "/solicitudes" : "/solicitudes/mis";
     apiClient.get(endpoint)
@@ -116,7 +116,7 @@ export const SolicitudesPage = () => {
       toast.success(decision === "aprobada" ? "✅ Solicitud aprobada" : "❌ Solicitud rechazada");
       setResolvingId(null);
       setRespuesta("");
-      fetchData();
+      fetchData(tab);
     } catch {
       toast.error("Error al procesar la solicitud.");
     }
@@ -130,7 +130,7 @@ export const SolicitudesPage = () => {
         <h1>Solicitudes</h1>
         <button
           className={styles.newBtn}
-          onClick={() => { setShowForm(!showForm); setTab("nueva"); }}
+          onClick={() => { setShowForm(!showForm); setTab("todas" as "mis" | "todas"); }}
         >
           + Nueva Solicitud
         </button>

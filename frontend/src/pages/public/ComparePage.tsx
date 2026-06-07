@@ -1,3 +1,4 @@
+import { getImageUrl } from "@/utils/imageUrl";
 import { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import { Modal } from "@/components/Modal";
@@ -36,7 +37,7 @@ const VehicleSelector = ({
         <img
           src={
             vehicle.imagenes?.[0]
-              ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}`
+              ? getImageUrl(vehicle.imagenes[0].url)
               : "/placeholder.png"
           }
           alt={`${vehicle.marca} ${vehicle.modelo}`}
@@ -176,7 +177,7 @@ export const ComparePage = () => {
                 <img
                   src={
                     vehicle.imagenes?.[0]
-                      ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}`
+                      ? getImageUrl(vehicle.imagenes[0].url)
                       : "/placeholder.png"
                   }
                   alt={vehicle.modelo}

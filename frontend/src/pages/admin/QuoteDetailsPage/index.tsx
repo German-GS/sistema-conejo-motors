@@ -215,7 +215,7 @@ export const QuoteDetailsPage = () => {
 
   const totalGastos = [quote.gasto_marchamo, quote.gasto_inscripcion, quote.gasto_placas, quote.gasto_otros]
     .reduce((s, v) => s + Number(v || 0), 0);
-  const precioBaseVehiculo = Number(quote.precio_final) - totalGastos;
+  
   // IVA — usa los valores guardados o calcula si son 0 (cotizaciones antiguas)
   const ivaPct   = Number(quote.iva_porcentaje) || 13;
   const ivaMonto = Number(quote.iva_monto) || Math.round(Number(quote.precio_final) * ivaPct / 100);

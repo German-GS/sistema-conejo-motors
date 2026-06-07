@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "conejo-motors"
-  }
+  },
+  "targets": {
+    "conejo-motors": {
+      "hosting": {
+        "main": [
+          "conejo-motors"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

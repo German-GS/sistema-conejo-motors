@@ -84,7 +84,7 @@ const TrackingPage = () => {
       body: [
         ["Vehículo", `${vehicle.marca} ${vehicle.modelo}`],
         ["Color", vehicle.color],
-        ["Año", vehicle.year],
+        ["Año", vehicle?.año],
         ["VIN", vehicle.vin],
         ["Origen", origin],
         ["Destino", destination],
@@ -124,7 +124,7 @@ const TrackingPage = () => {
               <td>{vehicle.marca}</td>
               <td>{vehicle.modelo}</td>
               <td>{vehicle.vin}</td>
-              <td>{vehicle.currentLocation}</td>
+              <td>{vehicle?.bodega?.nombre}</td>
               <td>
                 <button
                   className={styles.actionButton}

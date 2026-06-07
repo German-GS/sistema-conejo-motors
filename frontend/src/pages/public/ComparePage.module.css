@@ -77,25 +77,32 @@
 /* --- Estilos para la tabla de comparación --- */
 .tableContainer {
   margin-bottom: 3rem;
-  overflow-x: auto; /* Para responsividad en móviles */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 .compareTable {
   width: 100%;
+  min-width: 480px;
   border-collapse: collapse;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .compareTable th,
 .compareTable td {
-  padding: 1rem;
+  padding: 0.85rem 1rem;
   text-align: center;
   border-bottom: 1px solid var(--borde-suave);
 }
 
 .compareTable th {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: var(--azul-principal);
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
 }
 
 /* La primera columna (características) */
@@ -103,11 +110,38 @@
   text-align: left;
   font-weight: 600;
   color: var(--texto-secundario);
+  font-size: 0.85rem;
+  min-width: 130px;
+  background: white;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.05);
 }
 
 /* Filas con colores alternos para mejor legibilidad */
 .compareTable tbody tr:nth-child(even) {
   background-color: var(--fondo-tarjeta);
+}
+.compareTable tbody tr:nth-child(even) td:first-child {
+  background-color: var(--fondo-tarjeta);
+}
+
+/* Título y descripción responsive */
+@media (max-width: 768px) {
+  .compareContainer h1 { font-size: 1.6rem; }
+  .compareContainer > p { font-size: 0.95rem; margin-bottom: 2rem; }
+  .selectorsGrid { grid-template-columns: 1fr; }
+  .emptySelector { min-height: 180px; }
+  .compareTable { font-size: 0.85rem; min-width: 420px; }
+  .compareTable th, .compareTable td { padding: 0.65rem 0.75rem; }
+  .compareTable td:first-child { min-width: 110px; }
+}
+
+@media (max-width: 480px) {
+  .compareTable { font-size: 0.8rem; min-width: 360px; }
+  .compareTable th, .compareTable td { padding: 0.55rem 0.6rem; }
+  .compareTable td:first-child { min-width: 95px; }
 }
 
 /* --- Estilos para el Modal de selección --- */
