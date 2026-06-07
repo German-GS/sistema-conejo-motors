@@ -42,6 +42,10 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Cloud Run secrets — nunca subir al repo
+env-vars-full.yaml
+env-vars*.yaml
+
 # temp directory
 .temp
 .tmp
