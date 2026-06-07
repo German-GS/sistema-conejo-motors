@@ -240,3 +240,15 @@
 
 /* Fila de descuento en resumen */
 .discountRow span:last-child { color: #059669; font-weight: 600; }
+
+/* Banner de reserva automática */
+.reservaBanner {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-left: 4px solid #16a34a;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: #166534;
+  line-height: 1.5;
+}

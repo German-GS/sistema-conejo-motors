@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
@@ -20,6 +21,7 @@ const fmtPDF = (value: number) =>
 interface QuoteDetails {
   id: number;
   estado: string;
+  color_solicitado?: string;
   precio_lista: number;
   descuento_monto: number;
   precio_final: number;        // base imponible
@@ -47,9 +49,34 @@ export const QuoteDetailsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [quote, setQuote] = useState<QuoteDetails | null>(null);
+  const [extendiendo, setExtendiendo] = useState(false);
 
   // Detectar contexto: admin o vendedor
   const isAdmin = location.pathname.startsWith("/admin");
+
+  // Rol del usuario
+  const rolActual = (() => {
+    try {
+      const tok = localStorage.getItem("accessToken");
+      if (!tok) return "";
+      const d = jwtDecode<{ rol?: { nombre: string } }>(tok);
+      return d.rol?.nombre ?? "";
+    } catch { return ""; }
+  })();
+
+  const handleExtender = async (dias: number) => {
+    if (!quote) return;
+    setExtendiendo(true);
+    try {
+      const res = await apiClient.patch(`/quotes/${quote.id}/extender`, { dias });
+      setQuote(prev => prev ? { ...prev, fecha_expiracion: res.data.fecha_expiracion } : prev);
+      toast.success(`✅ Reserva extendida ${dias} día(s) más.`);
+    } catch {
+      toast.error("No se pudo extender la reserva.");
+    } finally {
+      setExtendiendo(false);
+    }
+  };
   const billingPath = isAdmin ? "/admin/billing" : "/admin/billing";
 
   useEffect(() => {
@@ -253,13 +280,46 @@ export const QuoteDetailsPage = () => {
           <h4>Vehículo</h4>
           <p>{quote.vehiculo.marca} {quote.vehiculo.modelo} ({quote.vehiculo.año})</p>
           <span>Estado: {quote.vehiculo.estado}</span>
-          {quote.vehiculo.color && <span>Color: {quote.vehiculo.color}</span>}
+          {quote.vehiculo.color && <span>Color disponible: {quote.vehiculo.color}</span>}
+          {quote.color_solicitado && (
+            <span style={{ color: "#7c3aed", fontWeight: 700 }}>
+              🎨 Color solicitado: {quote.color_solicitado}
+            </span>
+          )}
           <span>Combustible: <strong>{quote.tipo_combustible || "Eléctrico"}</strong></span>
         </div>
         <div className={styles.detailCard}>
-          <h4>Validez</h4>
+          <h4>Reserva</h4>
           <p>{fmtFechaLocal(quote.fecha_expiracion)}</p>
-          <span>Estado: {quote.estado}</span>
+          <span>Estado: <strong>{quote.estado}</strong></span>
+          {(() => {
+            const ms = new Date(quote.fecha_expiracion).getTime() - Date.now();
+            const dias = Math.ceil(ms / (1000 * 60 * 60 * 24));
+            if (quote.estado !== 'Borrador' && quote.estado !== 'Enviada') return null;
+            if (dias < 0) return <span style={{ color: "#ef4444", fontWeight: 700 }}>⚠️ Vencida</span>;
+            if (dias === 0) return <span style={{ color: "#f59e0b", fontWeight: 700 }}>⚠️ Vence hoy</span>;
+            return <span style={{ color: dias <= 1 ? "#f59e0b" : "#16a34a", fontWeight: 600 }}>⏳ {dias} día(s) restante(s)</span>;
+          })()}
+          {/* Botón extender — solo admin */}
+          {rolActual === "Administrador" && ['Borrador', 'Enviada'].includes(quote.estado) && (
+            <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+              {[2, 4, 7].map(d => (
+                <button
+                  key={d}
+                  onClick={() => handleExtender(d)}
+                  disabled={extendiendo}
+                  style={{
+                    fontSize: "0.72rem", padding: "3px 10px",
+                    background: "#f0f9ff", border: "1.5px solid #0891b2",
+                    color: "#0369a1", borderRadius: "6px", cursor: "pointer", fontWeight: 700
+                  }}
+                >
+                  +{d}d
+                </button>
+              ))}
+              {extendiendo && <span style={{ fontSize: "0.72rem", color: "#64748b" }}>Guardando...</span>}
+            </div>
+          )}
         </div>
       </div>
 

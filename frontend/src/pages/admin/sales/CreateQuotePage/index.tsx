@@ -48,6 +48,7 @@ export const CreateQuotePage = () => {
   // Extras
   const [regalias, setRegalias] = useState("");
   const [notasCliente, setNotasCliente] = useState("");
+  const [colorSolicitado, setColorSolicitado] = useState("");
 
   // Medio de contacto (solo si no viene de un lead existente)
   const [fuenteLead, setFuenteLead] = useState("Presencial");
@@ -94,7 +95,7 @@ export const CreateQuotePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!vehicle || !cliente.nombre_completo || !cliente.cedula || !fechaExpiracion) {
+    if (!vehicle || !cliente.nombre_completo || !cliente.cedula) {
       toast.error("Por favor, completa todos los campos requeridos.");
       return;
     }
@@ -110,7 +111,8 @@ export const CreateQuotePage = () => {
         descuento_monto: descuentoMonto,
         precio_final: precioFinal,
         iva_porcentaje: ivaPorcentaje,
-        fecha_expiracion: fechaExpiracion,
+        color_solicitado: colorSolicitado || undefined,
+        // fecha_expiracion omitida → backend calcula automáticamente hoy + 4 días
         gasto_marchamo: gastoMarchamo,
         gasto_inscripcion: gastoInscripcion,
         gasto_placas: gastoPlacas,
@@ -263,10 +265,11 @@ export const CreateQuotePage = () => {
             <label>💰 Total al cliente con IVA</label>
             <input type="text" value={fmtCRC(totalConIva)} readOnly />
           </div>
-          <div className={styles.field}>
-            <label>Válida Hasta *</label>
-            <input type="date" value={fechaExpiracion}
-              onChange={(e) => setFechaExpiracion(e.target.value)} required />
+          <div className={`${styles.field} ${styles.fullWidth}`}>
+            <div className={styles.reservaBanner}>
+              🔒 Al crear esta cotización el vehículo quedará <strong>reservado automáticamente por 4 días</strong>.
+              Si no se concreta, se liberará solo. Un administrador puede extender el plazo.
+            </div>
           </div>
         </div>
       </Card>
@@ -301,6 +304,22 @@ export const CreateQuotePage = () => {
             <label>Descripción de Otros Gastos</label>
             <input type="text" placeholder="Ej: Transporte, seguro de entrega..."
               value={gastoOtrosDesc} onChange={(e) => setGastoOtrosDesc(e.target.value)} />
+          </div>
+        </div>
+      </Card>
+
+      {/* Color solicitado */}
+      <Card title="🎨 Preferencia de Color">
+        <div className={styles.formGrid}>
+          <div className={`${styles.field} ${styles.fullWidth}`}>
+            <label>Color preferido por el cliente</label>
+            <input
+              type="text"
+              placeholder="Ej: Blanco perla, Azul marino, Negro azabache..."
+              value={colorSolicitado}
+              onChange={(e) => setColorSolicitado(e.target.value)}
+            />
+            <span className={styles.fieldHint}>Sujeto a disponibilidad. Se incluirá en la cotización.</span>
           </div>
         </div>
       </Card>

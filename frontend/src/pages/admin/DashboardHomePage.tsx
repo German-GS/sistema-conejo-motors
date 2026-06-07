@@ -19,6 +19,13 @@ interface BasicStats {
   salesBySellerData: { name: string; ventas: number }[];
 }
 
+interface AlertaVencimiento {
+  id: number; cliente: string; vehiculo: string; fecha_expiracion: string; horasRestantes: number;
+}
+interface AlertasReserva {
+  vencenHoy: number; vencenManana: number; lista: AlertaVencimiento[];
+}
+
 interface ExtendedStats {
   inventario: { disponibles: number; reservados: number; vendidosMes: number; ingresosVehiculosMes: number };
   leads: { activos: number; cerradosMes: number; perdidosMes: number; hoy: number };
@@ -55,19 +62,22 @@ export const DashboardHomePage = () => {
   const [basic, setBasic]       = useState<BasicStats | null>(null);
   const [extended, setExtended] = useState<ExtendedStats | null>(null);
   const [conectados, setConectados] = useState<Conectado[]>([]);
+  const [alertas, setAlertas]   = useState<AlertasReserva | null>(null);
   const [loading, setLoading]   = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   const fetchAll = useCallback(async () => {
     try {
-      const [b, e, c] = await Promise.all([
+      const [b, e, c, a] = await Promise.all([
         apiClient.get("/vehicles/dashboard/stats"),
         apiClient.get("/vehicles/dashboard/extended"),
         apiClient.get("/asistencia/conectados-hoy"),
+        apiClient.get("/quotes/alertas/vencimiento"),
       ]);
       setBasic(b.data);
       setExtended(e.data);
       setConectados(Array.isArray(c.data) ? c.data : []);
+      setAlertas(a.data);
       setLastUpdate(new Date());
     } catch {
       // silencioso — no rompe la UI
@@ -115,6 +125,34 @@ export const DashboardHomePage = () => {
           </button>
         </div>
       </div>
+
+      {/* ── Alertas de reservas próximas a vencer ────────────────────────── */}
+      {alertas && (alertas.vencenHoy > 0 || alertas.vencenManana > 0) && (
+        <div className={styles.alertaReservas}>
+          <div className={styles.alertaHeader}>
+            <span className={styles.alertaIcon}>⏰</span>
+            <div>
+              <strong>Reservas próximas a vencer</strong>
+              <span className={styles.alertaSub}>
+                {alertas.vencenHoy > 0 && <span className={styles.alertaRed}>{alertas.vencenHoy} vence hoy</span>}
+                {alertas.vencenHoy > 0 && alertas.vencenManana > 0 && " · "}
+                {alertas.vencenManana > 0 && <span className={styles.alertaAmber}>{alertas.vencenManana} vence mañana</span>}
+              </span>
+            </div>
+          </div>
+          <div className={styles.alertaLista}>
+            {alertas.lista.map(a => (
+              <div key={a.id} className={styles.alertaItem} onClick={() => navigate(`/admin/sales/quotes/${a.id}`)}>
+                <span className={styles.alertaVehiculo}>{a.vehiculo}</span>
+                <span className={styles.alertaCliente}>👤 {a.cliente}</span>
+                <span className={a.horasRestantes <= 24 ? styles.alertaHorasRed : styles.alertaHorasAmber}>
+                  {a.horasRestantes <= 0 ? "⚠️ Vencida" : `⏳ ${a.horasRestantes}h restantes`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── KPIs fila 1 — inventario + ventas ────────────────────────────── */}
       <div className={styles.kpiRow}>

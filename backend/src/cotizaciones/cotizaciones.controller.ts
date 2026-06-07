@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -25,14 +26,19 @@ export class CotizacionesController {
     return this.cotizacionesService.findAll();
   }
 
-  // 👇 RUTA ESPECÍFICA PRIMERO 👇
+  /** Alertas de cotizaciones próximas a vencer (24-48 h) — para dashboard */
+  @Get('alertas/vencimiento')
+  @Roles('Vendedor', 'Administrador')
+  getAlertas() {
+    return this.cotizacionesService.getAlertasVencimiento();
+  }
+
   @Get('my')
   @Roles('Vendedor', 'Administrador')
   findMyQuotes(@Request() req) {
     return this.cotizacionesService.findMyQuotes(req.user);
   }
 
-  // 👇 RUTA CON PARÁMETRO DESPUÉS 👇
   @Get(':id')
   @Roles('Vendedor', 'Administrador')
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -43,5 +49,15 @@ export class CotizacionesController {
   @Roles('Vendedor', 'Administrador')
   create(@Body() createDto: CreateCotizacionDto, @Request() req) {
     return this.cotizacionesService.create(createDto, req.user);
+  }
+
+  /** Admin: extiende la reserva de una cotización por N días */
+  @Patch(':id/extender')
+  @Roles('Administrador')
+  extender(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { dias: number },
+  ) {
+    return this.cotizacionesService.extenderReserva(id, body.dias ?? 4);
   }
 }

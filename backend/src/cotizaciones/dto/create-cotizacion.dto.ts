@@ -14,7 +14,11 @@ export class CreateCotizacionDto {
   /** Porcentaje de IVA (default 13). 0 si el producto está exento. */
   iva_porcentaje?: number;
 
-  fecha_expiracion: Date;
+  /** Opcional: si no se envía se calcula automáticamente como hoy + 4 días */
+  fecha_expiracion?: Date;
+
+  /** Color preferido del cliente */
+  color_solicitado?: string;
 
   // Gastos de inscripción
   gasto_marchamo?: number;

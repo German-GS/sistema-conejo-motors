@@ -88,6 +88,10 @@ export class Cotizacion {
   notas_cliente: string;
 
 
+  /** Color solicitado por el cliente */
+  @Column({ length: 100, nullable: true })
+  color_solicitado: string;
+
   /** Tipo de combustible del vehículo (requerido por algunos bancos) */
   @Column({ length: 50, default: 'Electrico' })
   tipo_combustible: string;
