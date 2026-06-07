@@ -51,6 +51,16 @@ export class CotizacionesController {
     return this.cotizacionesService.create(createDto, req.user);
   }
 
+  /** Cancela una cotización activa y libera el vehículo (admin y vendedor) */
+  @Patch(':id/cancelar')
+  @Roles('Vendedor', 'Administrador')
+  cancelar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { motivo: string },
+  ) {
+    return this.cotizacionesService.cancelarCotizacion(id, body.motivo ?? '');
+  }
+
   /** Admin: extiende la reserva de una cotización por N días */
   @Patch(':id/extender')
   @Roles('Administrador')

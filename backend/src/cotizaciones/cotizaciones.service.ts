@@ -90,6 +90,30 @@ export class CotizacionesService {
     };
   }
 
+  /** Cancela una cotización (admin o vendedor) y libera el vehículo si estaba Reservado */
+  async cancelarCotizacion(id: number, motivo: string): Promise<Cotizacion> {
+    const cotizacion = await this.findOne(id);
+    if (!['Borrador', 'Enviada'].includes(cotizacion.estado)) {
+      throw new NotFoundException(`Solo se pueden cancelar cotizaciones activas (Borrador o Enviada).`);
+    }
+
+    // Cancelar cotización
+    await this.cotizacionesRepository.update(id, {
+      estado: 'Cancelada',
+      motivo_cancelacion: motivo ?? '',
+    });
+
+    // Liberar vehículo si sigue Reservado
+    if (cotizacion.vehiculo?.id) {
+      const vehiculo = await this.vehiclesRepository.findOneBy({ id: cotizacion.vehiculo.id });
+      if (vehiculo?.estado === 'Reservado') {
+        await this.vehiclesRepository.update(vehiculo.id, { estado: 'Disponible' });
+      }
+    }
+
+    return this.findOne(id);
+  }
+
   /** Admin: extiende la fecha de expiración de una cotización */
   async extenderReserva(id: number, diasExtra: number): Promise<Cotizacion> {
     const cotizacion = await this.findOne(id);

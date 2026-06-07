@@ -42,6 +42,7 @@ interface QuoteDetails {
   vehiculo: { id: number; marca: string; modelo: string; año: number; estado: string; color?: string; autonomia_km?: number; potencia_hp?: number };
   vendedor?: { nombre_completo: string };
   lead?: { id: number } | null;
+  motivo_cancelacion?: string;
 }
 
 export const QuoteDetailsPage = () => {
@@ -50,6 +51,9 @@ export const QuoteDetailsPage = () => {
   const location = useLocation();
   const [quote, setQuote] = useState<QuoteDetails | null>(null);
   const [extendiendo, setExtendiendo] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [motivoCancel, setMotivoCancel] = useState("");
+  const [cancelando, setCancelando] = useState(false);
 
   // Detectar contexto: admin o vendedor
   const isAdmin = location.pathname.startsWith("/admin");
@@ -77,6 +81,24 @@ export const QuoteDetailsPage = () => {
       setExtendiendo(false);
     }
   };
+  const handleCancelarDesdeDetalle = async () => {
+    if (!quote || !motivoCancel.trim()) { toast.error("Por favor ingresa un motivo."); return; }
+    setCancelando(true);
+    try {
+      await apiClient.patch(`/quotes/${quote.id}/cancelar`, { motivo: motivoCancel });
+      toast.success("Cotización cancelada y vehículo liberado.");
+      setShowCancelModal(false);
+      setMotivoCancel("");
+      // Recargar la cotización actualizada
+      const res = await apiClient.get(`/quotes/${quote.id}`);
+      setQuote(res.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error al cancelar.");
+    } finally {
+      setCancelando(false);
+    }
+  };
+
   const billingPath = isAdmin ? "/admin/billing" : "/admin/billing";
 
   useEffect(() => {
@@ -260,6 +282,23 @@ export const QuoteDetailsPage = () => {
           <button className="btn btn-secondary" onClick={handleDownloadPDF}>
             📄 Descargar Proforma PDF
           </button>
+          {(quote.estado === "Borrador" || quote.estado === "Enviada") && (
+            <button
+              onClick={() => setShowCancelModal(true)}
+              style={{
+                padding: "0.5rem 1rem",
+                background: "#fef2f2",
+                color: "#dc2626",
+                border: "1.5px solid #fecaca",
+                borderRadius: "8px",
+                fontWeight: 700,
+                fontSize: "0.88rem",
+                cursor: "pointer",
+              }}
+            >
+              🚫 Cancelar cotización
+            </button>
+          )}
           {puedeFacturar && (
             <button className="btn btn-principal" onClick={handleIrAFacturar}
               title="Ir a facturación para completar la venta con IVA y datos de factura">
@@ -373,9 +412,100 @@ export const QuoteDetailsPage = () => {
           <strong>📝 Notas:</strong> {quote.notas_cliente}
         </div>
       )}
+      {quote.estado === "Cancelada" && quote.motivo_cancelacion && (
+        <div style={{
+          background: "#fef2f2", border: "1px solid #fecaca",
+          borderLeft: "4px solid #dc2626", borderRadius: "10px",
+          padding: "1rem 1.25rem", marginTop: "1rem",
+        }}>
+          <strong style={{ color: "#dc2626" }}>🚫 Motivo de cancelación:</strong>
+          <p style={{ margin: "0.35rem 0 0", color: "#7f1d1d", fontSize: "0.92rem" }}>
+            {quote.motivo_cancelacion}
+          </p>
+        </div>
+      )}
 
       {quote.vehiculo.estado !== "Disponible" && (
         <p className={styles.warning}>Este vehículo ya no está disponible para la venta.</p>
+      )}
+
+      {/* ── Modal cancelar ── */}
+      {showCancelModal && (
+        <div
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000, padding: "1rem",
+          }}
+          onClick={() => { setShowCancelModal(false); setMotivoCancel(""); }}
+        >
+          <div
+            style={{
+              background: "white", borderRadius: "16px", padding: "1.75rem",
+              width: "100%", maxWidth: "480px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.85rem", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "1.75rem" }}>🚫</span>
+              <div>
+                <strong style={{ display: "block", fontSize: "1rem", color: "#0a2540" }}>
+                  Cancelar Cotización #{quote.id}
+                </strong>
+                <p style={{ margin: "3px 0 0", fontSize: "0.82rem", color: "#64748b" }}>
+                  {quote.cliente.nombre_completo} — {quote.vehiculo.marca} {quote.vehiculo.modelo}
+                </p>
+              </div>
+            </div>
+            <div style={{
+              background: "#fff7ed", border: "1px solid #fed7aa",
+              borderLeft: "4px solid #f97316", borderRadius: "8px",
+              padding: "0.65rem 1rem", fontSize: "0.85rem", color: "#9a3412", marginBottom: "1rem",
+            }}>
+              ⚠️ Al cancelar, el vehículo quedará <strong>disponible</strong> nuevamente.
+            </div>
+            <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#475569", marginBottom: "0.4rem" }}>
+              Motivo de cancelación *
+            </label>
+            <textarea
+              rows={4}
+              placeholder="Ej: El cliente desistió de la compra, no calificó para financiamiento..."
+              value={motivoCancel}
+              onChange={(e) => setMotivoCancel(e.target.value)}
+              autoFocus
+              style={{
+                width: "100%", border: "1.5px solid #cbd5e1", borderRadius: "8px",
+                padding: "0.65rem 0.8rem", fontSize: "0.9rem", fontFamily: "inherit",
+                resize: "vertical", boxSizing: "border-box",
+              }}
+            />
+            <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.25rem", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => { setShowCancelModal(false); setMotivoCancel(""); }}
+                disabled={cancelando}
+                style={{
+                  padding: "0.55rem 1.1rem", background: "white",
+                  border: "1.5px solid #e2e8f0", borderRadius: "8px",
+                  fontSize: "0.88rem", fontWeight: 600, color: "#475569", cursor: "pointer",
+                }}
+              >
+                No, mantener
+              </button>
+              <button
+                onClick={handleCancelarDesdeDetalle}
+                disabled={cancelando || !motivoCancel.trim()}
+                style={{
+                  padding: "0.55rem 1.25rem", background: "#dc2626", color: "white",
+                  border: "none", borderRadius: "8px", fontSize: "0.88rem",
+                  fontWeight: 700, cursor: "pointer", opacity: (cancelando || !motivoCancel.trim()) ? 0.5 : 1,
+                }}
+              >
+                {cancelando ? "Cancelando..." : "Sí, cancelar cotización"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

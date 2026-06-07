@@ -4,6 +4,7 @@ import apiClient from "@/api/apiClient";
 import styles from "./MyQuotesPage.module.css";
 import { Pagination } from "@/components/Pagination";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
+import toast from "react-hot-toast";
 
 interface Quote {
   id: number;
@@ -33,7 +34,15 @@ const ESTADO_COLORS: Record<string, string> = {
   Aceptada:   "#10b981",
   Rechazada:  "#ef4444",
   Facturada:  "#8b5cf6",
+  Cancelada:  "#dc2626",
 };
+
+/** Modal de cancelación */
+interface CancelModal {
+  quoteId: number;
+  cliente: string;
+  vehiculo: string;
+}
 
 export const MyQuotesPage = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -43,19 +52,43 @@ export const MyQuotesPage = () => {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 12;
 
+  // Modal de cancelación
+  const [cancelModal, setCancelModal] = useState<CancelModal | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [cancelando, setCancelando] = useState(false);
+
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
   const basePath = isAdmin ? "/admin/sales" : "/sales";
   // Admin ve TODAS las cotizaciones, vendedor solo las suyas
   const endpoint = isAdmin ? "/quotes" : "/quotes/my";
 
-  useEffect(() => {
+  const loadQuotes = () => {
     setLoading(true);
     apiClient.get(endpoint)
       .then((res) => setQuotes(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [endpoint]);
+  };
+
+  useEffect(() => { loadQuotes(); }, [endpoint]);
+
+  const handleCancelar = async () => {
+    if (!cancelModal) return;
+    if (!motivo.trim()) { toast.error("Por favor ingresa un motivo de cancelación."); return; }
+    setCancelando(true);
+    try {
+      await apiClient.patch(`/quotes/${cancelModal.quoteId}/cancelar`, { motivo });
+      toast.success("Cotización cancelada y vehículo liberado.");
+      setCancelModal(null);
+      setMotivo("");
+      loadQuotes();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error al cancelar la cotización.");
+    } finally {
+      setCancelando(false);
+    }
+  };
 
   const countByEstado = useMemo(() => quotes.reduce((acc, q) => {
     acc[q.estado] = (acc[q.estado] ?? 0) + 1;
@@ -99,7 +132,7 @@ export const MyQuotesPage = () => {
           <span className={styles.kpiNum}>{quotes.length}</span>
           <span className={styles.kpiLabel}>Todas</span>
         </button>
-        {["Borrador", "Enviada", "Aceptada", "Rechazada", "Facturada"].map(e => (
+        {["Borrador", "Enviada", "Aceptada", "Rechazada", "Facturada", "Cancelada"].map(e => (
           <button
             key={e}
             className={`${styles.kpi} ${filterEstado === e ? styles.kpiActive : ""}`}
@@ -222,10 +255,23 @@ export const MyQuotesPage = () => {
                           {q.estado}
                         </span>
                       </td>
-                      <td>
+                      <td className={styles.actionsCell}>
                         <Link to={`${basePath}/quotes/${q.id}`} className={styles.viewBtn}>
                           Ver →
                         </Link>
+                        {(q.estado === "Borrador" || q.estado === "Enviada") && (
+                          <button
+                            className={styles.cancelBtn}
+                            title="Cancelar cotización"
+                            onClick={() => setCancelModal({
+                              quoteId: q.id,
+                              cliente: q.cliente.nombre_completo,
+                              vehiculo: `${q.vehiculo?.marca ?? ""} ${q.vehiculo?.modelo ?? ""} (${q.vehiculo?.año ?? ""})`,
+                            })}
+                          >
+                            ✕
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -240,6 +286,49 @@ export const MyQuotesPage = () => {
             totalItems={filtered.length}
           />
         </>
+      )}
+
+      {/* ── Modal cancelar cotización ── */}
+      {cancelModal && (
+        <div className={styles.modalOverlay} onClick={() => { setCancelModal(null); setMotivo(""); }}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalIcon}>🚫</span>
+              <div>
+                <strong>Cancelar Cotización #{cancelModal.quoteId}</strong>
+                <p className={styles.modalSub}>{cancelModal.cliente} — {cancelModal.vehiculo}</p>
+              </div>
+            </div>
+            <p className={styles.modalWarning}>
+              ⚠️ Al cancelar, el vehículo quedará <strong>disponible</strong> nuevamente.
+            </p>
+            <label className={styles.modalLabel}>Motivo de cancelación *</label>
+            <textarea
+              className={styles.modalTextarea}
+              rows={4}
+              placeholder="Ej: El cliente desistió de la compra, encontró otro vehículo, no calificó para financiamiento..."
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              autoFocus
+            />
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancel}
+                onClick={() => { setCancelModal(null); setMotivo(""); }}
+                disabled={cancelando}
+              >
+                No, mantener
+              </button>
+              <button
+                className={styles.modalConfirm}
+                onClick={handleCancelar}
+                disabled={cancelando || !motivo.trim()}
+              >
+                {cancelando ? "Cancelando..." : "Sí, cancelar cotización"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

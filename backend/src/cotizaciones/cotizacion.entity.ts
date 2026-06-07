@@ -92,6 +92,10 @@ export class Cotizacion {
   @Column({ length: 100, nullable: true })
   color_solicitado: string;
 
+  /** Motivo de cancelación (libre, ingresado por quien cancela) */
+  @Column({ type: 'text', nullable: true })
+  motivo_cancelacion: string;
+
   /** Tipo de combustible del vehículo (requerido por algunos bancos) */
   @Column({ length: 50, nullable: true, default: 'Electrico' })
   tipo_combustible: string;
