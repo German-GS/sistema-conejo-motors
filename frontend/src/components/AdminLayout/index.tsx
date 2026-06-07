@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import styles from "./AdminLayout.module.css";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
@@ -33,6 +33,9 @@ import {
   LuShield,
   LuBanknote,
   LuShip,
+  LuChevronDown,
+  LuMenu,
+  LuX,
 } from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -44,14 +47,97 @@ interface Notification {
   link: string;
 }
 
+// Secciones del menú con sus rutas para detectar cuál abrir automáticamente
+const SECTION_ROUTES: Record<string, string[]> = {
+  ventas:       ["/admin/sales", "/admin/leads", "/admin/agenda"],
+  inventario:   ["/admin/inventory", "/admin/pricing", "/admin/accesorios", "/admin/importaciones", "/admin/import"],
+  rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
+  repuestos:    ["/admin/productos"],
+  compras:      ["/admin/proveedores", "/admin/gastos"],
+  finanzas:     ["/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria"],
+  contabilidad: ["/admin/contabilidad"],
+  postventa:    ["/admin/taller", "/admin/garantias"],
+  operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
+};
+
+const STORAGE_KEY = "adminSidebarSections";
+
+const getDefaultSections = (pathname: string): Set<string> => {
+  // Si hay estado guardado, usarlo
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return new Set(JSON.parse(saved));
+  } catch { /* ignorar */ }
+
+  // Si no, abrir la sección que contiene la ruta actual
+  for (const [section, routes] of Object.entries(SECTION_ROUTES)) {
+    if (routes.some(r => pathname.startsWith(r))) {
+      return new Set([section]);
+    }
+  }
+  // Por defecto: ventas e inventario abiertas
+  return new Set(["ventas", "inventario"]);
+};
+
 export const AdminLayout = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userRole, setUserRole] = useState("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [overdueLeads, setOverdueLeads] = useState(0);
+  const [openSections, setOpenSections] = useState<Set<string>>(() =>
+    getDefaultSections(window.location.pathname)
+  );
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detectar tablet/móvil
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1024px)");
+    setIsTablet(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTablet(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Cerrar sidebar al navegar en tablet
+  useEffect(() => {
+    if (isTablet) setMobileOpen(false);
+  }, [location.pathname, isTablet]);
+
+  const toggleSection = useCallback((section: string) => {
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
+      // Persistir en localStorage
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch { /* ignorar */ }
+      return next;
+    });
+  }, []);
+
+  // Al cambiar de ruta, asegurar que la sección activa esté abierta
+  useEffect(() => {
+    for (const [section, routes] of Object.entries(SECTION_ROUTES)) {
+      if (routes.some(r => location.pathname.startsWith(r))) {
+        setOpenSections(prev => {
+          if (prev.has(section)) return prev;
+          const next = new Set(prev);
+          next.add(section);
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch { /* ignorar */ }
+          return next;
+        });
+        break;
+      }
+    }
+  }, [location.pathname]);
+
+  // En tablet siempre mostrar etiquetas (isCollapsed no aplica en móvil/tablet)
+  const showLabels = isTablet ? true : !isCollapsed;
+  const isOpen = (section: string) => (isCollapsed && !isTablet) || openSections.has(section);
 
   const fetchNotifications = async () => {
     try {
@@ -70,14 +156,12 @@ export const AdminLayout = () => {
       setUserEmail(decodedToken.email);
       setUserRole(decodedToken.rol?.nombre || "");
 
-      // Notificaciones solo para admin
       if (decodedToken.rol?.nombre === "Administrador") {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
       }
 
-      // Follow-ups vencidos para todos los roles con acceso a leads
       const fetchOverdue = () => {
         apiClient.get("/leads/followup/overdue-count")
           .then((res) => setOverdueLeads(res.data.count))
@@ -95,204 +179,206 @@ export const AdminLayout = () => {
   };
 
   const handleNotificationClick = async (notification: Notification) => {
-    setShowNotifications(false); // Cierra el dropdown primero
+    setShowNotifications(false);
     try {
-      // Marca como leída en el backend
       await apiClient.patch(`/notifications/${notification.id}/read`);
-      // Actualiza el estado local para que desaparezca inmediatamente
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
-      // Navega al enlace de la notificación
       navigate(notification.link);
     } catch (error) {
       console.error("Error al marcar la notificación como leída", error);
     }
   };
 
+  // Helper: renderiza un encabezado de sección colapsable
+  const SectionHeader = ({ id, label }: { id: string; label: string }) => (
+    <button
+      className={`${styles.sectionLabel} ${openSections.has(id) ? styles.sectionOpen : ""}`}
+      onClick={() => toggleSection(id)}
+      title={!showLabels ? label : undefined}
+    >
+      {showLabels && <span>{label}</span>}
+      {showLabels && (
+        <LuChevronDown
+          size={12}
+          className={`${styles.chevron} ${openSections.has(id) ? styles.chevronOpen : ""}`}
+        />
+      )}
+    </button>
+  );
+
+  // Helper: NavLink con estilos activos
+  const SidebarLink = ({
+    to,
+    icon,
+    label,
+    badge,
+  }: {
+    to: string;
+    icon: React.ReactNode;
+    label: string;
+    badge?: number;
+  }) => (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
+      }
+      title={!showLabels ? label : undefined}
+    >
+      {icon}
+      {showLabels && <span className={styles.linkText}>{label}</span>}
+      {badge && badge > 0 && (
+        <span className={styles.menuBadge} title={`${badge} follow-up(s) vencidos`}>
+          {badge}
+        </span>
+      )}
+    </NavLink>
+  );
+
   return (
     <div className={styles.layout}>
+      {/* Backdrop para tablet */}
+      {isTablet && mobileOpen && (
+        <div className={styles.backdrop} onClick={() => setMobileOpen(false)} />
+      )}
+
       <aside
-        className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
-        onMouseEnter={() => setIsCollapsed(false)}
-        onMouseLeave={() => setIsCollapsed(true)}
+        className={`${styles.sidebar} ${(isCollapsed && !isTablet) ? styles.collapsed : ""} ${isTablet && mobileOpen ? styles.mobileOpen : ""}`}
+        onMouseEnter={() => { if (!isTablet) setIsCollapsed(false); }}
+        onMouseLeave={() => { if (!isTablet) setIsCollapsed(true); }}
       >
+        {/* Logo */}
         <div className={styles.logoContainer}>
           <img src={conejoLogo} alt="Logo" className={styles.logoImage} />
-          {!isCollapsed && (
-            <span className={styles.logoText}>CONEJO MOTORS</span>
-          )}
+          {showLabels && <span className={styles.logoText}>CONEJO MOTORS</span>}
         </div>
 
+        {/* Usuario */}
         <div className={styles.userInfo}>
-          {!isCollapsed && <span>{userEmail}</span>}
+          {showLabels && <span>{userEmail}</span>}
         </div>
 
+        {/* Nav scrollable */}
         <nav className={styles.nav}>
           {/* Dashboard */}
-          <Link to="/admin">
-            <LuLayoutDashboard size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Dashboard</span>}
-          </Link>
+          <SidebarLink to="/admin" icon={<LuLayoutDashboard size={18} />} label="Dashboard" />
 
           {/* ── VENTAS ── */}
-          <div className={styles.sectionLabel}>Ventas</div>
-          <Link to="/admin/sales/catalog">
-            <LuBookMarked size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Catálogo</span>}
-          </Link>
-          <Link to="/admin/sales/quotes">
-            <LuFileText size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Cotizaciones</span>}
-          </Link>
-          <Link to="/admin/leads">
-            <LuUserCheck size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Leads / CRM</span>}
-            {overdueLeads > 0 && (
-              <span className={styles.menuBadge} title={`${overdueLeads} follow-up(s) vencidos`}>
-                {overdueLeads}
-              </span>
-            )}
-          </Link>
-          <Link to="/admin/agenda">
-            <LuCalendarDays size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Agenda</span>}
-          </Link>
+          <SectionHeader id="ventas" label="VENTAS" />
+          {isOpen("ventas") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/sales/catalog" icon={<LuBookMarked size={18} />} label="Catálogo" />
+              <SidebarLink to="/admin/sales/quotes" icon={<LuFileText size={18} />} label="Cotizaciones" />
+              <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" badge={overdueLeads} />
+              <SidebarLink to="/admin/agenda" icon={<LuCalendarDays size={18} />} label="Agenda" />
+            </div>
+          )}
 
           {/* ── INVENTARIO ── */}
-          <div className={styles.sectionLabel}>Inventario</div>
-          <Link to="/admin/inventory">
-            <LuCar size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Vehículos</span>}
-          </Link>
-          <Link to="/admin/pricing">
-            <LuTag size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Precios</span>}
-          </Link>
-          <Link to="/admin/accesorios">
-            <LuPackage size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Accesorios</span>}
-          </Link>
-          <Link to="/admin/importaciones">
-            <LuShip size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Importaciones</span>}
-          </Link>
-          <Link to="/admin/import">
-            <LuUpload size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Importar Excel</span>}
-          </Link>
+          <SectionHeader id="inventario" label="INVENTARIO" />
+          {isOpen("inventario") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/inventory" icon={<LuCar size={18} />} label="Vehículos" />
+              <SidebarLink to="/admin/pricing" icon={<LuTag size={18} />} label="Precios" />
+              <SidebarLink to="/admin/accesorios" icon={<LuPackage size={18} />} label="Accesorios" />
+              <SidebarLink to="/admin/importaciones" icon={<LuShip size={18} />} label="Importaciones" />
+              <SidebarLink to="/admin/import" icon={<LuUpload size={18} />} label="Importar Excel" />
+            </div>
+          )}
 
           {/* ── RRHH ── */}
-          <div className={styles.sectionLabel}>RRHH</div>
-          <Link to="/admin/users">
-            <LuUsers size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Colaboradores</span>}
-          </Link>
-          <Link to="/admin/planilla">
-            <LuFileText size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Planilla</span>}
-          </Link>
-          <Link to="/admin/asistencia">
-            <LuCalendarClock size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Asistencia</span>}
-          </Link>
-          <Link to="/admin/solicitudes">
-            <LuFileText size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Solicitudes</span>}
-          </Link>
+          <SectionHeader id="rrhh" label="RRHH" />
+          {isOpen("rrhh") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/users" icon={<LuUsers size={18} />} label="Colaboradores" />
+              <SidebarLink to="/admin/planilla" icon={<LuFileText size={18} />} label="Planilla" />
+              <SidebarLink to="/admin/asistencia" icon={<LuCalendarClock size={18} />} label="Asistencia" />
+              <SidebarLink to="/admin/solicitudes" icon={<LuFileText size={18} />} label="Solicitudes" />
+            </div>
+          )}
 
-          {/* ── PRODUCTOS ── */}
-          <div className={styles.sectionLabel}>Repuestos</div>
-          <Link to="/admin/productos">
-            <LuShoppingCart size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Repuestos & Accesorios</span>}
-          </Link>
+          {/* ── REPUESTOS ── */}
+          <SectionHeader id="repuestos" label="REPUESTOS" />
+          {isOpen("repuestos") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/productos" icon={<LuShoppingCart size={18} />} label="Repuestos & Accesorios" />
+            </div>
+          )}
 
           {/* ── COMPRAS ── */}
-          <div className={styles.sectionLabel}>Compras</div>
-          <Link to="/admin/proveedores">
-            <LuBuilding2 size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Proveedores</span>}
-          </Link>
-          <Link to="/admin/gastos">
-            <LuReceiptText size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Gastos</span>}
-          </Link>
+          <SectionHeader id="compras" label="COMPRAS" />
+          {isOpen("compras") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/proveedores" icon={<LuBuilding2 size={18} />} label="Proveedores" />
+              <SidebarLink to="/admin/gastos" icon={<LuReceiptText size={18} />} label="Gastos" />
+            </div>
+          )}
 
           {/* ── FINANZAS ── */}
-          <div className={styles.sectionLabel}>Finanzas</div>
-          <Link to="/admin/cxc">
-            <LuTrendingUp size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Cuentas x Cobrar</span>}
-          </Link>
-          <Link to="/admin/cxp">
-            <LuTrendingDown size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Cuentas x Pagar</span>}
-          </Link>
-          <Link to="/admin/caja-chica">
-            <LuWallet size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Caja Chica</span>}
-          </Link>
-          <Link to="/admin/tesoreria">
-            <LuBanknote size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Tesorería</span>}
-          </Link>
+          <SectionHeader id="finanzas" label="FINANZAS" />
+          {isOpen("finanzas") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/cxc" icon={<LuTrendingUp size={18} />} label="Cuentas x Cobrar" />
+              <SidebarLink to="/admin/cxp" icon={<LuTrendingDown size={18} />} label="Cuentas x Pagar" />
+              <SidebarLink to="/admin/caja-chica" icon={<LuWallet size={18} />} label="Caja Chica" />
+              <SidebarLink to="/admin/tesoreria" icon={<LuBanknote size={18} />} label="Tesorería" />
+            </div>
+          )}
 
           {/* ── CONTABILIDAD ── */}
-          <div className={styles.sectionLabel}>Contabilidad</div>
-          <Link to="/admin/contabilidad">
-            <LuCalculator size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Contabilidad</span>}
-          </Link>
+          <SectionHeader id="contabilidad" label="CONTABILIDAD" />
+          {isOpen("contabilidad") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
+            </div>
+          )}
 
           {/* ── POSTVENTA ── */}
-          <div className={styles.sectionLabel}>Postventa</div>
-          <Link to="/admin/taller">
-            <LuWrench size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Taller</span>}
-          </Link>
-          <Link to="/admin/garantias">
-            <LuShield size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Garantías</span>}
-          </Link>
+          <SectionHeader id="postventa" label="POSTVENTA" />
+          {isOpen("postventa") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/taller" icon={<LuWrench size={18} />} label="Taller" />
+              <SidebarLink to="/admin/garantias" icon={<LuShield size={18} />} label="Garantías" />
+            </div>
+          )}
 
           {/* ── OPERACIONES ── */}
-          <div className={styles.sectionLabel}>Operaciones</div>
-          <Link to="/admin/bodegas">
-            <LuWarehouse size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Bodegas</span>}
-          </Link>
-          <Link to="/admin/billing">
-            <LuReceipt size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Facturación</span>}
-          </Link>
-          <Link to="/admin/tracking">
-            <LuMapPin size={18} />
-            {!isCollapsed && <span className={styles.linkText}>Rastreo</span>}
-          </Link>
-
-          {/* ── SISTEMA (solo admin) ── */}
-          {userRole === "Administrador" && (
-            <>
-              <div className={styles.sectionLabel}>Sistema</div>
-              <Link to="/admin/reports">
-                <LuChartColumnStacked size={18} />
-                {!isCollapsed && <span className={styles.linkText}>Informes</span>}
-              </Link>
-              <Link to="/admin/settings">
-                <LuSettings size={18} />
-                {!isCollapsed && <span className={styles.linkText}>Configuración</span>}
-              </Link>
-            </>
+          <SectionHeader id="operaciones" label="OPERACIONES" />
+          {isOpen("operaciones") && (
+            <div className={styles.sectionItems}>
+              <SidebarLink to="/admin/bodegas" icon={<LuWarehouse size={18} />} label="Bodegas" />
+              <SidebarLink to="/admin/billing" icon={<LuReceipt size={18} />} label="Facturación" />
+              <SidebarLink to="/admin/tracking" icon={<LuMapPin size={18} />} label="Rastreo" />
+            </div>
           )}
         </nav>
+
+        {/* ── SISTEMA — fijo al fondo (solo admin) ── */}
+        {userRole === "Administrador" && (
+          <div className={styles.sidebarBottom}>
+            <div className={styles.sectionLabelStatic}>
+              {showLabels && <span>SISTEMA</span>}
+            </div>
+            <SidebarLink to="/admin/reports" icon={<LuChartColumnStacked size={18} />} label="Informes" />
+            <SidebarLink to="/admin/settings" icon={<LuSettings size={18} />} label="Configuración" />
+          </div>
+        )}
       </aside>
 
       <div
-        className={`${styles.mainPanel} ${
-          isCollapsed ? styles.mainPanelCollapsed : ""
-        }`}
+        className={`${styles.mainPanel} ${isCollapsed ? styles.mainPanelCollapsed : ""}`}
       >
         <header className={styles.header}>
-          <div className={styles.headerTitle}>Panel de Control</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <button
+              className={styles.hamburger}
+              onClick={() => setMobileOpen(v => !v)}
+              aria-label="Abrir menú"
+            >
+              {mobileOpen ? <LuX size={22} /> : <LuMenu size={22} />}
+            </button>
+            <div className={styles.headerTitle}>Panel de Control</div>
+          </div>
           <div className={styles.headerActions}>
             <ClockWidget />
             {userRole === "Administrador" && (

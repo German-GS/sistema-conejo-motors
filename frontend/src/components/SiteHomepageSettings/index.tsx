@@ -1,6 +1,7 @@
 // src/components/SiteHomepageSettings/index.tsx
 import React, { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
+import { getImageUrl } from "@/utils/imageUrl";
 import toast from "react-hot-toast";
 import styles from "./SiteHomepageSettings.module.css";
 import { Card } from "@/components/Card";
@@ -223,7 +224,7 @@ export const SiteHomepageSettings = () => {
               src={
                 slide.imageUrl.startsWith("blob:")
                   ? slide.imageUrl
-                  : `${apiClient.defaults.baseURL}/${slide.imageUrl}`
+                  : getImageUrl(slide.imageUrl)
               }
               alt={slide.title}
               className={styles.slidePreview}

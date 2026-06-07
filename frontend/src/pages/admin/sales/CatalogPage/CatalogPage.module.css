@@ -195,6 +195,13 @@
 
 .error { color: var(--warning); }
 
+/* ── Tablet responsive ── */
+@media (max-width: 1024px) {
+  .catalogGrid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+  .topBar h1 { font-size: 1.2rem; }
+  .reservadosGrid { grid-template-columns: 1fr; }
+}
+
 /* ── Panel Reservados ───────────────────────────────────────────────────── */
 .reservadosPanel {
   background: #fffbeb;

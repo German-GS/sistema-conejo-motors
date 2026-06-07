@@ -79,6 +79,13 @@
 @media (max-width: 1200px) {
   .kpiRow { grid-template-columns: repeat(2, 1fr); }
 }
+@media (max-width: 768px) {
+  .kpiRow { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+  .kpi { padding: 0.75rem 0.9rem; gap: 0.65rem; }
+  .kpiValue { font-size: 1.2rem; }
+  .welcomeBar { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .welcomeTitle { font-size: 1.25rem; }
+}
 
 .kpi {
   background: white;
@@ -151,6 +158,10 @@
 @media (max-width: 1200px) {
   .bottomGrid { grid-template-columns: 1fr 1fr; }
   .chartPanel { grid-column: 1 / -1; }
+}
+@media (max-width: 768px) {
+  .bottomGrid { grid-template-columns: 1fr; }
+  .chartPanel { grid-column: 1; }
 }
 
 /* ── Panel genérico ─────────────────────────────────────────────────────── */

@@ -1,5 +1,11 @@
 .container { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
 
+@media (max-width: 1024px) {
+  .container { padding: 1rem; }
+  .topBar { flex-wrap: wrap; gap: 0.5rem; }
+  .topActions { flex-wrap: wrap; }
+}
+
 /* Top bar */
 .topBar {
   display: flex;
@@ -173,3 +179,98 @@
 .timelineFecha { font-size: 0.75rem; color: #94a3b8; }
 .timelineDesc { margin: 0; font-size: 0.88rem; color: #334155; line-height: 1.5; }
 .timelineUser { font-size: 0.78rem; color: #94a3b8; margin-top: 4px; display: block; }
+
+/* ── TIPO DE PAGO ── */
+.tipoPagoRow {
+  display: flex; gap: 0.75rem;
+}
+.tipoPagoBtn {
+  flex: 1; padding: 0.6rem 1rem;
+  border: 2px solid #e2e8f0; border-radius: 10px;
+  background: white; cursor: pointer;
+  font-size: 0.9rem; font-weight: 600; color: #64748b;
+  transition: all 0.15s;
+}
+.tipoPagoBtn:hover { border-color: #94a3b8; color: #334155; }
+.tipoPagoActive {
+  border-color: #024f7d !important;
+  background: #eff6ff !important;
+  color: #024f7d !important;
+}
+
+/* ── PANEL FINANCIAMIENTO ── */
+.finPanel {
+  max-width: 1200px;
+  margin: 1.5rem auto 2rem;
+  padding: 0 1.5rem;
+}
+.finTitle {
+  font-size: 1.25rem; color: #024f7d; margin: 0 0 0.25rem;
+}
+.finSubtitle {
+  color: #64748b; font-size: 0.88rem; margin: 0 0 1.5rem;
+}
+.finGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Tarjeta por banco */
+.finCard {
+  background: white; border: 1.5px solid #e2e8f0;
+  border-radius: 14px; padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  transition: box-shadow 0.15s;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.finCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.finCardAprobado { border-color: #86efac; background: #f0fdf4; }
+.finCardRechazado { border-color: #fca5a5; background: #fff5f5; }
+
+.finCardHeader {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.finEntidad {
+  font-weight: 700; font-size: 0.95rem; color: #1e293b;
+}
+.finEstadoBadge {
+  font-size: 0.7rem; font-weight: 700; color: white;
+  padding: 3px 10px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.finFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+.finField { display: flex; flex-direction: column; gap: 3px; }
+.finFieldFull { grid-column: 1 / -1; }
+.finField label {
+  font-size: 0.7rem; font-weight: 600; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.finInput, .finSelect, .finTextarea {
+  width: 100%; box-sizing: border-box;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e2e8f0; border-radius: 7px;
+  font-size: 0.85rem; color: #1e293b;
+  background: #f8fafc;
+  transition: border-color 0.15s;
+}
+.finInput:focus, .finSelect:focus, .finTextarea:focus {
+  outline: none; border-color: #024f7d; background: white;
+}
+.finTextarea { resize: vertical; }
+
+.finSaveBtn {
+  padding: 0.55rem 1rem;
+  background: #024f7d; color: white;
+  border: none; border-radius: 8px;
+  font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; transition: background 0.15s;
+  align-self: flex-end;
+}
+.finSaveBtn:hover:not(:disabled) { background: #013a5e; }
+.finSaveBtn:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -49,6 +49,16 @@ export class VehiclesController {
     return this.vehiclesService.update(+id, updateVehicleDto);
   }
 
+  @Patch(':id/visibility')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  updateVisibility(
+    @Param('id') id: string,
+    @Body() body: { visibilidad: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido' },
+  ) {
+    return this.vehiclesService.updateVisibility(+id, body.visibilidad);
+  }
+
   @Patch(':id/pricing')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('Administrador')

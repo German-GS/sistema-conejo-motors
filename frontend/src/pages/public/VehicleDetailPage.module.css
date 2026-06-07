@@ -29,6 +29,23 @@
   gap: 10px;
 }
 
+/* Wrapper para imagen principal + ribbon */
+.mainImgWrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.mainImgWrapper > img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  display: block;
+}
+
+/* Legacy: img directo (por si hubiera alguno) */
 .heroImage > img {
   width: 100%;
   height: 420px;
@@ -36,6 +53,40 @@
   border-radius: 16px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.12);
   display: block;
+}
+
+/* ─── BADGE ROW (color + estado) ────────────── */
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.statusBadgeRed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1.5px solid #fca5a5;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.statusBadgeBlue {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1.5px solid #93c5fd;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .thumbnailRow {
@@ -218,6 +269,18 @@
   border-bottom-color: #024f7d;
 }
 
+/* ─── TABS SCROLL ───────────────────────────── */
+.tabs {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tabs button {
+  white-space: nowrap;
+}
+
 /* ─── SPEC LIST ─────────────────────────────── */
 .tabContent ul {
   list-style: none;
@@ -231,7 +294,7 @@
 .tabContent li {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 0.65rem 0;
   border-bottom: 1px solid #f0f4f8;
   font-size: 0.9rem;
@@ -241,14 +304,15 @@
 .tabContent li strong {
   color: #718096;
   font-weight: 500;
-  white-space: nowrap;
   flex-shrink: 0;
+  max-width: 55%;
 }
 
 .tabContent li span {
   font-weight: 700;
   color: #1a202c;
   text-align: right;
+  word-break: break-word;
 }
 
 /* ─── FEATURE GRID ──────────────────────────── */
@@ -282,11 +346,13 @@
   font-size: 0.85rem;
   color: #4a5568;
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  padding: 3px 0;
+  padding: 5px 0;
   border-bottom: 1px solid #f7fafc;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .featureSection li::after {
@@ -295,4 +361,28 @@
   font-weight: 700;
   font-size: 0.85rem;
   flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─── RESPONSIVE ────────────────────────────── */
+@media (max-width: 768px) {
+  .detailContainer { padding: 1.25rem 1rem 3rem; }
+
+  .heroImage > img { height: 260px; border-radius: 12px; }
+  .thumb, .thumbActive { width: 64px; height: 48px; }
+
+  .heroInfo h1 { font-size: 1.4rem; }
+  .price { font-size: 1.6rem; }
+  .keySpecs { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+  .tabContent ul { grid-template-columns: 1fr; gap: 0; }
+
+  .featureGrid { grid-template-columns: 1fr; gap: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .heroImage > img { height: 210px; }
+  .thumbnailRow { gap: 6px; }
+  .thumb, .thumbActive { width: 56px; height: 42px; }
+  .tabs button { padding: 0.65rem 1rem; font-size: 0.85rem; }
 }

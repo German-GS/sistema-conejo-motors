@@ -1,5 +1,7 @@
+import { getImageUrl } from "@/utils/imageUrl";
 // src/pages/public/PublicCatalogPage.tsx
 import { useState, useEffect, useMemo } from "react";
+import { VehicleRibbon } from "@/components/VehicleRibbon";
 import { Link } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import styles from "@/pages/admin/sales/CatalogPage/CatalogPage.module.css";
@@ -251,9 +253,9 @@ export const PublicCatalogPage = () => {
                   <img
                     src={
                       vehicle.imagenes?.[0]
-                        ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}`
+                        ? getImageUrl(vehicle.imagenes[0].url)
                         : vehicle.profile?.imagenes?.[0]
-                        ? `${apiClient.defaults.baseURL}/${vehicle.profile.imagenes[0].url}`
+                        ? getImageUrl(vehicle.profile.imagenes[0].url)
                         : "/placeholder.png"
                     }
                     alt={`${vehicle.marca} ${vehicle.modelo}`}
@@ -265,6 +267,7 @@ export const PublicCatalogPage = () => {
                   {vehicle.categoria && (
                     <span className={styles.catBadge}>{vehicle.categoria}</span>
                   )}
+                  <VehicleRibbon visibilidad={(vehicle as any).visibilidad} />
                 </div>
                 <div className={styles.vehicleInfo}>
                   <h3>{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>

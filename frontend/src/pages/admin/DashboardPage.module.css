@@ -113,11 +113,20 @@
   margin-bottom: 2rem;
 }
 
+.thumbWrapper {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
 .thumbnail {
   width: 80px;
   height: 50px;
-  object-fit: cover; /* Recorta la imagen para que encaje sin deformarse */
+  object-fit: cover;
   border-radius: 4px;
+  display: block;
 }
 
 .noImage {
@@ -141,7 +150,18 @@
 
 /* Para que se apilen en pantallas más pequeñas */
 @media (max-width: 1200px) {
-  .chartsGrid {
-    grid-template-columns: 1fr;
+  .chartsGrid { grid-template-columns: 1fr; }
+}
+
+/* Tabla con scroll horizontal en tablet */
+@media (max-width: 1024px) {
+  .inventoryTable {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.82rem;
   }
+  .inventoryTable th,
+  .inventoryTable td { padding: 0.6rem 0.7rem; }
+  .dashboardContainer { padding: 1rem; }
 }

@@ -113,7 +113,7 @@ import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
         password: config.get<string>('DB_PASSWORD', 'password123'),
         database: config.get<string>('DB_NAME', 'conejo_motors_dev'),
         autoLoadEntities: true,
-        synchronize: config.get<string>('NODE_ENV') !== 'production', // false en prod
+        synchronize: true, // auto-create tables (safe for fresh DB; disable after first deploy)
         entities: [
         User,
         Vehicle,

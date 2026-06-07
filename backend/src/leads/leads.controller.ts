@@ -1,7 +1,7 @@
 // backend/src/leads/leads.controller.ts
 import {
   Controller, Get, Param, ParseIntPipe, UseGuards,
-  Request, Patch, Body, Post,
+  Request, Patch, Body, Post, Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { LeadsService } from './leads.service';
@@ -75,5 +75,34 @@ export class LeadsController {
     @Request() req,
   ) {
     return this.leadsService.addActividad(id, dto, req.user);
+  }
+
+  // ── FINANCIAMIENTO ────────────────────────────────────────────────────────
+
+  /** GET /leads/:id/financiamientos — lista de entidades bancarias del lead */
+  @Get(':id/financiamientos')
+  @Roles('Vendedor', 'Administrador')
+  getFinanciamientos(@Param('id', ParseIntPipe) id: number) {
+    return this.leadsService.getFinanciamientos(id);
+  }
+
+  /** POST /leads/:id/financiamientos — crear o actualizar registro de una entidad */
+  @Post(':id/financiamientos')
+  @Roles('Vendedor', 'Administrador')
+  upsertFinanciamiento(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.leadsService.upsertFinanciamiento(id, body);
+  }
+
+  /** DELETE /leads/:id/financiamientos/:fid — eliminar registro de entidad */
+  @Delete(':id/financiamientos/:fid')
+  @Roles('Vendedor', 'Administrador')
+  deleteFinanciamiento(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('fid', ParseIntPipe) fid: number,
+  ) {
+    return this.leadsService.deleteFinanciamiento(id, fid);
   }
 }

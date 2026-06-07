@@ -1,13 +1,30 @@
 // src/site-settings/site-settings.controller.ts
-import { Controller, Get, Body, Patch, Post, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Post, UseGuards, UseInterceptors, UploadedFiles, InternalServerErrorException } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { SiteSettingsService } from './site-settings.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UpdateSiteSettingsDto } from './dto/update-site-setting.dto';
+import { Storage } from '@google-cloud/storage';
+import { v4 as uuidv4 } from 'uuid';
+
+const GCS_BUCKET = process.env.GCS_BUCKET ?? 'conejo-motors-media';
+const GCS_BASE   = `https://storage.googleapis.com/${GCS_BUCKET}`;
+const gcsStorage = new Storage();
+const bucket     = gcsStorage.bucket(GCS_BUCKET);
+
+async function uploadToGCS(file: Express.Multer.File): Promise<string> {
+  const ext      = file.originalname.split('.').pop() ?? 'jpg';
+  const filename = `site/${uuidv4()}.${ext}`;
+  const blob     = bucket.file(filename);
+  await blob.save(file.buffer, {
+    metadata: { contentType: file.mimetype },
+    resumable: false,
+  });
+  return `${GCS_BASE}/${filename}`;
+}
 
 // 1. ELIMINAMOS LA SEGURIDAD A NIVEL DE CLASE DE AQUÍ
 
@@ -49,21 +66,20 @@ export class SiteSettingsController {
   }
 
   /**
-   * Endpoint para subir imágenes del carrusel y assets del sitio.
+   * Endpoint para subir imágenes del carrusel y assets del sitio → GCS.
    */
   @Post('upload')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('Administrador')
-  @UseInterceptors(FilesInterceptor('files', 10, {
-    storage: diskStorage({
-      destination: './uploads/site',
-      filename: (req, file, cb) => {
-        const unique = Date.now() + '-' + Math.round(Math.random() * 1e6);
-        cb(null, `site-${unique}${extname(file.originalname)}`);
-      },
-    }),
-  }))
-  uploadSiteImages(@UploadedFiles() files: Array<Express.Multer.File>) {
-    return files.map(f => ({ url: f.path.replace(/\\/g, '/') }));
+  @UseInterceptors(FilesInterceptor('files', 10, { storage: memoryStorage() }))
+  async uploadSiteImages(@UploadedFiles() files: Array<Express.Multer.File>) {
+    if (!files?.length) throw new InternalServerErrorException('No se recibieron archivos.');
+    try {
+      const urls = await Promise.all(files.map(uploadToGCS));
+      return urls.map(url => ({ url }));
+    } catch (err) {
+      console.error('GCS site upload error:', err);
+      throw new InternalServerErrorException('Error al subir imagen a GCS.');
+    }
   }
 }

@@ -29,6 +29,7 @@ export interface Vehicle {
   precio_costo: number;
   precio_venta: number;
   estado: string;
+  visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
   bodega?: Bodega;
   profile?: VehicleProfile;
   imagenes?: ProfileImage[]; // Vehicle's own specific images

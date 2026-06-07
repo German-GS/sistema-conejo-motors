@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import styles from "./UserForm.module.css";
 import toast from "react-hot-toast";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 interface Role {
   id: number;
@@ -31,6 +32,7 @@ export const UserForm: React.FC<UserFormProps> = ({
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const isEditing = !!initialData;
 
   useEffect(() => {
@@ -129,13 +131,29 @@ export const UserForm: React.FC<UserFormProps> = ({
         placeholder="Cédula"
         required={!isEditing}
       />
-      <input
-        type="password"
-        name="contrasena"
-        value={formData.contrasena}
-        onChange={handleChange}
-        placeholder={isEditing ? "Nueva Contraseña (opcional)" : "Contraseña"}
-      />
+      <div className={styles.passwordWrapper}>
+        <input
+          type={showPassword ? "text" : "password"}
+          name="contrasena"
+          value={formData.contrasena}
+          onChange={handleChange}
+          placeholder={isEditing ? "Nueva Contraseña (opcional)" : "Contraseña"}
+          className={styles.passwordInput}
+          autoComplete="new-password"
+          required={!isEditing}
+        />
+        <span
+          className={styles.eyeBtn}
+          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowPassword(v => !v); }}
+          title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          role="button"
+          tabIndex={-1}
+          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+        >
+          {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+        </span>
+      </div>
       <input
         type="number"
         name="salario_base"

@@ -327,7 +327,11 @@ export class VehiclesService {
       'findCatalog: Attempting to find available vehicles for catalog...',
     );
     const vehicles = await this.vehiclesRepository.find({
-      where: { estado: 'Disponible' },
+      where: [
+        { estado: 'Disponible', visibilidad: 'Visible' },
+        { estado: 'Disponible', visibilidad: 'Agotado' },
+        { estado: 'Disponible', visibilidad: 'Contrapedido' },
+      ],
       relations: {
         bodega: true,
         profile: {
@@ -476,6 +480,13 @@ export class VehiclesService {
       throw new NotFoundException(`Vehículo con ID #${id} no encontrado.`);
     }
     this.logger.log(`Vehicle ID #${id} removed successfully.`);
+  }
+
+  async updateVisibility(id: number, visibilidad: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido') {
+    const vehicle = await this.vehiclesRepository.findOneBy({ id });
+    if (!vehicle) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+    vehicle.visibilidad = visibilidad;
+    return this.vehiclesRepository.save(vehicle);
   }
 
   async updatePricing(id: number, data: { precio_venta?: number; descuento_porcentaje?: number }) {

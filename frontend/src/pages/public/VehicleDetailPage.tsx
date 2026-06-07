@@ -1,9 +1,11 @@
+import { getImageUrl } from "@/utils/imageUrl";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./VehicleDetailPage.module.css";
 import { LoanCalculator } from "@/components/LoanCalculator";
+import { VehicleRibbon } from "@/components/VehicleRibbon";
 
 // --- 1. INTERFAZ COMPLETA Y CORRECTA ---
 interface VehicleDetail {
@@ -13,6 +15,8 @@ interface VehicleDetail {
   año: number;
   color?: string;
   precio_venta: number;
+  precio_venta_final?: number;
+  visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
   imagenes?: { id: number; url: string }[];
   profile?: { imagenes?: { url: string }[] };
   categoria?: string;
@@ -107,23 +111,26 @@ export const VehicleDetailPage = () => {
       <div className={styles.hero}>
         <div className={styles.heroImage}>
           {/* Imagen principal */}
-          <img
-            src={
-              vehicle.imagenes?.[activeImg]
-                ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[activeImg].url}`
-                : vehicle.profile?.imagenes?.[activeImg]
-                  ? `${apiClient.defaults.baseURL}/${vehicle.profile.imagenes[activeImg].url}`
-                  : "/placeholder.png"
-            }
-            alt={`${vehicle.marca} ${vehicle.modelo}`}
-          />
+          <div className={styles.mainImgWrapper}>
+            <img
+              src={
+                vehicle.imagenes?.[activeImg]
+                  ? getImageUrl(vehicle.imagenes[activeImg].url)
+                  : vehicle.profile?.imagenes?.[activeImg]
+                    ? getImageUrl(vehicle.profile.imagenes[activeImg].url)
+                    : "/placeholder.png"
+              }
+              alt={`${vehicle.marca} ${vehicle.modelo}`}
+            />
+            <VehicleRibbon visibilidad={vehicle.visibilidad} />
+          </div>
           {/* Galería de miniaturas */}
           {(vehicle.imagenes?.length ?? 0) > 1 && (
             <div className={styles.thumbnailRow}>
               {vehicle.imagenes!.map((img, i) => (
                 <img
                   key={img.id ?? i}
-                  src={`${apiClient.defaults.baseURL}/${img.url}`}
+                  src={getImageUrl(img.url)}
                   alt={`Vista ${i + 1}`}
                   className={i === activeImg ? styles.thumbActive : styles.thumb}
                   onClick={() => setActiveImg(i)}
@@ -134,7 +141,15 @@ export const VehicleDetailPage = () => {
         </div>
         <div className={styles.heroInfo}>
           <h1>{vehicle.marca} {vehicle.modelo} {vehicle.año && `(${vehicle.año})`}</h1>
-          {vehicle.color && <p className={styles.colorBadge}>🎨 {vehicle.color}</p>}
+          <div className={styles.badgeRow}>
+            {vehicle.color && <p className={styles.colorBadge}>🎨 {vehicle.color}</p>}
+            {vehicle.visibilidad === 'Agotado' && (
+              <span className={styles.statusBadgeRed}>📦 Agotado</span>
+            )}
+            {vehicle.visibilidad === 'Contrapedido' && (
+              <span className={styles.statusBadgeBlue}>🔄 Bajo Pedido</span>
+            )}
+          </div>
           <p className={styles.price}>
             {new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC" }).format(vehicle.precio_venta)}
           </p>

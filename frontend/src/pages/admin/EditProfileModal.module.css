@@ -234,3 +234,57 @@
 }
 .saveBtn:hover:not(:disabled) { background: #013a5e; }
 .saveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Upload loading states ── */
+.uploadBtnLoading {
+  opacity: 0.8;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Spinner inline */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Barra de progreso indeterminada */
+@keyframes progress {
+  0%   { left: -40%; width: 40%; }
+  50%  { left: 30%;  width: 40%; }
+  100% { left: 100%; width: 40%; }
+}
+.uploadingBar {
+  margin-top: 0.75rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #1e40af;
+  font-weight: 500;
+  overflow: hidden;
+  position: relative;
+}
+.uploadingBarInner {
+  position: absolute;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  border-radius: 2px;
+  animation: progress 1.4s ease-in-out infinite;
+}

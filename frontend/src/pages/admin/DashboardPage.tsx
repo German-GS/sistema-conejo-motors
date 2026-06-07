@@ -1,3 +1,4 @@
+import { getImageUrl } from "@/utils/imageUrl";
 import { useState, useEffect, useMemo } from "react";
 import apiClient from "../../api/apiClient";
 import { VehicleForm } from "../../components/VechicleForm/VehicleForm";
@@ -7,6 +8,8 @@ import { Modal } from "../../components/Modal";
 import toast from "react-hot-toast";
 import { Vehicle } from "../../interfaces";
 import { Pagination } from "@/components/Pagination";
+import { VisibilityButtons } from "@/components/VisibilityButtons";
+import { VehicleRibbon } from "@/components/VehicleRibbon";
 
 // Interfaz para el tipo de dato Vehicle
 
@@ -135,6 +138,7 @@ export const DashboardPage = () => {
               <th>VIN</th>
               <th>Ubicación</th>
               <th>Estado</th>
+              <th>Visibilidad</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -142,21 +146,20 @@ export const DashboardPage = () => {
             {paginated.map((vehicle) => (
               <tr key={vehicle.id}>
                 <td>
-                  {vehicle.profile?.imagenes &&
-                  vehicle.profile.imagenes.length > 0 ? (
-                    <img
-                      // Ordena por 'order' por si acaso y toma la primera
-                      src={`${apiClient.defaults.baseURL}/${
-                        [...vehicle.profile.imagenes].sort(
-                          (a, b) => a.order - b.order
-                        )[0].url
-                      }`}
-                      alt={`${vehicle.marca} ${vehicle.modelo}`}
-                      className={styles.thumbnail}
-                    />
-                  ) : (
-                    <div className={styles.noImage}>Sin foto</div>
-                  )}
+                  <div className={styles.thumbWrapper}>
+                    {vehicle.profile?.imagenes && vehicle.profile.imagenes.length > 0 ? (
+                      <img
+                        src={getImageUrl(
+                          [...vehicle.profile.imagenes].sort((a, b) => a.order - b.order)[0].url
+                        )}
+                        alt={`${vehicle.marca} ${vehicle.modelo}`}
+                        className={styles.thumbnail}
+                      />
+                    ) : (
+                      <div className={styles.noImage}>Sin foto</div>
+                    )}
+                    <VehicleRibbon visibilidad={vehicle.visibilidad} />
+                  </div>
                 </td>
                 <td>{vehicle.id}</td>
                 <td>{vehicle.marca}</td>
@@ -165,6 +168,17 @@ export const DashboardPage = () => {
                 <td>{vehicle.vin}</td>
                 <td>{vehicle.bodega?.nombre || "N/A"}</td>
                 <td>{vehicle.estado}</td>
+                <td>
+                  <VisibilityButtons
+                    vehicleId={vehicle.id}
+                    current={vehicle.visibilidad ?? "Visible"}
+                    onChanged={(val) =>
+                      setVehicles(prev =>
+                        prev.map(v => v.id === vehicle.id ? { ...v, visibilidad: val } : v)
+                      )
+                    }
+                  />
+                </td>
                 <td>
                   <button onClick={() => handleOpenEditModal(vehicle)}>
                     Editar

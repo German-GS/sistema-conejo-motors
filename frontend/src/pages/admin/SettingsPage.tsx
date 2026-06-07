@@ -1,3 +1,4 @@
+import { getImageUrl } from "@/utils/imageUrl";
 import React, { useState, useEffect, useRef } from "react";
 import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
@@ -187,6 +188,7 @@ export const SettingsPage = () => {
   const [editValue, setEditValue] = useState(0);
   const [profiles, setProfiles] = useState<VehicleProfile[]>([]);
   const [profileImages, setProfileImages] = useState<File[]>([]); // Estado para las imágenes del perfil
+  const [creatingProfile, setCreatingProfile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initialProfileState = {
@@ -282,19 +284,13 @@ export const SettingsPage = () => {
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setCreatingProfile(true);
     try {
-      // --- 👇 INICIO DE LA CORRECCIÓN: Envía un objeto JSON, no FormData 👇 ---
-      // 1. Primero, crea el perfil enviando el objeto 'newProfile' directamente.
-      //    Axios (apiClient) lo convertirá a JSON automáticamente.
-      const profileResponse = await apiClient.post(
-        "/vehicle-profiles",
-        newProfile
-      );
+      const profileResponse = await apiClient.post("/vehicle-profiles", newProfile);
       const newProfileId = profileResponse.data.id;
-      toast.success("Perfil creado, subiendo imágenes...");
 
       if (profileImages.length > 0) {
+        toast.loading(`Subiendo ${profileImages.length} imagen(es)…`, { id: "upload" });
         const imagesFormData = new FormData();
         profileImages.forEach((file) => {
           imagesFormData.append("files", file);
@@ -303,20 +299,23 @@ export const SettingsPage = () => {
           `/vehicle-profiles/${newProfileId}/upload-images`,
           imagesFormData
         );
+        toast.dismiss("upload");
       }
 
       toast.success("¡Perfil e imágenes guardados con éxito!");
-
       setNewProfile(initialProfileState);
       setProfileImages([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
       fetchVehicleProfiles();
     } catch (err: any) {
+      toast.dismiss("upload");
       const errorMessage =
         err.response?.data?.message || "Error al crear el perfil.";
       toast.error(
         Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
       );
+    } finally {
+      setCreatingProfile(false);
     }
   };
 
@@ -576,8 +575,14 @@ export const SettingsPage = () => {
           <button
             type="submit"
             className={`btn btn-principal ${styles.fullWidth}`}
+            disabled={creatingProfile}
+            style={{ opacity: creatingProfile ? 0.75 : 1, cursor: creatingProfile ? "not-allowed" : "pointer" }}
           >
-            Añadir Perfil
+            {creatingProfile
+              ? profileImages.length > 0
+                ? `⏳ Subiendo ${profileImages.length} imagen(es)…`
+                : "⏳ Creando perfil…"
+              : "Añadir Perfil"}
           </button>
         </form>
 
@@ -598,7 +603,7 @@ export const SettingsPage = () => {
                   {/* Revisa si hay imágenes y muestra la primera */}
                   {profile.imagenes && profile.imagenes.length > 0 ? (
                     <img
-                      src={`${apiClient.defaults.baseURL}/${profile.imagenes[0].url}`}
+                      src={getImageUrl(profile.imagenes[0].url)}
                       alt={profile.marca}
                       className={styles.logoImage} // Reutilizamos el estilo del logo para la miniatura
                     />

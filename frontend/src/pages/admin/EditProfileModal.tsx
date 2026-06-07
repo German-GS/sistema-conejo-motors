@@ -1,6 +1,7 @@
 // src/pages/admin/EditProfileModal.tsx
 import React, { useState, useEffect, useRef } from "react";
 import apiClient from "@/api/apiClient";
+import { getImageUrl } from "@/utils/imageUrl";
 import toast from "react-hot-toast";
 import styles from "./EditProfileModal.module.css";
 
@@ -44,6 +45,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
     if (!newFiles.length) return;
     const form = new FormData();
     newFiles.forEach((f) => form.append("files", f));
+    setUploading(true);
     try {
       const res = await apiClient.post(`/vehicle-profiles/${profileId}/upload-images`, form);
       setData((prev) => prev
@@ -108,9 +111,11 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
       );
       setNewFiles([]);
       if (fileRef.current) fileRef.current.value = "";
-      toast.success("Imágenes subidas.");
+      toast.success("Imágenes subidas correctamente.");
     } catch {
       toast.error("Error al subir imágenes.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -164,7 +169,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
   );
   if (!data) return null;
 
-  const imgBase = apiClient.defaults.baseURL;
+  
 
   return (
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -294,7 +299,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
               {(data.imagenes ?? []).map((img, idx, arr) => (
                 <div key={img.id} className={`${styles.imgCard} ${idx === 0 ? styles.imgCardFirst : ""}`}>
                   {idx === 0 && <span className={styles.imgBadge}>★ Principal</span>}
-                  <img src={`${imgBase}/${img.url}`} alt={`Imagen ${idx + 1}`} className={styles.imgThumb} />
+                  <img src={getImageUrl(img.url)} alt={`Imagen ${idx + 1}`} className={styles.imgThumb} />
 
                   {/* Controles de reorden y borrado */}
                   <div className={styles.imgControls}>
@@ -340,10 +345,29 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
                     style={{ width: 64, height: 52, objectFit: "cover", borderRadius: 6, border: "2px solid #024f7d" }}
                   />
                 ))}
-                <button className={styles.uploadBtn} onClick={handleUploadImages}>
-                  ⬆️ Subir {newFiles.length} imagen{newFiles.length > 1 ? "es" : ""}
+                <button
+                  className={`${styles.uploadBtn} ${uploading ? styles.uploadBtnLoading : ""}`}
+                  onClick={handleUploadImages}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <>
+                      <span className={styles.spinner} />
+                      Subiendo {newFiles.length} imagen{newFiles.length > 1 ? "es" : ""}...
+                    </>
+                  ) : (
+                    <>⬆️ Subir {newFiles.length} imagen{newFiles.length > 1 ? "es" : ""}</>
+                  )}
                 </button>
-                <button className={styles.cancelSmall} onClick={() => setNewFiles([])}>Cancelar</button>
+                {!uploading && (
+                  <button className={styles.cancelSmall} onClick={() => setNewFiles([])}>Cancelar</button>
+                )}
+              </div>
+            )}
+            {uploading && (
+              <div className={styles.uploadingBar}>
+                <div className={styles.uploadingBarInner} />
+                <span>Subiendo imágenes a la nube, por favor espera…</span>
               </div>
             )}
           </section>

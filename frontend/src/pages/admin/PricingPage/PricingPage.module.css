@@ -15,7 +15,8 @@
 .editingRow { background: #ebf8ff !important; }
 
 .vehicleCell { display: flex; align-items: center; gap: 10px; }
-.thumb { width: 52px; height: 38px; object-fit: cover; border-radius: 5px; flex-shrink: 0; }
+.thumbWrapper { position: relative; flex-shrink: 0; border-radius: 5px; overflow: hidden; width: 52px; }
+.thumb { width: 52px; height: 38px; object-fit: cover; border-radius: 5px; display: block; }
 .vin { font-family: monospace; font-size: 0.78rem; color: #4a5568; }
 .cost { color: #4a5568; font-size: 0.85rem; }
 

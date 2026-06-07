@@ -1,3 +1,4 @@
+import { getImageUrl } from "@/utils/imageUrl";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import apiClient from "@/api/apiClient";
@@ -5,6 +6,7 @@ import styles from "./CatalogPage.module.css";
 import { Pagination } from "@/components/Pagination";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 import toast from "react-hot-toast";
+import { VehicleRibbon } from "@/components/VehicleRibbon";
 
 interface VehiculoReservado {
   id: number;
@@ -35,6 +37,7 @@ interface CatalogVehicle {
   potencia_hp: number;
   capacidad_bateria_kwh: number;
   categoria?: string;
+  visibilidad?: "Visible" | "Oculto" | "Agotado" | "Contrapedido";
   imagenes?: { url: string }[];
   bodega?: { nombre: string };
 }
@@ -241,7 +244,7 @@ export const CatalogPage = () => {
             <div key={vehicle.id} className={styles.vehicleCard}>
               <div className={styles.imgWrap}>
                 <img
-                  src={vehicle.imagenes?.[0] ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}` : "/placeholder.png"}
+                  src={vehicle.imagenes?.[0] ? getImageUrl(vehicle.imagenes[0].url) : "/placeholder.png"}
                   alt={`${vehicle.marca} ${vehicle.modelo}`}
                   className={styles.vehicleImage}
                 />
@@ -251,6 +254,7 @@ export const CatalogPage = () => {
                 {vehicle.categoria && (
                   <span className={styles.catBadge}>{vehicle.categoria}</span>
                 )}
+                <VehicleRibbon visibilidad={vehicle.visibilidad} />
               </div>
               <div className={styles.vehicleInfo}>
                 <h3>{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>

@@ -131,3 +131,18 @@
 .followupAlert { font-size: 0.82rem; color: #ef4444; font-weight: 700; white-space: nowrap; }
 
 .empty { color: #94a3b8; text-align: center; padding: 2rem; font-style: italic; }
+
+/* ── Tablet responsive ── */
+@media (max-width: 1024px) {
+  .leadsTable {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .leadsTable th,
+  .leadsTable td { padding: 0.55rem 0.7rem; font-size: 0.82rem; }
+  .metricsPanel { gap: 0.65rem; }
+  .metricCard { min-width: 100px; padding: 0.75rem 1rem; }
+  .metricNum { font-size: 1.4rem; }
+  .kpiRow { gap: 0.5rem; }
+}

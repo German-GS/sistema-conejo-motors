@@ -2,7 +2,8 @@
 import {
   Controller, Get, Post, Body, Delete,
   Param, ParseIntPipe, UseGuards,
-  UseInterceptors, UploadedFiles, Patch
+  UseInterceptors, UploadedFiles, Patch,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,6 +12,29 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { VehicleProfilesService } from './vehicle-profiles.service';
 import { CreateVehicleProfileDto } from './dto/create-vehicle-profile.dto';
 import { UpdateVehicleProfileDto } from './dto/update-vehicle-profile.dto';
+import { Storage } from '@google-cloud/storage';
+import { v4 as uuidv4 } from 'uuid';
+
+const GCS_BUCKET = process.env.GCS_BUCKET ?? 'conejo-motors-media';
+const GCS_BASE   = `https://storage.googleapis.com/${GCS_BUCKET}`;
+
+// El cliente de GCS usa Application Default Credentials automáticamente
+// en Cloud Run (service account del proyecto). Sin config adicional.
+const gcsStorage = new Storage();
+const bucket     = gcsStorage.bucket(GCS_BUCKET);
+
+async function uploadToGCS(file: Express.Multer.File): Promise<string> {
+  const ext      = file.originalname.split('.').pop() ?? 'jpg';
+  const filename = `uploads/${uuidv4()}.${ext}`;
+  const blob     = bucket.file(filename);
+
+  await blob.save(file.buffer, {
+    metadata: { contentType: file.mimetype },
+    resumable: false,
+  });
+
+  return `${GCS_BASE}/${filename}`;
+}
 
 @Controller('vehicle-profiles')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -22,7 +46,7 @@ export class VehicleProfilesController {
     return this.profilesService.findAll();
   }
 
-  /** GET /vehicle-profiles/:id — detalle con imagenes */
+  /** GET /vehicle-profiles/:id — detalle con imágenes */
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.profilesService.findOneWithImages(id);
@@ -44,21 +68,29 @@ export class VehicleProfilesController {
     return this.profilesService.updateSpecs(id, updateDto);
   }
 
-  /** POST /vehicle-profiles/:id/upload-images — subir nuevas imágenes */
+  /** POST /vehicle-profiles/:id/upload-images — subir imágenes a GCS */
   @Post(':id/upload-images')
   @Roles('Administrador')
-  @UseInterceptors(FilesInterceptor('files', 10))
-  uploadProfileImages(
+  @UseInterceptors(FilesInterceptor('files', 20))
+  async uploadProfileImages(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    return this.profilesService.addImages(
-      id,
-      files.map((f) => f.path),
-    );
+    if (!files?.length) {
+      throw new InternalServerErrorException('No se recibieron archivos.');
+    }
+    try {
+      // Subir todas en paralelo a GCS
+      const publicUrls = await Promise.all(files.map(uploadToGCS));
+      // Guardar las URLs en la DB
+      return this.profilesService.addImages(id, publicUrls);
+    } catch (err) {
+      console.error('GCS upload error:', err);
+      throw new InternalServerErrorException('Error al subir imágenes a GCS.');
+    }
   }
 
-  /** DELETE /vehicle-profiles/:id/images/:imageId — borrar imagen individual */
+  /** DELETE /vehicle-profiles/:id/images/:imageId — borrar imagen */
   @Delete(':id/images/:imageId')
   @Roles('Administrador')
   deleteImage(

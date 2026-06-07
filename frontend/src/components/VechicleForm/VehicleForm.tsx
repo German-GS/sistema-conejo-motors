@@ -1,3 +1,4 @@
+import { getImageUrl } from "@/utils/imageUrl";
 // frontend/src/components/VechicleForm/VehicleForm.tsx
 import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
@@ -379,13 +380,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
                           }}
                         >
                           <img
-                            // Construye la URL completa
-                            src={`${
-                              apiClient.defaults.baseURL
-                            }/${image.url.replace(
-                              /\\/g, // Reemplaza barras invertidas (si las hubiera) por normales
-                              "/"
-                            )}`}
+                            src={getImageUrl(image.url)}
                             alt={`Imagen ${index + 1}`}
                           />
                           {/* Mostramos el botón "X" solo en modo edición */}

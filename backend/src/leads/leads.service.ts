@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, LessThan, Not } from 'typeorm';
 import { Lead } from './lead.entity';
 import { LeadActividad } from './lead-actividad.entity';
+import { LeadFinanciamiento, EntidadFinanciera, EstadoFinanciamiento } from './lead-financiamiento.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { CreateActividadDto } from './dto/create-actividad.dto';
@@ -20,6 +21,8 @@ export class LeadsService {
     private leadsRepository: Repository<Lead>,
     @InjectRepository(LeadActividad)
     private actividadesRepository: Repository<LeadActividad>,
+    @InjectRepository(LeadFinanciamiento)
+    private financiamientosRepository: Repository<LeadFinanciamiento>,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(Vehicle)
@@ -112,6 +115,7 @@ export class LeadsService {
     if (dto.fecha_followup !== undefined) lead.fecha_followup = dto.fecha_followup;
     if (dto.contacted_by_email !== undefined) lead.contacted_by_email = dto.contacted_by_email;
     if (dto.contacted_by_phone !== undefined) lead.contacted_by_phone = dto.contacted_by_phone;
+    if (dto.tipo_pago !== undefined) lead.tipo_pago = dto.tipo_pago as any;
 
     return this.leadsRepository.save(lead);
   }
@@ -186,5 +190,57 @@ export class LeadsService {
     await this.notificationsService.createForUser(vendedorAsignado, message, link);
 
     return leadGuardado;
+  }
+
+  // ── FINANCIAMIENTO ────────────────────────────────────────────────────────
+
+  /** Obtiene todos los registros de financiamiento de un lead */
+  async getFinanciamientos(leadId: number): Promise<LeadFinanciamiento[]> {
+    const lead = await this.leadsRepository.findOneBy({ id: leadId });
+    if (!lead) throw new NotFoundException(`Lead #${leadId} no encontrado.`);
+    return this.financiamientosRepository.find({
+      where: { lead: { id: leadId } },
+      order: { fecha_creacion: 'ASC' },
+    });
+  }
+
+  /** Crea o actualiza un registro de financiamiento para una entidad */
+  async upsertFinanciamiento(
+    leadId: number,
+    data: {
+      entidad: EntidadFinanciera;
+      estado?: EstadoFinanciamiento;
+      monto_solicitado?: number;
+      monto_aprobado?: number;
+      plazo_meses?: number;
+      tasa_anual?: number;
+      notas?: string;
+      fecha_envio?: string;
+      fecha_respuesta?: string;
+    },
+  ): Promise<LeadFinanciamiento> {
+    const lead = await this.leadsRepository.findOneBy({ id: leadId });
+    if (!lead) throw new NotFoundException(`Lead #${leadId} no encontrado.`);
+
+    // Busca si ya existe un registro para esa entidad en este lead
+    let registro = await this.financiamientosRepository.findOne({
+      where: { lead: { id: leadId }, entidad: data.entidad },
+    });
+
+    if (registro) {
+      Object.assign(registro, data);
+    } else {
+      registro = this.financiamientosRepository.create({ lead, ...data });
+    }
+
+    return this.financiamientosRepository.save(registro);
+  }
+
+  /** Elimina un registro de financiamiento */
+  async deleteFinanciamiento(leadId: number, financiamientoId: number): Promise<void> {
+    await this.financiamientosRepository.delete({
+      id: financiamientoId,
+      lead: { id: leadId },
+    });
   }
 }

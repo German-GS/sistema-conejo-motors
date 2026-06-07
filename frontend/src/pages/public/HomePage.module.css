@@ -1,31 +1,29 @@
 /* src/pages/public/HomePage.module.css */
-/* --- Carrusel --- */
+
+.homeContainer { width: 100%; overflow-x: hidden; }
+
+/* ── CARRUSEL ─────────────────────────────────── */
 .carousel {
   position: relative;
   width: 100%;
-  height: calc(100vh - 73px);
+  height: calc(100vh - 72px);
+  min-height: 420px;
   overflow: hidden;
 }
 
 .slide {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   opacity: 0;
   transition: opacity 1s ease-in-out;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   text-align: center;
-  padding-bottom: 3rem;
+  padding-bottom: 4rem;
 }
-.slide.active {
-  opacity: 1;
-}
+.slide.active { opacity: 1; }
 
-/* Imagen del slide como <img> real para mejor calidad */
 .slideImg {
   position: absolute;
   inset: 0;
@@ -34,9 +32,6 @@
   object-fit: cover;
   object-position: center;
   display: block;
-  /* Mejora la nitidez en pantallas de alta densidad */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 
 .slide::before {
@@ -44,116 +39,73 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.05) 0%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
+  background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.6) 100%);
 }
+
 .slideContent {
   position: relative;
-  z-index: 2; /* sobre el ::before overlay */
+  z-index: 2;
   color: white;
-  padding: 2rem;
+  padding: 1.5rem;
   max-width: 800px;
+  width: 100%;
 }
 
 .slideContent h1 {
-  font-size: 3.5rem; /* Hacemos el título un poco más grande */
-  margin-bottom: 0.5rem;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
-}
-.slideContent p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
+  font-size: clamp(1.6rem, 5vw, 3.5rem);
+  margin-bottom: 0.75rem;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+  line-height: 1.2;
 }
 
-/* --- Sección de Destacados --- */
+.slideContent p {
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+.carouselButton {
+  display: inline-block;
+  background: transparent;
+  border: 2px solid white;
+  color: white;
+  padding: 0.75rem 2rem;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+.carouselButton:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+}
+
+/* ── VEHÍCULOS DESTACADOS ─────────────────────── */
 .featuredSection {
   text-align: center;
-  padding: 4rem 1rem;
-  background: white;
+  padding: 4rem 1.5rem;
+  background: #f8fafc;
 }
 
 .featuredSection h2 {
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
   color: var(--azul-principal);
   margin-bottom: 2rem;
-}
-
-.featuredSection .catalogGrid {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(300px, 1fr)
-  ); /* Asegurar que sean 3 columnas si hay espacio */
-  gap: 1.5rem; /* Espacio entre las tarjetas */
-  max-width: 1200px; /* Limitar el ancho del grid */
-  margin: 0 auto; /* Centrar el grid */
-  justify-items: center; /* Centrar los elementos dentro del grid */
 }
 
 .featuredGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
-  max-width: 1200px; /* Ancho máximo para el contenedor de las tarjetas */
-  margin: 0 auto; /* ¡La clave! Esto centra el grid en la página */
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.vehicleInfo {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  text-align: center; /* <-- ¡AÑADE ESTA LÍNEA MÁGICA! */
-}
-
-.vehicleInfo h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.2rem;
-  color: var(--azul-principal);
-}
-
-.vehicleCard {
-  background-color: var(--fondo-tarjeta);
-  border-radius: 12px; /* Bordes un poco más redondeados */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra más suave */
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  /* 👇 LA MAGIA ESTÁ AQUÍ 👇 */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.vehicleCard:hover {
-  transform: translateY(-8px); /* Eleva la tarjeta */
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); /* Sombra más pronunciada */
-}
-
-.carouselButton {
-  background-color: transparent; /* Fondo transparente */
-  border: 2px solid white; /* Borde blanco */
-  color: white; /* Texto blanco */
-  padding: 0.75rem 2rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border-radius: 5px;
-  transition: all 0.3s ease;
-}
-
-.carouselButton:hover {
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.2
-  ); /* Fondo blanco semi-transparente al pasar el ratón */
-  transform: translateY(-2px); /* Pequeño efecto de elevación */
-}
-
+/* ── CTA SECTION ──────────────────────────────── */
 .ctaSection {
-  padding: 5rem 2rem;
+  padding: 5rem 1.5rem;
   background: linear-gradient(135deg, #0a2540 0%, #024f7d 60%, #023a5c 100%);
   position: relative;
   overflow: hidden;
@@ -188,15 +140,15 @@
 }
 
 .ctaContent h2 {
-  font-size: 2.4rem;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
   font-weight: 800;
   color: white;
   margin: 0 0 1rem;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .ctaContent p {
-  font-size: 1.05rem;
+  font-size: clamp(0.9rem, 2vw, 1.05rem);
   color: #93c5fd;
   margin: 0 auto 2.5rem;
   max-width: 560px;
@@ -217,7 +169,7 @@
   background: #00c7b1;
   color: #0a2540;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   border-radius: 8px;
   text-decoration: none;
   transition: transform 0.2s, background 0.2s;
@@ -232,7 +184,7 @@
   background: transparent;
   color: white;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   border-radius: 8px;
   text-decoration: none;
   border: 2px solid rgba(255,255,255,0.35);
@@ -240,12 +192,11 @@
 }
 .ctaBtnSecondary:hover { border-color: white; transform: translateY(-2px); }
 
-h5 { color: white; }
-/* ── SECCIÓN DE CONTACTO ────────────────────── */
+/* ── SECCIÓN CONTACTO ────────────────────────── */
 .contactSection {
   background: #0a2540;
   color: white;
-  padding: 5rem 2rem;
+  padding: 5rem 1.5rem;
 }
 
 .contactInner {
@@ -254,15 +205,11 @@ h5 { color: white; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
-  align-items: center;
-}
-
-@media (max-width: 768px) {
-  .contactInner { grid-template-columns: 1fr; gap: 2.5rem; }
+  align-items: start;
 }
 
 .contactInfo h2 {
-  font-size: 2rem;
+  font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 800;
   margin: 0 0 0.5rem;
   color: white;
@@ -305,7 +252,6 @@ h5 { color: white; }
   text-align: center;
 }
 
-/* Redes Sociales */
 .socialTitle {
   font-size: 0.8rem;
   font-weight: 700;
@@ -334,23 +280,57 @@ h5 { color: white; }
   transition: transform 0.2s, background 0.2s;
 }
 .socialBtn:hover { transform: translateY(-3px); }
-
 .instagram:hover { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
 .facebook:hover  { background: #1877f2; }
 .whatsapp:hover  { background: #25d366; }
 .tiktok:hover    { background: #010101; }
 
-/* Mapa */
 .mapWrapper {
-  height: 380px;
+  height: 360px;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   border: 2px solid #1e3a5f;
 }
+.mapWrapper iframe { width: 100%; height: 100%; display: block; }
 
-.mapWrapper iframe {
-  width: 100%;
-  height: 100%;
-  display: block;
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 900px) {
+  .carousel { height: 70vh; min-height: 360px; }
+  .featuredGrid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .ctaSection { padding: 3.5rem 1.5rem; }
+  .contactInner { gap: 2.5rem; }
+}
+
+@media (max-width: 768px) {
+  .carousel { height: 65vh; min-height: 320px; }
+  .slide { padding-bottom: 2.5rem; align-items: center; }
+
+  .featuredSection { padding: 2.5rem 1rem; }
+  .featuredGrid { grid-template-columns: 1fr; max-width: 420px; }
+
+  .ctaSection { padding: 3rem 1rem; overflow: hidden; }
+  .ctaContent { width: 100%; box-sizing: border-box; }
+  .ctaButtons { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  .ctaBtnPrimary,
+  .ctaBtnSecondary {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .contactSection { padding: 3rem 1.25rem; }
+  .contactInner { grid-template-columns: 1fr; gap: 2rem; }
+  .mapWrapper { height: 260px; }
+}
+
+@media (max-width: 480px) {
+  .carousel { height: 60vh; min-height: 280px; }
+  .slideContent { padding: 1rem; }
+  .carouselButton { padding: 0.65rem 1.5rem; }
+  .featuredSection { padding: 2rem 0.75rem; }
+  .contactSection { padding: 2rem 1rem; }
+  .socialBtn { width: 42px; height: 42px; }
 }

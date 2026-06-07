@@ -12,6 +12,7 @@ import { Vehicle } from '../vehicles/vehicle.entity';
 
 export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Prueba de Manejo' | 'Cotizacion Enviada' | 'Negociacion' | 'Cerrado' | 'Perdido';
 export type LeadFuente = 'Web' | 'Instagram' | 'Facebook' | 'WhatsApp' | 'TikTok' | 'Referido' | 'Presencial' | 'Llamada' | 'Otro';
+export type LeadTipoPago = 'Contado' | 'Crédito';
 
 @Entity({ name: 'leads' })
 export class Lead {
@@ -52,6 +53,13 @@ export class Lead {
 
   @Column({ default: false })
   contacted_by_phone: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: ['Contado', 'Crédito'],
+    nullable: true,
+  })
+  tipo_pago?: LeadTipoPago;
 
   @CreateDateColumn()
   fecha_creacion: Date;

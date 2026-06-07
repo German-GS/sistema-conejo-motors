@@ -5,55 +5,47 @@
   min-height: 100vh;
 }
 
+/* ── HEADER ──────────────────────────────────── */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 3rem; /* Más espacio vertical y horizontal */
+  padding: 0.75rem 3rem;
   background-color: var(--fondo-tarjeta);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Sombra más sutil y moderna */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-bottom: 1px solid var(--borde-suave);
-  position: sticky; /* Hacemos que la barra se quede fija arriba */
+  position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   width: 100%;
   box-sizing: border-box;
 }
 
-.pageContainer {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
+.logoLink { display: flex; align-items: center; }
 
 .logo {
-  height: 70px; /* ¡Logo más grande! */
+  height: 56px;
   transition: transform 0.2s ease;
 }
+.logo:hover { transform: scale(1.04); }
 
-.logo:hover {
-  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
-}
-
+/* ── NAV ESCRITORIO ───────────────────────────── */
 .nav {
   display: flex;
-  gap: 3rem; /* Más espacio entre los enlaces */
+  gap: 2.5rem;
 }
 
 .nav a {
-  position: relative; /* Necesario para la línea animada de abajo */
+  position: relative;
   text-decoration: none;
   color: var(--texto-secundario);
   font-weight: 600;
-  font-size: 1.1rem; /* Texto un poco más grande */
+  font-size: 1rem;
   padding: 0.3rem 0;
   transition: color 0.3s ease;
+  white-space: nowrap;
 }
-
-.nav a:hover {
-  color: var(--azul-principal); /* Cambia de color al pasar el mouse */
-}
+.nav a:hover { color: var(--azul-principal); }
 
 .nav a::after {
   content: "";
@@ -63,23 +55,98 @@
   background-color: var(--azul-principal);
   bottom: 0;
   left: 0;
-  transform: scaleX(0); /* Empieza sin ancho */
+  transform: scaleX(0);
   transform-origin: center;
   transition: transform 0.3s ease;
 }
+.nav a:hover::after { transform: scaleX(1); }
 
-.nav a:hover::after {
-  transform: scaleX(1); /* Se expande al 100% en el hover */
+.activeLink { color: var(--azul-principal) !important; }
+.activeLink::after { transform: scaleX(1) !important; }
+
+.ingresoBtn { white-space: nowrap; }
+
+/* ── HAMBURGUESA ─────────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+  z-index: 301;
+}
+.hamburger:hover { background: rgba(0,0,0,0.06); }
+
+.hamburger span {
+  display: block;
+  height: 2px;
+  background: var(--azul-principal);
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: center;
 }
 
-.activeLink {
-  color: var(--azul-principal) !important; /* Forzamos el color principal */
+/* Animación a X */
+.hamburgerOpen span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburgerOpen span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburgerOpen span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── OVERLAY MÓVIL ───────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 250;
+  backdrop-filter: blur(2px);
 }
 
-.activeLink::after {
-  transform: scaleX(1) !important; /* La línea siempre es visible */
+/* ── MENÚ MÓVIL ──────────────────────────────── */
+.mobileMenu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: min(320px, 85vw);
+  height: 100vh;
+  background: white;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  padding: 5rem 2rem 2rem;
+  gap: 0.25rem;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+  transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+}
+.mobileMenuOpen { right: 0; }
+
+.mobileLink,
+.mobileActiveLink {
+  display: block;
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background 0.2s, color 0.2s;
+  color: var(--texto-secundario);
+}
+.mobileLink:hover { background: #f1f5f9; color: var(--azul-principal); }
+.mobileActiveLink { color: var(--azul-principal); background: #eff6ff; }
+
+.mobileBtnIngreso {
+  margin-top: 1.5rem;
+  text-align: center;
+  border-radius: 10px;
 }
 
+/* ── CONTENIDO ───────────────────────────────── */
 .mainContent {
   flex-grow: 1;
   width: 100%;
@@ -90,11 +157,46 @@
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
+/* ── FOOTER ──────────────────────────────────── */
 .footer {
   text-align: center;
-  padding: 0.3rem;
+  padding: 0.75rem 1rem;
   background-color: var(--azul-principal);
   color: white;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.footer p { margin: 0; }
+
+.footerDev {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (min-width: 600px) {
+  .footer {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+}
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 900px) {
+  .header { padding: 0.75rem 1.5rem; }
+  .nav { gap: 1.5rem; }
+}
+
+@media (max-width: 768px) {
+  .header { padding: 0.75rem 1.25rem; }
+  .nav { display: none; }
+  .ingresoBtn { display: none; }
+  .hamburger { display: flex; }
+  .logo { height: 44px; }
 }

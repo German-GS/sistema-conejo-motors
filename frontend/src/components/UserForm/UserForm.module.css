@@ -1,7 +1,9 @@
 .form {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
+  align-items: start;
 }
 
 .form input {
@@ -25,7 +27,7 @@
 }
 
 .form button {
-  grid-column: 1 / -1; /* El botón ocupa todas las columnas */
+  grid-column: 1 / -1;
   padding: 0.75rem 1rem;
   background-color: #007bff;
   color: white;
@@ -33,4 +35,46 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
+}
+
+/* ── Campo contraseña con ojo ── */
+.passwordWrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.passwordInput {
+  width: 100%;
+  padding: 0.5rem 2.5rem 0.5rem 0.5rem;
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: inherit;
+}
+.passwordInput:focus {
+  outline: none;
+  border-color: #024f7d;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  user-select: none;
+}
+.eyeBtn:hover { color: #024f7d; }
+
+/* ── Tablet responsive ── */
+@media (max-width: 1024px) {
+  .form { grid-template-columns: 1fr; }
 }

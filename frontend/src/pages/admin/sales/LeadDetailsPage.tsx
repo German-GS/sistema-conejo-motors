@@ -21,6 +21,19 @@ interface Vendedor {
   nombre_completo: string;
 }
 
+interface Financiamiento {
+  id?: number;
+  entidad: string;
+  estado: string;
+  monto_solicitado?: number;
+  monto_aprobado?: number;
+  plazo_meses?: number;
+  tasa_anual?: number;
+  notas?: string;
+  fecha_envio?: string;
+  fecha_respuesta?: string;
+}
+
 interface LeadDetails {
   id: number;
   nombre_cliente: string;
@@ -32,6 +45,7 @@ interface LeadDetails {
   fecha_followup?: string;
   contacted_by_email: boolean;
   contacted_by_phone: boolean;
+  tipo_pago?: 'Contado' | 'Crédito';
   fecha_creacion: string;
   vehiculo_interes?: { id: number; marca: string; modelo: string; año: number };
   vendedor_asignado?: Vendedor;
@@ -84,11 +98,53 @@ export const LeadDetailsPage = () => {
   const [descAct, setDescAct] = useState("");
   const [addingAct, setAddingAct] = useState(false);
 
+  // Financiamiento
+  const [financiamientos, setFinanciamientos] = useState<Financiamiento[]>([]);
+  const [editingFin, setEditingFin] = useState<Record<string, Financiamiento>>({});
+  const [savingFin, setSavingFin] = useState<Record<string, boolean>>({});
+
+  const ENTIDADES = ["Banco Promerica", "Davivienda", "Lafise", "BAC", "Coopenae"];
+  const ESTADOS_FIN = ["Pendiente", "Enviado", "En Revisión", "Pre-Aprobado", "Aprobado", "Rechazado"];
+  const ESTADO_FIN_COLORS: Record<string, string> = {
+    "Pendiente": "#94a3b8", "Enviado": "#3b82f6", "En Revisión": "#f59e0b",
+    "Pre-Aprobado": "#8b5cf6", "Aprobado": "#10b981", "Rechazado": "#ef4444",
+  };
+
+  const getFinData = (entidad: string): Financiamiento =>
+    editingFin[entidad] ?? financiamientos.find(f => f.entidad === entidad) ?? { entidad, estado: "Pendiente" };
+
+  const handleFinChange = (entidad: string, field: keyof Financiamiento, value: any) => {
+    setEditingFin(prev => ({
+      ...prev,
+      [entidad]: { ...getFinData(entidad), [field]: value },
+    }));
+  };
+
+  const handleSaveFin = async (entidad: string) => {
+    if (!lead) return;
+    const data = editingFin[entidad] ?? getFinData(entidad);
+    setSavingFin(prev => ({ ...prev, [entidad]: true }));
+    try {
+      const res = await apiClient.post(`/leads/${lead.id}/financiamientos`, { ...data, entidad });
+      setFinanciamientos(prev => {
+        const idx = prev.findIndex(f => f.entidad === entidad);
+        if (idx >= 0) { const n = [...prev]; n[idx] = res.data; return n; }
+        return [...prev, res.data];
+      });
+      setEditingFin(prev => { const n = { ...prev }; delete n[entidad]; return n; });
+      toast.success(`${entidad}: guardado.`);
+    } catch { toast.error("Error al guardar."); }
+    finally { setSavingFin(prev => ({ ...prev, [entidad]: false })); }
+  };
+
   useEffect(() => {
     if (!leadId) return;
     apiClient.get(`/leads/${leadId}`)
       .then((res) => setLead(res.data))
       .catch(() => toast.error("No se pudo cargar el lead."));
+    apiClient.get(`/leads/${leadId}/financiamientos`)
+      .then((res) => setFinanciamientos(res.data))
+      .catch(() => {});
     apiClient.get("/users")
       .then((res) => setVendedores(res.data.filter((u: any) => u.rol?.nombre === "Vendedor" || u.rol?.nombre === "Administrador")))
       .catch(() => {});
@@ -333,6 +389,22 @@ export const LeadDetailsPage = () => {
             />
           </div>
 
+          {/* ── MODALIDAD DE COMPRA ── */}
+          <div className={styles.card}>
+            <h4>💳 Modalidad de Compra</h4>
+            <div className={styles.tipoPagoRow}>
+              {(["Contado", "Crédito"] as const).map(tipo => (
+                <button
+                  key={tipo}
+                  className={`${styles.tipoPagoBtn} ${lead.tipo_pago === tipo ? styles.tipoPagoActive : ""}`}
+                  onClick={() => save({ tipo_pago: tipo } as any)}
+                >
+                  {tipo === "Contado" ? "💵" : "🏦"} {tipo}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {saving && <p className={styles.savingHint}>Guardando...</p>}
         </div>
 
@@ -401,6 +473,105 @@ export const LeadDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* ── PANEL FINANCIAMIENTO (solo si es Crédito) ── */}
+      {lead.tipo_pago === "Crédito" && (
+        <div className={styles.finPanel}>
+          <h2 className={styles.finTitle}>🏦 Gestión de Financiamiento</h2>
+          <p className={styles.finSubtitle}>
+            Registra el estado de la solicitud con cada entidad bancaria.
+          </p>
+          <div className={styles.finGrid}>
+            {ENTIDADES.map(entidad => {
+              const fin = getFinData(entidad);
+              const isEditing = !!editingFin[entidad];
+              const isSaving = savingFin[entidad];
+              const estadoColor = ESTADO_FIN_COLORS[fin.estado] ?? "#94a3b8";
+
+              return (
+                <div key={entidad} className={`${styles.finCard} ${fin.estado === "Aprobado" ? styles.finCardAprobado : fin.estado === "Rechazado" ? styles.finCardRechazado : ""}`}>
+                  <div className={styles.finCardHeader}>
+                    <span className={styles.finEntidad}>🏛 {entidad}</span>
+                    <span className={styles.finEstadoBadge} style={{ background: estadoColor }}>
+                      {fin.estado}
+                    </span>
+                  </div>
+
+                  <div className={styles.finFields}>
+                    <div className={styles.finField}>
+                      <label>Estado</label>
+                      <select
+                        value={fin.estado}
+                        onChange={e => handleFinChange(entidad, "estado", e.target.value)}
+                        className={styles.finSelect}
+                      >
+                        {ESTADOS_FIN.map(e => <option key={e} value={e}>{e}</option>)}
+                      </select>
+                    </div>
+                    <div className={styles.finField}>
+                      <label>Monto Solicitado (₡)</label>
+                      <input type="number" placeholder="0" className={styles.finInput}
+                        value={fin.monto_solicitado ?? ""}
+                        onChange={e => handleFinChange(entidad, "monto_solicitado", e.target.value ? Number(e.target.value) : undefined)}
+                      />
+                    </div>
+                    <div className={styles.finField}>
+                      <label>Monto Aprobado (₡)</label>
+                      <input type="number" placeholder="0" className={styles.finInput}
+                        value={fin.monto_aprobado ?? ""}
+                        onChange={e => handleFinChange(entidad, "monto_aprobado", e.target.value ? Number(e.target.value) : undefined)}
+                      />
+                    </div>
+                    <div className={styles.finField}>
+                      <label>Plazo (meses)</label>
+                      <input type="number" placeholder="60" className={styles.finInput}
+                        value={fin.plazo_meses ?? ""}
+                        onChange={e => handleFinChange(entidad, "plazo_meses", e.target.value ? Number(e.target.value) : undefined)}
+                      />
+                    </div>
+                    <div className={styles.finField}>
+                      <label>Tasa Anual (%)</label>
+                      <input type="number" step="0.1" placeholder="12" className={styles.finInput}
+                        value={fin.tasa_anual ?? ""}
+                        onChange={e => handleFinChange(entidad, "tasa_anual", e.target.value ? Number(e.target.value) : undefined)}
+                      />
+                    </div>
+                    <div className={styles.finField}>
+                      <label>Fecha Envío</label>
+                      <input type="date" className={styles.finInput}
+                        value={fin.fecha_envio ?? ""}
+                        onChange={e => handleFinChange(entidad, "fecha_envio", e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.finField}>
+                      <label>Fecha Respuesta</label>
+                      <input type="date" className={styles.finInput}
+                        value={fin.fecha_respuesta ?? ""}
+                        onChange={e => handleFinChange(entidad, "fecha_respuesta", e.target.value)}
+                      />
+                    </div>
+                    <div className={`${styles.finField} ${styles.finFieldFull}`}>
+                      <label>Notas</label>
+                      <textarea rows={2} placeholder="Observaciones, requisitos, contacto..." className={styles.finTextarea}
+                        value={fin.notas ?? ""}
+                        onChange={e => handleFinChange(entidad, "notas", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    className={styles.finSaveBtn}
+                    onClick={() => handleSaveFin(entidad)}
+                    disabled={isSaving || !isEditing}
+                  >
+                    {isSaving ? "Guardando..." : "💾 Guardar"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

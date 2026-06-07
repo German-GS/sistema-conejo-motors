@@ -37,6 +37,10 @@
   gap: 1.5rem; /* Espacio entre los campos */
 }
 
+@media (max-width: 1024px) {
+  .formGrid { grid-template-columns: 1fr; gap: 1rem; }
+}
+
 .formGridFullWidth {
   grid-column: 1 / -1; /* Para que un campo ocupe toda la anchura */
 }

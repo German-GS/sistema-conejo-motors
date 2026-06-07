@@ -8,11 +8,13 @@ import {
   OneToMany,
   ManyToOne,
 } from 'typeorm';
+
 import { Bodega } from '../bodegas/bodega.entity';
 import { TrackingHistory } from '../tracking/tracking.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 
 export type VehicleStatus = 'Disponible' | 'Reservado' | 'Vendido';
+export type VehicleVisibility = 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
 export type VehicleCategory =
   | 'Sedan'
   | 'SUV'
@@ -63,6 +65,13 @@ export class Vehicle {
     default: 'Disponible',
   })
   estado: VehicleStatus;
+
+  @Column({
+    type: 'enum',
+    enum: ['Visible', 'Oculto', 'Agotado', 'Contrapedido'],
+    default: 'Visible',
+  })
+  visibilidad: VehicleVisibility;
 
   // --- ESPECIFICACIONES TÉCNICAS ---
 

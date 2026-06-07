@@ -1,7 +1,10 @@
+import { getImageUrl } from "@/utils/imageUrl";
 import { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./PricingPage.module.css";
+import { VisibilityButtons } from "@/components/VisibilityButtons";
+import { VehicleRibbon } from "@/components/VehicleRibbon";
 
 interface Vehicle {
   id: number;
@@ -11,6 +14,7 @@ interface Vehicle {
   color: string;
   vin: string;
   estado: string;
+  visibilidad?: "Visible" | "Oculto" | "Agotado" | "Contrapedido";
   precio_costo: number;
   precio_venta: number;
   precio_venta_final: number | null;
@@ -120,6 +124,7 @@ export const PricingPage = () => {
               <th>Descuento %</th>
               <th>Precio Final</th>
               <th>Margen</th>
+              <th>Visibilidad</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -135,9 +140,12 @@ export const PricingPage = () => {
                 <tr key={v.id} className={isEditing ? styles.editingRow : ""}>
                   <td>
                     <div className={styles.vehicleCell}>
-                      {v.imagenes?.[0] && (
-                        <img src={`${apiClient.defaults.baseURL}/${v.imagenes[0].url}`} alt="" className={styles.thumb} />
-                      )}
+                      <div className={styles.thumbWrapper}>
+                        {v.imagenes?.[0] && (
+                          <img src={getImageUrl(v.imagenes[0].url)} alt="" className={styles.thumb} />
+                        )}
+                        <VehicleRibbon visibilidad={v.visibilidad} />
+                      </div>
                       <div>
                         <strong>{v.marca} {v.modelo}</strong>
                         <br /><small>{v.año} · {v.color}</small>
@@ -205,6 +213,19 @@ export const PricingPage = () => {
                         {margen.toFixed(1)}%
                       </span>
                     )}
+                  </td>
+
+                  {/* Visibilidad */}
+                  <td>
+                    <VisibilityButtons
+                      vehicleId={v.id}
+                      current={v.visibilidad ?? "Visible"}
+                      onChanged={(val) =>
+                        setVehicles(prev =>
+                          prev.map(x => x.id === v.id ? { ...x, visibilidad: val } : x)
+                        )
+                      }
+                    />
                   </td>
 
                   {/* Acciones */}

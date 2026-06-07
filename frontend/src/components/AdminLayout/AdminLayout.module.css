@@ -12,12 +12,13 @@
   color: white;
   display: flex;
   flex-direction: column;
-  padding: 1rem 0.75rem;
+  padding: 1rem 0.75rem 0;
   height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
   transition: width 0.25s ease;
   z-index: 100;
 }
@@ -36,6 +37,15 @@
   flex-shrink: 0;
 }
 .logoImage { width: 32px; height: auto; flex-shrink: 0; }
+.logoText {
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  overflow: hidden;
+  transition: opacity 0.2s;
+}
+.sidebar.collapsed .logoText { opacity: 0; width: 0; }
 
 /* User info */
 .userInfo {
@@ -49,69 +59,122 @@
   margin-bottom: 0.5rem;
 }
 
-/* Nav — ocupa el espacio restante y hace scroll si es necesario */
+/* Nav scrollable — ocupa el espacio entre logo y fondo */
 .nav {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  padding-bottom: 0.5rem;
 }
-.nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+.nav::-webkit-scrollbar { display: none; }
 
-/* Links individuales */
-.nav a {
+/* ── NavLink individual ── */
+.navLink {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   color: rgba(255, 255, 255, 0.72);
   text-decoration: none;
-  padding: 0.55rem 0.75rem;
+  padding: 0.52rem 0.75rem;
   border-radius: 6px;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   overflow: hidden;
   white-space: nowrap;
   transition: background 0.15s, color 0.15s;
-  font-size: 0.88rem;
+  font-size: 0.875rem;
 }
-.nav a:hover {
+.navLink:hover {
   background: rgba(255, 255, 255, 0.12);
   color: white;
 }
-.sidebar.collapsed .nav a {
+.navLinkActive {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: white !important;
+  font-weight: 600;
+}
+.sidebar.collapsed .navLink {
   justify-content: center;
-  padding: 0.55rem 0;
+  padding: 0.52rem 0;
 }
 
-/* Etiquetas de sección */
+/* ── Encabezado de sección COLAPSABLE ── */
 .sectionLabel {
-  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.8rem 0.75rem 0.2rem;
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   color: rgba(255,255,255,0.4);
   text-transform: uppercase;
-  padding: 0.9rem 0.75rem 0.2rem;
   white-space: nowrap;
   overflow: hidden;
+  transition: color 0.15s;
 }
+.sectionLabel:hover { color: rgba(255,255,255,0.7); }
+.sectionLabel span { overflow: hidden; text-overflow: ellipsis; }
+
+/* En colapsado: mostrar solo línea divisora */
 .sidebar.collapsed .sectionLabel {
-  /* En colapsado mostramos solo una línea divisora */
-  padding: 0.6rem 0;
+  padding: 0.5rem 0;
   border-top: 1px solid rgba(255,255,255,0.12);
-  color: transparent;
+  justify-content: center;
   font-size: 0;
 }
+.sidebar.collapsed .sectionLabel span { display: none; }
+.sidebar.collapsed .chevron { display: none; }
 
-/* Textos que desaparecen al colapsar */
-.logoText, .linkText {
-  white-space: nowrap;
-  transition: opacity 0.2s ease;
+/* Chevron del encabezado */
+.chevron {
+  flex-shrink: 0;
+  color: rgba(255,255,255,0.35);
+  transition: transform 0.25s ease, color 0.15s;
 }
-.sidebar.collapsed .logoText,
-.sidebar.collapsed .linkText {
-  opacity: 0;
-  width: 0;
+.chevronOpen {
+  transform: rotate(180deg);
+  color: rgba(255,255,255,0.6);
+}
+
+/* Contenedor de items de una sección */
+.sectionItems {
+  /* sin animación extra — show/hide via JSX condicional */
+}
+
+/* ── Sección SISTEMA — fija al fondo ── */
+.sidebarBottom {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding: 0.5rem 0 2rem;
+  margin-top: 0.25rem;
+}
+
+.sectionLabelStatic {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  padding: 0.5rem 0.75rem 0.2rem;
+  white-space: nowrap;
   overflow: hidden;
 }
+.sidebar.collapsed .sectionLabelStatic { font-size: 0; padding: 0; }
+
+/* Textos de link que desaparecen al colapsar */
+.linkText {
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  transition: opacity 0.2s;
+}
+.sidebar.collapsed .linkText { opacity: 0; width: 0; }
 
 /* ── Panel principal ── */
 .mainPanel {
@@ -157,7 +220,93 @@
 /* Contenido */
 .content { flex: 1; padding: 2rem; overflow-y: auto; }
 
-/* Notificaciones */
+/* ── Hamburger (solo tablet/móvil) ── */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  color: #374151;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.hamburger:hover { background: #f1f5f9; }
+
+/* ── Backdrop (solo tablet/móvil) ── */
+.backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 99;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ═══════════════════════════════════════════════════════
+   TABLET  (≤ 1024px)
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  /* Hamburger visible */
+  .hamburger { display: flex; align-items: center; justify-content: center; }
+
+  /* Sidebar: oculto fuera de pantalla por defecto */
+  .sidebar {
+    transform: translateX(-100%);
+    width: 260px !important;
+    transition: transform 0.28s ease, width 0s;
+    box-shadow: none;
+  }
+
+  /* Sidebar abierto */
+  .sidebar.mobileOpen {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+  }
+
+  /* En tablet el sidebar nunca está "collapsed" visualmente */
+  .sidebar.collapsed {
+    width: 260px !important;
+  }
+  .sidebar.collapsed .logoText { opacity: 1; width: auto; }
+  .sidebar.collapsed .linkText { opacity: 1; width: auto; }
+  .sidebar.collapsed .sectionLabel {
+    padding: 0.8rem 0.75rem 0.2rem;
+    border-top: none;
+    justify-content: space-between;
+    font-size: 0.64rem;
+  }
+  .sidebar.collapsed .sectionLabel span { display: inline; }
+  .sidebar.collapsed .chevron { display: inline-block; }
+  .sidebar.collapsed .sectionLabelStatic {
+    font-size: 0.64rem;
+    padding: 0.5rem 0.75rem 0.2rem;
+  }
+  .sidebar.collapsed .navLink {
+    justify-content: flex-start;
+    padding: 0.52rem 0.75rem;
+  }
+
+  /* Panel principal ocupa toda la anchura */
+  .mainPanel {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  .mainPanelCollapsed {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Backdrop visible */
+  .backdrop { display: block; }
+
+  /* Contenido con menos padding lateral */
+  .content { padding: 1rem; }
+  .header { padding: 0.75rem 1rem; }
+}
+
+/* ── Notificaciones */
 .notificationBell {
   position: relative;
   cursor: pointer;
@@ -185,9 +334,9 @@
 }
 
 @keyframes pulse {
-  0%   { transform: scale(1);   box-shadow: 0 0 8px rgba(231,8,30,0.6); }
+  0%   { transform: scale(1);    box-shadow: 0 0 8px rgba(231,8,30,0.6); }
   50%  { transform: scale(1.12); box-shadow: 0 0 14px rgba(231,8,30,1); }
-  100% { transform: scale(1);   box-shadow: 0 0 8px rgba(231,8,30,0.6); }
+  100% { transform: scale(1);    box-shadow: 0 0 8px rgba(231,8,30,0.6); }
 }
 
 /* Badge de follow-ups vencidos en el link del menú */

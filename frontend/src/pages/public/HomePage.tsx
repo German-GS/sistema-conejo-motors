@@ -1,3 +1,4 @@
+import { getImageUrl } from "@/utils/imageUrl";
 // src/pages/public/HomePage.tsx
 
 import { useState, useEffect } from "react";
@@ -86,7 +87,7 @@ export const HomePage = () => {
             >
               {slide.imageUrl && (
                 <img
-                  src={`${apiClient.defaults.baseURL}/${slide.imageUrl}`}
+                  src={getImageUrl(slide.imageUrl)}
                   alt={slide.title}
                   className={styles.slideImg}
                   loading={index === 0 ? "eager" : "lazy"}
@@ -115,9 +116,9 @@ export const HomePage = () => {
                 <img
                   src={
                     vehicle.imagenes?.[0]
-                      ? `${apiClient.defaults.baseURL}/${vehicle.imagenes[0].url}`
+                      ? getImageUrl(vehicle.imagenes[0].url)
                       : vehicle.profile?.imagenes?.[0]
-                      ? `${apiClient.defaults.baseURL}/${vehicle.profile.imagenes[0].url}`
+                      ? getImageUrl(vehicle.profile.imagenes[0].url)
                       : "/placeholder.png"
                   }
                   alt={`${vehicle.marca} ${vehicle.modelo}`}

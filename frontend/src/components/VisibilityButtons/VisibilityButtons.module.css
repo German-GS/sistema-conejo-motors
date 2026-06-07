@@ -1,0 +1,57 @@
+/* VisibilityButtons.module.css */
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) {
+  border-color: #94a3b8;
+  color: #334155;
+  background: #f8fafc;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.emoji { font-size: 0.85rem; }
+.label { font-size: 0.72rem; }
+
+/* Estados activos */
+.active_Visible {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #15803d;
+  font-weight: 700;
+}
+.active_Oculto {
+  background: #f1f5f9;
+  border-color: #64748b;
+  color: #334155;
+  font-weight: 700;
+}
+.active_Agotado {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #b91c1c;
+  font-weight: 700;
+}
+.active_Contrapedido {
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1d4ed8;
+  font-weight: 700;
+}

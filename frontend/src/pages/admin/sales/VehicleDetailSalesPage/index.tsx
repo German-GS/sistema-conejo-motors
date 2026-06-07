@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
+import { getImageUrl } from "@/utils/imageUrl";
 import toast from "react-hot-toast";
 import styles from "./VehicleDetailSalesPage.module.css";
 import { LoanCalculator } from "@/components/LoanCalculator";
@@ -75,7 +76,7 @@ export const VehicleDetailSalesPage = () => {
 
   if (!vehicle) return <p style={{ padding: "2rem" }}>Cargando...</p>;
 
-  const imgBase = apiClient.defaults.baseURL;
+  
   const images = vehicle.imagenes ?? [];
 
   return (
@@ -98,7 +99,7 @@ export const VehicleDetailSalesPage = () => {
           <div className={styles.mainImgWrapper}>
             <img
               className={styles.mainImg}
-              src={images[activeImg] ? `${imgBase}/${images[activeImg].url}` : "/placeholder.png"}
+              src={images[activeImg] ? getImageUrl(images[activeImg].url) : "/placeholder.png"}
               alt={`${vehicle.marca} ${vehicle.modelo}`}
             />
           </div>
@@ -107,7 +108,7 @@ export const VehicleDetailSalesPage = () => {
               {images.map((img, i) => (
                 <img
                   key={img.id ?? i}
-                  src={`${imgBase}/${img.url}`}
+                  src={getImageUrl(img.url)}
                   alt={`Vista ${i + 1}`}
                   className={i === activeImg ? styles.thumbActive : styles.thumb}
                   onClick={() => setActiveImg(i)}
