@@ -54,7 +54,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
   const hasFilters = filterCategoria !== 'Todas' || filterMarca !== 'Todas' || filterColor !== 'Todos' || filterPrecioMax > 0 || filterAutonomiaMin > 0;
 
   return (
-    <div className="container mx-auto px-4" style={{ maxWidth: '1200px', paddingTop: '100px', paddingBottom: '4rem' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '100px clamp(1rem, 4vw, 2rem) 4rem' }}>
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
@@ -94,7 +94,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
 
           {/* Fila 2 — Marca / Color / Precio / Autonomía */}
           <div style={{ padding: '1.25rem 1.5rem 1.5rem' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1.4fr 1.4fr', gap:'1.5rem', alignItems:'end' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap:'1.25rem', alignItems:'end' }}>
               {/* Marca */}
               <div>
                 <label style={{ display:'block', fontSize:'0.68rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'0.6rem' }}>Marca</label>
@@ -160,7 +160,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
         </div>
       ) : (
         <>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:'1.75rem' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap:'1.5rem' }}>
             {paginated.map(vehicle => {
               const imgSrc = vehicle.imagenes?.[0]?.url ? getImageUrl(vehicle.imagenes[0].url)
                 : vehicle.profile?.imagenes?.[0]?.url ? getImageUrl(vehicle.profile.imagenes[0].url)

@@ -23,8 +23,8 @@ function SocialIcon({ s }: { s: typeof SOCIALS[0] }) {
 export function Footer() {
   return (
     <footer style={{ background:'#071f37', color:'rgba(255,255,255,0.65)', paddingTop:'3.5rem', paddingBottom:'1.75rem' }}>
-      <div className="container mx-auto px-6" style={{ maxWidth: '1200px' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'2.5rem', marginBottom:'2.5rem' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(1.25rem, 5vw, 2rem)' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap:'2.5rem', marginBottom:'2.5rem' }}>
           {/* Marca */}
           <div>
             <Image src="/logo.png" alt="Conejo Motors" width={160} height={36}
@@ -81,7 +81,7 @@ export function Footer() {
         </div>
 
         {/* Barra inferior */}
-        <div style={{ borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:'1.25rem', display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'0.5rem' }}>
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:'1.25rem', display:'flex', flexDirection:'column', gap:'0.4rem' }}>
           <p style={{ fontSize:'0.8rem', color:'rgba(255,255,255,0.65)' }}>
             &copy; {new Date().getFullYear()} Conejo Motors. Todos los derechos reservados.
           </p>

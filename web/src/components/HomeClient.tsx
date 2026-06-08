@@ -24,11 +24,11 @@ function SavingsCalculator() {
   const ahorroAno = ahorroMes * 12;
 
   return (
-    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
+    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'hidden' }}>
       {/* Círculos decorativos */}
       <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'400px', height:'400px', borderRadius:'50%', background:'rgba(4,199,178,0.06)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'300px', height:'300px', borderRadius:'50%', background:'rgba(69,165,206,0.07)', pointerEvents:'none' }} />
-      <div className="container">
+      <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap:'2.5rem', alignItems:'center' }}>
           <div>
             <span style={{ display:'inline-block', background:'rgba(4,199,178,0.15)', color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', padding:'0.3rem 0.9rem', borderRadius:'99px', marginBottom:'0.75rem' }}>Herramienta interactiva</span>
@@ -62,23 +62,23 @@ function SavingsCalculator() {
             </div>
           </div>
 
-          <div style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'20px', padding:'2rem' }}>
-            <div className="grid grid-cols-2 gap-5 mb-7">
-              <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'16px', padding:'1.75rem 1.25rem', textAlign:'center' }}>
-                <div style={{ fontSize:'2.2rem', marginBottom:'0.75rem' }}>⛽</div>
-                <div style={{ fontSize:'0.78rem', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'rgba(255,255,255,0.5)', marginBottom:'0.6rem' }}>Con gasolina / mes</div>
-                <div style={{ fontSize:'1.4rem', fontWeight:800, color:'#fff' }}>{formatCRC(costoGas)}</div>
+          <div style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'20px', padding:'clamp(1.25rem, 4vw, 2rem)' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginBottom:'1rem' }}>
+              <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'16px', padding:'1.5rem 1rem', textAlign:'center' }}>
+                <div style={{ fontSize:'2rem', marginBottom:'0.6rem' }}>⛽</div>
+                <div style={{ fontSize:'0.73rem', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'rgba(255,255,255,0.5)', marginBottom:'0.5rem' }}>Con gasolina / mes</div>
+                <div style={{ fontSize:'clamp(1.1rem,3vw,1.4rem)', fontWeight:800, color:'#fff' }}>{formatCRC(costoGas)}</div>
               </div>
-              <div style={{ background:'rgba(4,199,178,0.12)', border:'1px solid rgba(4,199,178,0.3)', borderRadius:'16px', padding:'1.75rem 1.25rem', textAlign:'center' }}>
-                <div style={{ fontSize:'2.2rem', marginBottom:'0.75rem' }}>⚡</div>
-                <div style={{ fontSize:'0.78rem', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'rgba(255,255,255,0.5)', marginBottom:'0.6rem' }}>Con eléctrico / mes</div>
-                <div style={{ fontSize:'1.4rem', fontWeight:800, color:'#04c7b2' }}>{formatCRC(costoElec)}</div>
+              <div style={{ background:'rgba(4,199,178,0.12)', border:'1px solid rgba(4,199,178,0.3)', borderRadius:'16px', padding:'1.5rem 1rem', textAlign:'center' }}>
+                <div style={{ fontSize:'2rem', marginBottom:'0.6rem' }}>⚡</div>
+                <div style={{ fontSize:'0.73rem', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'rgba(255,255,255,0.5)', marginBottom:'0.5rem' }}>Con eléctrico / mes</div>
+                <div style={{ fontSize:'clamp(1.1rem,3vw,1.4rem)', fontWeight:800, color:'#04c7b2' }}>{formatCRC(costoElec)}</div>
               </div>
             </div>
-            <div style={{ background:'rgba(4,199,178,0.1)', border:'1px solid rgba(4,199,178,0.25)', borderRadius:'16px', padding:'2rem 1.5rem', textAlign:'center', marginBottom:'1.75rem' }}>
-              <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.12em', color:'#04c7b2', textTransform:'uppercase', marginBottom:'0.75rem' }}>Ahorro estimado</p>
-              <p style={{ fontSize:'2.8rem', fontWeight:900, color:'#fff', lineHeight:1, marginBottom:'0.5rem' }}>{formatCRC(ahorroMes)}<span style={{ fontSize:'1.1rem', fontWeight:400, color:'rgba(255,255,255,0.5)' }}> /mes</span></p>
-              <p style={{ fontSize:'1.05rem', fontWeight:600, color:'rgba(255,255,255,0.7)' }}>{formatCRC(ahorroAno)} al año</p>
+            <div style={{ background:'rgba(4,199,178,0.1)', border:'1px solid rgba(4,199,178,0.25)', borderRadius:'16px', padding:'1.5rem', textAlign:'center', marginBottom:'1rem' }}>
+              <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.12em', color:'#04c7b2', textTransform:'uppercase', marginBottom:'0.6rem' }}>Ahorro estimado</p>
+              <p style={{ fontSize:'clamp(2rem,6vw,2.8rem)', fontWeight:900, color:'#fff', lineHeight:1, marginBottom:'0.4rem' }}>{formatCRC(ahorroMes)}<span style={{ fontSize:'1rem', fontWeight:400, color:'rgba(255,255,255,0.5)' }}> /mes</span></p>
+              <p style={{ fontSize:'1rem', fontWeight:600, color:'rgba(255,255,255,0.7)' }}>{formatCRC(ahorroAno)} al año</p>
             </div>
             <Link href="/catalog"
               style={{ display:'block', textAlign:'center', background:'#04c7b2', color:'#071f37', fontWeight:700, padding:'0.85rem 1.5rem', borderRadius:'12px', fontSize:'0.95rem', transition:'opacity 0.2s' }}
@@ -130,7 +130,7 @@ function ElectroSection() {
   ];
   return (
     <section className="section section--gray">
-      <div className="container">
+      <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'0 clamp(1rem,4vw,1.5rem)' }}>
         <div className="section-header">
           <span className="section-tag">¿Por qué eléctrico?</span>
           <h2 className="section-title mt-2">Ventajas de la electromovilidad</h2>
@@ -161,8 +161,8 @@ function ContactSection() {
     { href: 'https://www.tiktok.com/@conejomotors', label: 'TikTok', hoverBg: '#010101', icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg> },
   ];
   return (
-    <section id="contacto" style={{ background:'#071f37', padding:'4rem 1.5rem', color:'#fff' }}>
-      <div className="container">
+    <section id="contacto" style={{ background:'#071f37', padding:'4rem clamp(1rem,4vw,1.5rem)', color:'#fff' }}>
+      <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap:'2.5rem', alignItems:'stretch' }}>
           {/* Info */}
           <div style={{ display:'flex', flexDirection:'column' }}>
@@ -241,7 +241,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div className="relative overflow-hidden" style={{ height: 'calc(100vh - 68px)', minHeight: '520px' }}>
+        <div className="relative" style={{ height: 'calc(100vh - 68px)', minHeight: '520px', overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
           {slides.map((slide, i) => (
             <div key={i}
               className={`absolute inset-0 transition-opacity duration-700 ${i === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -304,7 +304,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
       {/* ── VEHÍCULOS DESTACADOS ── */}
       {featuredVehicles.length > 0 && (
         <section className="section">
-          <div className="container">
+          <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'0 clamp(1rem,4vw,1.5rem)' }}>
             <div className="section-header">
               <span className="section-tag">Selección del mes</span>
               <h2 className="section-title mt-2">Vehículos Destacados</h2>

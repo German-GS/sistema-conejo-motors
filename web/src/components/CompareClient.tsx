@@ -125,7 +125,7 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
 
   return (
     <div style={{ paddingTop: '96px', paddingBottom: '4rem', minHeight: '100vh', background: '#f8fafc' }}>
-      <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(1rem, 4vw, 2rem)' }}>
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
