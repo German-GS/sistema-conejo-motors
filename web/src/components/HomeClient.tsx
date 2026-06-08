@@ -77,15 +77,15 @@ function SavingsCalculator() {
                 <div className="text-xs text-white/70 mb-1">Con gasolina / mes</div>
                 <div className="text-lg font-bold">{formatCRC(costoGas)}</div>
               </div>
-              <div className="bg-[#00a651]/20 border border-[#00a651]/40 rounded-xl p-4 text-center">
+              <div className="bg-white/10 border border-white/20 rounded-xl p-4 text-center">
                 <div className="text-2xl mb-1">⚡</div>
                 <div className="text-xs text-white/70 mb-1">Con eléctrico / mes</div>
-                <div className="text-lg font-bold text-[#4ade80]">{formatCRC(costoElec)}</div>
+                <div className="text-lg font-bold text-white">{formatCRC(costoElec)}</div>
               </div>
             </div>
             <div className="text-center py-4 border-t border-white/20">
               <p className="text-white/70 text-sm mb-1">Ahorro estimado</p>
-              <p className="text-3xl font-black text-[#4ade80]">{formatCRC(ahorroMes)}<span className="text-lg font-normal text-white/60"> /mes</span></p>
+              <p className="text-3xl font-black text-white">{formatCRC(ahorroMes)}<span className="text-lg font-normal text-white/60"> /mes</span></p>
               <p className="text-lg font-semibold text-white/80 mt-1">{formatCRC(ahorroAno)} al año</p>
             </div>
             <Link href="/catalog" className="btn-primary w-full mt-6 block text-center">
@@ -114,7 +114,7 @@ function StatsBar() {
           {STATS.map((s, i) => (
             <div key={i} className="text-center text-white">
               <div className="text-3xl mb-1">{s.icon}</div>
-              <div className="text-lg font-bold text-[#4ade80]">{s.value}</div>
+              <div className="text-lg font-bold text-white">{s.value}</div>
               <div className="text-sm text-white/70">{s.label}</div>
             </div>
           ))}
@@ -332,7 +332,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
               })}
             </div>
             <div className="text-center mt-10">
-              <Link href="/catalog" className="btn-outline">Ver catálogo completo →</Link>
+              <Link href="/catalog" className="btn-outline" style={{ color: 'var(--brand-gray)', borderColor: 'var(--brand-gray)' }}>Ver catálogo completo →</Link>
             </div>
           </div>
         </section>
@@ -342,17 +342,17 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
       <SavingsCalculator />
 
       {/* ── CTA ── */}
-      <section className="py-16 bg-gradient-to-r from-[#00a651] to-[#007a3d] text-white text-center px-4">
+      <section className="py-16 bg-gradient-to-r from-[#1a1a2e] to-[#0f3460] text-white text-center px-4">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-black mb-3">El futuro de la movilidad ya está en Costa Rica</h2>
           <p className="text-white/85 mb-8">Compara modelos lado a lado o agenda una asesoría personalizada con nuestro equipo.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <a href="https://wa.me/50672071157?text=Hola%2C%20quiero%20agendar%20una%20asesor%C3%ADa"
               target="_blank" rel="noreferrer"
-              className="bg-white text-[#00a651] font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors">
+              className="bg-[#00a651] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#007a3d] transition-colors">
               📅 Agendar Asesoría
             </a>
-            <Link href="/compare" className="border-2 border-white text-white font-bold px-6 py-3 rounded-xl hover:bg-white hover:text-[#00a651] transition-colors">
+            <Link href="/compare" className="border-2 border-white text-white font-bold px-6 py-3 rounded-xl hover:bg-white hover:text-[#1a1a2e] transition-colors">
               ⚖️ Comparar vehículos
             </Link>
           </div>
