@@ -118,7 +118,7 @@ const StatsBar = () => (
   <div className={styles.statsBar}>
     {[
       { icon: "⚡", value: "100%", label: "Modelos eléctricos" },
-      { icon: "🛡️", value: "3 años", label: "Garantía incluida" },
+      { icon: "🔋", value: "3,000 ciclos", label: "Garantía Batería Blade BYD" },
       { icon: "🚗", value: "Entrega", label: "En todo Costa Rica" },
       { icon: "💬", value: "Asesoría", label: "Personalizada sin costo" },
     ].map((s, i) => (
