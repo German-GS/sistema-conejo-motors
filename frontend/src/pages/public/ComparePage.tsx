@@ -4,6 +4,7 @@ import apiClient from "@/api/apiClient";
 import { Modal } from "@/components/Modal";
 import styles from "./ComparePage.module.css";
 import stylesLayout from "@/components/PublicLayout/PublicLayout.module.css";
+import { SeoHead } from "@/components/SeoHead";
 
 // ── Interfaces ─────────────────────────────────────────────────────────────
 interface Vehicle {
@@ -244,8 +245,22 @@ export const ComparePage = () => {
   const hasAny = selected.some(Boolean);
   const COLORS = ["#024f7d", "#00c7b1", "#f59e0b"];
 
+  // SEO dinámico: si ya eligió vehículos, el título los nombra
+  const selectedNames = selected.filter(Boolean).map(v => `${v!.marca} ${v!.modelo}`);
+  const seoTitle = selectedNames.length >= 2
+    ? `Comparar ${selectedNames.join(" vs ")} en Costa Rica`
+    : "Comparador de Vehículos Eléctricos";
+  const seoDesc = selectedNames.length >= 2
+    ? `Compara el ${selectedNames.join(", ")} en Conejo Motors. Autonomía, precio, batería y más especificaciones.`
+    : "Herramienta para comparar vehículos eléctricos en Conejo Motors Costa Rica. Compara autonomía, precio, batería y rendimiento de hasta 3 modelos.";
+
   return (
     <div className={stylesLayout.pageContainer}>
+      <SeoHead
+        title={seoTitle}
+        description={seoDesc}
+        canonical="/compare"
+      />
       <div className={styles.compareContainer}>
 
         {/* ── Encabezado ── */}

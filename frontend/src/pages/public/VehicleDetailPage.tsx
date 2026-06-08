@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import styles from "./VehicleDetailPage.module.css";
 import { LoanCalculator } from "@/components/LoanCalculator";
 import { VehicleRibbon } from "@/components/VehicleRibbon";
+import { SeoHead } from "@/components/SeoHead";
 
 // --- 1. INTERFAZ COMPLETA Y CORRECTA ---
 interface VehicleDetail {
@@ -105,8 +106,59 @@ export const VehicleDetailPage = () => {
 
   if (!vehicle) return <p>Cargando detalles del vehículo...</p>;
 
+  // SEO: título, descripción y JSON-LD dinámicos por vehículo
+  const vehicleName = `${vehicle.marca} ${vehicle.modelo} ${vehicle.año ?? ""}`.trim();
+  const firstImage  = vehicle.imagenes?.[0]?.url
+    ? getImageUrl(vehicle.imagenes[0].url)
+    : vehicle.profile?.imagenes?.[0]?.url
+    ? getImageUrl(vehicle.profile.imagenes[0].url)
+    : undefined;
+
+  const seoDesc = [
+    `${vehicleName} eléctrico disponible en Conejo Motors Costa Rica.`,
+    vehicle.precio_venta
+      ? `Precio: ${new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(vehicle.precio_venta)}.`
+      : "",
+    vehicle.autonomia_km ? `Autonomía: ${vehicle.autonomia_km} km.` : "",
+    vehicle.capacidad_bateria_kwh ? `Batería: ${vehicle.capacidad_bateria_kwh} kWh.` : "",
+  ].filter(Boolean).join(" ");
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": vehicleName,
+    "description": seoDesc,
+    "brand": { "@type": "Brand", "name": vehicle.marca },
+    "model": vehicle.modelo,
+    "vehicleModelDate": vehicle.año ? String(vehicle.año) : undefined,
+    "fuelType": "Electric",
+    "driveWheelConfiguration": vehicle.traccion ?? undefined,
+    "numberOfSeats": vehicle.numero_pasajeros ?? undefined,
+    "image": firstImage ? [firstImage] : undefined,
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "CRC",
+      "price": vehicle.precio_venta_final ?? vehicle.precio_venta,
+      "availability": vehicle.visibilidad === "Agotado"
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock",
+      "seller": { "@type": "AutoDealer", "name": "Conejo Motors" },
+      "url": `https://conejo-motors.web.app/catalog/${vehicle.id}`,
+    },
+  };
+
   return (
     <div className={styles.detailContainer}>
+
+      <SeoHead
+        title={`${vehicleName} — Precio y Especificaciones`}
+        description={seoDesc}
+        canonical={`/catalog/${vehicle.id}`}
+        ogImage={firstImage}
+        ogType="product"
+        jsonLd={jsonLd}
+      />
+
       {/* --- HERO SECTION --- */}
       <div className={styles.hero}>
         <div className={styles.heroImage}>

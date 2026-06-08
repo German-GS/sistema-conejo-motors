@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /sales/
+
+Sitemap: https://conejo-motors.web.app/sitemap.xml

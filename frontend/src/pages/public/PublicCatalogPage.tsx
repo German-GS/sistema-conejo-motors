@@ -8,6 +8,7 @@ import styles from "@/pages/admin/sales/CatalogPage/CatalogPage.module.css";
 import filterStyles from "./PublicCatalogPage.module.css";
 import stylesLayout from "@/components/PublicLayout/PublicLayout.module.css";
 import { Pagination } from "@/components/Pagination";
+import { SeoHead } from "@/components/SeoHead";
 
 interface CatalogVehicle {
   id: number;
@@ -133,13 +134,52 @@ export const PublicCatalogPage = () => {
     [allFiltered, page]
   );
 
+  // JSON-LD: ItemList con los vehículos visibles en la página actual
+  const jsonLd = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": filterMarca !== "Todas"
+      ? `Vehículos eléctricos ${filterMarca} en Costa Rica`
+      : "Catálogo de vehículos eléctricos en Costa Rica",
+    "numberOfItems": totalFiltrados,
+    "itemListElement": paginatedFiltered.map((v, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "name": `${v.marca} ${v.modelo} ${v.año}`,
+      "url": `https://conejo-motors.web.app/catalog/${v.id}`,
+    })),
+  }), [paginatedFiltered, totalFiltrados, filterMarca]);
+
+  // Título y descripción dinámicos según filtro de marca
+  const seoTitle = filterMarca !== "Todas"
+    ? `Vehículos Eléctricos ${filterMarca} en Costa Rica`
+    : "Catálogo de Vehículos Eléctricos";
+  const seoDesc = filterMarca !== "Todas"
+    ? `Todos los modelos eléctricos ${filterMarca} disponibles en Conejo Motors Costa Rica. Precios, autonomía y especificaciones.`
+    : `Catálogo completo de vehículos eléctricos en Conejo Motors Costa Rica. ${totalFiltrados} modelos disponibles: BYD, MG, GWM y más marcas.`;
+
   if (loading) return <p>Cargando vehículos...</p>;
 
   return (
     <div className={stylesLayout.pageContainer}>
-      <h1 style={{ textAlign: "center", marginBottom: "0.5rem" }}>Nuestros Modelos</h1>
+
+      <SeoHead
+        title={seoTitle}
+        description={seoDesc}
+        canonical="/catalog"
+        jsonLd={jsonLd}
+      />
+
+      {/* H1 semántico — cambia cuando se filtra por marca */}
+      <h1 style={{ textAlign: "center", marginBottom: "0.5rem" }}>
+        {filterMarca !== "Todas"
+          ? `Vehículos Eléctricos ${filterMarca}`
+          : "Catálogo de Vehículos Eléctricos"}
+      </h1>
       <p style={{ textAlign: "center", color: "#64748b", marginBottom: "2rem" }}>
         {totalFiltrados} vehículo{totalFiltrados !== 1 ? "s" : ""} disponible{totalFiltrados !== 1 ? "s" : ""}
+        {filterMarca !== "Todas" && ` · Marca: ${filterMarca}`}
+        {filterCategoria !== "Todas" && ` · Categoría: ${filterCategoria}`}
       </p>
 
       {/* ── PANEL DE FILTROS ── */}

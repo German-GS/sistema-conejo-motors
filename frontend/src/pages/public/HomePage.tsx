@@ -7,6 +7,7 @@ import apiClient from "@/api/apiClient";
 import styles from "./HomePage.module.css";
 import catalogStyles from "@/pages/admin/sales/CatalogPage/CatalogPage.module.css";
 import { ElectromovilidadSection } from "@/components/ElectromovilidadSection";
+import { SeoHead } from "@/components/SeoHead";
 
 // --- INTERFACES ---
 interface CarouselSlide {
@@ -185,8 +186,48 @@ export const HomePage = () => {
     </div>
   );
 
+  // JSON-LD: LocalBusiness + WebSite para la home
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "AutoDealer",
+      "name": "Conejo Motors",
+      "url": "https://conejo-motors.web.app",
+      "logo": "https://conejo-motors.web.app/favicon.png",
+      "description": "Concesionario especializado en vehículos eléctricos en Costa Rica. BYD, MG, GWM y más marcas.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "CR",
+        "addressRegion": "San José"
+      },
+      "telephone": "+50688888888",
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61590859552347"
+      ],
+      "priceRange": "₡₡₡"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Conejo Motors",
+      "url": "https://conejo-motors.web.app",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://conejo-motors.web.app/catalog?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ];
+
   return (
     <div className={styles.homeContainer}>
+
+      <SeoHead
+        title="Vehículos Eléctricos en Costa Rica"
+        description="Conejo Motors: concesionario de vehículos eléctricos en Costa Rica. BYD, MG, GWM y más marcas. Catálogo completo, financiamiento y test drive disponible."
+        canonical="/"
+        jsonLd={jsonLd}
+      />
 
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
