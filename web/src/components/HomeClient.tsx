@@ -241,21 +241,21 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div className="relative" style={{ height: 'calc(100vh - 68px)', minHeight: '520px', overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
+        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', overflow:'hidden', width:'100%', maxWidth:'100%' }}>
           {slides.map((slide, i) => (
             <div key={i}
-              className={`absolute inset-0 transition-opacity duration-700 ${i === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              style={{ position:'absolute', inset:0, transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
               {slide.imageUrl && slide.mediaType === 'video' ? (
                 <video
                   src={getImageUrl(slide.imageUrl)}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }}
                   autoPlay muted loop playsInline
                 />
               ) : slide.imageUrl ? (
                 <Image src={getImageUrl(slide.imageUrl)} alt={slide.title} fill
-                  className="object-cover" priority={i === 0} sizes="100vw" />
+                  style={{ objectFit:'cover' }} priority={i === 0} sizes="100vw" />
               ) : null}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+              <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }} />
               <div style={{ position:'relative', zIndex:10, height:'100%', display:'flex', alignItems:'flex-end', paddingBottom:'clamp(3rem,8vh,5rem)' }}>
                 <div style={{ maxWidth:'1200px', margin:'0 auto', width:'100%', padding:'0 clamp(1.25rem,5vw,3rem)' }}>
                   <p style={{ color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'0.75rem' }}>
