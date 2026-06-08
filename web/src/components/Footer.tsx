@@ -33,9 +33,6 @@ export function Footer() {
               Concesionario especializado en vehículos eléctricos en Costa Rica.
               BYD, MG, GWM y más marcas.
             </p>
-            <div style={{ display:'flex', gap:'0.6rem', marginTop:'1.25rem' }}>
-              {SOCIALS.map(s => <SocialIcon key={s.label} s={s} />)}
-            </div>
           </div>
 
           {/* Links */}
@@ -79,9 +76,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Conejo Motors. Todos los derechos reservados.</p>
-          <p>Desarrollado por German Garcia S.</p>
+        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+          <p style={{ color: 'rgba(255,255,255,0.55)' }}>&copy; {new Date().getFullYear()} Conejo Motors. Todos los derechos reservados.</p>
+          <p style={{ color: 'rgba(255,255,255,0.3)' }}>Desarrollado por German Garcia S.</p>
         </div>
       </div>
     </footer>

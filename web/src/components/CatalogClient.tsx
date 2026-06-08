@@ -66,72 +66,77 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
           <span>{filtersOpen ? '▲' : '▼'}</span>
         </button>
 
-        <div className={`rounded-2xl border border-gray-200 p-7 space-y-6 ${filtersOpen ? 'block' : 'hidden md:block'}`}
-          style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
-          {/* Categorías como pills */}
-          <div>
-            <p style={{ fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.6rem' }}>Categoría</p>
-            <div className="flex flex-wrap gap-2">
+        <div className={`rounded-2xl border border-gray-100 ${filtersOpen ? 'block' : 'hidden md:block'}`}
+          style={{ background: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+
+          {/* Fila 1 — Categorías */}
+          <div style={{ padding: '1.25rem 1.5rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
+            <p style={{ fontSize:'0.68rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'0.8rem' }}>Categoría</p>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:'0.5rem' }}>
               {categorias.map(cat => (
                 <button key={cat} onClick={() => { setFilterCategoria(cat); setPage(1); }}
-                  style={{
-                    padding: '0.45rem 1rem',
-                    borderRadius: '99px',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    border: filterCategoria === cat ? 'none' : '1.5px solid #e2e8f0',
-                    background: filterCategoria === cat ? '#024f7d' : '#fff',
-                    color: filterCategoria === cat ? '#fff' : '#64748b',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}>
+                  style={{ padding:'0.5rem 1.1rem', borderRadius:'99px', fontSize:'0.875rem', fontWeight:600, border: filterCategoria===cat ? 'none' : '1.5px solid #e2e8f0', background: filterCategoria===cat ? '#024f7d' : '#f8fafc', color: filterCategoria===cat ? '#fff' : '#64748b', cursor:'pointer', transition:'all 0.15s' }}>
                   {cat}
                 </button>
               ))}
             </div>
           </div>
 
-          <div style={{ height: '1px', background: '#e2e8f0' }} />
+          {/* Fila 2 — Marca / Color / Precio / Autonomía */}
+          <div style={{ padding: '1.25rem 1.5rem 1.5rem' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1.4fr 1.4fr', gap:'1.5rem', alignItems:'end' }}>
+              {/* Marca */}
+              <div>
+                <label style={{ display:'block', fontSize:'0.68rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'0.6rem' }}>Marca</label>
+                <select value={filterMarca} onChange={e => { setFilterMarca(e.target.value); setPage(1); }}
+                  style={{ width:'100%', padding:'0.7rem 1rem', border:'1.5px solid #e2e8f0', borderRadius:'10px', fontSize:'0.9rem', color:'#071f37', background:'#fff', outline:'none', cursor:'pointer' }}>
+                  {marcas.map(m => <option key={m}>{m}</option>)}
+                </select>
+              </div>
+              {/* Color */}
+              <div>
+                <label style={{ display:'block', fontSize:'0.68rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'0.6rem' }}>Color</label>
+                <select value={filterColor} onChange={e => { setFilterColor(e.target.value); setPage(1); }}
+                  style={{ width:'100%', padding:'0.7rem 1rem', border:'1.5px solid #e2e8f0', borderRadius:'10px', fontSize:'0.9rem', color:'#071f37', background:'#fff', outline:'none', cursor:'pointer' }}>
+                  {colores.map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              {/* Precio */}
+              <div>
+                <label style={{ display:'block', fontSize:'0.68rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'0.35rem' }}>
+                  Precio máximo
+                </label>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'0.5rem' }}>
+                  <span style={{ fontSize:'0.78rem', color:'#94a3b8' }}>₡0</span>
+                  <span style={{ fontSize:'0.82rem', fontWeight:800, color:'#071f37' }}>{formatCRC(effectivePrecioMax)}</span>
+                </div>
+                <input type="range" min={0} max={precioMaxReal} step={500_000}
+                  value={filterPrecioMax || precioMaxReal}
+                  onChange={e => { setFilterPrecioMax(Number(e.target.value)); setPage(1); }} />
+              </div>
+              {/* Autonomía */}
+              <div>
+                <label style={{ display:'block', fontSize:'0.68rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'0.35rem' }}>
+                  Autonomía mínima
+                </label>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'0.5rem' }}>
+                  <span style={{ fontSize:'0.78rem', color:'#94a3b8' }}>0 km</span>
+                  <span style={{ fontSize:'0.82rem', fontWeight:800, color:'#071f37' }}>{filterAutonomiaMin} km</span>
+                </div>
+                <input type="range" min={0} max={600} step={25} value={filterAutonomiaMin}
+                  onChange={e => { setFilterAutonomiaMin(Number(e.target.value)); setPage(1); }} />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Marca */}
-            <div>
-              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>Marca</label>
-              <select value={filterMarca} onChange={e => { setFilterMarca(e.target.value); setPage(1); }} className="form-input">
-                {marcas.map(m => <option key={m}>{m}</option>)}
-              </select>
-            </div>
-            {/* Color */}
-            <div>
-              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>Color</label>
-              <select value={filterColor} onChange={e => { setFilterColor(e.target.value); setPage(1); }} className="form-input">
-                {colores.map(c => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            {/* Precio */}
-            <div>
-              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>
-                Precio máx: <span style={{ color:'#071f37', fontWeight:800 }}>{formatCRC(effectivePrecioMax)}</span>
-              </label>
-              <input type="range" min={0} max={precioMaxReal} step={500_000}
-                value={filterPrecioMax || precioMaxReal}
-                onChange={e => { setFilterPrecioMax(Number(e.target.value)); setPage(1); }} />
-            </div>
-            {/* Autonomía */}
-            <div>
-              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>
-                Autonomía mín: <span style={{ color:'#071f37', fontWeight:800 }}>{filterAutonomiaMin} km</span>
-              </label>
-              <input type="range" min={0} max={600} step={25} value={filterAutonomiaMin}
-                onChange={e => { setFilterAutonomiaMin(Number(e.target.value)); setPage(1); }} />
-            </div>
+            {hasFilters && (
+              <div style={{ marginTop:'1.25rem', paddingTop:'1rem', borderTop:'1px solid #f1f5f9' }}>
+                <button onClick={reset}
+                  style={{ fontSize:'0.82rem', color:'#ef4444', background:'rgba(239,68,68,0.06)', border:'1px solid rgba(239,68,68,0.2)', padding:'0.4rem 1rem', borderRadius:'8px', cursor:'pointer', fontWeight:600, transition:'all 0.15s' }}>
+                  ✕ Limpiar filtros
+                </button>
+              </div>
+            )}
           </div>
-
-          {hasFilters && (
-            <button onClick={reset} className="text-sm text-red-500 hover:text-red-700 font-medium transition-colors">
-              ✕ Limpiar filtros
-            </button>
-          )}
         </div>
       </div>
 
