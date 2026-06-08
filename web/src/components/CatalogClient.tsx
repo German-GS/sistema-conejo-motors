@@ -62,7 +62,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
       <div className="mb-6">
         <button onClick={() => setFiltersOpen(!filtersOpen)}
           className="md:hidden w-full flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 font-semibold text-gray-700 mb-3">
-          <span>🔍 Filtros {hasFilters && <span className="ml-1 text-xs bg-[#00a651] text-white px-2 py-0.5 rounded-full">activos</span>}</span>
+          <span>🔍 Filtros {hasFilters && <span className="ml-1 text-xs bg-[#1a1a2e] text-white px-2 py-0.5 rounded-full">activos</span>}</span>
           <span>{filtersOpen ? '▲' : '▼'}</span>
         </button>
 
@@ -74,7 +74,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
               {categorias.map(cat => (
                 <button key={cat} onClick={() => { setFilterCategoria(cat); setPage(1); }}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    filterCategoria === cat ? 'bg-[#00a651] text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-[#00a651] hover:text-[#00a651]'
+                    filterCategoria === cat ? 'bg-[#1a1a2e] text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-[#1a1a2e] hover:text-[#1a1a2e]'
                   }`}>
                   {cat}
                 </button>
@@ -100,7 +100,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
             {/* Precio */}
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                Precio máx: <span className="text-[#00a651]">{formatCRC(effectivePrecioMax)}</span>
+                Precio máx: <span className="text-[#1a1a2e] font-bold">{formatCRC(effectivePrecioMax)}</span>
               </label>
               <input type="range" min={0} max={precioMaxReal} step={500_000}
                 value={filterPrecioMax || precioMaxReal}
@@ -109,7 +109,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
             {/* Autonomía */}
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                Autonomía mín: <span className="text-[#00a651]">{filterAutonomiaMin} km</span>
+                Autonomía mín: <span className="text-[#1a1a2e] font-bold">{filterAutonomiaMin} km</span>
               </label>
               <input type="range" min={0} max={600} step={25} value={filterAutonomiaMin}
                 onChange={e => { setFilterAutonomiaMin(Number(e.target.value)); setPage(1); }} />
@@ -164,7 +164,10 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                       {vehicle.aceleracion_0_100 && <span>⚡ {vehicle.aceleracion_0_100}s</span>}
                     </div>
                     <div className="vehicle-card__actions mt-2">
-                      <span className="btn-primary text-sm py-2 flex-1 text-center">Ver Ficha Técnica</span>
+                      <span className="text-sm py-2 flex-1 text-center font-semibold text-white rounded-xl"
+                        style={{ background: '#1a1a2e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        Ver Ficha Técnica
+                      </span>
                     </div>
                   </div>
                 </Link>
