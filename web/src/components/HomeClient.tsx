@@ -244,20 +244,20 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
         <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', width:'100vw', marginLeft:'calc(50% - 50vw)', overflow:'clip', clipPath:'inset(0)' }}>
           {slides.map((slide, i) => (
             <div key={i}
-              style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
+              style={{ position:'absolute', inset:0, transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
               {slide.imageUrl && slide.mediaType === 'video' ? (
                 <video
                   src={getImageUrl(slide.imageUrl)}
-                  style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
                   autoPlay muted loop playsInline
                 />
               ) : slide.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={getImageUrl(slide.imageUrl)} alt={slide.title}
-                  style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
                   loading={i === 0 ? 'eager' : 'lazy'} />
               ) : null}
-              <div style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', background:'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }} />
+              <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }} />
               <div style={{ position:'relative', zIndex:10, height:'100%', display:'flex', alignItems:'flex-end', paddingBottom:'clamp(3rem,8vh,5rem)' }}>
                 <div style={{ maxWidth:'1200px', margin:'0 auto', width:'100%', padding:'0 clamp(1.25rem,5vw,3rem)' }}>
                   <p style={{ color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'0.75rem' }}>
