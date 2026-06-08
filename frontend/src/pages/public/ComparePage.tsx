@@ -146,7 +146,7 @@ const ImpactMetrics = ({ vehicles }: { vehicles: (Vehicle | null)[] }) => {
             <span className={styles.impactIcon}>💰</span>
             <div>
               <h3>Costo de Recarga Completa</h3>
-              <p>Comparado con llenar el tanque de un auto a gasolina equivalente ({v => v} ₡{PRECIO_KWH}/kWh · ₡{PRECIO_GAS}/litro)</p>
+              <p>Comparado con llenar el tanque de un auto a gasolina equivalente (₡{PRECIO_KWH}/kWh · ₡{PRECIO_GAS}/litro)</p>
             </div>
           </div>
           <div className={styles.costGrid}>
@@ -182,7 +182,7 @@ const ImpactMetrics = ({ vehicles }: { vehicles: (Vehicle | null)[] }) => {
 };
 
 // ── Tabla comparativa con ganadores ───────────────────────────────────────
-const sections = [
+const sections: { label: string; rows: { key: string; label: string; fmt: (v: any) => string; inverse: boolean }[] }[] = [
   {
     label: "💲 Precio",
     rows: [
