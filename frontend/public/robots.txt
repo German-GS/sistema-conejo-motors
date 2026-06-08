@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /sales/
 
-Sitemap: https://conejo-motors.web.app/sitemap.xml
+Sitemap: https://conejomotors.com/sitemap.xml

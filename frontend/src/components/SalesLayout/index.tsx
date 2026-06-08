@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import styles from "../AdminLayout/AdminLayout.module.css";
 import apiClient from "@/api/apiClient";
 import { jwtDecode } from "jwt-decode";
@@ -62,6 +63,7 @@ export const SalesLayout = () => {
 
  return (
     <div className={styles.layout}>
+      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       <aside
         className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
         onMouseEnter={() => setIsCollapsed(false)}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import styles from "./AdminLayout.module.css";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
@@ -237,6 +238,10 @@ export const AdminLayout = () => {
 
   return (
     <div className={styles.layout}>
+      {/* Tarea 2: Bloquear sistema.conejomotors.com de Google */}
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {/* Backdrop para tablet */}
       {isTablet && mobileOpen && (
         <div className={styles.backdrop} onClick={() => setMobileOpen(false)} />

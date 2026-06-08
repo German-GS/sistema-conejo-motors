@@ -5,7 +5,7 @@
 import { Helmet } from "react-helmet-async";
 
 const SITE_NAME  = "Conejo Motors";
-const BASE_URL   = "https://conejo-motors.web.app";
+const BASE_URL   = "https://conejomotors.com";
 const OG_DEFAULT = `${BASE_URL}/og-default.jpg`;
 
 interface SeoHeadProps {
