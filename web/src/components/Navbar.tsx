@@ -17,7 +17,7 @@ export function Navbar() {
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
+    document.body.style.overflowY = open ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 

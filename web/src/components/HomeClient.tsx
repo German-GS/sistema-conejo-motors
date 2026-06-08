@@ -24,7 +24,7 @@ function SavingsCalculator() {
   const ahorroAno = ahorroMes * 12;
 
   return (
-    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'hidden' }}>
+    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'clip' }}>
       {/* Círculos decorativos */}
       <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'400px', height:'400px', borderRadius:'50%', background:'rgba(4,199,178,0.06)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'300px', height:'300px', borderRadius:'50%', background:'rgba(69,165,206,0.07)', pointerEvents:'none' }} />
@@ -241,7 +241,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', width:'100vw', marginLeft:'calc(50% - 50vw)', overflow:'hidden', clipPath:'inset(0)' }}>
+        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', width:'100vw', marginLeft:'calc(50% - 50vw)', overflow:'clip', clipPath:'inset(0)' }}>
           {slides.map((slide, i) => (
             <div key={i}
               style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
@@ -366,7 +366,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
       <SavingsCalculator />
 
       {/* ── CTA ── */}
-      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 60%, #024f7d 100%)', padding: '6rem 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 60%, #024f7d 100%)', padding: '6rem 1.5rem', textAlign: 'center', position: 'relative', overflow: 'clip' }}>
         {/* Decorativos */}
         <div style={{ position:'absolute', top:'-100px', left:'50%', transform:'translateX(-50%)', width:'600px', height:'600px', borderRadius:'50%', background:'rgba(4,199,178,0.05)', pointerEvents:'none' }} />
         <div style={{ position:'absolute', bottom:'-80px', right:'-80px', width:'350px', height:'350px', borderRadius:'50%', background:'rgba(69,165,206,0.06)', pointerEvents:'none' }} />
