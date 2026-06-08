@@ -55,6 +55,8 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {/* H1 estático para SEO — visualmente oculto, semánticamente presente */}
+      <h1 className="sr-only">Agencia de Vehículos Eléctricos en Costa Rica</h1>
       <HomeClient slides={slides} featuredVehicles={featuredVehicles} />
     </>
   );
