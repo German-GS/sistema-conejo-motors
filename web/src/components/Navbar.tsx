@@ -105,45 +105,54 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Overlay móvil */}
-      {open && (
-        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setOpen(false)} />
-      )}
-
       {/* Menú móvil */}
-      <nav className={`fixed top-16 left-0 right-0 z-40 bg-white shadow-xl md:hidden transition-all duration-300 overflow-hidden ${
-        open ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-      }`}>
-        <div className="px-4 py-4 flex flex-col gap-1">
-          {LINKS.map(({ href, label, exact }) =>
-            href.startsWith('#') ? (
-              <a key={href} href={href} onClick={handleContact}
-                className="px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                {label}
-              </a>
-            ) : (
-              <Link key={href} href={href}
-                className={`px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                  isActive(href, exact)
-                    ? 'text-[#1a1a2e] bg-gray-100 font-bold'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}>
-                {label}
-              </Link>
-            )
-          )}
-          <hr className="my-2 border-gray-100" />
+      <div className={`fixed inset-0 z-40 md:hidden flex flex-col transition-all duration-300 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        style={{ background: 'linear-gradient(160deg, #071f37 0%, #082d4b 60%, #024f7d 100%)' }}>
+        {/* Header del menú */}
+        <div style={{ height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <Link href="/" onClick={() => setOpen(false)}>
+            <Image src="/logo.png" alt="Conejo Motors" width={160} height={36} className="h-8 w-auto object-contain brightness-0 invert" />
+          </Link>
+          <button onClick={() => setOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '10px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '1.4rem' }}>
+            ×
+          </button>
+        </div>
+
+        {/* Links de navegación */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2rem 2rem' }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            {LINKS.map(({ href, label, exact }) =>
+              href.startsWith('#') ? (
+                <a key={href} href={href} onClick={handleContact}
+                  style={{ display: 'flex', alignItems: 'center', padding: '1rem 1.25rem', borderRadius: '14px', fontSize: '1.35rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '-0.01em', transition: 'background 0.15s, color 0.15s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; }}>
+                  {label}
+                </a>
+              ) : (
+                <Link key={href} href={href}
+                  style={{ display: 'flex', alignItems: 'center', padding: '1rem 1.25rem', borderRadius: '14px', fontSize: '1.35rem', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.01em', color: isActive(href, exact) ? '#04c7b2' : 'rgba(255,255,255,0.85)', background: isActive(href, exact) ? 'rgba(4,199,178,0.1)' : 'transparent', borderLeft: isActive(href, exact) ? '3px solid #04c7b2' : '3px solid transparent', transition: 'background 0.15s, color 0.15s' }}>
+                  {label}
+                </Link>
+              )
+            )}
+          </nav>
+        </div>
+
+        {/* CTAs */}
+        <div style={{ padding: '1.5rem 2rem 2.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <a href="https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20un%20veh%C3%ADculo%20el%C3%A9ctrico"
             target="_blank" rel="noreferrer"
-            className="btn-primary text-center mt-1">
-            💬 Solicitar Cotización
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', padding: '1rem', borderRadius: '14px', background: '#04c7b2', color: '#071f37', fontWeight: 800, fontSize: '1rem', textDecoration: 'none', letterSpacing: '0.01em' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.987-1.417A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.946 7.946 0 01-4.074-1.12l-.29-.173-3.003.853.854-2.935-.19-.301A7.944 7.944 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8z"/></svg>
+            Solicitar Cotización
           </a>
           <Link href="https://sistema.conejomotors.com/login" target="_blank"
-            className="btn-ghost text-center mt-1">
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.85rem', borderRadius: '14px', border: '1.5px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: '0.95rem', textDecoration: 'none' }}>
             Ingresar al Sistema
           </Link>
         </div>
-      </nav>
+      </div>
     </>
   );
 }

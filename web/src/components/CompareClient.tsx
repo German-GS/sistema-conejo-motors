@@ -135,7 +135,7 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
         </div>
 
         {/* ── 3 RANURAS ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'1.25rem', marginBottom:'2rem' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap:'1.25rem', marginBottom:'2rem' }}>
           {[0,1,2].map(i => {
             const v = selected[i];
             const color = V_COLORS[i];
@@ -228,7 +228,7 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
                   <p style={{ fontSize:'0.8rem', color:'#94a3b8' }}>Basado en perfil de conducción mixto Costa Rica (WLTP oficial como referencia)</p>
                 </div>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:`repeat(${count},1fr)`, gap:'1.5rem' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap:'1.5rem' }}>
                 {selected.map((v, vi) => v ? (() => {
                   const auto = getAutonomia(v);
                   const color = V_COLORS[vi];
@@ -263,7 +263,7 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
                   <p style={{ fontSize:'0.8rem', color:'#94a3b8' }}>Comparado con llenar el tanque de un auto a gasolina equivalente (₡{PRECIO_KWH}/kWh · ₡{PRECIO_GAS}/litro)</p>
                 </div>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:`repeat(${count},1fr)`, gap:'1.25rem' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap:'1.25rem' }}>
                 {selected.map((v, vi) => v ? (() => {
                   const c = getCostos(v);
                   const color = V_COLORS[vi];
@@ -313,7 +313,7 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
                 <table style={{ width:'100%', fontSize:'0.88rem', borderCollapse:'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom:'2px solid #e2e8f0', background:'#f8fafc' }}>
-                      <th style={{ textAlign:'left', padding:'1rem 1.25rem', fontWeight:600, color:'#64748b', width:'180px', textTransform:'uppercase', fontSize:'0.72rem', letterSpacing:'0.08em' }}>Característica</th>
+                      <th style={{ textAlign:'left', padding:'1rem 1.25rem', fontWeight:600, color:'#64748b', width:'180px', textTransform:'uppercase', fontSize:'0.72rem', letterSpacing:'0.08em', position:'sticky', left:0, background:'#f8fafc', zIndex:2, boxShadow:'2px 0 6px rgba(0,0,0,0.06)' }}>Característica</th>
                       {selected.map((v, i) => v ? (
                         <th key={i} style={{ padding:'1rem', textAlign:'center', minWidth:'180px', borderLeft:`3px solid ${V_COLORS[i]}` }}>
                           <div style={{ position:'relative', width:'60px', height:'40px', margin:'0 auto 0.4rem', borderRadius:'6px', overflow:'hidden' }}>
@@ -329,15 +329,15 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
                     {activeTab === 'todas' && SPEC_GROUPS.map(group => (
                       <>
                         <tr key={`hdr-${group.key}`} style={{ background:'#071f37' }}>
-                          <td colSpan={count+1} style={{ padding:'0.6rem 1.25rem', fontSize:'0.75rem', fontWeight:700, color:'#fff', textTransform:'uppercase', letterSpacing:'0.1em' }}>
-                            {group.label}
-                          </td>
+                          <td style={{ padding:'0.6rem 1.25rem', fontSize:'0.75rem', fontWeight:700, color:'#fff', textTransform:'uppercase', letterSpacing:'0.1em', position:'sticky', left:0, background:'#071f37', zIndex:1 }}>{group.label}</td>
+                          {selected.map((v, i) => v ? <td key={i} style={{ background:'#071f37' }} /> : null)}
                         </tr>
                         {group.specs.map(({ label, key, unit }, rowIdx) => {
                           const best = getBest(key);
+                          const rowBg = rowIdx%2===0 ? '#fff' : '#fafbfc';
                           return (
-                            <tr key={key} style={{ borderBottom:'1px solid #f1f5f9', background: rowIdx%2===0 ? '#fff' : '#fafbfc' }}>
-                              <td style={{ padding:'0.8rem 1.25rem', color:'#64748b', fontWeight:600 }}>{label}</td>
+                            <tr key={key} style={{ borderBottom:'1px solid #f1f5f9', background: rowBg }}>
+                              <td style={{ padding:'0.8rem 1.25rem', color:'#64748b', fontWeight:600, position:'sticky', left:0, background: rowBg, zIndex:1, boxShadow:'2px 0 6px rgba(0,0,0,0.04)' }}>{label}</td>
                               {selected.map((v, i) => {
                                 if (!v) return null;
                                 const val = getVal(v, key);
@@ -356,9 +356,10 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
                     ))}
                     {activeTab !== 'todas' && visibleSpecs.map(({ label, key, unit }, rowIdx) => {
                       const best = getBest(key);
+                      const rowBg2 = rowIdx%2===0 ? '#fff' : '#fafbfc';
                       return (
-                        <tr key={key} style={{ borderBottom:'1px solid #f1f5f9', background: rowIdx%2===0 ? '#fff' : '#fafbfc' }}>
-                          <td style={{ padding:'0.8rem 1.25rem', color:'#64748b', fontWeight:600 }}>{label}</td>
+                        <tr key={key} style={{ borderBottom:'1px solid #f1f5f9', background: rowBg2 }}>
+                          <td style={{ padding:'0.8rem 1.25rem', color:'#64748b', fontWeight:600, position:'sticky', left:0, background: rowBg2, zIndex:1, boxShadow:'2px 0 6px rgba(0,0,0,0.04)' }}>{label}</td>
                           {selected.map((v, i) => {
                             if (!v) return null;
                             const val = getVal(v, key);
@@ -375,7 +376,7 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
                     })}
                     {/* Ver ficha */}
                     <tr style={{ background:'#f8fafc' }}>
-                      <td style={{ padding:'1rem 1.25rem', color:'#64748b', fontWeight:600 }}>Ficha técnica</td>
+                      <td style={{ padding:'1rem 1.25rem', color:'#64748b', fontWeight:600, position:'sticky', left:0, background:'#f8fafc', zIndex:1, boxShadow:'2px 0 6px rgba(0,0,0,0.04)' }}>Ficha técnica</td>
                       {selected.map((v, i) => v ? (
                         <td key={i} style={{ padding:'1rem', textAlign:'center' }}>
                           <Link href={`/catalog/${v.id}`}
