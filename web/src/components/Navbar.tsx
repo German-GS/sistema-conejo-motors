@@ -53,16 +53,21 @@ export function Navbar() {
             {LINKS.map(({ href, label, exact }) =>
               href.startsWith('#') ? (
                 <a key={href} href={href} onClick={handleContact}
-                  className="text-sm font-semibold tracking-wide text-white/90 hover:text-white transition-colors py-1">
+                  style={{ color: 'rgba(255,255,255,0.92)', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.03em', paddingBottom: '2px', borderBottom: '2px solid transparent', transition: 'color 0.2s' }}>
                   {label}
                 </a>
               ) : (
                 <Link key={href} href={href}
-                  className={`text-sm font-semibold tracking-wide transition-colors py-1 border-b-2 ${
-                    isActive(href, exact)
-                      ? 'text-white border-[#04c7b2]'
-                      : 'text-white/90 hover:text-white border-transparent'
-                  }`}>
+                  style={{
+                    color: '#fff',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.03em',
+                    paddingBottom: '2px',
+                    borderBottom: isActive(href, exact) ? '2px solid #04c7b2' : '2px solid transparent',
+                    transition: 'color 0.2s, border-color 0.2s',
+                    opacity: isActive(href, exact) ? 1 : 0.92,
+                  }}>
                   {label}
                 </Link>
               )
@@ -72,7 +77,8 @@ export function Navbar() {
           {/* CTA + Hamburger */}
           <div className="flex items-center gap-3">
             <Link href="https://sistema.conejomotors.com/login" target="_blank"
-              className="hidden md:inline-flex text-sm font-medium px-4 py-2 rounded-lg text-white/90 hover:bg-white/10 transition-colors">
+              style={{ color: '#fff', opacity: 0.85, fontSize: '0.88rem', fontWeight: 500, padding: '0.45rem 1rem', borderRadius: '8px', transition: 'opacity 0.2s, background 0.2s' }}
+              className="hidden md:inline-flex hover:opacity-100 hover:bg-white/10">
               Ingresar
             </Link>
             <a href="https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20un%20veh%C3%ADculo%20el%C3%A9ctrico"
