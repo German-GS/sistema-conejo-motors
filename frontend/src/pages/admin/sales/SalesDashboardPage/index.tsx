@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import styles from "./SalesDashboardPage.module.css";
 import { LeadsFollowUpWidget } from "@/components/LeadsFollowUpWidget";
+import { QuotesExpiringWidget } from "@/components/QuotesExpiringWidget";
 
 interface SalesStats {
   totalVehicles: number;
@@ -16,6 +17,13 @@ interface SalesStats {
   estimatedCommissions: number;
   pendingItemsCount: number;
   salesData: { month: string; vendidos: number }[];
+}
+
+interface AlertaVencimiento {
+  id: number; cliente: string; vehiculo: string; fecha_expiracion: string; horasRestantes: number;
+}
+interface AlertasReserva {
+  vencenHoy: number; vencenManana: number; lista: AlertaVencimiento[];
 }
 
 interface Conectado {
@@ -41,6 +49,7 @@ export const SalesDashboardPage = () => {
   const navigate  = useNavigate();
   const [stats, setStats]           = useState<SalesStats | null>(null);
   const [conectados, setConectados] = useState<Conectado[]>([]);
+  const [alertas, setAlertas]       = useState<AlertasReserva | null>(null);
   const [loading, setLoading]       = useState(true);
   const [userName, setUserName]     = useState("Vendedor");
   const [myId, setMyId]             = useState(0);
@@ -58,15 +67,15 @@ export const SalesDashboardPage = () => {
   }, []);
 
   const fetchAll = useCallback(async () => {
-    try {
-      const [s, c] = await Promise.all([
-        apiClient.get("/vehicles/dashboard/sales-stats"),
-        apiClient.get("/asistencia/conectados-hoy"),
-      ]);
-      setStats(s.data);
-      setConectados(Array.isArray(c.data) ? c.data : []);
-    } catch { /* silencioso */ }
-    finally { setLoading(false); }
+    const [s, c, a] = await Promise.allSettled([
+      apiClient.get("/vehicles/dashboard/sales-stats"),
+      apiClient.get("/asistencia/conectados-hoy"),
+      apiClient.get("/quotes/alertas/vencimiento"),
+    ]);
+    if (s.status === "fulfilled") setStats(s.value.data);
+    if (c.status === "fulfilled") setConectados(Array.isArray(c.value.data) ? c.value.data : []);
+    if (a.status === "fulfilled") setAlertas(a.value.data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -204,9 +213,12 @@ export const SalesDashboardPage = () => {
       </div>
 
       {/* ── Leads con semáforo ──────────────────────────────────────────── */}
-      <div style={{ marginBottom: "1.5rem" }}>
+      <div style={{ marginBottom: "0" }}>
         <LeadsFollowUpWidget basePath="/sales" showVendedor={false} />
       </div>
+
+      {/* ── Cotizaciones por vencer ─────────────────────────────────────── */}
+      <QuotesExpiringWidget basePath="/admin" data={alertas} />
 
       {/* ── Accesos rápidos ─────────────────────────────────────────────── */}
       <div className={styles.quickLinks}>

@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import styles from "./DashboardHomePage.module.css";
 import { LeadsFollowUpWidget } from "../../components/LeadsFollowUpWidget";
+import { QuotesExpiringWidget } from "../../components/QuotesExpiringWidget";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 interface BasicStats {
@@ -126,33 +127,8 @@ export const DashboardHomePage = () => {
         </div>
       </div>
 
-      {/* ── Alertas de reservas próximas a vencer ────────────────────────── */}
-      {alertas && (alertas.vencenHoy > 0 || alertas.vencenManana > 0) && (
-        <div className={styles.alertaReservas}>
-          <div className={styles.alertaHeader}>
-            <span className={styles.alertaIcon}>⏰</span>
-            <div>
-              <strong>Reservas próximas a vencer</strong>
-              <span className={styles.alertaSub}>
-                {alertas.vencenHoy > 0 && <span className={styles.alertaRed}>{alertas.vencenHoy} vence hoy</span>}
-                {alertas.vencenHoy > 0 && alertas.vencenManana > 0 && " · "}
-                {alertas.vencenManana > 0 && <span className={styles.alertaAmber}>{alertas.vencenManana} vence mañana</span>}
-              </span>
-            </div>
-          </div>
-          <div className={styles.alertaLista}>
-            {alertas.lista.map(a => (
-              <div key={a.id} className={styles.alertaItem} onClick={() => navigate(`/admin/sales/quotes/${a.id}`)}>
-                <span className={styles.alertaVehiculo}>{a.vehiculo}</span>
-                <span className={styles.alertaCliente}>👤 {a.cliente}</span>
-                <span className={a.horasRestantes <= 24 ? styles.alertaHorasRed : styles.alertaHorasAmber}>
-                  {a.horasRestantes <= 0 ? "⚠️ Vencida" : `⏳ ${a.horasRestantes}h restantes`}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ── Widget cotizaciones por vencer ───────────────────────────────── */}
+      <QuotesExpiringWidget basePath="/admin" data={alertas} />
 
       {/* ── KPIs fila 1 — inventario + ventas ────────────────────────────── */}
       <div className={styles.kpiRow}>
