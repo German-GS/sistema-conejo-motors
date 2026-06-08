@@ -83,9 +83,12 @@ export function Navbar() {
             </Link>
             <a href="https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20un%20veh%C3%ADculo%20el%C3%A9ctrico"
               target="_blank" rel="noreferrer"
-              className="hidden md:inline-flex btn-primary text-sm py-2 px-5">
+              className="btn-primary text-sm py-2 px-5"
+              style={{ display: 'none' }}
+              id="cta-cotizar">
               💬 Cotizar
             </a>
+            <style>{`@media (min-width: 768px) { #cta-cotizar { display: inline-flex !important; } }`}</style>
 
             {/* Hamburger */}
             <button

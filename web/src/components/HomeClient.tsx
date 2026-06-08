@@ -241,7 +241,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div className="relative overflow-hidden" style={{ height: '100vh', minHeight: '560px' }}>
+        <div className="relative overflow-hidden" style={{ height: 'calc(100vh - 68px)', minHeight: '520px' }}>
           {slides.map((slide, i) => (
             <div key={i}
               className={`absolute inset-0 transition-opacity duration-700 ${i === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -310,7 +310,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
               <h2 className="section-title mt-2">Vehículos Destacados</h2>
               <p className="section-sub mt-2">Modelos disponibles ahora en nuestro concesionario en Escazú</p>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:'1.5rem' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap:'1.5rem' }}>
               {featuredVehicles.map(vehicle => {
                 const imgSrc = vehicle.imagenes?.[0]?.url
                   ? getImageUrl(vehicle.imagenes[0].url)
@@ -338,7 +338,8 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                         <a href={`https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20el%20${encodeURIComponent(`${vehicle.marca} ${vehicle.modelo} ${vehicle.año}`)}`}
                           target="_blank" rel="noreferrer"
                           style={{ flex:1, textAlign:'center', background:'transparent', color:'#024f7d', fontWeight:600, fontSize:'0.88rem', padding:'0.6rem 1rem', borderRadius:'10px', border:'2px solid #024f7d', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.2s' }}
-                          className="hover:bg-[#024f7d] hover:text-white">
+                          onMouseEnter={e => { e.currentTarget.style.background='#024f7d'; e.currentTarget.style.color='#fff'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#024f7d'; }}>
                           Consultar
                         </a>
                       </div>
@@ -349,8 +350,9 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
             </div>
             <div className="text-center mt-10">
               <Link href="/catalog"
-                style={{ display:'inline-flex', alignItems:'center', gap:'0.5rem', padding:'0.8rem 2rem', borderRadius:'12px', border:'2px solid #024f7d', color:'#024f7d', fontWeight:700, fontSize:'0.95rem', transition:'all 0.2s' }}
-                className="hover:bg-[#024f7d] hover:text-white">
+                style={{ display:'inline-flex', alignItems:'center', gap:'0.5rem', padding:'0.85rem 2.25rem', borderRadius:'12px', border:'2px solid #024f7d', color:'#024f7d', fontWeight:700, fontSize:'0.95rem', transition:'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.background='#024f7d'; e.currentTarget.style.color='#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#024f7d'; }}>
                 Ver catálogo completo →
               </Link>
             </div>
