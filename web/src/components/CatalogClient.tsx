@@ -45,7 +45,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
   const hasFilters = filterCategoria !== 'Todas' || filterMarca !== 'Todas' || filterColor !== 'Todos' || filterPrecioMax > 0 || filterAutonomiaMin > 0;
 
   return (
-    <div className="container mx-auto px-4" style={{ maxWidth: '1200px', paddingTop: '96px', paddingBottom: '3rem' }}>
+    <div className="container mx-auto px-4" style={{ maxWidth: '1200px', paddingTop: '100px', paddingBottom: '4rem' }}>
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
@@ -66,7 +66,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
           <span>{filtersOpen ? '▲' : '▼'}</span>
         </button>
 
-        <div className={`rounded-2xl border border-gray-200 p-6 space-y-6 ${filtersOpen ? 'block' : 'hidden md:block'}`}
+        <div className={`rounded-2xl border border-gray-200 p-7 space-y-6 ${filtersOpen ? 'block' : 'hidden md:block'}`}
           style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
           {/* Categorías como pills */}
           <div>
@@ -136,6 +136,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
       </div>
 
       {/* Resultados */}
+      <div style={{ marginTop: '2rem' }} />
       {filtered.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-5xl mb-4">😔</div>
@@ -144,7 +145,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
         </div>
       ) : (
         <>
-          <div className="grid-vehicles">
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:'1.75rem' }}>
             {paginated.map(vehicle => {
               const imgSrc = vehicle.imagenes?.[0]?.url ? getImageUrl(vehicle.imagenes[0].url)
                 : vehicle.profile?.imagenes?.[0]?.url ? getImageUrl(vehicle.profile.imagenes[0].url)
@@ -174,9 +175,8 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                       {vehicle.autonomia_km && <span>🛣️ {vehicle.autonomia_km} km</span>}
                       {vehicle.aceleracion_0_100 && <span>⚡ {vehicle.aceleracion_0_100}s</span>}
                     </div>
-                    <div className="vehicle-card__actions mt-2">
-                      <span className="text-sm py-2 flex-1 text-center font-semibold text-white rounded-xl"
-                        style={{ background: '#1a1a2e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+                      <span style={{ display:'flex', alignItems:'center', justifyContent:'center', width:'100%', padding:'0.75rem', borderRadius:'12px', background:'#024f7d', color:'#fff', fontWeight:700, fontSize:'0.92rem', letterSpacing:'0.02em', cursor:'pointer' }}>
                         Ver Ficha Técnica
                       </span>
                     </div>
