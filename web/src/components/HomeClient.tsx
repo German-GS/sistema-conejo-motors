@@ -292,7 +292,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
               <h2 className="section-title mt-2">Vehículos Destacados</h2>
               <p className="section-sub mt-2">Modelos disponibles ahora en nuestro concesionario en Escazú</p>
             </div>
-            <div className="grid-vehicles">
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:'1.5rem' }}>
               {featuredVehicles.map(vehicle => {
                 const imgSrc = vehicle.imagenes?.[0]?.url
                   ? getImageUrl(vehicle.imagenes[0].url)
@@ -312,11 +312,15 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                         <div className="vehicle-card__specs"><span>🛣️ {vehicle.autonomia_km} km</span></div>
                       )}
                       <div className="vehicle-card__actions">
-                        <Link href={`/catalog/${vehicle.id}`} className="btn-primary text-sm py-2 flex-1 text-center">
-                          Ver modelo
+                        <Link href={`/catalog/${vehicle.id}`}
+                          style={{ flex:1, textAlign:'center', background:'#024f7d', color:'#fff', fontWeight:700, fontSize:'0.88rem', padding:'0.6rem 1rem', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', transition:'background 0.2s' }}
+                          className="hover:opacity-90">
+                          Ver este modelo
                         </Link>
                         <a href={`https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20el%20${encodeURIComponent(`${vehicle.marca} ${vehicle.modelo} ${vehicle.año}`)}`}
-                          target="_blank" rel="noreferrer" className="btn-outline text-sm py-2 flex-1 text-center">
+                          target="_blank" rel="noreferrer"
+                          style={{ flex:1, textAlign:'center', background:'transparent', color:'#024f7d', fontWeight:600, fontSize:'0.88rem', padding:'0.6rem 1rem', borderRadius:'10px', border:'2px solid #024f7d', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.2s' }}
+                          className="hover:bg-[#024f7d] hover:text-white">
                           Consultar
                         </a>
                       </div>
@@ -326,7 +330,11 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
               })}
             </div>
             <div className="text-center mt-10">
-              <Link href="/catalog" className="btn-outline" style={{ color: 'var(--brand-gray)', borderColor: 'var(--brand-gray)' }}>Ver catálogo completo →</Link>
+              <Link href="/catalog"
+                style={{ display:'inline-flex', alignItems:'center', gap:'0.5rem', padding:'0.8rem 2rem', borderRadius:'12px', border:'2px solid #024f7d', color:'#024f7d', fontWeight:700, fontSize:'0.95rem', transition:'all 0.2s' }}
+                className="hover:bg-[#024f7d] hover:text-white">
+                Ver catálogo completo →
+              </Link>
             </div>
           </div>
         </section>
