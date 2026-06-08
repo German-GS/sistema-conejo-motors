@@ -2,17 +2,26 @@
 
 /* ── Variables de marca ───────────────────────────────────────────── */
 :root {
-  --brand-green: #00a651;
-  --brand-green-dark: #007a3d;
-  --brand-green-light: #e8f5ee;
-  --brand-gray: #1a1a2e;
-  --brand-gray-light: #f8f9fa;
-  --text-primary: #1a1a2e;
-  --text-secondary: #64748b;
-  --border: #e2e8f0;
-  --radius: 12px;
-  --shadow: 0 4px 20px rgba(0,0,0,0.08);
-  --shadow-hover: 0 8px 30px rgba(0,0,0,0.14);
+  /* Paleta Conejo Motors */
+  --brand-teal:       #04c7b2;   /* acento principal — botones CTA */
+  --brand-teal-dark:  #03a898;
+  --brand-teal-light: #e0faf7;
+  --brand-blue:       #024f7d;   /* azul medio */
+  --brand-blue-light: #45a5ce;   /* azul claro */
+  --brand-navy:       #071f37;   /* fondo oscuro */
+  --brand-navy-mid:   #082d4b;   /* azul marino medio */
+  /* Compat aliases */
+  --brand-green:      #04c7b2;
+  --brand-green-dark: #03a898;
+  --brand-green-light:#e0faf7;
+  --brand-gray:       #071f37;
+  --brand-gray-light: #f4f7fa;
+  --text-primary:     #071f37;
+  --text-secondary:   #64748b;
+  --border:           #e2e8f0;
+  --radius:           12px;
+  --shadow:           0 4px 20px rgba(0,0,0,0.08);
+  --shadow-hover:     0 8px 30px rgba(0,0,0,0.14);
 }
 
 /* ── Reset y base ─────────────────────────────────────────────────── */

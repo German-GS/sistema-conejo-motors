@@ -24,71 +24,65 @@ function SavingsCalculator() {
   const ahorroAno = ahorroMes * 12;
 
   return (
-    <section className="section">
+    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
+      {/* Círculos decorativos */}
+      <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'400px', height:'400px', borderRadius:'50%', background:'rgba(4,199,178,0.06)', pointerEvents:'none' }} />
+      <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'300px', height:'300px', borderRadius:'50%', background:'rgba(69,165,206,0.07)', pointerEvents:'none' }} />
       <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="section-tag">Herramienta interactiva</span>
-            <h2 className="section-title mt-2">¿Cuánto ahorrarías al pasarte a eléctrico?</h2>
-            <p className="section-sub text-left mt-2 mb-6">
+            <span style={{ display:'inline-block', background:'rgba(4,199,178,0.15)', color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', padding:'0.3rem 0.9rem', borderRadius:'99px', marginBottom:'0.75rem' }}>Herramienta interactiva</span>
+            <h2 style={{ fontSize:'clamp(1.6rem,3vw,2.2rem)', fontWeight:800, color:'#fff', marginBottom:'0.5rem' }}>¿Cuánto ahorrarías al pasarte a eléctrico?</h2>
+            <p style={{ color:'rgba(255,255,255,0.65)', fontSize:'1rem', maxWidth:'480px', marginBottom:'1.5rem' }}>
               Ajusta los valores según tu consumo real y ve el ahorro estimado en colones.
             </p>
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Kilómetros por mes: <span className="text-[#00a651]">{km.toLocaleString('es-CR')} km</span>
+                <label className="block text-sm font-semibold mb-2" style={{ color:'rgba(255,255,255,0.8)' }}>
+                  Km por mes: <span style={{ color:'#04c7b2', fontWeight:700 }}>{km.toLocaleString('es-CR')} km</span>
                 </label>
                 <input type="range" min={300} max={5000} step={100} value={km}
                   onChange={e => setKm(Number(e.target.value))} />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Precio gasolina (₡/litro)</label>
-                  <input type="number" value={precioGas} min={400} max={2000}
-                    onChange={e => setPrecioGas(Number(e.target.value))}
-                    className="form-input" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Rendimiento (km/litro)</label>
-                  <input type="number" value={rendimiento} min={5} max={30}
-                    onChange={e => setRendimiento(Number(e.target.value))}
-                    className="form-input" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Electricidad (₡/kWh)</label>
-                  <input type="number" value={precioKwh} min={50} max={500}
-                    onChange={e => setPrecioKwh(Number(e.target.value))}
-                    className="form-input" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Consumo eléctrico (kWh/100km)</label>
-                  <input type="number" value={consumoElec} min={5} max={40}
-                    onChange={e => setConsumoElec(Number(e.target.value))}
-                    className="form-input" />
-                </div>
+                {[
+                  { label:'Precio gasolina (₡/litro)', val:precioGas, set:setPrecioGas, min:400, max:2000 },
+                  { label:'Rendimiento (km/litro)', val:rendimiento, set:setRendimiento, min:5, max:30 },
+                  { label:'Precio electricidad (₡/kWh)', val:precioKwh, set:setPrecioKwh, min:50, max:500 },
+                  { label:'Consumo eléctrico (kWh/100km)', val:consumoElec, set:setConsumoElec, min:5, max:40 },
+                ].map(({ label, val, set, min, max }) => (
+                  <div key={label}>
+                    <label className="block text-xs font-semibold mb-1" style={{ color:'rgba(255,255,255,0.6)' }}>{label}</label>
+                    <input type="number" value={val} min={min} max={max}
+                      onChange={e => set(Number(e.target.value))}
+                      style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', color:'#fff', borderRadius:'10px', padding:'0.6rem 1rem', width:'100%', outline:'none' }} />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] rounded-2xl p-8 text-white">
+          <div style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'20px', padding:'2rem' }}>
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-white/10 rounded-xl p-4 text-center">
+              <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'14px', padding:'1.25rem', textAlign:'center' }}>
                 <div className="text-2xl mb-1">⛽</div>
-                <div className="text-xs text-white/70 mb-1">Con gasolina / mes</div>
-                <div className="text-lg font-bold">{formatCRC(costoGas)}</div>
+                <div style={{ fontSize:'0.75rem', color:'rgba(255,255,255,0.55)', marginBottom:'0.25rem' }}>Con gasolina / mes</div>
+                <div style={{ fontSize:'1.1rem', fontWeight:700, color:'#fff' }}>{formatCRC(costoGas)}</div>
               </div>
-              <div className="bg-white/10 border border-white/20 rounded-xl p-4 text-center">
+              <div style={{ background:'rgba(4,199,178,0.12)', border:'1px solid rgba(4,199,178,0.3)', borderRadius:'14px', padding:'1.25rem', textAlign:'center' }}>
                 <div className="text-2xl mb-1">⚡</div>
-                <div className="text-xs text-white/70 mb-1">Con eléctrico / mes</div>
-                <div className="text-lg font-bold text-white">{formatCRC(costoElec)}</div>
+                <div style={{ fontSize:'0.75rem', color:'rgba(255,255,255,0.55)', marginBottom:'0.25rem' }}>Con eléctrico / mes</div>
+                <div style={{ fontSize:'1.1rem', fontWeight:700, color:'#04c7b2' }}>{formatCRC(costoElec)}</div>
               </div>
             </div>
-            <div className="text-center py-4 border-t border-white/20">
-              <p className="text-white/70 text-sm mb-1">Ahorro estimado</p>
-              <p className="text-3xl font-black text-white">{formatCRC(ahorroMes)}<span className="text-lg font-normal text-white/60"> /mes</span></p>
-              <p className="text-lg font-semibold text-white/80 mt-1">{formatCRC(ahorroAno)} al año</p>
+            <div style={{ background:'rgba(4,199,178,0.1)', border:'1px solid rgba(4,199,178,0.25)', borderRadius:'14px', padding:'1.5rem', textAlign:'center', marginBottom:'1.5rem' }}>
+              <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.1em', color:'#04c7b2', textTransform:'uppercase', marginBottom:'0.5rem' }}>Ahorro estimado</p>
+              <p style={{ fontSize:'2.5rem', fontWeight:900, color:'#fff', lineHeight:1 }}>{formatCRC(ahorroMes)}<span style={{ fontSize:'1rem', fontWeight:400, color:'rgba(255,255,255,0.5)' }}> /mes</span></p>
+              <p style={{ fontSize:'1rem', fontWeight:600, color:'rgba(255,255,255,0.7)', marginTop:'0.4rem' }}>{formatCRC(ahorroAno)} al año</p>
             </div>
-            <Link href="/catalog" className="btn-primary w-full mt-6 block text-center">
+            <Link href="/catalog"
+              style={{ display:'block', textAlign:'center', background:'#04c7b2', color:'#071f37', fontWeight:700, padding:'0.85rem 1.5rem', borderRadius:'12px', fontSize:'0.95rem', transition:'opacity 0.2s' }}
+              className="hover:opacity-90">
               Ver vehículos eléctricos →
             </Link>
           </div>
@@ -229,7 +223,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div className="relative overflow-hidden" style={{ minHeight: '480px', maxHeight: '680px', height: '70vh' }}>
+        <div className="relative overflow-hidden" style={{ height: '100vh', minHeight: '560px' }}>
           {slides.map((slide, i) => (
             <div key={i}
               className={`absolute inset-0 transition-opacity duration-700 ${i === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -246,7 +240,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
               <div className="relative z-10 h-full flex items-center">
                 <div className="container mx-auto px-6" style={{ maxWidth: '1200px' }}>
-                  <p className="text-[#4ade80] text-sm font-semibold tracking-widest uppercase mb-3">
+                  <p className="text-[#04c7b2] text-sm font-semibold tracking-widest uppercase mb-3">
                     Movilidad Eléctrica · Costa Rica
                   </p>
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-4 max-w-xl">
