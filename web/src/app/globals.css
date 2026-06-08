@@ -5,15 +5,12 @@
   /* Paleta Conejo Motors */
   --brand-teal:       #04c7b2;   /* acento principal — botones CTA */
   --brand-teal-dark:  #03a898;
-  --brand-teal-light: #e0faf7;
   --brand-blue:       #024f7d;   /* azul medio */
-  --brand-blue-light: #45a5ce;   /* azul claro */
   --brand-navy:       #071f37;   /* fondo oscuro */
   --brand-navy-mid:   #082d4b;   /* azul marino medio */
-  /* Compat aliases */
+  /* Aliases usados en clases CSS globales */
   --brand-green:      #04c7b2;
   --brand-green-dark: #03a898;
-  --brand-green-light:#e0faf7;
   --brand-gray:       #071f37;
   --brand-gray-light: #f4f7fa;
   --text-primary:     #071f37;
@@ -44,8 +41,6 @@ body {
 }
 
 img { max-width: 100%; height: auto; display: block; }
-/* Imágenes de carrusel/hero deben ignorar max-width */
-img[data-carousel] { max-width: none; }
 a { color: inherit; text-decoration: none; }
 
 /* ── Botones globales ─────────────────────────────────────────────── */
@@ -69,7 +64,7 @@ a { color: inherit; text-decoration: none; }
 .btn-primary:hover {
   background: var(--brand-green-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,166,81,0.3);
+  box-shadow: 0 4px 16px rgba(4,199,178,0.35);
 }
 
 .btn-outline {
@@ -177,7 +172,7 @@ a { color: inherit; text-decoration: none; }
   gap: 0.5rem;
 }
 
-/* ── Badge descuento ─────────────────────────────────────────────── */
+/* ── Badges ──────────────────────────────────────────────────────── */
 .badge-discount {
   position: absolute;
   top: 0.75rem;
@@ -226,15 +221,15 @@ a { color: inherit; text-decoration: none; }
   font-weight: 600;
 }
 
-/* ── Section container ───────────────────────────────────────────── */
+/* ── Secciones ───────────────────────────────────────────────────── */
 .section { padding: 4rem 1.5rem; }
 .section--gray { background: var(--brand-gray-light); }
 .container { max-width: 1200px; margin: 0 auto; }
 .section-header { text-align: center; margin-bottom: 3rem; }
 .section-tag {
   display: inline-block;
-  background: rgba(26,26,46,0.08);
-  color: var(--brand-gray);
+  background: rgba(2,79,125,0.08);
+  color: var(--brand-blue);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -251,25 +246,10 @@ a { color: inherit; text-decoration: none; }
 }
 .section-sub { color: var(--text-secondary); font-size: 1rem; max-width: 540px; margin: 0 auto; }
 
-/* ── Grids ──────────────────────────────────────────────────────── */
-.grid-vehicles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
+/* ── Mobile section padding ──────────────────────────────────────── */
 @media (max-width: 640px) {
-  .grid-vehicles { grid-template-columns: 1fr; gap: 1rem; }
   .section { padding: 2.5rem 1rem; }
 }
-
-/* ── Skeleton loader ─────────────────────────────────────────────── */
-.skeleton {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 8px;
-}
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ── Slider range ────────────────────────────────────────────────── */
 input[type="range"] {
@@ -295,7 +275,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
   box-shadow: 0 0 0 3px rgba(232,51,74,0.3);
 }
 
-/* ── Form inputs ──────────────────────────────────────────────────── */
+/* ── Formulario ──────────────────────────────────────────────────── */
 .form-input {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -308,36 +288,6 @@ input[type="range"]:focus::-webkit-slider-thumb {
 }
 .form-input:focus {
   outline: none;
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 3px rgba(0,166,81,0.12);
+  border-color: var(--brand-teal);
+  box-shadow: 0 0 0 3px rgba(4,199,178,0.15);
 }
-
-/* ── Tabs ────────────────────────────────────────────────────────── */
-.tabs { display: flex; gap: 0.25rem; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
-.tab-btn {
-  padding: 0.75rem 1.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.2s, border-color 0.2s;
-}
-.tab-btn:hover { color: var(--text-primary); }
-.tab-btn.active { color: var(--brand-green); border-bottom-color: var(--brand-green); }
-
-/* ── Spec list ───────────────────────────────────────────────────── */
-.spec-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
-.spec-item {
-  display: flex;
-  flex-direction: column;
-  padding: 0.9rem 1rem;
-  background: var(--brand-gray-light);
-  border-radius: 10px;
-  font-size: 0.9rem;
-}
-.spec-item strong { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.25rem; }
-.spec-item span { font-weight: 700; color: var(--text-primary); font-size: 1rem; }
