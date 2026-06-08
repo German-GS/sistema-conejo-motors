@@ -26,26 +26,28 @@ const SPECS: { label: string; key: keyof Vehicle; unit?: string }[] = [
 
 export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
   const [selected, setSelected] = useState<(Vehicle | null)[]>([null, null, null]);
+  const [pickerSlot, setPickerSlot] = useState<number | null>(null);
+  const [search, setSearch] = useState('');
 
-  const toggle = (v: Vehicle) => {
-    const idx = selected.findIndex(s => s?.id === v.id);
-    if (idx !== -1) {
-      setSelected(prev => prev.map((s, i) => i === idx ? null : s));
-    } else {
-      const emptyIdx = selected.findIndex(s => s === null);
-      if (emptyIdx !== -1) setSelected(prev => prev.map((s, i) => i === emptyIdx ? v : s));
-    }
-  };
-
-  const isSelected = (v: Vehicle) => selected.some(s => s?.id === v.id);
   const count = selected.filter(Boolean).length;
 
-  const getVal = (v: Vehicle, key: keyof Vehicle) => {
-    const val = v[key];
-    return val != null ? val : null;
+  const toggle = (v: Vehicle, slotIdx: number) => {
+    // Remove from other slots if already selected
+    setSelected(prev => prev.map((s, i) => {
+      if (s?.id === v.id) return null;        // clear existing slot
+      if (i === slotIdx) return v;             // place in target slot
+      return s;
+    }));
+    setPickerSlot(null);
+    setSearch('');
   };
 
-  // Highlight best value for numeric specs
+  const clearSlot = (i: number) => {
+    setSelected(prev => prev.map((s, idx) => idx === i ? null : s));
+  };
+
+  const getVal = (v: Vehicle, key: keyof Vehicle) => v[key] ?? null;
+
   const getBest = (key: keyof Vehicle): number | null => {
     const vals = selected.filter(Boolean).map(v => Number(getVal(v!, key))).filter(x => !isNaN(x) && x > 0);
     if (!vals.length) return null;
@@ -53,120 +55,235 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
     return highBetter.includes(key) ? Math.max(...vals) : Math.min(...vals);
   };
 
-  return (
-    <div className="container mx-auto px-4 py-8" style={{ maxWidth: '1200px' }}>
-      <div className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">Comparador de Vehículos Eléctricos</h1>
-        <p className="text-gray-500">Selecciona hasta {MAX} vehículos para comparar sus especificaciones</p>
-      </div>
+  const filteredVehicles = vehicles.filter(v =>
+    `${v.marca} ${v.modelo} ${v.año}`.toLowerCase().includes(search.toLowerCase())
+  );
 
-      {/* Selector */}
-      <div className="mb-8">
-        <p className="text-sm font-semibold text-gray-600 mb-3">{count}/{MAX} vehículos seleccionados</p>
-        <div className="grid-vehicles">
-          {vehicles.map(v => {
-            const sel = isSelected(v);
-            const imgSrc = v.imagenes?.[0]?.url ? getImageUrl(v.imagenes[0].url)
-              : v.profile?.imagenes?.[0]?.url ? getImageUrl(v.profile.imagenes[0].url)
+  return (
+    <div style={{ paddingTop: '96px', paddingBottom: '4rem', minHeight: '100vh', background: '#f8fafc' }}>
+      <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
+
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <span style={{ display:'inline-block', background:'rgba(2,79,125,0.1)', color:'#024f7d', fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', padding:'0.3rem 1rem', borderRadius:'99px', marginBottom:'0.75rem' }}>
+            Comparador
+          </span>
+          <h1 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 900, color: '#071f37', marginBottom: '0.4rem' }}>
+            Compara Vehículos Eléctricos
+          </h1>
+          <p style={{ color: '#64748b', fontSize: '1rem' }}>
+            Selecciona hasta {MAX} vehículos para ver sus diferencias lado a lado
+          </p>
+        </div>
+
+        {/* ── 3 RANURAS ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem', marginBottom: '2.5rem' }}>
+          {[0, 1, 2].map(i => {
+            const v = selected[i];
+            const imgSrc = v?.imagenes?.[0]?.url ? getImageUrl(v.imagenes[0].url)
+              : v?.profile?.imagenes?.[0]?.url ? getImageUrl(v.profile.imagenes[0].url)
               : '/placeholder.png';
             return (
-              <button key={v.id} onClick={() => toggle(v)}
-                className={`vehicle-card text-left transition-all ${sel ? 'ring-2 ring-[#00a651] ring-offset-2' : count >= MAX && !sel ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={count >= MAX && !sel}>
-                <div className="vehicle-card__img">
-                  <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill className="object-cover" sizes="(max-width:640px) 100vw, 33vw" />
-                  {sel && (
-                    <div className="absolute top-2 right-2 w-7 h-7 bg-[#00a651] rounded-full flex items-center justify-center text-white font-bold text-sm z-10">
-                      {selected.findIndex(s => s?.id === v.id) + 1}
-                    </div>
+              <div key={i}
+                style={{
+                  background: '#fff',
+                  borderRadius: '18px',
+                  border: pickerSlot === i ? '2px solid #024f7d' : v ? '2px solid #04c7b2' : '2px dashed #cbd5e1',
+                  overflow: 'hidden',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxShadow: v ? '0 4px 20px rgba(4,199,178,0.12)' : '0 2px 8px rgba(0,0,0,0.04)',
+                  minHeight: '260px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}>
+                {/* Slot número */}
+                <div style={{ padding: '0.75rem 1rem 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: v ? '#04c7b2' : '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Vehículo {i + 1}
+                  </span>
+                  {v && (
+                    <button onClick={() => clearSlot(i)}
+                      style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1, padding: '2px 4px' }}
+                      aria-label="Quitar">×</button>
                   )}
                 </div>
-                <div className="vehicle-card__body">
-                  <p className="vehicle-card__name">{v.marca} {v.modelo} ({v.año})</p>
-                  <p className="vehicle-card__price">{formatCRC(Number(v.precio_venta_final ?? v.precio_venta))}</p>
-                  {v.autonomia_km && <p className="text-xs text-gray-500">🛣️ {v.autonomia_km} km</p>}
-                </div>
-              </button>
+
+                {v ? (
+                  /* Vehículo seleccionado */
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0.75rem 1rem 1rem' }}>
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '10px', overflow: 'hidden', marginBottom: '0.75rem', background: '#f1f5f9' }}>
+                      <Image src={imgSrc} alt={v.modelo} fill className="object-cover" sizes="400px" />
+                    </div>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#071f37', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.2rem' }}>
+                      {v.marca} {v.modelo}
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem' }}>{v.año}</p>
+                    <p style={{ fontSize: '1.1rem', fontWeight: 800, color: '#024f7d' }}>
+                      {formatCRC(Number(v.precio_venta_final ?? v.precio_venta))}
+                    </p>
+                    <button onClick={() => { setPickerSlot(i); setSearch(''); }}
+                      style={{ marginTop: 'auto', paddingTop: '0.6rem', fontSize: '0.78rem', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', textDecoration: 'underline' }}>
+                      Cambiar modelo
+                    </button>
+                  </div>
+                ) : (
+                  /* Ranura vacía */
+                  <button onClick={() => { setPickerSlot(i); setSearch(''); }}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', cursor: 'pointer', background: 'none', border: 'none', padding: '1.5rem', color: '#94a3b8' }}>
+                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: pickerSlot === i ? '#e0f2fe' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', transition: 'background 0.2s' }}>
+                      +
+                    </div>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: pickerSlot === i ? '#024f7d' : '#94a3b8' }}>
+                      {pickerSlot === i ? 'Seleccionando...' : 'Agregar vehículo'}
+                    </span>
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
-      </div>
 
-      {/* Tabla comparativa */}
-      {count >= 2 && (
-        <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left p-4 font-semibold text-gray-600 w-36">Especificación</th>
-                {selected.map((v, i) => v ? (
-                  <th key={i} className="p-4 text-center min-w-[180px]">
-                    <div className="font-bold text-gray-900">{v.marca} {v.modelo}</div>
-                    <div className="text-xs text-gray-500 font-normal">{v.año}</div>
-                  </th>
-                ) : null)}
-              </tr>
-            </thead>
-            <tbody>
-              {/* Imagen */}
-              <tr className="border-b border-gray-100">
-                <td className="p-4 text-gray-500 font-medium">Imagen</td>
-                {selected.map((v, i) => v ? (
-                  <td key={i} className="p-4 text-center">
-                    <div className="relative w-24 h-16 mx-auto rounded-lg overflow-hidden">
-                      <Image
-                        src={v.imagenes?.[0]?.url ? getImageUrl(v.imagenes[0].url) : '/placeholder.png'}
-                        alt={v.modelo} fill className="object-cover" sizes="96px" />
-                    </div>
-                  </td>
-                ) : null)}
-              </tr>
-
-              {SPECS.map(({ label, key, unit }) => {
-                const best = getBest(key);
+        {/* ── PICKER de vehículos ── */}
+        {pickerSlot !== null && (
+          <div style={{ background: '#fff', borderRadius: '18px', border: '1.5px solid #e2e8f0', padding: '1.5rem', marginBottom: '2.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <h3 style={{ fontWeight: 700, color: '#071f37', fontSize: '0.95rem' }}>
+                Seleccionando para Vehículo {pickerSlot + 1}
+              </h3>
+              <button onClick={() => { setPickerSlot(null); setSearch(''); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '1.3rem' }}>×</button>
+            </div>
+            {/* Buscador */}
+            <input
+              type="text"
+              placeholder="Buscar por marca o modelo..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ width: '100%', padding: '0.65rem 1rem', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontSize: '0.9rem', marginBottom: '1rem', outline: 'none', color: '#071f37' }}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
+              {filteredVehicles.map(v => {
+                const alreadySelected = selected.some(s => s?.id === v.id);
+                const imgSrc = v.imagenes?.[0]?.url ? getImageUrl(v.imagenes[0].url)
+                  : v.profile?.imagenes?.[0]?.url ? getImageUrl(v.profile.imagenes[0].url)
+                  : '/placeholder.png';
                 return (
-                  <tr key={key} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="p-4 text-gray-600 font-medium">{label}</td>
-                    {selected.map((v, i) => {
-                      if (!v) return null;
-                      const val = getVal(v, key);
-                      const isBest = best !== null && Number(val) === best;
-                      const display = key === 'precio_venta_final'
-                        ? formatCRC(Number(v.precio_venta_final ?? v.precio_venta))
-                        : val != null ? `${val}${unit ? ' ' + unit : ''}` : '—';
-                      return (
-                        <td key={i} className={`p-4 text-center font-semibold ${isBest && val ? 'text-[#00a651]' : val ? 'text-gray-900' : 'text-gray-300'}`}>
-                          {display}
-                          {isBest && val ? ' ⭐' : ''}
-                        </td>
-                      );
-                    })}
-                  </tr>
+                  <button key={v.id}
+                    onClick={() => !alreadySelected && toggle(v, pickerSlot)}
+                    disabled={alreadySelected}
+                    style={{
+                      background: alreadySelected ? '#f1f5f9' : '#fff',
+                      border: alreadySelected ? '1.5px solid #e2e8f0' : '1.5px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '0.75rem',
+                      cursor: alreadySelected ? 'not-allowed' : 'pointer',
+                      textAlign: 'left',
+                      opacity: alreadySelected ? 0.5 : 1,
+                      transition: 'border-color 0.15s, box-shadow 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!alreadySelected) { (e.currentTarget as HTMLButtonElement).style.borderColor='#024f7d'; (e.currentTarget as HTMLButtonElement).style.boxShadow='0 2px 10px rgba(2,79,125,0.1)'; }}}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor='#e2e8f0'; (e.currentTarget as HTMLButtonElement).style.boxShadow='none'; }}>
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', marginBottom: '0.5rem', background: '#f1f5f9' }}>
+                      <Image src={imgSrc} alt={v.modelo} fill className="object-cover" sizes="200px" />
+                    </div>
+                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#071f37', textTransform: 'uppercase' }}>{v.marca} {v.modelo}</p>
+                    <p style={{ fontSize: '0.72rem', color: '#64748b' }}>{v.año} · {formatCRC(Number(v.precio_venta_final ?? v.precio_venta))}</p>
+                  </button>
                 );
               })}
+            </div>
+          </div>
+        )}
 
-              {/* Ver ficha */}
-              <tr>
-                <td className="p-4 text-gray-500 font-medium">Ficha técnica</td>
-                {selected.map((v, i) => v ? (
-                  <td key={i} className="p-4 text-center">
-                    <Link href={`/catalog/${v.id}`} className="btn-primary text-sm py-2 px-4 inline-flex">
-                      Ver ficha →
-                    </Link>
-                  </td>
-                ) : null)}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
+        {/* ── TABLA COMPARATIVA ── */}
+        {count >= 2 && (
+          <div style={{ background: '#fff', borderRadius: '18px', overflow: 'hidden', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+            <div style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 100%)', padding: '1.25rem 1.5rem' }}>
+              <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '1.05rem' }}>Comparativa de especificaciones</h2>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', fontSize: '0.9rem', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #e2e8f0', background: '#f8fafc' }}>
+                    <th style={{ textAlign: 'left', padding: '1rem', fontWeight: 600, color: '#64748b', width: '160px', whiteSpace: 'nowrap' }}>Especificación</th>
+                    {selected.map((v, i) => v ? (
+                      <th key={i} style={{ padding: '1rem', textAlign: 'center', minWidth: '180px' }}>
+                        <div style={{ fontWeight: 800, color: '#071f37' }}>{v.marca} {v.modelo}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 400 }}>{v.año}</div>
+                      </th>
+                    ) : null)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Imagen */}
+                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '1rem', color: '#64748b', fontWeight: 600 }}>Imagen</td>
+                    {selected.map((v, i) => v ? (
+                      <td key={i} style={{ padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ position: 'relative', width: '100px', height: '64px', margin: '0 auto', borderRadius: '8px', overflow: 'hidden' }}>
+                          <Image
+                            src={v.imagenes?.[0]?.url ? getImageUrl(v.imagenes[0].url) : '/placeholder.png'}
+                            alt={v.modelo} fill className="object-cover" sizes="100px" />
+                        </div>
+                      </td>
+                    ) : null)}
+                  </tr>
 
-      {count < 2 && count > 0 && (
-        <div className="text-center py-12 text-gray-400">
-          <div className="text-5xl mb-3">⚖️</div>
-          <p>Selecciona al menos 2 vehículos para ver la comparación</p>
-        </div>
-      )}
+                  {SPECS.map(({ label, key, unit }, rowIdx) => {
+                    const best = getBest(key);
+                    return (
+                      <tr key={key} style={{ borderBottom: '1px solid #f1f5f9', background: rowIdx % 2 === 0 ? '#fff' : '#fafbfc' }}>
+                        <td style={{ padding: '0.85rem 1rem', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>{label}</td>
+                        {selected.map((v, i) => {
+                          if (!v) return null;
+                          const val = getVal(v, key);
+                          const isBest = best !== null && Number(val) === best;
+                          const display = key === 'precio_venta_final'
+                            ? formatCRC(Number(v.precio_venta_final ?? v.precio_venta))
+                            : val != null ? `${val}${unit ? ' ' + unit : ''}` : '—';
+                          return (
+                            <td key={i} style={{ padding: '0.85rem 1rem', textAlign: 'center', fontWeight: isBest && val ? 800 : 600, color: isBest && val ? '#04c7b2' : val ? '#071f37' : '#cbd5e1' }}>
+                              {display}{isBest && val ? ' ⭐' : ''}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+
+                  {/* Ver ficha */}
+                  <tr style={{ background: '#f8fafc' }}>
+                    <td style={{ padding: '1rem', color: '#64748b', fontWeight: 600 }}>Ficha técnica</td>
+                    {selected.map((v, i) => v ? (
+                      <td key={i} style={{ padding: '1rem', textAlign: 'center' }}>
+                        <Link href={`/catalog/${v.id}`}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#024f7d', color: '#fff', fontWeight: 700, fontSize: '0.85rem', padding: '0.55rem 1.2rem', borderRadius: '8px', textDecoration: 'none', transition: 'opacity 0.2s' }}
+                          className="hover:opacity-90">
+                          Ver ficha →
+                        </Link>
+                      </td>
+                    ) : null)}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {count === 1 && (
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>⚖️</div>
+            <p style={{ fontWeight: 600 }}>Selecciona al menos un vehículo más para comparar</p>
+          </div>
+        )}
+
+        {count === 0 && (
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>🚗</div>
+            <p style={{ fontWeight: 600 }}>Toca una ranura para elegir un vehículo</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
