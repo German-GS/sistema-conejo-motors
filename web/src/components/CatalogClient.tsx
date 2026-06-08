@@ -23,6 +23,11 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
 
   const effectivePrecioMax = filterPrecioMax || precioMaxReal;
 
+  // Solo contar disponibles (excluye Agotado y Contrapedido) para el header
+  const disponibles = useMemo(() => initialVehicles.filter(v =>
+    v.visibilidad !== 'Agotado' && v.visibilidad !== 'Contrapedido'
+  ), [initialVehicles]);
+
   const filtered = useMemo(() => initialVehicles.filter(v => {
     const precio = Number(v.precio_venta_final ?? v.precio_venta);
     return (
@@ -33,6 +38,10 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
       Number(v.autonomia_km ?? 0) >= filterAutonomiaMin
     );
   }), [initialVehicles, filterCategoria, filterMarca, filterColor, effectivePrecioMax, filterAutonomiaMin]);
+
+  const filteredDisponibles = useMemo(() => filtered.filter(v =>
+    v.visibilidad !== 'Agotado' && v.visibilidad !== 'Contrapedido'
+  ), [filtered]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -52,7 +61,8 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
           {filterMarca !== 'Todas' ? `Vehículos Eléctricos ${filterMarca}` : 'Catálogo de Vehículos Eléctricos'}
         </h1>
         <p className="text-gray-500">
-          {filtered.length} vehículo{filtered.length !== 1 ? 's' : ''} disponible{filtered.length !== 1 ? 's' : ''}
+          <span style={{ fontWeight:700, color:'#024f7d' }}>{filteredDisponibles.length}</span> disponible{filteredDisponibles.length !== 1 ? 's' : ''}
+          {filtered.length !== filteredDisponibles.length && <span style={{ color:'#94a3b8', fontSize:'0.85rem' }}> · {filtered.length - filteredDisponibles.length} con disponibilidad especial</span>}
           {filterMarca !== 'Todas' && ` · ${filterMarca}`}
           {filterCategoria !== 'Todas' && ` · ${filterCategoria}`}
         </p>

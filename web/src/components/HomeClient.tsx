@@ -29,7 +29,7 @@ function SavingsCalculator() {
       <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'400px', height:'400px', borderRadius:'50%', background:'rgba(4,199,178,0.06)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'300px', height:'300px', borderRadius:'50%', background:'rgba(69,165,206,0.07)', pointerEvents:'none' }} />
       <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap:'2.5rem', alignItems:'center' }}>
           <div>
             <span style={{ display:'inline-block', background:'rgba(4,199,178,0.15)', color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', padding:'0.3rem 0.9rem', borderRadius:'99px', marginBottom:'0.75rem' }}>Herramienta interactiva</span>
             <h2 style={{ fontSize:'clamp(1.6rem,3vw,2.2rem)', fontWeight:800, color:'#fff', marginBottom:'0.5rem' }}>¿Cuánto ahorrarías al pasarte a eléctrico?</h2>
@@ -44,7 +44,7 @@ function SavingsCalculator() {
                 <input type="range" min={300} max={5000} step={100} value={km}
                   onChange={e => setKm(Number(e.target.value))} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap:'1rem' }}>
                 {[
                   { label:'Precio gasolina (₡/litro)', val:precioGas, set:setPrecioGas, min:400, max:2000 },
                   { label:'Rendimiento (km/litro)', val:rendimiento, set:setRendimiento, min:5, max:30 },
@@ -163,7 +163,7 @@ function ContactSection() {
   return (
     <section id="contacto" style={{ background:'#071f37', padding:'4rem 1.5rem', color:'#fff' }}>
       <div className="container">
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'3rem', alignItems:'stretch' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap:'2.5rem', alignItems:'stretch' }}>
           {/* Info */}
           <div style={{ display:'flex', flexDirection:'column' }}>
             <span style={{ display:'inline-block', background:'rgba(4,199,178,0.15)', color:'#04c7b2', fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', padding:'0.3rem 0.9rem', borderRadius:'99px', marginBottom:'0.75rem', alignSelf:'flex-start' }}>
