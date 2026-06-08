@@ -254,7 +254,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
               ) : slide.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={getImageUrl(slide.imageUrl)} alt={slide.title}
-                  style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                  style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', objectFit:'cover', display:'block', maxWidth:'none', minWidth:'100%' }}
                   loading={i === 0 ? 'eager' : 'lazy'} />
               ) : null}
               <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0, background:'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }} />

@@ -30,6 +30,7 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -38,9 +39,13 @@ body {
   background: #fff;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 img { max-width: 100%; height: auto; display: block; }
+/* Imágenes de carrusel/hero deben ignorar max-width */
+img[data-carousel] { max-width: none; }
 a { color: inherit; text-decoration: none; }
 
 /* ── Botones globales ─────────────────────────────────────────────── */
