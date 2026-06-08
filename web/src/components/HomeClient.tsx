@@ -161,28 +161,38 @@ function ContactSection() {
     { href: 'https://www.tiktok.com/@conejomotors', label: 'TikTok', hoverBg: '#010101', icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg> },
   ];
   return (
-    <section id="contacto" className="section bg-[#1a1a2e] text-white">
+    <section id="contacto" style={{ background:'#071f37', padding:'4rem 1.5rem', color:'#fff' }}>
       <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <div>
-            <span className="section-tag">Estamos aquí para ayudarte</span>
-            <h2 className="section-title text-white mt-2">Contáctanos</h2>
-            <p className="text-white/70 mt-2 mb-8">Nuestro equipo de asesores te ayuda a encontrar el vehículo ideal para tu estilo de vida.</p>
-            <ul className="space-y-4">
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'3rem', alignItems:'stretch' }}>
+          {/* Info */}
+          <div style={{ display:'flex', flexDirection:'column' }}>
+            <span style={{ display:'inline-block', background:'rgba(4,199,178,0.15)', color:'#04c7b2', fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', padding:'0.3rem 0.9rem', borderRadius:'99px', marginBottom:'0.75rem', alignSelf:'flex-start' }}>
+              Estamos aquí para ayudarte
+            </span>
+            <h2 style={{ fontSize:'clamp(1.6rem,3vw,2.2rem)', fontWeight:900, color:'#fff', marginBottom:'0.5rem' }}>Contáctanos</h2>
+            <p style={{ color:'rgba(255,255,255,0.6)', marginBottom:'1.75rem', fontSize:'0.95rem', lineHeight:1.6 }}>
+              Nuestro equipo de asesores te ayuda a encontrar el vehículo ideal para tu estilo de vida.
+            </p>
+            <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:'1rem', marginBottom:'1.75rem' }}>
               {[
                 { icon: '📧', label: 'ventas@conejomotors.com', href: 'mailto:ventas@conejomotors.com' },
                 { icon: '📞', label: '7207-1157', href: 'tel:+50672071157' },
                 { icon: '🕐', label: 'Lun–Vie 9am–6pm · Sáb 9am–1pm', href: null },
                 { icon: '📍', label: 'Güachipelín de Escazú, San José, Costa Rica', href: null },
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-white/80">
-                  <span className="text-xl">{item.icon}</span>
-                  {item.href ? <a href={item.href} className="hover:text-[#4ade80] transition-colors">{item.label}</a> : <span>{item.label}</span>}
+                <li key={i} style={{ display:'flex', alignItems:'center', gap:'0.75rem', color:'rgba(255,255,255,0.75)', fontSize:'0.95rem' }}>
+                  <span style={{ fontSize:'1.2rem', width:'24px', textAlign:'center' }}>{item.icon}</span>
+                  {item.href
+                    ? <a href={item.href} style={{ color:'rgba(255,255,255,0.75)', transition:'color 0.2s' }}
+                        onMouseEnter={e => (e.currentTarget.style.color='#04c7b2')}
+                        onMouseLeave={e => (e.currentTarget.style.color='rgba(255,255,255,0.75)')}>{item.label}</a>
+                    : <span>{item.label}</span>
+                  }
                 </li>
               ))}
             </ul>
-            <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.45)', marginTop:'1.75rem', marginBottom:'0.75rem' }}>Síguenos</p>
-            <div className="flex gap-3">
+            <p style={{ fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)', marginBottom:'0.7rem' }}>Síguenos</p>
+            <div style={{ display:'flex', gap:'0.6rem' }}>
               {socials.map(s => (
                 <a key={s.label} href={s.href} target="_blank" rel="noreferrer" aria-label={s.label}
                   style={{ width:'44px', height:'44px', borderRadius:'12px', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', transition:'background 0.2s, transform 0.15s' }}
@@ -193,11 +203,12 @@ function ContactSection() {
               ))}
             </div>
           </div>
-          <div className="rounded-2xl overflow-hidden h-80 lg:h-full min-h-[300px]">
+          {/* Mapa — alineado con el tope del texto */}
+          <div style={{ borderRadius:'16px', overflow:'hidden', minHeight:'360px', height:'100%' }}>
             <iframe
               title="Ubicación Conejo Motors — Güachipelín Escazú"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.76!2d-84.14305!3d9.93891!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8fa0fef2b94bcfd3%3A0x6e42d5c5d3d2bdf5!2sG%C3%BCachipel%C3%ADn%2C+Escaz%C3%BA%2C+San+Jos%C3%A9%2C+Costa+Rica!5e0!3m2!1ses!2scr!4v1"
-              width="100%" height="100%" style={{ border: 0, minHeight: '300px' }}
+              width="100%" height="100%" style={{ border:0, display:'block', minHeight:'360px' }}
               allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
             />
           </div>

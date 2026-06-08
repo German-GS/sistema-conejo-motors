@@ -22,23 +22,23 @@ function SocialIcon({ s }: { s: typeof SOCIALS[0] }) {
 
 export function Footer() {
   return (
-    <footer className="bg-[#1a1a2e] text-gray-300 pt-12 pb-6">
-      <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <footer style={{ background:'#071f37', color:'rgba(255,255,255,0.65)', paddingTop:'3.5rem', paddingBottom:'1.75rem' }}>
+      <div className="container mx-auto px-6" style={{ maxWidth: '1200px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'2.5rem', marginBottom:'2.5rem' }}>
           {/* Marca */}
           <div>
             <Image src="/logo.png" alt="Conejo Motors" width={160} height={36}
               className="h-8 w-auto object-contain mb-4 brightness-0 invert" />
-            <p className="text-sm text-gray-400 leading-relaxed">
+            <p style={{ fontSize:'0.875rem', color:'rgba(255,255,255,0.5)', lineHeight:1.7 }}>
               Concesionario especializado en vehículos eléctricos en Costa Rica.
-              BYD, MG, GWM y más marcas.
+              BYD, Wuling, Link and co y más marcas.
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Navegación</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 style={{ color:'#fff', fontWeight:700, fontSize:'0.75rem', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'1.25rem' }}>Navegación</h3>
+            <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:'0.7rem' }}>
               {[
                 { href: '/', label: 'Inicio' },
                 { href: '/catalog', label: 'Catálogo de Vehículos' },
@@ -46,7 +46,11 @@ export function Footer() {
                 { href: '/#contacto', label: 'Contacto' },
               ].map(({ href, label }) => (
                 <li key={href}>
-                  <Link href={href} className="hover:text-[#04c7b2] transition-colors">{label}</Link>
+                  <Link href={href} style={{ fontSize:'0.875rem', color:'rgba(255,255,255,0.55)', transition:'color 0.2s' }}
+                    onMouseEnter={e => (e.currentTarget.style.color='#04c7b2')}
+                    onMouseLeave={e => (e.currentTarget.style.color='rgba(255,255,255,0.55)')}>
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -54,31 +58,36 @@ export function Footer() {
 
           {/* Contacto */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contacto</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-2">
-                <span className="text-lg">📍</span>
-                <span>Güachipelín de Escazú, San José, Costa Rica</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">📞</span>
-                <a href="tel:+50672071157" className="hover:text-[#04c7b2] transition-colors">7207-1157</a>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">📧</span>
-                <a href="mailto:ventas@conejomotors.com" className="hover:text-[#04c7b2] transition-colors">ventas@conejomotors.com</a>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-lg">🕐</span>
-                <span>Lun–Vie 9am–6pm · Sáb 9am–1pm</span>
-              </li>
+            <h3 style={{ color:'#fff', fontWeight:700, fontSize:'0.75rem', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'1.25rem' }}>Contacto</h3>
+            <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:'0.8rem', fontSize:'0.875rem' }}>
+              {[
+                { icon:'📍', text:'Güachipelín de Escazú, San José', href: null },
+                { icon:'📞', text:'7207-1157', href:'tel:+50672071157' },
+                { icon:'📧', text:'ventas@conejomotors.com', href:'mailto:ventas@conejomotors.com' },
+                { icon:'🕐', text:'Lun–Vie 9am–6pm · Sáb 9am–1pm', href: null },
+              ].map((item, i) => (
+                <li key={i} style={{ display:'flex', alignItems:'flex-start', gap:'0.5rem', color:'rgba(255,255,255,0.55)' }}>
+                  <span style={{ fontSize:'1rem', lineHeight:1.4 }}>{item.icon}</span>
+                  {item.href
+                    ? <a href={item.href} style={{ color:'rgba(255,255,255,0.55)', transition:'color 0.2s' }}
+                        onMouseEnter={e => (e.currentTarget.style.color='#04c7b2')}
+                        onMouseLeave={e => (e.currentTarget.style.color='rgba(255,255,255,0.55)')}>{item.text}</a>
+                    : <span>{item.text}</span>
+                  }
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
-          <p style={{ color: 'rgba(255,255,255,0.55)' }}>&copy; {new Date().getFullYear()} Conejo Motors. Todos los derechos reservados.</p>
-          <p style={{ color: 'rgba(255,255,255,0.3)' }}>Desarrollado por German Garcia S.</p>
+        {/* Barra inferior */}
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:'1.25rem', display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'0.5rem' }}>
+          <p style={{ fontSize:'0.8rem', color:'rgba(255,255,255,0.65)' }}>
+            &copy; {new Date().getFullYear()} Conejo Motors. Todos los derechos reservados.
+          </p>
+          <p style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.28)' }}>
+            Desarrollado por German Garcia S.
+          </p>
         </div>
       </div>
     </footer>
