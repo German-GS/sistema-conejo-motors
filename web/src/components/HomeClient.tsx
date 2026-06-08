@@ -63,22 +63,22 @@ function SavingsCalculator() {
           </div>
 
           <div style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'20px', padding:'2rem' }}>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'14px', padding:'1.25rem', textAlign:'center' }}>
-                <div className="text-2xl mb-1">⛽</div>
-                <div style={{ fontSize:'0.75rem', color:'rgba(255,255,255,0.55)', marginBottom:'0.25rem' }}>Con gasolina / mes</div>
-                <div style={{ fontSize:'1.1rem', fontWeight:700, color:'#fff' }}>{formatCRC(costoGas)}</div>
+            <div className="grid grid-cols-2 gap-5 mb-7">
+              <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'16px', padding:'1.75rem 1.25rem', textAlign:'center' }}>
+                <div style={{ fontSize:'2.2rem', marginBottom:'0.75rem' }}>⛽</div>
+                <div style={{ fontSize:'0.78rem', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'rgba(255,255,255,0.5)', marginBottom:'0.6rem' }}>Con gasolina / mes</div>
+                <div style={{ fontSize:'1.4rem', fontWeight:800, color:'#fff' }}>{formatCRC(costoGas)}</div>
               </div>
-              <div style={{ background:'rgba(4,199,178,0.12)', border:'1px solid rgba(4,199,178,0.3)', borderRadius:'14px', padding:'1.25rem', textAlign:'center' }}>
-                <div className="text-2xl mb-1">⚡</div>
-                <div style={{ fontSize:'0.75rem', color:'rgba(255,255,255,0.55)', marginBottom:'0.25rem' }}>Con eléctrico / mes</div>
-                <div style={{ fontSize:'1.1rem', fontWeight:700, color:'#04c7b2' }}>{formatCRC(costoElec)}</div>
+              <div style={{ background:'rgba(4,199,178,0.12)', border:'1px solid rgba(4,199,178,0.3)', borderRadius:'16px', padding:'1.75rem 1.25rem', textAlign:'center' }}>
+                <div style={{ fontSize:'2.2rem', marginBottom:'0.75rem' }}>⚡</div>
+                <div style={{ fontSize:'0.78rem', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'rgba(255,255,255,0.5)', marginBottom:'0.6rem' }}>Con eléctrico / mes</div>
+                <div style={{ fontSize:'1.4rem', fontWeight:800, color:'#04c7b2' }}>{formatCRC(costoElec)}</div>
               </div>
             </div>
-            <div style={{ background:'rgba(4,199,178,0.1)', border:'1px solid rgba(4,199,178,0.25)', borderRadius:'14px', padding:'1.5rem', textAlign:'center', marginBottom:'1.5rem' }}>
-              <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.1em', color:'#04c7b2', textTransform:'uppercase', marginBottom:'0.5rem' }}>Ahorro estimado</p>
-              <p style={{ fontSize:'2.5rem', fontWeight:900, color:'#fff', lineHeight:1 }}>{formatCRC(ahorroMes)}<span style={{ fontSize:'1rem', fontWeight:400, color:'rgba(255,255,255,0.5)' }}> /mes</span></p>
-              <p style={{ fontSize:'1rem', fontWeight:600, color:'rgba(255,255,255,0.7)', marginTop:'0.4rem' }}>{formatCRC(ahorroAno)} al año</p>
+            <div style={{ background:'rgba(4,199,178,0.1)', border:'1px solid rgba(4,199,178,0.25)', borderRadius:'16px', padding:'2rem 1.5rem', textAlign:'center', marginBottom:'1.75rem' }}>
+              <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.12em', color:'#04c7b2', textTransform:'uppercase', marginBottom:'0.75rem' }}>Ahorro estimado</p>
+              <p style={{ fontSize:'2.8rem', fontWeight:900, color:'#fff', lineHeight:1, marginBottom:'0.5rem' }}>{formatCRC(ahorroMes)}<span style={{ fontSize:'1.1rem', fontWeight:400, color:'rgba(255,255,255,0.5)' }}> /mes</span></p>
+              <p style={{ fontSize:'1.05rem', fontWeight:600, color:'rgba(255,255,255,0.7)' }}>{formatCRC(ahorroAno)} al año</p>
             </div>
             <Link href="/catalog"
               style={{ display:'block', textAlign:'center', background:'#04c7b2', color:'#071f37', fontWeight:700, padding:'0.85rem 1.5rem', borderRadius:'12px', fontSize:'0.95rem', transition:'opacity 0.2s' }}
@@ -138,10 +138,12 @@ function ElectroSection() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <div key={i} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-3xl mb-3">{item.icon}</div>
-              <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+            <div key={i} style={{ background:'#fff', borderRadius:'18px', padding:'2rem 1.75rem', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', border:'1px solid #e8eef5', transition:'transform 0.2s, box-shadow 0.2s', cursor:'default' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform='translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow='0 8px 28px rgba(2,79,125,0.12)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform='translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'; }}>
+              <div style={{ fontSize:'2.5rem', marginBottom:'1.1rem', display:'block' }}>{item.icon}</div>
+              <h3 style={{ fontSize:'1rem', fontWeight:700, color:'#071f37', marginBottom:'0.6rem' }}>{item.title}</h3>
+              <p style={{ fontSize:'0.9rem', color:'#64748b', lineHeight:1.65 }}>{item.desc}</p>
             </div>
           ))}
         </div>

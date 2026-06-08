@@ -45,7 +45,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
   const hasFilters = filterCategoria !== 'Todas' || filterMarca !== 'Todas' || filterColor !== 'Todos' || filterPrecioMax > 0 || filterAutonomiaMin > 0;
 
   return (
-    <div className="container mx-auto px-4 py-8" style={{ maxWidth: '1200px' }}>
+    <div className="container mx-auto px-4" style={{ maxWidth: '1200px', paddingTop: '96px', paddingBottom: '3rem' }}>
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
@@ -66,41 +66,52 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
           <span>{filtersOpen ? '▲' : '▼'}</span>
         </button>
 
-        <div className={`bg-gray-50 rounded-2xl border border-gray-200 p-5 space-y-5 ${filtersOpen ? 'block' : 'hidden md:block'}`}>
+        <div className={`rounded-2xl border border-gray-200 p-6 space-y-6 ${filtersOpen ? 'block' : 'hidden md:block'}`}
+          style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
           {/* Categorías como pills */}
           <div>
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categoría</p>
+            <p style={{ fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.6rem' }}>Categoría</p>
             <div className="flex flex-wrap gap-2">
               {categorias.map(cat => (
                 <button key={cat} onClick={() => { setFilterCategoria(cat); setPage(1); }}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    filterCategoria === cat ? 'bg-[#1a1a2e] text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-[#1a1a2e] hover:text-[#1a1a2e]'
-                  }`}>
+                  style={{
+                    padding: '0.45rem 1rem',
+                    borderRadius: '99px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    border: filterCategoria === cat ? 'none' : '1.5px solid #e2e8f0',
+                    background: filterCategoria === cat ? '#024f7d' : '#fff',
+                    color: filterCategoria === cat ? '#fff' : '#64748b',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}>
                   {cat}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div style={{ height: '1px', background: '#e2e8f0' }} />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Marca */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Marca</label>
+              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>Marca</label>
               <select value={filterMarca} onChange={e => { setFilterMarca(e.target.value); setPage(1); }} className="form-input">
                 {marcas.map(m => <option key={m}>{m}</option>)}
               </select>
             </div>
             {/* Color */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Color</label>
+              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>Color</label>
               <select value={filterColor} onChange={e => { setFilterColor(e.target.value); setPage(1); }} className="form-input">
                 {colores.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             {/* Precio */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                Precio máx: <span className="text-[#1a1a2e] font-bold">{formatCRC(effectivePrecioMax)}</span>
+              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>
+                Precio máx: <span style={{ color:'#071f37', fontWeight:800 }}>{formatCRC(effectivePrecioMax)}</span>
               </label>
               <input type="range" min={0} max={precioMaxReal} step={500_000}
                 value={filterPrecioMax || precioMaxReal}
@@ -108,8 +119,8 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
             </div>
             {/* Autonomía */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                Autonomía mín: <span className="text-[#1a1a2e] font-bold">{filterAutonomiaMin} km</span>
+              <label style={{ display:'block', fontSize:'0.7rem', fontWeight:700, color:'#024f7d', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'0.5rem' }}>
+                Autonomía mín: <span style={{ color:'#071f37', fontWeight:800 }}>{filterAutonomiaMin} km</span>
               </label>
               <input type="range" min={0} max={600} step={25} value={filterAutonomiaMin}
                 onChange={e => { setFilterAutonomiaMin(Number(e.target.value)); setPage(1); }} />
@@ -182,7 +193,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                 disabled={page === 1} className="btn-ghost px-3 py-2 disabled:opacity-40">‹ Anterior</button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                 <button key={p} onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${p === page ? 'bg-[#00a651] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                  className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${p === page ? 'bg-[#024f7d] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                   {p}
                 </button>
               ))}
