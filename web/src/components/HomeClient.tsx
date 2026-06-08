@@ -241,7 +241,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', width:'100%', overflow:'hidden', clipPath:'inset(0)' }}>
+        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', width:'100vw', marginLeft:'calc(50% - 50vw)', overflow:'hidden', clipPath:'inset(0)' }}>
           {slides.map((slide, i) => (
             <div key={i}
               style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
