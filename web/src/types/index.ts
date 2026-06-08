@@ -40,6 +40,7 @@ export interface CarouselSlide {
   title: string;
   subtitle: string;
   imageUrl: string;
+  mediaType?: 'image' | 'video'; // omitido = imagen (retrocompatible)
 }
 
 export interface SiteSetting {

@@ -233,10 +233,16 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
           {slides.map((slide, i) => (
             <div key={i}
               className={`absolute inset-0 transition-opacity duration-700 ${i === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-              {slide.imageUrl && (
+              {slide.imageUrl && slide.mediaType === 'video' ? (
+                <video
+                  src={getImageUrl(slide.imageUrl)}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay muted loop playsInline
+                />
+              ) : slide.imageUrl ? (
                 <Image src={getImageUrl(slide.imageUrl)} alt={slide.title} fill
                   className="object-cover" priority={i === 0} sizes="100vw" />
-              )}
+              ) : null}
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
               <div className="relative z-10 h-full flex items-center">
                 <div className="container mx-auto px-6" style={{ maxWidth: '1200px' }}>

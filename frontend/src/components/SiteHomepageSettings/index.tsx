@@ -17,7 +17,8 @@ interface CarouselSlide {
   title: string;
   subtitle: string;
   imageUrl: string;
-  file?: File; // Para nuevas imágenes
+  mediaType?: 'image' | 'video';
+  file?: File;
 }
 
 interface Vehicle {
@@ -118,10 +119,11 @@ export const SiteHomepageSettings = () => {
   };
 
   const handleFileChange = (id: number, file: File) => {
+    const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
     setCarouselSlides((prev) =>
       prev.map((slide) =>
         slide.id === id
-          ? { ...slide, file, imageUrl: URL.createObjectURL(file) } // Muestra preview
+          ? { ...slide, file, mediaType, imageUrl: URL.createObjectURL(file) }
           : slide
       )
     );
@@ -176,11 +178,12 @@ export const SiteHomepageSettings = () => {
 
       // 2. Preparar los datos para guardar
       const finalSlides = carouselSlides.map(
-        ({ id, title, subtitle, imageUrl }) => ({
+        ({ id, title, subtitle, imageUrl, mediaType }) => ({
           id,
           title,
           subtitle,
           imageUrl,
+          mediaType: mediaType ?? 'image',
         })
       );
 
@@ -220,15 +223,30 @@ export const SiteHomepageSettings = () => {
         <h3>Carrusel Principal</h3>
         {carouselSlides.map((slide) => (
           <div key={slide.id} className={styles.slideEditor}>
-            <img
-              src={
-                slide.imageUrl.startsWith("blob:")
-                  ? slide.imageUrl
-                  : getImageUrl(slide.imageUrl)
-              }
-              alt={slide.title}
-              className={styles.slidePreview}
-            />
+            {slide.mediaType === 'video' ? (
+              <video
+                src={
+                  slide.imageUrl.startsWith("blob:")
+                    ? slide.imageUrl
+                    : getImageUrl(slide.imageUrl)
+                }
+                className={styles.slidePreview}
+                muted
+                autoPlay
+                loop
+                playsInline
+              />
+            ) : (
+              <img
+                src={
+                  slide.imageUrl.startsWith("blob:")
+                    ? slide.imageUrl
+                    : getImageUrl(slide.imageUrl)
+                }
+                alt={slide.title}
+                className={styles.slidePreview}
+              />
+            )}
             <div className={styles.slideInputs}>
               <input
                 type="text"
@@ -248,7 +266,7 @@ export const SiteHomepageSettings = () => {
               />
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={(e) =>
                   e.target.files &&
                   handleFileChange(slide.id, e.target.files[0])
