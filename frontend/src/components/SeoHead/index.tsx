@@ -6,7 +6,7 @@ import { Helmet } from "react-helmet-async";
 
 const SITE_NAME  = "Conejo Motors";
 const BASE_URL   = "https://conejomotors.com";
-const OG_DEFAULT = `${BASE_URL}/og-default.jpg`;
+const OG_DEFAULT = `${BASE_URL}/og-default.png`;
 
 interface SeoHeadProps {
   /** Título de la pestaña y OG. Se le añade " | Conejo Motors" automáticamente. */
@@ -15,7 +15,7 @@ interface SeoHeadProps {
   description: string;
   /** URL canónica de la página (path o URL completa). */
   canonical?: string;
-  /** URL imagen OG (debe ser absoluta). Si se omite usa og-default.jpg */
+  /** URL imagen OG (debe ser absoluta). Si se omite usa og-default.png */
   ogImage?: string;
   /** Tipo OG: "website" | "product" | "article". Por defecto "website". */
   ogType?: string;

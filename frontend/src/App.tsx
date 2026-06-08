@@ -6,6 +6,7 @@ import {
   Outlet,
   useSearchParams,
 } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Toaster, toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
@@ -117,8 +118,17 @@ function App() {
     console.log("Login successful, redirecting...");
   };
 
+  // Si se accede desde el dominio Firebase (no el comercial), bloquear indexación
+  const isFirebaseDomain = typeof window !== "undefined" &&
+    window.location.hostname.includes("web.app");
+
   return (
     <BrowserRouter>
+      {isFirebaseDomain && (
+        <Helmet>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+      )}
       <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         {/* --- 1. Grupo de Rutas Públicas (Ahora es la entrada principal) --- */}
