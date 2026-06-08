@@ -256,21 +256,21 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                   className="object-cover" priority={i === 0} sizes="100vw" />
               ) : null}
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-              <div className="relative z-10 h-full flex items-center">
-                <div className="container mx-auto px-6" style={{ maxWidth: '1200px' }}>
-                  <p className="text-[#04c7b2] text-sm font-semibold tracking-widest uppercase mb-3">
+              <div style={{ position:'relative', zIndex:10, height:'100%', display:'flex', alignItems:'flex-end', paddingBottom:'clamp(3rem,8vh,5rem)' }}>
+                <div style={{ maxWidth:'1200px', margin:'0 auto', width:'100%', padding:'0 clamp(1.25rem,5vw,3rem)' }}>
+                  <p style={{ color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'0.75rem' }}>
                     Movilidad Eléctrica · Costa Rica
                   </p>
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-4 max-w-xl">
+                  <h1 style={{ fontSize:'clamp(1.8rem,5vw,3.5rem)', fontWeight:900, color:'#fff', lineHeight:1.15, marginBottom:'0.75rem', maxWidth:'600px' }}>
                     {slide.title}
                   </h1>
-                  <p className="text-white/80 text-lg mb-8 max-w-md">{slide.subtitle}</p>
-                  <div className="flex flex-wrap gap-3">
+                  <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'clamp(0.95rem,2vw,1.15rem)', marginBottom:'1.75rem', maxWidth:'480px' }}>{slide.subtitle}</p>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:'0.75rem' }}>
                     <a href="https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20solicitar%20una%20cotizaci%C3%B3n"
                       target="_blank" rel="noreferrer" className="btn-primary">
                       Solicitar Cotización
                     </a>
-                    <Link href="/catalog" className="btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.6)' }}>
+                    <Link href="/catalog" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.75rem 1.75rem', background:'transparent', color:'#fff', fontWeight:600, fontSize:'0.95rem', borderRadius:'12px', border:'2px solid rgba(255,255,255,0.6)', textDecoration:'none' }}>
                       Ver Catálogo
                     </Link>
                   </div>
@@ -281,15 +281,15 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
           {slides.length > 1 && (
             <>
               <button onClick={() => { goTo(currentSlide - 1); resetTimer(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/40 transition-colors text-xl"
+                style={{ position:'absolute', left:'clamp(0.75rem,2vw,1.25rem)', top:'50%', transform:'translateY(-50%)', zIndex:20, width:'36px', height:'36px', borderRadius:'50%', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(4px)', color:'#fff', fontSize:'1.3rem', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'background 0.2s' }}
                 aria-label="Anterior">‹</button>
               <button onClick={() => { goTo(currentSlide + 1); resetTimer(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/40 transition-colors text-xl"
+                style={{ position:'absolute', right:'clamp(0.75rem,2vw,1.25rem)', top:'50%', transform:'translateY(-50%)', zIndex:20, width:'36px', height:'36px', borderRadius:'50%', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(4px)', color:'#fff', fontSize:'1.3rem', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'background 0.2s' }}
                 aria-label="Siguiente">›</button>
-              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+              <div style={{ position:'absolute', bottom:'clamp(1rem,3vh,1.5rem)', left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', gap:'0.5rem' }}>
                 {slides.map((_, i) => (
                   <button key={i} onClick={() => { goTo(i); resetTimer(); }}
-                    className={`h-2 rounded-full transition-all duration-300 ${i === currentSlide ? 'w-6 bg-white' : 'w-2 bg-white/50'}`}
+                    style={{ height:'8px', width: i===currentSlide ? '24px' : '8px', borderRadius:'99px', background: i===currentSlide ? '#fff' : 'rgba(255,255,255,0.4)', border:'none', cursor:'pointer', transition:'all 0.3s', padding:0 }}
                     aria-label={`Slide ${i + 1}`} />
                 ))}
               </div>

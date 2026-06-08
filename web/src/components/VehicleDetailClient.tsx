@@ -75,7 +75,7 @@ function LoanCalc({ precioBase }: { precioBase: number }) {
             style={{ width:'100%', padding:'0.7rem 1rem', borderRadius:'10px', border:'1.5px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.1)', color:'#fff', fontSize:'0.95rem', outline:'none' }} />
         </div>
       </div>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1.3fr 1fr', gap:'0.85rem' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 130px), 1fr))', gap:'0.75rem' }}>
         <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:'12px', padding:'1rem', textAlign:'center' }}>
           <p style={{ fontSize:'0.72rem', color:'rgba(255,255,255,0.5)', marginBottom:'0.4rem', textTransform:'uppercase', letterSpacing:'0.06em' }}>Monto a financiar</p>
           <p style={{ fontWeight:700, color:'#fff', fontSize:'0.95rem' }}>{formatCRC(monto)}</p>
@@ -133,7 +133,7 @@ export function VehicleDetailClient({ vehicle }: { vehicle: Vehicle }) {
   ];
 
   return (
-    <div className="container mx-auto px-4" style={{ maxWidth: '1200px', paddingTop: '32px', paddingBottom: '4rem' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px clamp(1rem, 4vw, 2rem) 4rem' }}>
       {/* Breadcrumb */}
       <nav style={{ fontSize:'0.875rem', color:'#94a3b8', marginBottom:'1.75rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
         <Link href="/" style={{ color:'#64748b', transition:'color 0.2s' }}
