@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl, formatCRC } from '@/lib/api';
@@ -59,8 +59,18 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
   const [pickerSlot, setPickerSlot] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('todas');
+  const pickerRef = useRef<HTMLDivElement>(null);
 
   const count = selected.filter(Boolean).length;
+
+  const openPicker = (slot: number) => {
+    setPickerSlot(slot);
+    setSearch('');
+    // Scroll al picker en mobile con pequeño delay para que se renderice
+    setTimeout(() => {
+      pickerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  };
 
   const toggle = (v: Vehicle, slotIdx: number) => {
     setSelected(prev => prev.map((s, i) => {
@@ -156,12 +166,12 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
                     <p style={{ fontSize:'0.85rem', fontWeight:700, color:'#071f37', textTransform:'uppercase', letterSpacing:'0.03em', marginBottom:'0.2rem' }}>{v.marca} {v.modelo}</p>
                     <p style={{ fontSize:'0.75rem', color:'#64748b', marginBottom:'0.4rem' }}>{v.año}</p>
                     <p style={{ fontSize:'1.05rem', fontWeight:800, color }}>{formatCRC(Number(v.precio_venta_final ?? v.precio_venta))}</p>
-                    <button onClick={() => { setPickerSlot(i); setSearch(''); }} style={{ marginTop:'auto', paddingTop:'0.6rem', fontSize:'0.78rem', color:'#94a3b8', background:'none', border:'none', cursor:'pointer', textAlign:'left', textDecoration:'underline' }}>
+                    <button onClick={() => openPicker(i)} style={{ marginTop:'auto', paddingTop:'0.6rem', fontSize:'0.78rem', color:'#94a3b8', background:'none', border:'none', cursor:'pointer', textAlign:'left', textDecoration:'underline' }}>
                       Cambiar modelo
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => { setPickerSlot(i); setSearch(''); }}
+                  <button onClick={() => openPicker(i)}
                     style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'0.75rem', cursor:'pointer', background:'none', border:'none', padding:'1.5rem', color:'#94a3b8' }}>
                     <div style={{ width:'52px', height:'52px', borderRadius:'50%', background: pickerSlot===i ? V_COLORS_LIGHT[i] : '#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.6rem', color: pickerSlot===i ? color : '#cbd5e1', transition:'background 0.2s' }}>+</div>
                     <span style={{ fontSize:'0.88rem', fontWeight:600, color: pickerSlot===i ? color : '#94a3b8' }}>{pickerSlot===i ? 'Seleccionando...' : 'Agregar vehículo'}</span>
@@ -174,7 +184,7 @@ export function CompareClient({ vehicles }: { vehicles: Vehicle[] }) {
 
         {/* ── PICKER ── */}
         {pickerSlot !== null && (
-          <div style={{ background:'#fff', borderRadius:'18px', border:'1.5px solid #e2e8f0', padding:'1.5rem', marginBottom:'2rem', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+          <div ref={pickerRef} style={{ background:'#fff', borderRadius:'18px', border:`2px solid ${V_COLORS[pickerSlot]}`, padding:'1.5rem', marginBottom:'2rem', boxShadow:'0 4px 20px rgba(0,0,0,0.08)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1rem' }}>
               <h3 style={{ fontWeight:700, color:'#071f37', fontSize:'0.95rem' }}>Seleccionando Vehículo {pickerSlot+1}</h3>
               <button onClick={() => { setPickerSlot(null); setSearch(''); }} style={{ background:'none', border:'none', cursor:'pointer', color:'#94a3b8', fontSize:'1.3rem' }}>×</button>
