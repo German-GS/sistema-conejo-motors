@@ -29,7 +29,7 @@ interface Vehicle {
 const fmtCRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
 
-const PRECIO_KWH  = 210;   // ₡/kWh promedio JASEC/ICE
+const PRECIO_KWH  = 60;    // ₡/kWh tarifa residencial ICE
 const PRECIO_GAS  = 850;   // ₡/litro gasolina Super CR
 const KM_POR_LITRO = 12;   // rendimiento promedio gasolina
 

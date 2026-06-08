@@ -33,7 +33,7 @@ const SavingsCalculator = () => {
   const [km, setKm] = useState(1200);
   const [precioGas, setPrecioGas] = useState(850);       // ₡/litro
   const [rendimiento, setRendimiento] = useState(12);    // km/litro gasolina
-  const [precioKwh, setPrecioKwh] = useState(210);       // ₡/kWh
+  const [precioKwh, setPrecioKwh] = useState(60);        // ₡/kWh tarifa residencial ICE
   const [consumoElec, setConsumoElec] = useState(15);    // kWh/100km
 
   const costoGas  = Math.round((km / rendimiento) * precioGas);
