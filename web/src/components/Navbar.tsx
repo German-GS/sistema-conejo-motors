@@ -43,8 +43,9 @@ export function Navbar() {
         <div className="container mx-auto px-6 h-full flex items-center justify-between" style={{ maxWidth: '1200px' }}>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <Image src="/logo-blanco.png" alt="Conejo Motors" width={180} height={40}
-              className="h-9 w-auto object-contain"
+            <Image src="/logo-blanco.png" alt="Conejo Motors" width={1237} height={693}
+              className="object-contain"
+              style={{ height: '36px', width: 'auto', maxWidth: '180px' }}
               priority />
           </Link>
 
@@ -111,7 +112,7 @@ export function Navbar() {
         {/* Header del menú */}
         <div style={{ height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <Link href="/" onClick={() => setOpen(false)}>
-            <Image src="/logo-blanco.png" alt="Conejo Motors" width={160} height={36} className="h-8 w-auto object-contain" />
+            <Image src="/logo-blanco.png" alt="Conejo Motors" width={1237} height={693} className="object-contain" style={{ height: '32px', width: 'auto', maxWidth: '160px' }} />
           </Link>
           <button onClick={() => setOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '10px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '1.4rem' }}>
             ×

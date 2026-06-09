@@ -65,14 +65,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+        {/* iOS Safari: previene overscroll/bounce horizontal */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var sx=0,sy=0;document.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});document.addEventListener('touchmove',function(e){var dx=Math.abs(e.touches[0].clientX-sx),dy=Math.abs(e.touches[0].clientY-sy);if(dx>dy&&dx>5)e.preventDefault();},{passive:false});})();` }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${inter.className} min-h-screen flex flex-col`} style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
         <Navbar />
-        <main className="flex-1" style={{ paddingTop: '68px', overflow: 'hidden', minWidth: 0 }}>{children}</main>
+        <main className="flex-1" style={{ paddingTop: '68px', overflow: 'hidden', minWidth: 0, maxWidth: '100%' }}>{children}</main>
         <Footer />
         <WhatsAppButton />
       </body>
