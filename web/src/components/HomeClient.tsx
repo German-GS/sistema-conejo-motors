@@ -240,20 +240,20 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', overflow:'hidden' }}>
+        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', overflow:'hidden', background:'#071f37' }}>
           {slides.map((slide, i) => (
             <div key={i}
               style={{ position:'absolute', inset:0, transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
               {slide.imageUrl && slide.mediaType === 'video' ? (
                 <video
                   src={getImageUrl(slide.imageUrl)}
-                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                  className="absolute inset-0 w-full h-full object-contain md:object-cover block"
                   autoPlay muted loop playsInline
                 />
               ) : slide.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={getImageUrl(slide.imageUrl)} alt={slide.title}
-                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                  className="absolute inset-0 w-full h-full object-contain md:object-cover block"
                   loading={i === 0 ? 'eager' : 'lazy'} />
               ) : null}
               <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }} />
