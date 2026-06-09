@@ -26,9 +26,6 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
-  max-width: 100vw;
-  position: relative;        /* contiene el scroll en iOS Safari */
 }
 
 body {
@@ -36,12 +33,6 @@ body {
   color: var(--text-primary);
   background: #fff;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-  overscroll-behavior-x: none; /* iOS Safari: evita scroll horizontal por bounce */
-  touch-action: pan-y;         /* móviles: solo scroll vertical táctil */
-  max-width: 100vw;
-  width: 100%;
-  position: relative;        /* previene scroll horizontal fantasma en Safari */
 }
 
 img { max-width: 100%; height: auto; display: block; }

@@ -24,7 +24,9 @@ function SavingsCalculator() {
   const ahorroAno = ahorroMes * 12;
 
   return (
-    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem clamp(1rem,4vw,1.5rem)' }}>
+    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'320px', height:'320px', borderRadius:'50%', background:'rgba(4,199,178,0.06)', pointerEvents:'none' }} />
+      <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'260px', height:'260px', borderRadius:'50%', background:'rgba(69,165,206,0.07)', pointerEvents:'none' }} />
       <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap:'2.5rem', alignItems:'center' }}>
           <div>
@@ -363,7 +365,9 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
       <SavingsCalculator />
 
       {/* ── CTA ── */}
-      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 60%, #024f7d 100%)', padding: '6rem 1.5rem', textAlign: 'center' }}>
+      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 60%, #024f7d 100%)', padding: '6rem 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position:'absolute', top:'-100px', left:'50%', width:'500px', height:'500px', borderRadius:'50%', background:'rgba(4,199,178,0.05)', pointerEvents:'none', transform:'translateX(-50%)' }} />
+        <div style={{ position:'absolute', bottom:'-80px', right:'-80px', width:'350px', height:'350px', borderRadius:'50%', background:'rgba(69,165,206,0.06)', pointerEvents:'none' }} />
         <div style={{ maxWidth: '680px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <span style={{ display:'inline-block', background:'rgba(4,199,178,0.15)', color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', padding:'0.3rem 1rem', borderRadius:'99px', marginBottom:'1.25rem' }}>
             Conejo Motors · Escazú
