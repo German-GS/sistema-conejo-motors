@@ -240,63 +240,100 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div
-          className="relative overflow-hidden bg-[#071f37] aspect-square md:aspect-auto md:h-[calc(100vh-68px)] md:min-h-[520px]">
-          {slides.map((slide, i) => (
-            <div key={i}
-              style={{ position:'absolute', inset:0, transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
-              {slide.imageUrl && slide.mediaType === 'video' ? (
-                <video
-                  src={getImageUrl(slide.imageUrl)}
-                  className="absolute inset-0 w-full h-full object-contain md:object-cover block"
-                  autoPlay muted loop playsInline
-                />
-              ) : slide.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={getImageUrl(slide.imageUrl)} alt={slide.title}
-                  className="absolute inset-0 w-full h-full object-contain md:object-cover block"
-                  loading={i === 0 ? 'eager' : 'lazy'} />
-              ) : null}
-              <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 100%)' }} />
-              <div style={{ position:'relative', zIndex:10, height:'100%', display:'flex', alignItems:'flex-end', paddingBottom:'clamp(1.5rem,5vh,5rem)' }}>
-                <div style={{ maxWidth:'1200px', margin:'0 auto', width:'100%', padding:'0 clamp(1.25rem,5vw,3rem)' }}>
-                  <p style={{ color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'0.75rem' }}>
-                    Movilidad Eléctrica · Costa Rica
-                  </p>
-                  <h1 style={{ fontSize:'clamp(1.8rem,5vw,3.5rem)', fontWeight:900, color:'#fff', lineHeight:1.15, marginBottom:'0.75rem', maxWidth:'600px' }}>
-                    {slide.title}
-                  </h1>
-                  <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'clamp(0.95rem,2vw,1.15rem)', marginBottom:'1.75rem', maxWidth:'480px' }}>{slide.subtitle}</p>
-                  <div style={{ display:'flex', flexWrap:'wrap', gap:'0.75rem' }}>
-                    <a href="https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20solicitar%20una%20cotizaci%C3%B3n"
-                      target="_blank" rel="noreferrer" className="btn-primary">
-                      Solicitar Cotización
-                    </a>
-                    <Link href="/catalog" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.75rem 1.75rem', background:'transparent', color:'#fff', fontWeight:600, fontSize:'0.95rem', borderRadius:'12px', border:'2px solid rgba(255,255,255,0.6)', textDecoration:'none' }}>
-                      Ver Catálogo
-                    </Link>
+        <div style={{ background: '#071f37' }}>
+
+          {/* ── Imagen: aspect-video en móvil (16/9 sin bandas), full-height en desktop ── */}
+          <div className="relative overflow-hidden aspect-video md:aspect-auto md:h-[calc(100vh-68px)] md:min-h-[520px]">
+            {slides.map((slide, i) => (
+              <div key={i} style={{ position:'absolute', inset:0, transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
+                {slide.imageUrl && slide.mediaType === 'video' ? (
+                  <video src={getImageUrl(slide.imageUrl)}
+                    style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                    autoPlay muted loop playsInline />
+                ) : slide.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={getImageUrl(slide.imageUrl)} alt={slide.title}
+                    style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                    loading={i === 0 ? 'eager' : 'lazy'} />
+                ) : null}
+                {/* Gradient + texto: solo visible en desktop (md+) */}
+                <div className="hidden md:block" style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }} />
+                <div className="hidden md:flex" style={{ position:'absolute', inset:0, zIndex:10, alignItems:'flex-end', paddingBottom:'clamp(3rem,8vh,5rem)' }}>
+                  <div style={{ maxWidth:'1200px', margin:'0 auto', width:'100%', padding:'0 clamp(1.25rem,5vw,3rem)' }}>
+                    <p style={{ color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'0.75rem' }}>
+                      Movilidad Eléctrica · Costa Rica
+                    </p>
+                    <h2 style={{ fontSize:'clamp(1.8rem,5vw,3.5rem)', fontWeight:900, color:'#fff', lineHeight:1.15, marginBottom:'0.75rem', maxWidth:'600px' }}>
+                      {slide.title}
+                    </h2>
+                    <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'clamp(0.95rem,2vw,1.15rem)', marginBottom:'1.75rem', maxWidth:'480px' }}>{slide.subtitle}</p>
+                    <div style={{ display:'flex', flexWrap:'wrap', gap:'0.75rem' }}>
+                      <a href="https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20solicitar%20una%20cotizaci%C3%B3n"
+                        target="_blank" rel="noreferrer" className="btn-primary">Solicitar Cotización</a>
+                      <Link href="/catalog" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.75rem 1.75rem', background:'transparent', color:'#fff', fontWeight:600, fontSize:'0.95rem', borderRadius:'12px', border:'2px solid rgba(255,255,255,0.6)', textDecoration:'none' }}>
+                        Ver Catálogo
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {slides.length > 1 && (
-            <>
-              <button onClick={() => { goTo(currentSlide - 1); resetTimer(); }}
-                style={{ position:'absolute', left:'clamp(0.75rem,2vw,1.25rem)', top:'50%', transform:'translateY(-50%)', zIndex:20, width:'36px', height:'36px', borderRadius:'50%', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(4px)', color:'#fff', fontSize:'1.3rem', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'background 0.2s' }}
-                aria-label="Anterior">‹</button>
-              <button onClick={() => { goTo(currentSlide + 1); resetTimer(); }}
-                style={{ position:'absolute', right:'clamp(0.75rem,2vw,1.25rem)', top:'50%', transform:'translateY(-50%)', zIndex:20, width:'36px', height:'36px', borderRadius:'50%', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(4px)', color:'#fff', fontSize:'1.3rem', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'background 0.2s' }}
-                aria-label="Siguiente">›</button>
-              <div style={{ position:'absolute', bottom:'clamp(1rem,3vh,1.5rem)', left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', gap:'0.5rem' }}>
+            ))}
+
+            {/* Flechas + dots desktop — dentro del contenedor relative */}
+            {slides.length > 1 && (
+              <>
+                <button onClick={() => { goTo(currentSlide - 1); resetTimer(); }}
+                  style={{ position:'absolute', left:'clamp(0.75rem,2vw,1.25rem)', top:'50%', transform:'translateY(-50%)', zIndex:20, width:'36px', height:'36px', borderRadius:'50%', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(4px)', color:'#fff', fontSize:'1.3rem', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
+                  aria-label="Anterior">‹</button>
+                <button onClick={() => { goTo(currentSlide + 1); resetTimer(); }}
+                  style={{ position:'absolute', right:'clamp(0.75rem,2vw,1.25rem)', top:'50%', transform:'translateY(-50%)', zIndex:20, width:'36px', height:'36px', borderRadius:'50%', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(4px)', color:'#fff', fontSize:'1.3rem', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
+                  aria-label="Siguiente">›</button>
+                {/* Dots desktop: dentro del área de imagen, ocultos en móvil */}
+                <div className="hidden md:flex" style={{ position:'absolute', bottom:'clamp(1rem,3vh,1.5rem)', left:'50%', transform:'translateX(-50%)', zIndex:20, gap:'0.5rem' }}>
+                  {slides.map((_, i) => (
+                    <button key={i} onClick={() => { goTo(i); resetTimer(); }}
+                      style={{ height:'8px', width: i===currentSlide ? '24px' : '8px', borderRadius:'99px', background: i===currentSlide ? '#fff' : 'rgba(255,255,255,0.4)', border:'none', cursor:'pointer', transition:'all 0.3s', padding:0 }}
+                      aria-label={`Slide ${i + 1}`} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ── Texto + dots: bloque separado debajo de la imagen, solo en móvil ── */}
+          <div className="md:hidden" style={{ padding:'1.25rem 1.25rem 1.5rem', position:'relative' }}>
+            {slides.map((slide, i) => (
+              <div key={i} style={{ display: i === currentSlide ? 'block' : 'none' }}>
+                <p style={{ color:'#04c7b2', fontSize:'0.72rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'0.5rem' }}>
+                  Movilidad Eléctrica · Costa Rica
+                </p>
+                <h2 style={{ fontSize:'1.6rem', fontWeight:900, color:'#fff', lineHeight:1.15, marginBottom:'0.5rem' }}>
+                  {slide.title}
+                </h2>
+                <p style={{ color:'rgba(255,255,255,0.75)', fontSize:'0.95rem', marginBottom:'1.25rem' }}>{slide.subtitle}</p>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:'0.65rem', marginBottom:'1.25rem' }}>
+                  <a href="https://wa.me/50672071157?text=Hola%2C%20me%20interesa%20solicitar%20una%20cotizaci%C3%B3n"
+                    target="_blank" rel="noreferrer" className="btn-primary" style={{ flex:1, justifyContent:'center', minWidth:'140px' }}>
+                    Solicitar Cotización
+                  </a>
+                  <Link href="/catalog" style={{ flex:1, minWidth:'120px', display:'inline-flex', alignItems:'center', justifyContent:'center', padding:'0.75rem 1rem', background:'transparent', color:'#fff', fontWeight:600, fontSize:'0.95rem', borderRadius:'12px', border:'2px solid rgba(255,255,255,0.5)', textDecoration:'none' }}>
+                    Ver Catálogo
+                  </Link>
+                </div>
+              </div>
+            ))}
+            {/* Dots en móvil */}
+            {slides.length > 1 && (
+              <div style={{ display:'flex', gap:'0.5rem', justifyContent:'center' }}>
                 {slides.map((_, i) => (
                   <button key={i} onClick={() => { goTo(i); resetTimer(); }}
-                    style={{ height:'8px', width: i===currentSlide ? '24px' : '8px', borderRadius:'99px', background: i===currentSlide ? '#fff' : 'rgba(255,255,255,0.4)', border:'none', cursor:'pointer', transition:'all 0.3s', padding:0 }}
+                    style={{ height:'8px', width: i===currentSlide ? '24px' : '8px', borderRadius:'99px', background: i===currentSlide ? '#04c7b2' : 'rgba(255,255,255,0.3)', border:'none', cursor:'pointer', transition:'all 0.3s', padding:0 }}
                     aria-label={`Slide ${i + 1}`} />
                 ))}
               </div>
-            </>
-          )}
+            )}
+          </div>
+
         </div>
       )}
 
