@@ -240,7 +240,8 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', overflow:'hidden', background:'#071f37' }}>
+        <div
+          className="relative overflow-hidden bg-[#071f37] aspect-square md:aspect-auto md:h-[calc(100vh-68px)] md:min-h-[520px]">
           {slides.map((slide, i) => (
             <div key={i}
               style={{ position:'absolute', inset:0, transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
@@ -256,8 +257,8 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                   className="absolute inset-0 w-full h-full object-contain md:object-cover block"
                   loading={i === 0 ? 'eager' : 'lazy'} />
               ) : null}
-              <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' }} />
-              <div style={{ position:'relative', zIndex:10, height:'100%', display:'flex', alignItems:'flex-end', paddingBottom:'clamp(3rem,8vh,5rem)' }}>
+              <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 100%)' }} />
+              <div style={{ position:'relative', zIndex:10, height:'100%', display:'flex', alignItems:'flex-end', paddingBottom:'clamp(1.5rem,5vh,5rem)' }}>
                 <div style={{ maxWidth:'1200px', margin:'0 auto', width:'100%', padding:'0 clamp(1.25rem,5vw,3rem)' }}>
                   <p style={{ color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'0.75rem' }}>
                     Movilidad Eléctrica · Costa Rica
