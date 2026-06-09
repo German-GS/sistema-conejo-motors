@@ -72,7 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <Navbar />
-        <main className="flex-1" style={{ paddingTop: '68px', overflowX: 'clip', minWidth: 0 }}>{children}</main>
+        <main className="flex-1" style={{ paddingTop: '68px', overflow: 'hidden', minWidth: 0 }}>{children}</main>
         <Footer />
         <WhatsAppButton />
       </body>

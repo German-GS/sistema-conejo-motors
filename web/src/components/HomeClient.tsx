@@ -24,10 +24,10 @@ function SavingsCalculator() {
   const ahorroAno = ahorroMes * 12;
 
   return (
-    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'clip' }}>
-      {/* Círculos decorativos */}
-      <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'400px', height:'400px', borderRadius:'50%', background:'rgba(4,199,178,0.06)', pointerEvents:'none' }} />
-      <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'300px', height:'300px', borderRadius:'50%', background:'rgba(69,165,206,0.07)', pointerEvents:'none' }} />
+    <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 50%, #024f7d 100%)', padding: '5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'hidden' }}>
+      {/* Círculos decorativos — transform en vez de posición negativa para no afectar layout */}
+      <div style={{ position:'absolute', top:0, right:0, width:'400px', height:'400px', borderRadius:'50%', background:'rgba(4,199,178,0.06)', pointerEvents:'none', transform:'translate(80px,-80px)' }} />
+      <div style={{ position:'absolute', bottom:0, left:0, width:'300px', height:'300px', borderRadius:'50%', background:'rgba(69,165,206,0.07)', pointerEvents:'none', transform:'translate(-60px,60px)' }} />
       <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap:'2.5rem', alignItems:'center' }}>
           <div>
@@ -241,7 +241,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
     <>
       {/* ── CARRUSEL ── */}
       {slides.length > 0 && (
-        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', width:'100vw', marginLeft:'calc(50% - 50vw)', overflow:'clip', clipPath:'inset(0)' }}>
+        <div style={{ position:'relative', height:'calc(100vh - 68px)', minHeight:'520px', overflow:'hidden' }}>
           {slides.map((slide, i) => (
             <div key={i}
               style={{ position:'absolute', inset:0, transition:'opacity 0.7s', opacity: i===currentSlide ? 1 : 0, pointerEvents: i===currentSlide ? 'auto' : 'none' }}>
@@ -366,10 +366,10 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
       <SavingsCalculator />
 
       {/* ── CTA ── */}
-      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 60%, #024f7d 100%)', padding: '6rem 1.5rem', textAlign: 'center', position: 'relative', overflow: 'clip' }}>
-        {/* Decorativos */}
-        <div style={{ position:'absolute', top:'-100px', left:'50%', transform:'translateX(-50%)', width:'600px', height:'600px', borderRadius:'50%', background:'rgba(4,199,178,0.05)', pointerEvents:'none' }} />
-        <div style={{ position:'absolute', bottom:'-80px', right:'-80px', width:'350px', height:'350px', borderRadius:'50%', background:'rgba(69,165,206,0.06)', pointerEvents:'none' }} />
+      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 60%, #024f7d 100%)', padding: '6rem 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        {/* Decorativos — transform en vez de posición negativa para no afectar layout */}
+        <div style={{ position:'absolute', top:0, left:'50%', width:'600px', height:'600px', borderRadius:'50%', background:'rgba(4,199,178,0.05)', pointerEvents:'none', transform:'translate(-50%,-100px)' }} />
+        <div style={{ position:'absolute', bottom:0, right:0, width:'350px', height:'350px', borderRadius:'50%', background:'rgba(69,165,206,0.06)', pointerEvents:'none', transform:'translate(80px,80px)' }} />
         <div style={{ maxWidth: '680px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <span style={{ display:'inline-block', background:'rgba(4,199,178,0.15)', color:'#04c7b2', fontSize:'0.8rem', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', padding:'0.3rem 1rem', borderRadius:'99px', marginBottom:'1.25rem' }}>
             Conejo Motors · Escazú
