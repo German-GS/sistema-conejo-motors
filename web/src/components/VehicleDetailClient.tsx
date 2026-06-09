@@ -327,7 +327,7 @@ export function VehicleDetailClient({ vehicle }: { vehicle: Vehicle }) {
 
       {/* CTA final */}
       <div style={{ background:`linear-gradient(135deg, ${BRAND.dark} 0%, ${BRAND.mid} 60%, ${BRAND.navy} 100%)`, borderRadius:'18px', padding:'2.5rem 2rem', color:'#fff', textAlign:'center', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:'-60px', right:'-60px', width:'240px', height:'240px', borderRadius:'50%', background:'rgba(4,199,178,0.07)', pointerEvents:'none' }} />
+        <div style={{ position:'absolute', top:'-60px', right:0, width:'240px', height:'240px', borderRadius:'50%', background:'rgba(4,199,178,0.07)', pointerEvents:'none' }} />
         <h2 style={{ fontSize:'clamp(1.2rem, 3vw, 1.6rem)', fontWeight:900, marginBottom:'0.5rem' }}>¿Listo para dar el salto a eléctrico?</h2>
         <p style={{ color:'rgba(255,255,255,0.65)', marginBottom:'1.75rem' }}>Agenda una prueba de manejo sin compromiso.</p>
         <div style={{ display:'flex', flexWrap:'wrap', gap:'0.75rem', justifyContent:'center' }}>
