@@ -27,8 +27,8 @@ export function Footer() {
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap:'2.5rem', marginBottom:'2.5rem' }}>
           {/* Marca */}
           <div>
-            <Image src="/logo.png" alt="Conejo Motors" width={160} height={36}
-              className="h-8 w-auto object-contain mb-4 brightness-0 invert" />
+            <Image src="/logo-blanco.png" alt="Conejo Motors" width={160} height={36}
+              className="h-8 w-auto object-contain mb-4" />
             <p style={{ fontSize:'0.875rem', color:'rgba(255,255,255,0.5)', lineHeight:1.7 }}>
               Concesionario especializado en vehículos eléctricos en Costa Rica.
               BYD, Wuling, Link and co y más marcas.
