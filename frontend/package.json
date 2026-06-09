@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "prerender": "node prerender.mjs",
+    "build:seo": "npm run build && node prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -16,6 +18,7 @@
     "jspdf": "^3.0.2",
     "jspdf-autotable": "^5.0.2",
     "jwt-decode": "^4.0.0",
+    "puppeteer": "^25.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-helmet-async": "^3.0.0",
@@ -40,5 +43,8 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2"
+  },
+  "allowScripts": {
+    "puppeteer@25.1.0": true
   }
 }
