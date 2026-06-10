@@ -11,6 +11,7 @@ interface Mensaje {
     id: number;
     nombre_completo: string;
     rol?: { nombre: string };
+    puesto?: string;
   };
 }
 
@@ -200,9 +201,11 @@ export const ChatWidget: React.FC = () => {
                       {!esPropio && !mismoRemitente && (
                         <span className={styles.senderName}>
                           {m.remitente.nombre_completo.split(" ")[0]}
-                          {m.remitente.rol?.nombre === "Administrador" && (
+                          {m.remitente.puesto ? (
+                            <span className={styles.rolBadge}>{m.remitente.puesto}</span>
+                          ) : m.remitente.rol?.nombre === "Administrador" ? (
                             <span className={styles.rolBadge}>Admin</span>
-                          )}
+                          ) : null}
                         </span>
                       )}
                       <p className={styles.msgText}>{m.contenido}</p>

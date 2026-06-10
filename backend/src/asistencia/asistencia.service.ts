@@ -80,6 +80,7 @@ export class AsistenciaService {
     id: number;
     nombre: string;
     rol: string;
+    puesto?: string;
     desde: string;       // hora de primera entrada
     estado: 'trabajando' | 'almuerzo';
   }[]> {
@@ -101,7 +102,7 @@ export class AsistenciaService {
 
     // Agrupar por usuario
     const mapaUsuario = new Map<number, {
-      nombre: string; rol: string;
+      nombre: string; rol: string; puesto?: string;
       primeraEntrada: Date | null;
       ultimo: string;
     }>();
@@ -115,6 +116,7 @@ export class AsistenciaService {
         mapaUsuario.set(uid, {
           nombre: r.usuario.nombre_completo,
           rol: r.usuario.rol?.nombre || '',
+          puesto: r.usuario.puesto ?? undefined,
           primeraEntrada: null,
           ultimo: r.tipo,
         });
@@ -126,7 +128,7 @@ export class AsistenciaService {
       entry.ultimo = r.tipo;
     }
 
-    const resultado: { id: number; nombre: string; rol: string; desde: string; estado: 'trabajando' | 'almuerzo' }[] = [];
+    const resultado: { id: number; nombre: string; rol: string; puesto?: string; desde: string; estado: 'trabajando' | 'almuerzo' }[] = [];
     for (const [id, data] of mapaUsuario.entries()) {
       // Solo si el último marcaje NO es 'salida'
       if (data.ultimo !== 'salida' && data.primeraEntrada) {
@@ -134,6 +136,7 @@ export class AsistenciaService {
           id,
           nombre: data.nombre,
           rol: data.rol,
+          puesto: data.puesto,
           desde: data.primeraEntrada.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' }),
           estado: data.ultimo === 'almuerzo_inicio' ? 'almuerzo' : 'trabajando',
         });

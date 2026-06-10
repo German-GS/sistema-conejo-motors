@@ -40,6 +40,7 @@ interface Conectado {
   id: number;
   nombre: string;
   rol: string;
+  puesto?: string;
   desde: string;
   estado: "trabajando" | "almuerzo";
 }
@@ -244,7 +245,7 @@ export const DashboardHomePage = () => {
                   </div>
                   <div className={styles.avatarInfo}>
                     <span className={styles.avatarName}>{c.nombre}</span>
-                    <span className={styles.avatarSub}>{c.rol} · desde {c.desde}</span>
+                    <span className={styles.avatarSub}>{c.puesto || c.rol} · desde {c.desde}</span>
                   </div>
                   <span className={styles.statusChipGreen}>● Trabajando</span>
                 </div>
@@ -256,7 +257,7 @@ export const DashboardHomePage = () => {
                   </div>
                   <div className={styles.avatarInfo}>
                     <span className={styles.avatarName}>{c.nombre}</span>
-                    <span className={styles.avatarSub}>{c.rol} · desde {c.desde}</span>
+                    <span className={styles.avatarSub}>{c.puesto || c.rol} · desde {c.desde}</span>
                   </div>
                   <span className={styles.statusChipAmber}>🍽 Almuerzo</span>
                 </div>

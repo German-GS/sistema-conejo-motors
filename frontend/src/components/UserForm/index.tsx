@@ -26,8 +26,9 @@ export const UserForm: React.FC<UserFormProps> = ({
     contrasena: "",
     rol_id: "",
     salario_base: "",
-    banco: "", // <-- AÑADIDO
-    numero_cuenta: "", // <-- AÑADIDO
+    banco: "",
+    numero_cuenta: "",
+    puesto: "",
   });
 
   const [roles, setRoles] = useState<Role[]>([]);
@@ -68,6 +69,7 @@ export const UserForm: React.FC<UserFormProps> = ({
         salario_base: ultimoSalario,
         banco: initialData.banco || "",
         numero_cuenta: initialData.numero_cuenta || "",
+        puesto: initialData.puesto || "",
       });
     }
   }, [initialData]);
@@ -161,6 +163,13 @@ export const UserForm: React.FC<UserFormProps> = ({
         onChange={handleChange}
         placeholder="Salario Base Mensual"
         required={!isEditing}
+      />
+      <input
+        type="text"
+        name="puesto"
+        value={formData.puesto}
+        onChange={handleChange}
+        placeholder="Puesto (ej: Gerente, Subgerente, Vendedor)"
       />
       <input
         type="text"

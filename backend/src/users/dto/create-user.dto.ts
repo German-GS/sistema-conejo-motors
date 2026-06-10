@@ -5,6 +5,7 @@ export class CreateUserDto {
   contrasena: string;
   salario_base?: number;
   rol_id?: number;
-  banco?: string; // <-- AÑADIDO
-  numero_cuenta?: string; // <-- AÑADIDO
+  banco?: string;
+  numero_cuenta?: string;
+  puesto?: string;
 }

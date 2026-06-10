@@ -46,6 +46,10 @@ export class User {
 
   @Column({ length: 50, nullable: true })
   numero_cuenta: string;
+
+  /** Puesto o cargo real (Gerente, Subgerente, Vendedor, etc.) */
+  @Column({ length: 80, nullable: true })
+  puesto: string;
   // ----------------------------------------------------
 
   @ManyToOne(() => Role, (role) => role.usuarios)

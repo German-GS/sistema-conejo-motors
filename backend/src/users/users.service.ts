@@ -186,7 +186,7 @@ export class UsersService implements OnApplicationBootstrap {
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
       where: { es_sistema: false },
-      select: ['id', 'nombre_completo', 'email', 'activo', 'cedula', 'banco', 'numero_cuenta'],
+      select: ['id', 'nombre_completo', 'email', 'activo', 'cedula', 'banco', 'numero_cuenta', 'puesto'],
       relations: ['rol'],
     });
   }
@@ -194,7 +194,7 @@ export class UsersService implements OnApplicationBootstrap {
   async findOneByIdFull(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      select: ['id', 'nombre_completo', 'email', 'activo', 'cedula', 'banco', 'numero_cuenta'],
+      select: ['id', 'nombre_completo', 'email', 'activo', 'cedula', 'banco', 'numero_cuenta', 'puesto'],
       relations: ['rol', 'salarios'],
     });
     if (!user) throw new NotFoundException(`Usuario con ID #${id} no encontrado`);
