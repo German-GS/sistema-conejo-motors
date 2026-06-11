@@ -732,7 +732,7 @@ export class VehiclesService {
     const cotizacionesVencidas = await this.cotizacionesRepository
       .createQueryBuilder('c')
       .where('c.fecha_expiracion < :hoy', { hoy: crNow })
-      .andWhere("c.estado NOT IN ('Aceptada','Facturada','Rechazada')")
+      .andWhere("c.estado IN ('Borrador','Enviada')")
       .getCount();
     const cotizacionesMes = await this.cotizacionesRepository.count({
       where: { fecha_creacion: MoreThanOrEqual(startOfMonth) },
