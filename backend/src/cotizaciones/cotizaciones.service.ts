@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, In } from 'typeorm';
+import { Repository, LessThanOrEqual, GreaterThanOrEqual, In } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Cotizacion } from './cotizacion.entity';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
@@ -60,17 +60,36 @@ export class CotizacionesService {
   }> {
     const ahora = new Date();
     const en48h = new Date(ahora.getTime() + 48 * 60 * 60 * 1000);
+    const hace7d = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const proximas = await this.cotizacionesRepository.find({
-      where: {
-        estado: In(['Borrador', 'Enviada']),
-        fecha_expiracion: LessThanOrEqual(en48h),
-      },
-      relations: ['cliente', 'vehiculo'],
-      order: { fecha_expiracion: 'ASC' },
-    });
+    // Próximas a vencer (activas, expiran en ≤48h) + Vencidas en los últimos 7 días
+    const [proximas, recienVencidas] = await Promise.all([
+      this.cotizacionesRepository.find({
+        where: {
+          estado: In(['Borrador', 'Enviada']),
+          fecha_expiracion: LessThanOrEqual(en48h),
+        },
+        relations: ['cliente', 'vehiculo'],
+        order: { fecha_expiracion: 'ASC' },
+      }),
+      this.cotizacionesRepository.find({
+        where: {
+          estado: 'Vencida',
+          fecha_expiracion: GreaterThanOrEqual(hace7d),
+        },
+        relations: ['cliente', 'vehiculo'],
+        order: { fecha_expiracion: 'ASC' },
+      }),
+    ]);
 
-    const lista = proximas.map(c => {
+    // Combinar sin duplicados (por si acaso)
+    const todas = [...proximas];
+    for (const c of recienVencidas) {
+      if (!todas.find(x => x.id === c.id)) todas.push(c);
+    }
+    todas.sort((a, b) => new Date(a.fecha_expiracion).getTime() - new Date(b.fecha_expiracion).getTime());
+
+    const lista = todas.map(c => {
       const msRestantes = new Date(c.fecha_expiracion).getTime() - ahora.getTime();
       const horasRestantes = Math.max(0, Math.floor(msRestantes / (1000 * 60 * 60)));
       return {
