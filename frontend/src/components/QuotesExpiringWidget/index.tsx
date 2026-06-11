@@ -38,10 +38,10 @@ const urgencyClass = (horas: number, moduleStyles: CSSModuleClasses) => {
 
 const urgencyLabel = (horas: number) => {
   if (horas <= 0)  return "⚠️ Vencida";
-  if (horas <= 24) return `⏰ ${horas}h · hoy`;
-  if (horas <= 48) return `🕐 ${horas}h · mañana`;
+  if (horas <= 24) return `⏰ Vence hoy (${horas}h)`;
+  if (horas <= 48) return `🕐 Vence mañana`;
   const dias = Math.ceil(horas / 24);
-  return `📅 ${dias} días`;
+  return `📅 ${dias} día${dias !== 1 ? "s" : ""} restantes`;
 };
 
 // Helper para CSSModuleClasses type
@@ -73,9 +73,10 @@ export const QuotesExpiringWidget = ({ basePath = "/admin", data: externalData }
     if (externalData !== undefined) setAlertas(externalData);
   }, [externalData]);
 
-  const lista   = alertas?.lista ?? [];
+  const lista       = alertas?.lista ?? [];
   const urgentCount = lista.filter(a => a.horasRestantes <= 24).length;
   const vencidas    = lista.filter(a => a.horasRestantes <= 0).length;
+  const activas     = lista.filter(a => a.horasRestantes > 0).length;
 
   return (
     <div className={styles.widget}>
@@ -84,13 +85,15 @@ export const QuotesExpiringWidget = ({ basePath = "/admin", data: externalData }
         <div className={styles.headerLeft}>
           <span className={styles.headerIcon}>📄</span>
           <div>
-            <span className={styles.headerTitle}>Cotizaciones por Vencer</span>
+            <span className={styles.headerTitle}>Cotizaciones Activas</span>
             <span className={styles.headerSub}>
               {loading
                 ? "Cargando..."
                 : lista.length === 0
-                ? "Sin cotizaciones próximas a vencer"
-                : `${lista.length} cotizaci${lista.length === 1 ? "ón" : "ones"} activa${lista.length === 1 ? "" : "s"}`}
+                ? "Sin cotizaciones activas"
+                : vencidas > 0
+                ? `${activas} activa${activas !== 1 ? "s" : ""} · ${vencidas} vencida${vencidas !== 1 ? "s" : ""}`
+                : `${lista.length} cotizaci${lista.length === 1 ? "ón" : "ones"} activa${lista.length !== 1 ? "s" : ""}`}
             </span>
           </div>
         </div>
@@ -125,8 +128,8 @@ export const QuotesExpiringWidget = ({ basePath = "/admin", data: externalData }
             </div>
           ) : lista.length === 0 ? (
             <div className={styles.emptyState}>
-              <span className={styles.emptyIcon}>✅</span>
-              <p>Todas las cotizaciones están al día.<br />No hay vencimientos próximos.</p>
+              <span className={styles.emptyIcon}>📄</span>
+              <p>No hay cotizaciones activas en este momento.</p>
             </div>
           ) : (
             <div className={styles.list}>

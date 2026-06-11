@@ -59,38 +59,17 @@ export class CotizacionesService {
     lista: { id: number; cliente: string; vehiculo: string; fecha_expiracion: Date; horasRestantes: number }[];
   }> {
     const ahora = new Date();
-    const en48h = new Date(ahora.getTime() + 48 * 60 * 60 * 1000);
-    const hace7d = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Todas las cotizaciones activas (Borrador/Enviada) que:
-    //   - vencen en las próximas 48h, O
-    //   - ya vencieron (fecha en pasado) pero siguen sin cerrarse (últimos 7 días)
+    // TODAS las cotizaciones activas (Borrador/Enviada), ordenadas por vencimiento
     const todas = await this.cotizacionesRepository.find({
-      where: {
-        estado: In(['Borrador', 'Enviada']),
-        fecha_expiracion: LessThanOrEqual(en48h),
-      },
+      where: { estado: In(['Borrador', 'Enviada']) },
       relations: ['cliente', 'vehiculo'],
       order: { fecha_expiracion: 'ASC' },
     });
-
-    // Agregar las ya vencidas (pasado > 48h, últimos 7 días) que no estén ya
-    const yaVencidas = await this.cotizacionesRepository.find({
-      where: {
-        estado: In(['Borrador', 'Enviada']),
-        fecha_expiracion: MoreThanOrEqual(hace7d),
-      },
-      relations: ['cliente', 'vehiculo'],
-      order: { fecha_expiracion: 'ASC' },
-    });
-    for (const c of yaVencidas) {
-      if (!todas.find(x => x.id === c.id)) todas.push(c);
-    }
-    todas.sort((a, b) => new Date(a.fecha_expiracion).getTime() - new Date(b.fecha_expiracion).getTime());
 
     const lista = todas.map(c => {
       const msRestantes = new Date(c.fecha_expiracion).getTime() - ahora.getTime();
-      const horasRestantes = Math.max(0, Math.floor(msRestantes / (1000 * 60 * 60)));
+      const horasRestantes = Math.floor(msRestantes / (1000 * 60 * 60)); // puede ser negativo si ya venció
       return {
         id: c.id,
         cliente: c.cliente?.nombre_completo ?? '—',
