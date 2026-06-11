@@ -8,6 +8,7 @@ import {
 import styles from "./DashboardHomePage.module.css";
 import { LeadsFollowUpWidget } from "../../components/LeadsFollowUpWidget";
 import { QuotesExpiringWidget } from "../../components/QuotesExpiringWidget";
+import { CierreMesWidget } from "../../components/CierreMesWidget";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 interface BasicStats {
@@ -322,6 +323,11 @@ export const DashboardHomePage = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* ── Cierre de Mes ────────────────────────────────────────────── */}
+      <div style={{ marginTop: "1.25rem" }}>
+        <CierreMesWidget />
       </div>
 
       {/* ── Widget Leads semáforo ─────────────────────────────────────── */}

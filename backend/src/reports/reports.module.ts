@@ -8,9 +8,10 @@ import { Vehicle } from '../vehicles/vehicle.entity';
 import { ReciboPago } from '../recibos_pago/recibo_pago.entity';
 import { Lead } from '../leads/lead.entity';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
+import { CierreMes } from './cierre-mes.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Venta, Vehicle, ReciboPago, Lead, Cotizacion])],
+  imports: [TypeOrmModule.forFeature([Venta, Vehicle, ReciboPago, Lead, Cotizacion, CierreMes])],
   controllers: [ReportsController],
   providers: [ReportsService],
 })

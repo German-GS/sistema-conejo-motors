@@ -1,0 +1,158 @@
+/* CierreMesWidget.module.css */
+
+.widget {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  gap: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.widgetUrgente {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.icon { font-size: 1.75rem; }
+
+.titulo {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+.sub {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+.btn {
+  padding: 0.5rem 1.25rem;
+  background: #024f7d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn:hover { background: #013a5e; }
+
+.btnUrgente { background: #d97706; }
+.btnUrgente:hover { background: #b45309; }
+
+/* ── Overlay / Modal ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.25rem;
+}
+
+.modalSub {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0 0 1.25rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.statBox {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.statIcon { font-size: 1.25rem; }
+.statLabel { font-size: 0.7rem; color: #64748b; margin: 0.15rem 0; }
+.statValue { font-size: 1.05rem; font-weight: 700; color: #024f7d; }
+.statSub   { font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem; }
+
+.checkLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  color: #92400e;
+  cursor: pointer;
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
+}
+.checkLabel input { margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btnCancel {
+  padding: 0.55rem 1.25rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnCancel:hover { background: #e2e8f0; }
+
+.btnConfirm {
+  padding: 0.55rem 1.5rem;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnConfirm:hover:not(:disabled) { background: #047857; }
+.btnConfirm:disabled { opacity: 0.6; cursor: not-allowed; }

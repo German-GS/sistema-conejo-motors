@@ -34,6 +34,7 @@ import { VehicleProfilesModule } from './vehicle-profiles/vehicle-profiles.modul
 import { NotificationsModule } from './notifications/notifications.module';
 import { Notification } from './notifications/notification.entity';
 import { ReportsModule } from './reports/reports.module';
+import { CierreMes } from './reports/cierre-mes.entity';
 import { Lead } from './leads/lead.entity';
 import { LeadActividad } from './leads/lead-actividad.entity';
 import { LeadsModule } from './leads/leads.module';
@@ -168,6 +169,7 @@ import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
         ReclamoGarantia,
         CuentaBancaria,
         MovimientoBancario,
+        CierreMes,
       ],
       }),
     }),

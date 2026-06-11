@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import { Card } from "@/components/Card";
 import toast from "react-hot-toast";
 import styles from "./ReportsPage.module.css";
 import * as XLSX from "xlsx";
+
+const MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
 type ReportType =
   | "profit"
@@ -45,8 +47,31 @@ export const ReportsPage = () => {
   const [endDate, setEndDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [cierres, setCierres] = useState<any[]>([]);
+  const [loadingCierres, setLoadingCierres] = useState(true);
 
   const selectedOpt = reportOptions.find(o => o.value === reportType)!;
+
+  useEffect(() => {
+    apiClient.get("/reports/cierre-mes")
+      .then(r => setCierres(Array.isArray(r.data) ? r.data : []))
+      .catch(() => {})
+      .finally(() => setLoadingCierres(false));
+  }, []);
+
+  const handleDescargarCierre = async (id: number, mes: number, anio: number) => {
+    try {
+      const res = await apiClient.get(`/reports/cierre-mes/${id}/excel`, { responseType: "blob" });
+      const url = URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Cierre-${MESES[mes]}-${anio}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Error al descargar el informe.");
+    }
+  };
 
   const handleGenerate = async () => {
     if (selectedOpt.needsDates && (!startDate || !endDate)) {
@@ -344,6 +369,52 @@ export const ReportsPage = () => {
       {/* ── Resultados ── */}
       <Card title="Resultados">
         {renderReport()}
+      </Card>
+
+      {/* ── Historial de Cierres de Mes ── */}
+      <Card title="📁 Historial de Cierres de Mes">
+        {loadingCierres ? (
+          <p style={{ color: "#94a3b8", padding: "1rem" }}>Cargando...</p>
+        ) : cierres.length === 0 ? (
+          <p style={{ color: "#94a3b8", padding: "1rem" }}>
+            Aún no hay cierres de mes registrados. Usa el botón "Cerrar Mes" en el dashboard.
+          </p>
+        ) : (
+          <table className={styles.reportTable}>
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th>Ventas</th>
+                <th>Ingresos</th>
+                <th>Leads perdidos</th>
+                <th>Cerrado por</th>
+                <th>Fecha cierre</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {cierres.map((c: any) => (
+                <tr key={c.id}>
+                  <td><strong>{MESES[c.mes]} {c.anio}</strong></td>
+                  <td>{c.snapshot?.ventas?.cantidad ?? 0} vehículos</td>
+                  <td>₡ {new Intl.NumberFormat("es-CR").format(c.snapshot?.ventas?.ingresos ?? 0)}</td>
+                  <td>{c.snapshot?.leads?.perdidos ?? 0} leads</td>
+                  <td>{c.cerrado_por?.nombre_completo ?? "—"}</td>
+                  <td>{new Date(c.fecha_cierre).toLocaleDateString("es-CR")}</td>
+                  <td>
+                    <button
+                      className="btn btn-secondary"
+                      style={{ fontSize: "0.78rem", padding: "0.3rem 0.75rem" }}
+                      onClick={() => handleDescargarCierre(c.id, c.mes, c.anio)}
+                    >
+                      📥 Excel
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </Card>
     </div>
   );
