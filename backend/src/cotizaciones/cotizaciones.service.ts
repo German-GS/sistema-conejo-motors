@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, GreaterThanOrEqual, In } from 'typeorm';
+import { Repository, LessThanOrEqual, MoreThanOrEqual, In } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Cotizacion } from './cotizacion.entity';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
@@ -62,29 +62,28 @@ export class CotizacionesService {
     const en48h = new Date(ahora.getTime() + 48 * 60 * 60 * 1000);
     const hace7d = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Próximas a vencer (activas, expiran en ≤48h) + Vencidas en los últimos 7 días
-    const [proximas, recienVencidas] = await Promise.all([
-      this.cotizacionesRepository.find({
-        where: {
-          estado: In(['Borrador', 'Enviada']),
-          fecha_expiracion: LessThanOrEqual(en48h),
-        },
-        relations: ['cliente', 'vehiculo'],
-        order: { fecha_expiracion: 'ASC' },
-      }),
-      this.cotizacionesRepository.find({
-        where: {
-          estado: 'Vencida',
-          fecha_expiracion: GreaterThanOrEqual(hace7d),
-        },
-        relations: ['cliente', 'vehiculo'],
-        order: { fecha_expiracion: 'ASC' },
-      }),
-    ]);
+    // Todas las cotizaciones activas (Borrador/Enviada) que:
+    //   - vencen en las próximas 48h, O
+    //   - ya vencieron (fecha en pasado) pero siguen sin cerrarse (últimos 7 días)
+    const todas = await this.cotizacionesRepository.find({
+      where: {
+        estado: In(['Borrador', 'Enviada']),
+        fecha_expiracion: LessThanOrEqual(en48h),
+      },
+      relations: ['cliente', 'vehiculo'],
+      order: { fecha_expiracion: 'ASC' },
+    });
 
-    // Combinar sin duplicados (por si acaso)
-    const todas = [...proximas];
-    for (const c of recienVencidas) {
+    // Agregar las ya vencidas (pasado > 48h, últimos 7 días) que no estén ya
+    const yaVencidas = await this.cotizacionesRepository.find({
+      where: {
+        estado: In(['Borrador', 'Enviada']),
+        fecha_expiracion: MoreThanOrEqual(hace7d),
+      },
+      relations: ['cliente', 'vehiculo'],
+      order: { fecha_expiracion: 'ASC' },
+    });
+    for (const c of yaVencidas) {
       if (!todas.find(x => x.id === c.id)) todas.push(c);
     }
     todas.sort((a, b) => new Date(a.fecha_expiracion).getTime() - new Date(b.fecha_expiracion).getTime());
