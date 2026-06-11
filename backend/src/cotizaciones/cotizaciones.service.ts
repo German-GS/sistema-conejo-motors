@@ -61,15 +61,17 @@ export class CotizacionesService {
     const ahora = new Date();
 
     // TODAS las cotizaciones activas (Borrador/Enviada), ordenadas por vencimiento
-    const todas = await this.cotizacionesRepository.find({
-      where: { estado: In(['Borrador', 'Enviada']) },
-      relations: ['cliente', 'vehiculo'],
-      order: { fecha_expiracion: 'ASC' },
-    });
+    const todas = await this.cotizacionesRepository
+      .createQueryBuilder('c')
+      .leftJoinAndSelect('c.cliente', 'cliente')
+      .leftJoinAndSelect('c.vehiculo', 'vehiculo')
+      .where("c.estado IN ('Borrador', 'Enviada')")
+      .orderBy('c.fecha_expiracion', 'ASC')
+      .getMany();
 
     const lista = todas.map(c => {
       const msRestantes = new Date(c.fecha_expiracion).getTime() - ahora.getTime();
-      const horasRestantes = Math.floor(msRestantes / (1000 * 60 * 60)); // puede ser negativo si ya venció
+      const horasRestantes = Math.floor(msRestantes / (1000 * 60 * 60)); // negativo si ya venció
       return {
         id: c.id,
         cliente: c.cliente?.nombre_completo ?? '—',
