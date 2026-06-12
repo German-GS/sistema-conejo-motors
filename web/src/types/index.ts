@@ -7,6 +7,7 @@ export interface Vehicle {
   año: number;
   color?: string;
   precio_venta: number;
+  precio_venta_usd?: number | string | null;
   precio_venta_final?: number | null;
   descuento_porcentaje?: number | null;
   autonomia_km?: number | null;

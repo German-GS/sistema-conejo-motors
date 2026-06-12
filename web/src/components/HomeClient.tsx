@@ -364,7 +364,14 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                     </div>
                     <div className="vehicle-card__body">
                       <h3 className="vehicle-card__name">{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>
-                      <p className="vehicle-card__price">{formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}</p>
+                      <p className="vehicle-card__price">
+                        {formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
+                        {vehicle.precio_venta_usd && (
+                          <span style={{ fontSize: '0.7em', color: '#64748b', marginLeft: '0.5rem', fontWeight: 500 }}>
+                            / ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
+                          </span>
+                        )}
+                      </p>
                       {vehicle.autonomia_km && (
                         <div className="vehicle-card__specs"><span>🛣️ {vehicle.autonomia_km} km</span></div>
                       )}
