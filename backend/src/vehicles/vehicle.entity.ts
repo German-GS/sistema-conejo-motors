@@ -50,6 +50,9 @@ export class Vehicle {
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   precio_venta: number;  // Precio de lista al cliente
 
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  precio_venta_usd: number;  // Precio de venta en dólares (referencia)
+
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, default: 0 })
   descuento_porcentaje: number;  // % de descuento aplicado
 

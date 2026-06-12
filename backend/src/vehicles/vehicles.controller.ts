@@ -64,7 +64,7 @@ export class VehiclesController {
   @Roles('Administrador')
   updatePricing(
     @Param('id') id: string,
-    @Body() body: { precio_venta?: number; descuento_porcentaje?: number },
+    @Body() body: { precio_venta?: number; precio_venta_usd?: number; descuento_porcentaje?: number },
   ) {
     return this.vehiclesService.updatePricing(+id, body);
   }

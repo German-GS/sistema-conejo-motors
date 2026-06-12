@@ -129,252 +129,206 @@ export const DashboardHomePage = () => {
         </div>
       </div>
 
-      {/* ── Widget cotizaciones por vencer ───────────────────────────────── */}
-      <QuotesExpiringWidget basePath="/admin" data={alertas} />
+      {/* ── Layout principal: KPIs izquierda + Panels derecha ───────────── */}
+      <div className={styles.mainGrid}>
 
-      {/* ── KPIs fila 1 — inventario + ventas ────────────────────────────── */}
-      <div className={styles.kpiRow}>
-        <KpiCard
-          icon="🚗"
-          label="Disponibles"
-          value={String(extended?.inventario.disponibles ?? basic?.totalVehicles ?? 0)}
-          sub="en stock"
-          color="#024f7d"
-          onClick={() => navigate("/admin/inventory")}
-        />
-        <KpiCard
-          icon="🔖"
-          label="Reservados"
-          value={String(extended?.inventario.reservados ?? 0)}
-          sub="con cotización activa"
-          color="#7c3aed"
-          onClick={() => navigate("/admin/inventory")}
-        />
-        <KpiCard
-          icon="✅"
-          label="Vendidos"
-          value={String(extended?.inventario.vendidosMes ?? basic?.monthlySales ?? 0)}
-          sub="este mes"
-          color="#059669"
-          onClick={() => navigate("/admin/billing")}
-        />
-        <KpiCard
-          icon="💰"
-          label="Ingresos del Mes"
-          value={fmtCRC(basic?.monthlyRevenue ?? 0)}
-          sub={`Ganancia: ${fmtCRC(basic?.monthlyGrossProfit ?? 0)}`}
-          color="#0891b2"
-        />
-      </div>
+        {/* ── Columna izquierda: todos los indicadores compactos ─────────── */}
+        <div className={styles.leftCol}>
 
-      {/* ── KPIs fila 2 — leads + repuestos + conectados ───────────────── */}
-      <div className={styles.kpiRow}>
-        <KpiCard
-          icon="👥"
-          label="Leads Activos"
-          value={String(extended?.leads.activos ?? 0)}
-          sub={`+${extended?.leads.hoy ?? 0} hoy · ${extended?.leads.cerradosMes ?? 0} cerrados este mes`}
-          color="#d97706"
-          onClick={() => navigate("/admin/leads")}
-        />
-        <KpiCard
-          icon="📄"
-          label="Cotizaciones Activas"
-          value={String(extended?.cotizaciones.activas ?? 0)}
-          sub={
-            (extended?.cotizaciones.vencidas ?? 0) > 0
-              ? `⚠️ ${extended!.cotizaciones.vencidas} vencidas · ${extended?.cotizaciones.mes ?? 0} este mes`
-              : `${extended?.cotizaciones.mes ?? 0} creadas este mes`
-          }
-          color={(extended?.cotizaciones.vencidas ?? 0) > 0 ? "#dc2626" : "#024f7d"}
-          onClick={() => navigate("/admin/sales/quotes")}
-        />
-        <KpiCard
-          icon="🔧"
-          label="Repuestos (Mes)"
-          value={String(extended?.repuestos.ventasMes ?? 0)}
-          sub={`${fmtCRC(extended?.repuestos.ingresosMes ?? 0)} en ventas`}
-          color="#0891b2"
-          onClick={() => navigate("/admin/productos")}
-        />
-        <KpiCard
-          icon={conectadosAlmuerzo.length > 0 ? "🍽️" : "🟢"}
-          label="Equipo Activo"
-          value={String(conectados.length)}
-          sub={
-            conectados.length === 0
-              ? "nadie ha marcado entrada"
-              : conectadosAlmuerzo.length > 0
-              ? `${conectadosTrabajando.length} trabajando · ${conectadosAlmuerzo.length} en almuerzo`
-              : `${conectados.length} trabajando ahora`
-          }
-          color="#10b981"
-        />
-      </div>
-
-      {/* ── Fila inferior: Conectados + Top Vendedores + Gráfico ─────────── */}
-      <div className={styles.bottomGrid}>
-
-        {/* Panel: Quién está conectado */}
-        <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <span className={styles.panelTitle}>👥 Equipo en Línea</span>
-            <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginLeft: "auto" }}>
-              {conectadosTrabajando.length > 0 && (
-                <span className={styles.teamChip} style={{ background: "#dcfce7", color: "#166534" }}>
-                  ● {conectadosTrabajando.length} trabajando
-                </span>
-              )}
-              {conectadosAlmuerzo.length > 0 && (
-                <span className={styles.teamChip} style={{ background: "#fef3c7", color: "#92400e" }}>
-                  🍽 {conectadosAlmuerzo.length} almuerzo
-                </span>
-              )}
+          {/* KPIs compactos */}
+          <div className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <span className={styles.panelTitle}>📊 Indicadores del Mes</span>
+            </div>
+            <div className={styles.miniKpiGrid}>
+              <MiniKpi icon="🚗" label="Disponibles"   value={String(extended?.inventario.disponibles ?? basic?.totalVehicles ?? 0)} color="#024f7d" onClick={() => navigate("/admin/inventory")} />
+              <MiniKpi icon="🔖" label="Reservados"    value={String(extended?.inventario.reservados ?? 0)} color="#7c3aed" onClick={() => navigate("/admin/inventory")} />
+              <MiniKpi icon="✅" label="Vendidos"      value={String(extended?.inventario.vendidosMes ?? basic?.monthlySales ?? 0)} color="#059669" onClick={() => navigate("/admin/billing")} />
+              <MiniKpi icon="💰" label="Ingresos"      value={fmtCRC(basic?.monthlyRevenue ?? 0)} sub={`Ganancia ${fmtCRC(basic?.monthlyGrossProfit ?? 0)}`} color="#0891b2" />
+              <MiniKpi icon="👥" label="Leads activos" value={String(extended?.leads.activos ?? 0)} sub={`+${extended?.leads.hoy ?? 0} hoy`} color="#d97706" onClick={() => navigate("/admin/leads")} />
+              <MiniKpi
+                icon="📄" label="Cotizaciones"
+                value={String(extended?.cotizaciones.activas ?? 0)}
+                sub={(extended?.cotizaciones.vencidas ?? 0) > 0 ? `⚠️ ${extended!.cotizaciones.vencidas} vencidas` : `${extended?.cotizaciones.mes ?? 0} este mes`}
+                color={(extended?.cotizaciones.vencidas ?? 0) > 0 ? "#dc2626" : "#024f7d"}
+                onClick={() => navigate("/admin/sales/quotes")}
+              />
+              <MiniKpi icon="🔧" label="Repuestos"     value={String(extended?.repuestos.ventasMes ?? 0)} sub={fmtCRC(extended?.repuestos.ingresosMes ?? 0)} color="#0891b2" onClick={() => navigate("/admin/productos")} />
+              <MiniKpi
+                icon={conectadosAlmuerzo.length > 0 ? "🍽️" : "🟢"}
+                label="Equipo activo"
+                value={String(conectados.length)}
+                sub={conectadosAlmuerzo.length > 0 ? `${conectadosTrabajando.length} trab · ${conectadosAlmuerzo.length} alm` : "trabajando ahora"}
+                color="#10b981"
+              />
             </div>
           </div>
-          {conectados.length === 0 ? (
-            <div className={styles.emptyPanel}>
-              <span>😴</span>
-              <p>Nadie ha marcado entrada hoy.</p>
-            </div>
-          ) : (
-            <div className={styles.avatarList}>
-              {conectadosTrabajando.map((c) => (
-                <div key={c.id} className={styles.avatarRow}>
-                  <div className={styles.avatar} style={{ background: avatarColor(c.nombre) }}>
-                    {initials(c.nombre)}
-                  </div>
-                  <div className={styles.avatarInfo}>
-                    <span className={styles.avatarName}>{c.nombre}</span>
-                    <span className={styles.avatarSub}>{c.puesto || c.rol} · desde {c.desde}</span>
-                  </div>
-                  <span className={styles.statusChipGreen}>● Trabajando</span>
-                </div>
-              ))}
-              {conectadosAlmuerzo.map((c) => (
-                <div key={c.id} className={`${styles.avatarRow} ${styles.avatarRowAlmuerzo}`}>
-                  <div className={styles.avatar} style={{ background: "#f59e0b" }}>
-                    {initials(c.nombre)}
-                  </div>
-                  <div className={styles.avatarInfo}>
-                    <span className={styles.avatarName}>{c.nombre}</span>
-                    <span className={styles.avatarSub}>{c.puesto || c.rol} · desde {c.desde}</span>
-                  </div>
-                  <span className={styles.statusChipAmber}>🍽 Almuerzo</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Panel: Top Vendedores */}
-        <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <span className={styles.panelTitle}>🏆 Top Vendedores (Mes)</span>
-          </div>
-          {!extended?.topVendedores?.length ? (
-            <div className={styles.emptyPanel}>
-              <span>📊</span>
-              <p>Sin cierres este mes aún.</p>
-            </div>
-          ) : (
-            <div className={styles.rankList}>
-              {extended.topVendedores.map((v, i) => (
-                <div key={v.nombre} className={styles.rankRow}>
-                  <span className={styles.rank}>
-                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+          {/* Equipo en Línea */}
+          <div className={styles.panel} style={{ marginTop: "1rem" }}>
+            <div className={styles.panelHeader}>
+              <span className={styles.panelTitle}>👥 Equipo en Línea</span>
+              <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginLeft: "auto" }}>
+                {conectadosTrabajando.length > 0 && (
+                  <span className={styles.teamChip} style={{ background: "#dcfce7", color: "#166534" }}>
+                    ● {conectadosTrabajando.length} trabajando
                   </span>
-                  <div className={styles.rankInfo}>
-                    <span className={styles.rankName}>{v.nombre || "Sin asignar"}</span>
-                    <div className={styles.rankBar}>
-                      <div
-                        className={styles.rankBarFill}
-                        style={{
-                          width: `${Math.min(100, (Number(v.total) / (Number(extended.topVendedores[0]?.total) || 1)) * 100)}%`,
-                        }}
-                      />
+                )}
+                {conectadosAlmuerzo.length > 0 && (
+                  <span className={styles.teamChip} style={{ background: "#fef3c7", color: "#92400e" }}>
+                    🍽 {conectadosAlmuerzo.length} almuerzo
+                  </span>
+                )}
+              </div>
+            </div>
+            {conectados.length === 0 ? (
+              <div className={styles.emptyPanel}>
+                <span>😴</span>
+                <p>Nadie ha marcado entrada hoy.</p>
+              </div>
+            ) : (
+              <div className={styles.avatarList}>
+                {conectadosTrabajando.map((c) => (
+                  <div key={c.id} className={styles.avatarRow}>
+                    <div className={styles.avatar} style={{ background: avatarColor(c.nombre) }}>
+                      {initials(c.nombre)}
                     </div>
-                    <span className={styles.rankIngresos}>{fmtCRC(Number(v.ingresos) || 0)}</span>
+                    <div className={styles.avatarInfo}>
+                      <span className={styles.avatarName}>{c.nombre}</span>
+                      <span className={styles.avatarSub}>{c.puesto || c.rol} · desde {c.desde}</span>
+                    </div>
+                    <span className={styles.statusChipGreen}>● Trab.</span>
                   </div>
-                  <span className={styles.rankCount}>{v.total} vta{Number(v.total) !== 1 ? "s" : ""}</span>
+                ))}
+                {conectadosAlmuerzo.map((c) => (
+                  <div key={c.id} className={`${styles.avatarRow} ${styles.avatarRowAlmuerzo}`}>
+                    <div className={styles.avatar} style={{ background: "#f59e0b" }}>
+                      {initials(c.nombre)}
+                    </div>
+                    <div className={styles.avatarInfo}>
+                      <span className={styles.avatarName}>{c.nombre}</span>
+                      <span className={styles.avatarSub}>{c.puesto || c.rol} · desde {c.desde}</span>
+                    </div>
+                    <span className={styles.statusChipAmber}>🍽 Alm.</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Columna derecha: gráficos y rankings ───────────────────────── */}
+        <div className={styles.rightCol}>
+
+          {/* Top Vendedores + Gráfico 6 meses */}
+          <div className={styles.rightTopRow}>
+            <div className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <span className={styles.panelTitle}>🏆 Top Vendedores (Mes)</span>
+              </div>
+              {!extended?.topVendedores?.length ? (
+                <div className={styles.emptyPanel}>
+                  <span>📊</span>
+                  <p>Sin cierres este mes aún.</p>
                 </div>
-              ))}
+              ) : (
+                <div className={styles.rankList}>
+                  {extended.topVendedores.map((v, i) => (
+                    <div key={v.nombre} className={styles.rankRow}>
+                      <span className={styles.rank}>
+                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                      </span>
+                      <div className={styles.rankInfo}>
+                        <span className={styles.rankName}>{v.nombre || "Sin asignar"}</span>
+                        <div className={styles.rankBar}>
+                          <div className={styles.rankBarFill} style={{ width: `${Math.min(100, (Number(v.total) / (Number(extended.topVendedores[0]?.total) || 1)) * 100)}%` }} />
+                        </div>
+                        <span className={styles.rankIngresos}>{fmtCRC(Number(v.ingresos) || 0)}</span>
+                      </div>
+                      <span className={styles.rankCount}>{v.total} vta{Number(v.total) !== 1 ? "s" : ""}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <span className={styles.panelTitle}>📈 Ventas Últimos 6 Meses</span>
+              </div>
+              <div style={{ padding: "0.75rem 0.5rem 0.5rem" }}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart
+                    data={extended?.salesData ?? basic?.salesData?.map((d: any) => ({ ...d, vehiculos: d.vendidos, repuestos: 0 })) ?? []}
+                    margin={{ top: 4, right: 8, bottom: 0, left: -20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <Bar dataKey="vehiculos" fill="#024f7d" name="Vehículos" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="repuestos" fill="#0891b2" name="Repuestos" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Ventas por vendedor (mes) */}
+          {(basic?.salesBySellerData?.length ?? 0) > 0 && (
+            <div className={styles.panel} style={{ marginTop: "1rem" }}>
+              <div className={styles.panelHeader}>
+                <span className={styles.panelTitle}>👤 Ventas por Vendedor (Mes Actual)</span>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={basic!.salesBySellerData} layout="vertical" margin={{ left: 20, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(v: number) => [v, "Ventas"]} />
+                  <Bar dataKey="ventas" fill="#0891b2" name="Vendidos" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           )}
-        </div>
 
-        {/* Gráfico de ventas históricas — vehículos + repuestos */}
-        <div className={`${styles.panel} ${styles.chartPanel}`}>
-          <div className={styles.panelHeader}>
-            <span className={styles.panelTitle}>📈 Ventas Últimos 6 Meses</span>
+          {/* ── Cotizaciones activas ───────────────────────────────────── */}
+          <div style={{ marginTop: "1rem" }}>
+            <QuotesExpiringWidget basePath="/admin" data={alertas} />
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart
-              data={extended?.salesData ?? basic?.salesData?.map((d: any) => ({ ...d, vehiculos: d.vendidos, repuestos: 0 })) ?? []}
-              margin={{ top: 4, right: 8, bottom: 0, left: -20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="vehiculos" fill="#024f7d" name="Vehículos" radius={[4, 4, 0, 0]} stackId="a" />
-              <Bar dataKey="repuestos" fill="#0891b2" name="Repuestos" radius={[4, 4, 0, 0]} stackId="b" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
 
-      {/* ── Cierre de Mes ────────────────────────────────────────────── */}
-      <div style={{ marginTop: "1.25rem" }}>
-        <CierreMesWidget />
-      </div>
-
-      {/* ── Widget Leads semáforo ─────────────────────────────────────── */}
-      <div style={{ marginTop: "1.25rem" }}>
-        <LeadsFollowUpWidget basePath="/admin" showVendedor={true} />
-      </div>
-
-      {/* ── Gráfico ventas por vendedor ───────────────────────────────────── */}
-      {(basic?.salesBySellerData?.length ?? 0) > 0 && (
-        <div className={styles.panel} style={{ marginTop: "1.25rem" }}>
-          <div className={styles.panelHeader}>
-            <span className={styles.panelTitle}>👤 Ventas por Vendedor (Mes Actual)</span>
+          {/* ── Cierre de Mes ──────────────────────────────────────────── */}
+          <div style={{ marginTop: "1rem" }}>
+            <CierreMesWidget />
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={basic!.salesBySellerData} layout="vertical" margin={{ left: 20, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v: number) => [v, "Ventas"]} />
-              <Bar dataKey="ventas" fill="#0891b2" name="Vendidos" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+
+          {/* ── Widget Leads semáforo ───────────────────────────────────── */}
+          <div style={{ marginTop: "1rem" }}>
+            <LeadsFollowUpWidget basePath="/admin" showVendedor={true} />
+          </div>
         </div>
-      )}
+      </div>
+
     </div>
   );
 };
 
-// ─── sub-componente KPI ───────────────────────────────────────────────────────
-const KpiCard = ({
+// ─── sub-componente MiniKpi (compact) ────────────────────────────────────────
+const MiniKpi = ({
   icon, label, value, sub, color, onClick,
 }: {
   icon: string; label: string; value: string; sub?: string;
   color: string; onClick?: () => void;
 }) => (
   <div
-    className={`${styles.kpi} ${onClick ? styles.kpiClickable : ""}`}
+    className={`${styles.miniKpi} ${onClick ? styles.miniKpiClickable : ""}`}
     onClick={onClick}
     style={{ "--accent": color } as React.CSSProperties}
   >
-    <div className={styles.kpiLeft}>
-      <span className={styles.kpiIcon}>{icon}</span>
-    </div>
-    <div className={styles.kpiRight}>
-      <span className={styles.kpiValue}>{value}</span>
-      <span className={styles.kpiLabel}>{label}</span>
-      {sub && <span className={styles.kpiSub}>{sub}</span>}
-    </div>
+    <span className={styles.miniKpiIcon}>{icon}</span>
+    <span className={styles.miniKpiValue}>{value}</span>
+    <span className={styles.miniKpiLabel}>{label}</span>
+    {sub && <span className={styles.miniKpiSub}>{sub}</span>}
   </div>
 );

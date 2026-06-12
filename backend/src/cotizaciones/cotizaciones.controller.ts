@@ -8,6 +8,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -69,5 +70,12 @@ export class CotizacionesController {
     @Body() body: { dias: number },
   ) {
     return this.cotizacionesService.extenderReserva(id, body.dias ?? 4);
+  }
+
+  /** Elimina permanentemente una cotización Cancelada (solo admin) */
+  @Delete(':id')
+  @Roles('Administrador')
+  eliminar(@Param('id', ParseIntPipe) id: number) {
+    return this.cotizacionesService.eliminarCotizacion(id);
   }
 }

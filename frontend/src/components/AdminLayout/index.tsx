@@ -274,7 +274,7 @@ export const AdminLayout = () => {
             <div className={styles.sectionItems}>
               <SidebarLink to="/admin/sales/catalog" icon={<LuBookMarked size={18} />} label="Catálogo" />
               <SidebarLink to="/admin/sales/quotes" icon={<LuFileText size={18} />} label="Cotizaciones" />
-              <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" badge={overdueLeads} />
+              <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" />
               <SidebarLink to="/admin/agenda" icon={<LuCalendarDays size={18} />} label="Agenda" />
             </div>
           )}

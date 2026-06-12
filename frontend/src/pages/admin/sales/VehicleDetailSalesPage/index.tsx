@@ -13,6 +13,7 @@ interface VehicleDetail {
   año: number;
   color?: string;
   precio_venta: number;
+  precio_venta_usd?: number;
   imagenes?: { id: number; url: string }[];
   bodega?: { nombre: string };
   potencia_hp?: number;
@@ -126,7 +127,14 @@ export const VehicleDetailSalesPage = () => {
           </div>
           <h1>{vehicle.marca} {vehicle.modelo}</h1>
           <p className={styles.year}>{vehicle.año} {vehicle.color && `· ${vehicle.color}`}</p>
-          <p className={styles.price}>{formatCRC(vehicle.precio_venta)}</p>
+          <p className={styles.price}>
+            {formatCRC(vehicle.precio_venta)}
+            {vehicle.precio_venta_usd && (
+              <span style={{ fontSize: "0.75em", color: "#64748b", marginLeft: "0.6rem", fontWeight: 400 }}>
+                / ${Number(vehicle.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })} USD
+              </span>
+            )}
+          </p>
           {vehicle.bodega && <p className={styles.location}>📍 {vehicle.bodega.nombre}</p>}
 
           {/* Specs clave */}

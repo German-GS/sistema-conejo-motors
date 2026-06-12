@@ -49,6 +49,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     color: "",
     precio_costo: "",
     precio_venta: "",
+    precio_venta_usd: "",
     bodegaId: "",
   });
 
@@ -88,6 +89,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       color: "",
       precio_costo: "",
       precio_venta: "",
+      precio_venta_usd: "",
       bodegaId: "",
     });
     // NO reseteamos currentImages aquí
@@ -107,6 +109,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         color: initialData.color || "",
         precio_costo: initialData.precio_costo?.toString() || "",
         precio_venta: initialData.precio_venta?.toString() || "",
+        precio_venta_usd: initialData.precio_venta_usd?.toString() || "",
         bodegaId: initialData.bodega?.id?.toString() || "",
       });
       console.log("Loading instance images:", initialData.imagenes);
@@ -197,6 +200,9 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         : null,
       precio_venta: formData.precio_venta
         ? Number(formData.precio_venta)
+        : null,
+      precio_venta_usd: formData.precio_venta_usd
+        ? Number(formData.precio_venta_usd)
         : null,
       bodegaId: formData.bodegaId ? Number(formData.bodegaId) : null,
       // NO se envía profileId, marca, modelo en la actualización del VEHÍCULO
@@ -318,8 +324,17 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
         step="0.01" // Permite decimales
         value={formData.precio_venta}
         onChange={handleChange}
-        placeholder="Precio de Venta"
+        placeholder="Precio de Venta (₡ CRC)"
         required
+        className={styles.formInput}
+      />
+      <input
+        name="precio_venta_usd"
+        type="number"
+        step="0.01"
+        value={formData.precio_venta_usd}
+        onChange={handleChange}
+        placeholder="Precio de Venta ($ USD) — opcional"
         className={styles.formInput}
       />
 

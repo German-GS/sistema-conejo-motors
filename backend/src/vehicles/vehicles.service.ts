@@ -489,11 +489,12 @@ export class VehiclesService {
     return this.vehiclesRepository.save(vehicle);
   }
 
-  async updatePricing(id: number, data: { precio_venta?: number; descuento_porcentaje?: number }) {
+  async updatePricing(id: number, data: { precio_venta?: number; precio_venta_usd?: number; descuento_porcentaje?: number }) {
     const vehicle = await this.vehiclesRepository.findOneBy({ id });
     if (!vehicle) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
 
     if (data.precio_venta !== undefined) vehicle.precio_venta = data.precio_venta;
+    if (data.precio_venta_usd !== undefined) vehicle.precio_venta_usd = data.precio_venta_usd;
     if (data.descuento_porcentaje !== undefined) vehicle.descuento_porcentaje = data.descuento_porcentaje;
 
     // Calcular precio final con descuento
@@ -517,7 +518,7 @@ export class VehiclesService {
     this.logger.log('getDashboardStats: Fetching general dashboard stats...');
     try {
       const vehiclesInStock = await this.vehiclesRepository.find({
-        where: { estado: 'Disponible', visibilidad: Not('Agotado') },
+        where: { estado: 'Disponible', visibilidad: Not(In(['Agotado', 'Contrapedido'])) },
         relations: { profile: true, bodega: true }, // Carga básica suficiente
       });
       const totalVehicles = vehiclesInStock.length;
@@ -697,7 +698,7 @@ export class VehiclesService {
     // ── Vehículos ─────────────────────────────────────────────────────────────
     const [disponibles, reservados, vendidosMes] = await Promise.all([
       // Agotado = sin stock físico → no cuenta como disponible en el dashboard
-      this.vehiclesRepository.count({ where: { estado: 'Disponible', visibilidad: Not('Agotado') } }),
+      this.vehiclesRepository.count({ where: { estado: 'Disponible', visibilidad: Not(In(['Agotado', 'Contrapedido'])) } }),
       this.vehiclesRepository.count({ where: { estado: 'Reservado' } }),
       this.ventasRepository.count({ where: { fecha_venta: MoreThanOrEqual(startOfMonth) } }),
     ]);
@@ -711,16 +712,21 @@ export class VehiclesService {
       (s, v) => s + Number(v.total_con_iva || v.monto_final || 0), 0,
     );
 
-    // ── Leads — estados reales del sistema ────────────────────────────────────
-    const leadsActivos = await this.leadRepository.count({
-      where: { estado: In(['Nuevo', 'Contactado', 'En Progreso']) },
-    });
-    const leadsCerradosMes = await this.leadRepository.count({
-      where: { estado: 'Cerrado', fecha_creacion: MoreThanOrEqual(startOfMonth) },
-    });
-    const leadsPerdidosMes = await this.leadRepository.count({
-      where: { estado: 'Perdido', fecha_creacion: MoreThanOrEqual(startOfMonth) },
-    });
+    // ── Leads — usando QueryBuilder raw para evitar problemas de cast con enum PostgreSQL ──
+    const leadsActivos = await this.leadRepository
+      .createQueryBuilder('l')
+      .where("l.estado::text IN ('Nuevo','Contactado','En Progreso','Prueba de Manejo','Cotizacion Enviada','Negociacion')")
+      .getCount();
+    const leadsCerradosMes = await this.leadRepository
+      .createQueryBuilder('l')
+      .where("l.estado::text = 'Cerrado'")
+      .andWhere('l.fecha_creacion >= :start', { start: startOfMonth })
+      .getCount();
+    const leadsPerdidosMes = await this.leadRepository
+      .createQueryBuilder('l')
+      .where("l.estado::text = 'Perdido'")
+      .andWhere('l.fecha_creacion >= :start', { start: startOfMonth })
+      .getCount();
     const leadsHoy = await this.leadRepository.count({
       where: { fecha_creacion: MoreThanOrEqual(hoyInicio) },
     });
@@ -790,7 +796,7 @@ export class VehiclesService {
     );
     try {
       const totalVehicles = await this.vehiclesRepository.count({
-        where: { estado: 'Disponible' },
+        where: { estado: 'Disponible', visibilidad: Not(In(['Agotado', 'Contrapedido'])) },
       });
 
       const today = new Date();

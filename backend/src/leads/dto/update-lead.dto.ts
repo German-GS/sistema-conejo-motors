@@ -28,6 +28,9 @@ export class UpdateLeadDto {
   contacted_by_phone?: boolean;
 
   @IsOptional()
+  contacted_by_whatsapp?: boolean;
+
+  @IsOptional()
   @IsEnum(['Contado', 'Crédito'])
   tipo_pago?: string;
 }

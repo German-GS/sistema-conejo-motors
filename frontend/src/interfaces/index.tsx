@@ -28,6 +28,7 @@ export interface Vehicle {
   color: string;
   precio_costo: number;
   precio_venta: number;
+  precio_venta_usd?: number;
   estado: string;
   visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
   bodega?: Bodega;

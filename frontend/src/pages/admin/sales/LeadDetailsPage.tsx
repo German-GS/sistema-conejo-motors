@@ -39,12 +39,14 @@ interface LeadDetails {
   nombre_cliente: string;
   email_cliente: string;
   telefono_cliente?: string;
+  whatsapp_cliente?: string;
   estado: string;
   fuente: string;
   notas?: string;
   fecha_followup?: string;
   contacted_by_email: boolean;
   contacted_by_phone: boolean;
+  contacted_by_whatsapp: boolean;
   tipo_pago?: 'Contado' | 'Crédito';
   fecha_creacion: string;
   vehiculo_interes?: { id: number; marca: string; modelo: string; año: number };
@@ -303,6 +305,16 @@ export const LeadDetailsPage = () => {
                   onChange={() => save({ contacted_by_phone: !lead.contacted_by_phone })}
                 />
                 {" "}📞 Contactado por teléfono
+              </label>
+            </div>
+            <div className={styles.checkRow}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={lead.contacted_by_whatsapp ?? false}
+                  onChange={() => save({ contacted_by_whatsapp: !lead.contacted_by_whatsapp })}
+                />
+                {" "}💬 Contactado por WhatsApp
               </label>
             </div>
           </div>
@@ -575,3 +587,4 @@ export const LeadDetailsPage = () => {
     </div>
   );
 };
+

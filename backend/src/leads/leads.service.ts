@@ -59,6 +59,13 @@ export class LeadsService {
     return lead;
   }
 
+  /** Elimina un lead permanentemente (con sus actividades por cascade) */
+  async eliminarLead(id: number): Promise<{ mensaje: string }> {
+    const lead = await this.findOne(id);
+    await this.leadsRepository.delete(lead.id);
+    return { mensaje: `Lead #${id} eliminado correctamente.` };
+  }
+
   /** Actualiza cualquier campo editable del lead */
   async updateLead(id: number, dto: UpdateLeadDto, user: User): Promise<Lead> {
     const lead = await this.findOne(id);
@@ -116,6 +123,7 @@ export class LeadsService {
     if (dto.contacted_by_email !== undefined) lead.contacted_by_email = dto.contacted_by_email;
     if (dto.contacted_by_phone !== undefined) lead.contacted_by_phone = dto.contacted_by_phone;
     if (dto.tipo_pago !== undefined) lead.tipo_pago = dto.tipo_pago as any;
+    if (dto.contacted_by_whatsapp !== undefined) lead.contacted_by_whatsapp = dto.contacted_by_whatsapp;
 
     return this.leadsRepository.save(lead);
   }

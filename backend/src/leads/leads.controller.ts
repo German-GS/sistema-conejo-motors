@@ -77,6 +77,13 @@ export class LeadsController {
     return this.leadsService.addActividad(id, dto, req.user);
   }
 
+  /** Eliminar lead permanentemente (solo admin) */
+  @Delete(':id')
+  @Roles('Administrador')
+  eliminarLead(@Param('id', ParseIntPipe) id: number) {
+    return this.leadsService.eliminarLead(id);
+  }
+
   // ── FINANCIAMIENTO ────────────────────────────────────────────────────────
 
   /** GET /leads/:id/financiamientos — lista de entidades bancarias del lead */

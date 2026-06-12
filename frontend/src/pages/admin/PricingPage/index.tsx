@@ -17,6 +17,7 @@ interface Vehicle {
   visibilidad?: "Visible" | "Oculto" | "Agotado" | "Contrapedido";
   precio_costo: number;
   precio_venta: number;
+  precio_venta_usd: number | null;
   precio_venta_final: number | null;
   descuento_porcentaje: number | null;
   imagenes?: { url: string }[];
@@ -33,7 +34,7 @@ const marginColor = (margen: number) => {
 
 export const PricingPage = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [editing, setEditing] = useState<Record<number, { precio_venta: string; descuento: string }>>({});
+  const [editing, setEditing] = useState<Record<number, { precio_venta: string; precio_venta_usd: string; descuento: string }>>({});
   const [loading, setLoading] = useState(true);
 
   const fetch = async () => {
@@ -52,6 +53,7 @@ export const PricingPage = () => {
       ...prev,
       [v.id]: {
         precio_venta: String(v.precio_venta ?? v.precio_costo),
+        precio_venta_usd: v.precio_venta_usd != null ? String(v.precio_venta_usd) : "",
         descuento: String(v.descuento_porcentaje ?? 0),
       }
     }));
@@ -64,9 +66,14 @@ export const PricingPage = () => {
   const handleSave = async (v: Vehicle) => {
     const e = editing[v.id];
     const precio_venta = parseFloat(e.precio_venta.replace(/,/g, ""));
+    const precio_venta_usd = e.precio_venta_usd.trim()
+      ? parseFloat(e.precio_venta_usd.replace(/,/g, ""))
+      : null;
     const descuento = parseFloat(e.descuento);
 
     if (isNaN(precio_venta) || precio_venta <= 0) return toast.error("Precio de venta inválido.");
+    if (precio_venta_usd !== null && (isNaN(precio_venta_usd) || precio_venta_usd <= 0))
+      return toast.error("Precio USD inválido.");
     if (isNaN(descuento) || descuento < 0 || descuento > 100) return toast.error("Descuento debe ser entre 0 y 100.");
 
     const precioFinal = precio_venta * (1 - descuento / 100);
@@ -80,7 +87,11 @@ export const PricingPage = () => {
     }
 
     try {
-      await apiClient.patch(`/vehicles/${v.id}/pricing`, { precio_venta, descuento_porcentaje: descuento });
+      await apiClient.patch(`/vehicles/${v.id}/pricing`, {
+        precio_venta,
+        precio_venta_usd,
+        descuento_porcentaje: descuento,
+      });
       toast.success(`✅ Precio actualizado${bajoCosto ? " — ⚠️ venta bajo costo" : ""}`);
       cancelEdit(v.id);
       fetch();
@@ -121,6 +132,7 @@ export const PricingPage = () => {
               <th>VIN</th>
               <th>Costo Inventario</th>
               <th>Precio de Lista</th>
+              <th>Precio USD</th>
               <th>Descuento %</th>
               <th>Precio Final</th>
               <th>Margen</th>
@@ -165,6 +177,22 @@ export const PricingPage = () => {
                         className={styles.priceInput}
                       />
                     ) : CRC(v.precio_venta)}
+                  </td>
+
+                  {/* Precio USD */}
+                  <td>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="—"
+                        value={editing[v.id].precio_venta_usd}
+                        onChange={e => setEditing(prev => ({ ...prev, [v.id]: { ...prev[v.id], precio_venta_usd: e.target.value } }))}
+                        className={styles.priceInput}
+                      />
+                    ) : (v.precio_venta_usd
+                          ? `$${Number(v.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
+                          : "—")}
                   </td>
 
                   {/* Descuento */}

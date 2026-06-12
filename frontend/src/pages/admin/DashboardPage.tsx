@@ -70,6 +70,14 @@ export const DashboardPage = () => {
     }
   };
 
+  // Vehículos en stock activo (excluye Agotado y Contrapedido del total real)
+  const stockActivo = useMemo(() =>
+    vehicles.filter(v => v.estado === 'Disponible' && v.visibilidad !== 'Agotado' && v.visibilidad !== 'Contrapedido').length,
+  [vehicles]);
+  const especiales = useMemo(() =>
+    vehicles.filter(v => v.visibilidad === 'Agotado' || v.visibilidad === 'Contrapedido'),
+  [vehicles]);
+
   const filtered = useMemo(() => {
     let list = vehicles;
     if (search.trim()) {
@@ -95,7 +103,18 @@ export const DashboardPage = () => {
         </button>
       </div>
 
-      <Card title={`Inventario (${filtered.length} vehículos)`}>
+      <Card title={
+        <span>
+          Inventario ({stockActivo} en stock activo
+          {especiales.length > 0 && (
+            <span style={{ fontSize: "0.78rem", color: "#94a3b8", fontWeight: 400, marginLeft: "0.5rem" }}>
+              · {especiales.length} fuera de inventario
+              {especiales.map(v => ` (${v.modelo} — ${v.visibilidad === 'Agotado' ? 'Agotado' : 'Contrapedido'})`).join(",")}
+            </span>
+          )}
+          )
+        </span>
+      }>
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         {/* Filtros rápidos */}

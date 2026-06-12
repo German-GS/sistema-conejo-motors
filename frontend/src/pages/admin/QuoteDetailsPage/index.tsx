@@ -330,7 +330,7 @@ export const QuoteDetailsPage = () => {
         <div className={styles.detailCard}>
           <h4>Reserva</h4>
           <p>{fmtFechaLocal(quote.fecha_expiracion)}</p>
-          <span>Estado: <strong>{quote.estado}</strong></span>
+          <span>Estado: <strong>{quote.estado === "Borrador" ? "Generada" : quote.estado}</strong></span>
           {(() => {
             const ms = new Date(quote.fecha_expiracion).getTime() - Date.now();
             const dias = Math.ceil(ms / (1000 * 60 * 60 * 24));

@@ -16,6 +16,7 @@ interface VehicleDetail {
   año: number;
   color?: string;
   precio_venta: number;
+  precio_venta_usd?: number;
   precio_venta_final?: number;
   visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
   imagenes?: { id: number; url: string }[];
@@ -204,6 +205,11 @@ export const VehicleDetailPage = () => {
           </div>
           <p className={styles.price}>
             {new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC" }).format(vehicle.precio_venta)}
+            {vehicle.precio_venta_usd && (
+              <span style={{ fontSize: "0.75em", color: "#64748b", marginLeft: "0.6rem", fontWeight: 400 }}>
+                / ${Number(vehicle.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })} USD
+              </span>
+            )}
           </p>
           <div className={styles.keySpecs}>
             {vehicle.autonomia_km && <div><span>{vehicle.autonomia_km} km</span><p>Autonomía</p></div>}

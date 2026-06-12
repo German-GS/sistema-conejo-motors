@@ -52,7 +52,7 @@ export class CotizacionesService {
     return cotizacion;
   }
 
-  /** Alertas de cotizaciones que vencen pronto (próximas 24 h) — para dashboard */
+  /** Alertas de cotizaciones activas — para dashboard */
   async getAlertasVencimiento(): Promise<{
     vencenHoy: number;
     vencenManana: number;
@@ -60,18 +60,25 @@ export class CotizacionesService {
   }> {
     const ahora = new Date();
 
-    // TODAS las cotizaciones activas (Borrador/Enviada), ordenadas por vencimiento
-    const todas = await this.cotizacionesRepository
-      .createQueryBuilder('c')
-      .leftJoinAndSelect('c.cliente', 'cliente')
-      .leftJoinAndSelect('c.vehiculo', 'vehiculo')
-      .where("c.estado IN ('Borrador', 'Enviada')")
-      .orderBy('c.fecha_expiracion', 'ASC')
-      .getMany();
+    // Traemos TODAS y filtramos en código para evitar problemas de
+    // cast con tipos enum de PostgreSQL en cláusulas WHERE raw.
+    const todasRaw = await this.cotizacionesRepository.find({
+      relations: ['cliente', 'vehiculo'],
+      order: { fecha_expiracion: 'ASC' },
+    });
 
-    const lista = todas.map(c => {
-      const msRestantes = new Date(c.fecha_expiracion).getTime() - ahora.getTime();
-      const horasRestantes = Math.floor(msRestantes / (1000 * 60 * 60)); // negativo si ya venció
+    this.logger.log(`[Alertas] Total cotizaciones en DB: ${todasRaw.length}`);
+    todasRaw.forEach(c => this.logger.log(`  → #${c.id} estado=${c.estado} exp=${c.fecha_expiracion}`));
+
+    const ESTADOS_INACTIVOS = ['Aceptada', 'Rechazada', 'Facturada', 'Cancelada'];
+    const activas = todasRaw.filter(c => !ESTADOS_INACTIVOS.includes(c.estado));
+
+    this.logger.log(`[Alertas] Cotizaciones activas (filtradas): ${activas.length}`);
+
+    const lista = activas.map(c => {
+      const expDate = c.fecha_expiracion ? new Date(c.fecha_expiracion) : null;
+      const msRestantes = expDate ? expDate.getTime() - ahora.getTime() : -1;
+      const horasRestantes = expDate ? Math.floor(msRestantes / (1000 * 60 * 60)) : -9999;
       return {
         id: c.id,
         cliente: c.cliente?.nombre_completo ?? '—',
@@ -79,12 +86,12 @@ export class CotizacionesService {
         fecha_expiracion: c.fecha_expiracion,
         horasRestantes,
       };
-    });
+    }).sort((a, b) => a.horasRestantes - b.horasRestantes);
 
     const medianoche = new Date(ahora); medianoche.setHours(23, 59, 59, 999);
     return {
-      vencenHoy:    lista.filter(c => new Date(c.fecha_expiracion) <= medianoche).length,
-      vencenManana: lista.filter(c => new Date(c.fecha_expiracion) > medianoche).length,
+      vencenHoy:    lista.filter(c => c.fecha_expiracion && new Date(c.fecha_expiracion) <= medianoche).length,
+      vencenManana: lista.filter(c => c.fecha_expiracion && new Date(c.fecha_expiracion) > medianoche).length,
       lista,
     };
   }
@@ -111,6 +118,16 @@ export class CotizacionesService {
     }
 
     return this.findOne(id);
+  }
+
+  /** Elimina permanentemente una cotización — solo si está Cancelada */
+  async eliminarCotizacion(id: number): Promise<{ mensaje: string }> {
+    const cotizacion = await this.findOne(id);
+    if (cotizacion.estado !== 'Cancelada') {
+      throw new NotFoundException(`Solo se pueden eliminar cotizaciones con estado Cancelada.`);
+    }
+    await this.cotizacionesRepository.delete(id);
+    return { mensaje: `Cotización #${id} eliminada correctamente.` };
   }
 
   /** Admin: extiende la fecha de expiración de una cotización */

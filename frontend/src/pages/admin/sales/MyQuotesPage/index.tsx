@@ -29,13 +29,16 @@ const fmtCRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
 
 const ESTADO_COLORS: Record<string, string> = {
-  Borrador:   "#94a3b8",
+  Borrador:   "#0891b2",
   Enviada:    "#3b82f6",
   Aceptada:   "#10b981",
   Rechazada:  "#ef4444",
   Facturada:  "#8b5cf6",
   Cancelada:  "#dc2626",
 };
+
+/** "Borrador" se muestra como "Generada" en toda la UI */
+const labelEstado = (e: string) => e === "Borrador" ? "Generada" : e;
 
 /** Modal de cancelación */
 interface CancelModal {
@@ -57,6 +60,9 @@ export const MyQuotesPage = () => {
   const [motivo, setMotivo] = useState("");
   const [cancelando, setCancelando] = useState(false);
 
+  // Eliminación de canceladas
+  const [eliminandoId, setEliminandoId] = useState<number | null>(null);
+
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
   const basePath = isAdmin ? "/admin/sales" : "/sales";
@@ -72,6 +78,20 @@ export const MyQuotesPage = () => {
   };
 
   useEffect(() => { loadQuotes(); }, [endpoint]);
+
+  const handleEliminar = async (id: number) => {
+    if (!window.confirm(`¿Eliminar cotización #${id}? Esta acción no se puede deshacer.`)) return;
+    setEliminandoId(id);
+    try {
+      await apiClient.delete(`/quotes/${id}`);
+      toast.success(`Cotización #${id} eliminada.`);
+      loadQuotes();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error al eliminar.");
+    } finally {
+      setEliminandoId(null);
+    }
+  };
 
   const handleCancelar = async () => {
     if (!cancelModal) return;
@@ -142,7 +162,7 @@ export const MyQuotesPage = () => {
             <span className={styles.kpiNum} style={{ color: ESTADO_COLORS[e] }}>
               {countByEstado[e] ?? 0}
             </span>
-            <span className={styles.kpiLabel}>{e}</span>
+            <span className={styles.kpiLabel}>{labelEstado(e)}</span>
           </button>
         ))}
       </div>
@@ -194,8 +214,9 @@ export const MyQuotesPage = () => {
                   const totalGastos = [q.gasto_marchamo, q.gasto_inscripcion, q.gasto_placas, q.gasto_otros]
                     .reduce((s, v) => s + Number(v || 0), 0);
                   const vence = new Date(q.fecha_expiracion);
-                  const vencida = vence < today && q.estado === "Borrador";
-                  const venceProx = !vencida && (vence.getTime() - today.getTime()) < 3 * 24 * 60 * 60 * 1000;
+                  const esActiva = q.estado === "Borrador" || q.estado === "Enviada";
+                  const vencida = vence < today && esActiva;
+                  const venceProx = esActiva && !vencida && (vence.getTime() - today.getTime()) < 3 * 24 * 60 * 60 * 1000;
 
                   return (
                     <tr key={q.id} className={vencida ? styles.rowExpired : ""}>
@@ -252,7 +273,7 @@ export const MyQuotesPage = () => {
                           className={styles.statusBadge}
                           style={{ background: ESTADO_COLORS[q.estado] ?? "#64748b" }}
                         >
-                          {q.estado}
+                          {labelEstado(q.estado)}
                         </span>
                       </td>
                       <td className={styles.actionsCell}>
@@ -270,6 +291,16 @@ export const MyQuotesPage = () => {
                             })}
                           >
                             ✕
+                          </button>
+                        )}
+                        {q.estado === "Cancelada" && isAdmin && (
+                          <button
+                            className={styles.cancelBtn}
+                            title="Eliminar cotización cancelada"
+                            disabled={eliminandoId === q.id}
+                            onClick={() => handleEliminar(q.id)}
+                          >
+                            {eliminandoId === q.id ? "..." : "✕"}
                           </button>
                         )}
                       </td>

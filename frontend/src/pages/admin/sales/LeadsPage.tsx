@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import apiClient from "@/api/apiClient";
+import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
 import styles from "./LeadsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
@@ -41,13 +42,26 @@ export const LeadsPage = () => {
   // Admin ve todos los leads, vendedor solo los suyos
   const endpoint = isAdmin ? "/leads" : "/leads/my-leads";
 
-  useEffect(() => {
+  const loadLeads = () => {
     setLoading(true);
     apiClient.get(endpoint)
       .then((res) => setLeads(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [endpoint]);
+  };
+
+  useEffect(() => { loadLeads(); }, [endpoint]);
+
+  const handleEliminar = async (id: number, nombre: string) => {
+    if (!window.confirm(`¿Eliminar lead de "${nombre}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      await apiClient.delete(`/leads/${id}`);
+      toast.success(`Lead eliminado.`);
+      loadLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error al eliminar.");
+    }
+  };
 
   const filtered = filterEstado === "Todos"
     ? leads
@@ -214,10 +228,23 @@ export const LeadsPage = () => {
                     <td className={styles.sub}>
                       {fmtFecha(lead.fecha_creacion)}
                     </td>
-                    <td>
+                    <td style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
                       <Link to={`${basePath}/leads/${lead.id}`} className="btn btn-secondary">
                         Ver
                       </Link>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleEliminar(lead.id, lead.nombre_cliente)}
+                          title="Eliminar lead"
+                          style={{
+                            background: "none", border: "1px solid #fca5a5",
+                            borderRadius: 6, color: "#ef4444", cursor: "pointer",
+                            padding: "4px 8px", fontSize: "0.8rem", lineHeight: 1,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );

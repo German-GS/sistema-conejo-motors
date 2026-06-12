@@ -31,6 +31,7 @@ interface CatalogVehicle {
   año: number;
   color: string;
   precio_venta: number;
+  precio_venta_usd?: number;
   precio_venta_final: number | null;
   descuento_porcentaje: number | null;
   autonomia_km: number;
@@ -260,6 +261,11 @@ export const CatalogPage = () => {
                 <h3>{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>
                 <p className={styles.price}>
                   {fmtCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
+                  {vehicle.precio_venta_usd && (
+                    <span style={{ fontSize: "0.8em", color: "#64748b", marginLeft: "0.5rem" }}>
+                      / ${Number(vehicle.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })} USD
+                    </span>
+                  )}
                 </p>
                 {Number(vehicle.descuento_porcentaje) > 0 && (
                   <p className={styles.oldPrice}>{fmtCRC(Number(vehicle.precio_venta))}</p>

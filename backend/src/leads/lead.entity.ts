@@ -54,6 +54,9 @@ export class Lead {
   @Column({ default: false })
   contacted_by_phone: boolean;
 
+  @Column({ default: false })
+  contacted_by_whatsapp: boolean;
+
   @Column({
     type: 'enum',
     enum: ['Contado', 'Crédito'],

@@ -66,6 +66,11 @@ export class CreateVehicleDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
+  precio_venta_usd?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @IsPositive()
   autonomia_km: number;
 
   @IsNumber()
