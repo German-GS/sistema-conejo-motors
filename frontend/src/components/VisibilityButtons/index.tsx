@@ -2,7 +2,7 @@
 // Dos controles independientes:
 //  1) Visibilidad web: Visible / Oculto
 //  2) Clasificación de inventario: En Stock / Agotado / Bajo Pedido / No Comercial
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./VisibilityButtons.module.css";
@@ -48,6 +48,10 @@ export const VisibilityButtons = ({
   // Datos antiguos podían traer Agotado/Contrapedido en visibilidad → normaliza a Visible
   const [vis, setVis] = useState<Visibilidad>(current === "Oculto" ? "Oculto" : "Visible");
   const [clas, setClas] = useState<Clasificacion>(clasificacion);
+
+  // Sincroniza con los props cuando cambian los datos del vehículo (carga async, refetch)
+  useEffect(() => { setVis(current === "Oculto" ? "Oculto" : "Visible"); }, [current]);
+  useEffect(() => { setClas(clasificacion); }, [clasificacion]);
 
   const cambiarVis = async (newVal: Visibilidad) => {
     if (newVal === vis || loading) return;
