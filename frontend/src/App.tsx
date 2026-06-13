@@ -45,6 +45,7 @@ import AgendaPage from "./pages/admin/AgendaPage";
 import ProveedoresPage from "./pages/admin/ProveedoresPage";
 import CxCPage from "./pages/admin/CxCPage";
 import CxPPage from "./pages/admin/CxPPage";
+import FinanzasPage from "./pages/admin/FinanzasPage";
 import CajaChicaPage from "./pages/admin/CajaChicaPage";
 import GastosPage from "./pages/admin/GastosPage";
 import TallerPage from "./pages/admin/TallerPage";
@@ -192,6 +193,7 @@ function App() {
             {/* Nuevos módulos */}
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="proveedores" element={<ProveedoresPage />} />
+            <Route path="finanzas" element={<FinanzasPage />} />
             <Route path="cxc" element={<CxCPage />} />
             <Route path="cxp" element={<CxPPage />} />
             <Route path="caja-chica" element={<CajaChicaPage />} />

@@ -13,6 +13,7 @@ export default function TesoreriaPage() {
   const [resumen, setResumen] = useState<any>({});
   const [seleccionada, setSeleccionada] = useState<Cuenta | null>(null);
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
+  const [conciliacion, setConciliacion] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showCuenta, setShowCuenta] = useState(false);
   const [showMov, setShowMov] = useState(false);
@@ -27,8 +28,17 @@ export default function TesoreriaPage() {
 
   const cargarMovimientos = async (c: Cuenta) => {
     setSeleccionada(c);
-    const r = await apiClient.get(`/tesoreria/cuentas/${c.id}/movimientos`);
+    const [r, con] = await Promise.all([
+      apiClient.get(`/tesoreria/cuentas/${c.id}/movimientos`),
+      apiClient.get(`/tesoreria/cuentas/${c.id}/conciliacion`).catch(() => ({ data: null })),
+    ]);
     setMovimientos(r.data);
+    setConciliacion(con.data);
+  };
+
+  const toggleConciliar = async (movId: number) => {
+    await apiClient.patch(`/tesoreria/movimientos/${movId}/conciliar`);
+    if (seleccionada) cargarMovimientos(seleccionada);
   };
 
   useEffect(() => { cargar(); }, []);
@@ -79,6 +89,16 @@ export default function TesoreriaPage() {
                 <h2>Movimientos — {seleccionada.banco}</h2>
                 <button className={styles.btnPrimary} onClick={() => setShowMov(true)}><LuPlus size={14} /> Movimiento</button>
               </div>
+
+              {/* Conciliación bancaria */}
+              {conciliacion && (
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "0.75rem 1rem", marginBottom: "0.75rem", fontSize: "0.85rem" }}>
+                  <div><div style={{ color: "#64748b" }}>Saldo en libros</div><strong>₡{Number(conciliacion.saldoLibros).toLocaleString("es-CR")}</strong></div>
+                  <div><div style={{ color: "#64748b" }}>Saldo conciliado</div><strong style={{ color: "#059669" }}>₡{Number(conciliacion.saldoConciliado).toLocaleString("es-CR")}</strong></div>
+                  <div><div style={{ color: "#64748b" }}>Pendiente conciliar</div><strong style={{ color: conciliacion.pendientesConciliar > 0 ? "#d97706" : "#059669" }}>{conciliacion.pendientesConciliar} mov · ₡{Number(conciliacion.montoPendiente).toLocaleString("es-CR")}</strong></div>
+                </div>
+              )}
+
               <div className={styles.movLista}>
                 {movimientos.length === 0 && <p className={styles.empty}>Sin movimientos</p>}
                 {movimientos.map(m => (
@@ -88,8 +108,21 @@ export default function TesoreriaPage() {
                     </div>
                     <div className={styles.movInfo}>
                       <div className={styles.movDesc}>{m.descripcion}</div>
-                      <div className={styles.movMeta}>{m.tipo} • {m.fecha}{m.referencia ? ` • ${m.referencia}` : ''}{m.conciliado ? ' ✓' : ''}</div>
+                      <div className={styles.movMeta}>{m.tipo} • {m.fecha}{m.referencia ? ` • ${m.referencia}` : ''}</div>
                     </div>
+                    <button
+                      onClick={() => toggleConciliar(m.id)}
+                      title={m.conciliado ? "Conciliado (clic para desmarcar)" : "Marcar como conciliado"}
+                      style={{
+                        border: `1px solid ${m.conciliado ? "#16a34a" : "#cbd5e1"}`,
+                        background: m.conciliado ? "#dcfce7" : "#fff",
+                        color: m.conciliado ? "#15803d" : "#94a3b8",
+                        borderRadius: 6, padding: "2px 8px", cursor: "pointer",
+                        fontSize: "0.72rem", fontWeight: 600, whiteSpace: "nowrap",
+                      }}
+                    >
+                      {m.conciliado ? "✓ Conciliado" : "Conciliar"}
+                    </button>
                     <div className={`${styles.movMonto} ${esEntrada(m.tipo) ? styles.entrada : styles.salida}`}>
                       {esEntrada(m.tipo) ? '+' : '-'}₡{(+m.monto).toLocaleString('es-CR')}
                     </div>

@@ -19,4 +19,5 @@ export class TesoreriaController {
     return this.service.registrarMovimiento(+id, data, req.user.id);
   }
   @Patch('movimientos/:id/conciliar') conciliar(@Param('id') id: string) { return this.service.conciliar(+id); }
+  @Get('cuentas/:id/conciliacion') conciliacion(@Param('id') id: string) { return this.service.conciliacion(+id); }
 }

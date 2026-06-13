@@ -95,6 +95,7 @@ import { ReclamoGarantia } from './garantias/reclamo-garantia.entity';
 import { TesoreriaModule } from './tesoreria/tesoreria.module';
 import { CuentaBancaria } from './tesoreria/cuenta-bancaria.entity';
 import { SearchModule } from './search/search.module';
+import { FinanzasModule } from './finanzas/finanzas.module';
 import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
 
 
@@ -214,6 +215,7 @@ import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
     GarantiasModule,
     TesoreriaModule,
     SearchModule,
+    FinanzasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

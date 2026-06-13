@@ -29,6 +29,7 @@ export const ContabilidadPage = () => {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [cierres, setCierres] = useState<CierreDiario[]>([]);
   const [preview, setPreview] = useState<any>(null);
+  const [checklist, setChecklist] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const [startDate, setStartDate] = useState(hoyEnCR());
@@ -51,18 +52,20 @@ export const ContabilidadPage = () => {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [c, a, b, ci, p] = await Promise.all([
+      const [c, a, b, ci, p, ch] = await Promise.all([
         apiClient.get("/contabilidad/cuentas"),
         apiClient.get(`/contabilidad/asientos?startDate=${startDate}&endDate=${endDate}`),
         apiClient.get(`/contabilidad/balance?endDate=${endDate}`),
         apiClient.get("/contabilidad/cierres"),
         apiClient.get("/contabilidad/cierres/preview"),
+        apiClient.get("/finanzas/checklist-cierre").catch(() => ({ data: null })),
       ]);
       setCuentas(Array.isArray(c.data) ? c.data : []);
       setAsientos(Array.isArray(a.data) ? a.data : []);
       setBalance(b.data);
       setCierres(Array.isArray(ci.data) ? ci.data : []);
       setPreview(p.data);
+      setChecklist(ch.data);
     } catch { /* silencioso */ }
     finally { setLoading(false); }
   }, [startDate, endDate]);
@@ -316,6 +319,33 @@ export const ContabilidadPage = () => {
 
       {/* ══ TAB: Cierres ════════════════════════════════════════════════════ */}
       {tab === "cierres" && (
+        <>
+        {/* Checklist de cierre */}
+        {checklist && (
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+              <strong style={{ fontSize: "1rem" }}>📋 Checklist de Cierre</strong>
+              <span style={{
+                fontSize: "0.78rem", fontWeight: 700, borderRadius: 8, padding: "2px 10px",
+                background: checklist.listoParaCerrar ? "#dcfce7" : "#fef3c7",
+                color: checklist.listoParaCerrar ? "#15803d" : "#92400e",
+              }}>
+                {checklist.listoParaCerrar ? "✅ Listo para cerrar" : `⚠️ ${checklist.alertas} pendiente(s)`}
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {checklist.items.map((it: any) => (
+                <div key={it.clave} style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", fontSize: "0.88rem" }}>
+                  <span>{it.estado === "ok" ? "✅" : it.estado === "alerta" ? "⚠️" : "ℹ️"}</span>
+                  <div>
+                    <strong style={{ color: it.estado === "alerta" ? "#b45309" : "#334155" }}>{it.titulo}</strong>
+                    <div style={{ color: "#64748b", fontSize: "0.82rem" }}>{it.detalle}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className={styles.cierresGrid}>
           {cierres.length === 0 && <p className={styles.empty}>No hay cierres registrados.</p>}
           {cierres.map(c => (
@@ -337,6 +367,7 @@ export const ContabilidadPage = () => {
             </div>
           ))}
         </div>
+        </>
       )}
 
       {/* ══ TAB: Plan de Cuentas ════════════════════════════════════════════ */}

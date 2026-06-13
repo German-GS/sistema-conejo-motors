@@ -39,8 +39,38 @@ export class TesoreriaService {
     return mov;
   }
 
-  async conciliar(movId: number): Promise<void> {
-    await this.movRepo.update(movId, { conciliado: true });
+  /** Alterna el estado de conciliación de un movimiento */
+  async conciliar(movId: number): Promise<MovimientoBancario> {
+    const mov = await this.movRepo.findOne({ where: { id: movId } });
+    if (!mov) throw new NotFoundException();
+    mov.conciliado = !mov.conciliado;
+    return this.movRepo.save(mov);
+  }
+
+  /** Resumen de conciliación de una cuenta: libros vs conciliado vs pendiente */
+  async conciliacion(cuentaId: number): Promise<any> {
+    const cuenta = await this.cuentaRepo.findOne({ where: { id: cuentaId } });
+    if (!cuenta) throw new NotFoundException();
+    const movs = await this.movRepo.find({ where: { cuenta: { id: cuentaId } } });
+
+    const efecto = (m: MovimientoBancario) =>
+      (['Deposito', 'Transferencia Entrada', 'Cobro'].includes(m.tipo) ? 1 : -1) * Number(m.monto);
+
+    const saldoInicial = Number(cuenta.saldo_inicial) || 0;
+    const conciliados = movs.filter((m) => m.conciliado);
+    const pendientes = movs.filter((m) => !m.conciliado);
+
+    const movimientoConciliado = conciliados.reduce((s, m) => s + efecto(m), 0);
+    const movimientoPendiente = pendientes.reduce((s, m) => s + efecto(m), 0);
+
+    return {
+      cuenta: { id: cuenta.id, banco: cuenta.banco, moneda: cuenta.moneda },
+      saldoLibros: Number(cuenta.saldo_actual) || 0,
+      saldoConciliado: saldoInicial + movimientoConciliado, // saldo según banco (lo conciliado)
+      totalMovimientos: movs.length,
+      pendientesConciliar: pendientes.length,
+      montoPendiente: movimientoPendiente,
+    };
   }
 
   async resumen() {
