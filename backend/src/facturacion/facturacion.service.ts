@@ -9,6 +9,7 @@ import { Factura } from './factura.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { VehicleEstadoHistorial } from '../vehicles/vehicle-estado-historial.entity';
 import { Lead } from '../leads/lead.entity';
+import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
 import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
@@ -37,6 +38,8 @@ export class FacturacionService {
     private vehiclesRepo: Repository<Vehicle>,
     @InjectRepository(Lead)
     private leadsRepo: Repository<Lead>,
+    @InjectRepository(CuentaCobrar)
+    private cxcRepo: Repository<CuentaCobrar>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly xmlGenerator: XmlGeneratorService,
@@ -47,10 +50,11 @@ export class FacturacionService {
 
   // ── Lista de cotizaciones listas para facturar ────────────────────────────
 
-  /** Cotizaciones Aceptadas o Enviadas (cualquier estado facturable) */
+  /** Cotizaciones facturables: solo las ya formalizadas con el cliente (Enviada/Aceptada).
+   *  Los borradores no se facturan hasta enviarse. */
   async getPendingInvoices(): Promise<Cotizacion[]> {
     return this.cotizacionesRepo.find({
-      where: { estado: In(['Aceptada', 'Enviada', 'Borrador']) },
+      where: { estado: In(['Aceptada', 'Enviada']) },
       relations: ['cliente', 'vehiculo', 'vendedor', 'lead'],
       order: { fecha_creacion: 'DESC' },
     });
@@ -111,7 +115,8 @@ export class FacturacionService {
   ): Promise<Venta> {
     const cotizacion = await this.cotizacionesRepo.findOne({
       where: { id: cotizacionId },
-      relations: ['cliente', 'vehiculo', 'vendedor'],
+      // 'lead' es necesario para cerrar el lead al facturar (ver más abajo)
+      relations: ['cliente', 'vehiculo', 'vendedor', 'lead'],
     });
 
     if (!cotizacion) {
@@ -121,7 +126,23 @@ export class FacturacionService {
       throw new BadRequestException('Esta cotización ya fue facturada.');
     }
 
-    // Generar XML y firma (modo simulado para desarrollo)
+    // ─────────────────────────────────────────────────────────────────────────
+    // FACTURA ELECTRÓNICA — MODO SIMULADO (Hacienda Costa Rica v4.4)
+    //
+    // ⚠️ PENDIENTE: integración real con el Ministerio de Hacienda.
+    // Hoy el XML se "firma" y se da por aceptado de forma SIMULADA porque aún
+    // NO tenemos las LLAVES CRIPTOGRÁFICAS (llave criptográfica .p12 + PIN y el
+    // usuario/contraseña del API de Hacienda — ATV / IDP token).
+    //
+    // Cuando lleguen las llaves, aquí va el flujo real:
+    //   1. cryptoService.signXml(): firmar el XML con la llave .p12 real (XAdES-EPES).
+    //   2. Obtener token OAuth del IDP de Hacienda (idp.comprobanteselectronicos.go.cr).
+    //   3. POST del comprobante firmado al API de recepción (api.comprobanteselectronicos.go.cr/recepcion).
+    //   4. Consultar el estado real y guardar la respuesta (Aceptado/Rechazado) en factura.xml_respuesta.
+    //   5. Enviar el XML + PDF al correo del cliente.
+    //
+    // Mientras tanto, el comprobante generado NO es válido fiscalmente.
+    // ─────────────────────────────────────────────────────────────────────────
     const xmlSinFirma = await this.xmlGenerator.generateXml(cotizacion);
     const xmlFirmadoBase64 = await this.cryptoService.signXml(xmlSinFirma);
     const payload = await this.xmlGenerator.buildPayload(cotizacion);
@@ -174,6 +195,27 @@ export class FacturacionService {
       // Si la cotización tiene lead → marcar como Cerrado
       if (cotizacion.lead?.id) {
         await manager.update(Lead, cotizacion.lead.id, { estado: 'Cerrado' });
+      }
+
+      // Venta a crédito/financiamiento → crear la Cuenta por Cobrar
+      // (los pagos al contado — Efectivo/Tarjeta/SINPE/Transferencia — no generan CxC)
+      const esCredito = !['Efectivo', 'Tarjeta', 'SINPE', 'Transferencia'].includes(datos.metodo_pago);
+      if (esCredito) {
+        const vencimiento = new Date();
+        vencimiento.setDate(vencimiento.getDate() + 30); // 30 días por defecto
+        await manager.save(CuentaCobrar, {
+          numero: `CXC-V${nuevaVenta.id}`,
+          cliente: cotizacion.cliente ?? undefined,
+          concepto: `Venta a crédito — ${cotizacion.vehiculo?.marca ?? ''} ${cotizacion.vehiculo?.modelo ?? ''} (${cotizacion.vehiculo?.vin ?? '—'})`,
+          tipo: 'Venta Vehiculo',
+          monto_original: totalConIva,
+          monto_pagado: 0,
+          saldo_pendiente: totalConIva,
+          fecha_emision: new Date().toISOString().split('T')[0],
+          fecha_vencimiento: vencimiento.toISOString().split('T')[0],
+          estado: 'Pendiente',
+          responsable: cotizacion.vendedor ?? adminUser,
+        });
       }
 
       return nuevaVenta;

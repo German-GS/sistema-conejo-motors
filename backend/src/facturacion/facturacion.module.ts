@@ -13,12 +13,13 @@ import { Vehicle } from '../vehicles/vehicle.entity';
 import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
 import { Lead } from '../leads/lead.entity';
+import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
 import { ContabilidadModule } from '../contabilidad/contabilidad.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead]),
+    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead, CuentaCobrar]),
     HttpModule,
     ContabilidadModule,
     NotificationsModule,

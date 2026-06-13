@@ -26,7 +26,6 @@ import { ClientesModule } from './clientes/clientes.module';
 import { Cliente } from './clientes/cliente.entity';
 import { CotizacionesModule } from './cotizaciones/cotizaciones.module';
 import { Cotizacion } from './cotizaciones/cotizacion.entity';
-import { VentasModule } from './ventas/ventas.module';
 import { Venta } from './ventas/venta.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { VehicleProfile } from './vehicle-profiles/vehicle-profile.entity';
@@ -187,7 +186,6 @@ import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
     TrackingModule,
     ClientesModule,
     CotizacionesModule,
-    VentasModule,
     VehicleProfilesModule,
     NotificationsModule,
     ReportsModule,
