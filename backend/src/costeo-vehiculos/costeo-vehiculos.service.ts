@@ -1,11 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CosteoVehiculo } from './costeo-vehiculo.entity';
+import { Vehicle } from '../vehicles/vehicle.entity';
 
 @Injectable()
 export class CosteoVehiculosService {
-  constructor(@InjectRepository(CosteoVehiculo) private repo: Repository<CosteoVehiculo>) {}
+  private readonly logger = new Logger(CosteoVehiculosService.name);
+
+  constructor(
+    @InjectRepository(CosteoVehiculo) private repo: Repository<CosteoVehiculo>,
+    @InjectRepository(Vehicle) private vehiclesRepo: Repository<Vehicle>,
+  ) {}
 
   async findByVehiculo(vehiculoId: number): Promise<CosteoVehiculo | null> {
     return this.repo.findOne({ where: { vehiculo: { id: vehiculoId } }, relations: ['vehiculo'] });
@@ -18,7 +24,14 @@ export class CosteoVehiculosService {
     } else {
       Object.assign(costeo, data);
     }
-    return this.repo.save(costeo);
+    const saved = await this.repo.save(costeo);
+
+    // El costeo es la fuente de verdad del costo: sincroniza precio_costo del vehículo
+    const costoTotal = this.calcularCostoTotal(saved);
+    await this.vehiclesRepo.update(vehiculoId, { precio_costo: costoTotal });
+    this.logger.log(`Costeo veh #${vehiculoId}: precio_costo sincronizado a ₡${costoTotal}`);
+
+    return { ...saved, costo_total: costoTotal };
   }
 
   calcularCostoTotal(c: CosteoVehiculo): number {

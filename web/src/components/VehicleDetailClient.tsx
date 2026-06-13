@@ -158,10 +158,10 @@ export function VehicleDetailClient({ vehicle }: { vehicle: Vehicle }) {
             ) : (
               <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'4rem', color:'#cbd5e1' }}>🚗</div>
             )}
-            {vehicle.visibilidad === 'Agotado' && (
+            {(vehicle.clasificacion_inventario ?? vehicle.visibilidad) === 'Agotado' && (
               <div className="badge-agotado">📦 Agotado</div>
             )}
-            {vehicle.visibilidad === 'Contrapedido' && (
+            {(vehicle.clasificacion_inventario ?? vehicle.visibilidad) === 'Contrapedido' && (
               <div className="badge-pedido">🔄 Disponible Bajo Pedido</div>
             )}
           </div>

@@ -10,6 +10,7 @@ import { Vehicle } from "../../interfaces";
 import { Pagination } from "@/components/Pagination";
 import { VisibilityButtons } from "@/components/VisibilityButtons";
 import { VehicleRibbon } from "@/components/VehicleRibbon";
+import { VehicleHistorialModal } from "@/components/VehicleHistorialModal";
 
 // Interfaz para el tipo de dato Vehicle
 
@@ -18,6 +19,7 @@ export const DashboardPage = () => {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [historialVehicle, setHistorialVehicle] = useState<Vehicle | null>(null);
   const [search, setSearch] = useState("");
   const [filterEstado, setFilterEstado] = useState("");
   const [page, setPage] = useState(1);
@@ -70,12 +72,18 @@ export const DashboardPage = () => {
     }
   };
 
-  // Vehículos en stock activo (excluye Agotado y Contrapedido del total real)
+  // Clasificación de inventario: solo "En Stock" cuenta como stock activo
+  const esEspecial = (v: Vehicle) => {
+    const c = v.clasificacion_inventario;
+    if (c) return c !== 'En Stock';
+    // Compatibilidad con datos antiguos (antes de la migración)
+    return v.visibilidad === 'Agotado' || v.visibilidad === 'Contrapedido';
+  };
   const stockActivo = useMemo(() =>
-    vehicles.filter(v => v.estado === 'Disponible' && v.visibilidad !== 'Agotado' && v.visibilidad !== 'Contrapedido').length,
+    vehicles.filter(v => v.estado === 'Disponible' && !esEspecial(v)).length,
   [vehicles]);
   const especiales = useMemo(() =>
-    vehicles.filter(v => v.visibilidad === 'Agotado' || v.visibilidad === 'Contrapedido'),
+    vehicles.filter(esEspecial),
   [vehicles]);
 
   const filtered = useMemo(() => {
@@ -109,7 +117,7 @@ export const DashboardPage = () => {
           {especiales.length > 0 && (
             <span style={{ fontSize: "0.78rem", color: "#94a3b8", fontWeight: 400, marginLeft: "0.5rem" }}>
               · {especiales.length} fuera de inventario
-              {especiales.map(v => ` (${v.modelo} — ${v.visibilidad === 'Agotado' ? 'Agotado' : 'Contrapedido'})`).join(",")}
+              {especiales.map(v => ` (${v.modelo} — ${v.clasificacion_inventario ?? v.visibilidad})`).join(",")}
             </span>
           )}
           )
@@ -177,7 +185,7 @@ export const DashboardPage = () => {
                     ) : (
                       <div className={styles.noImage}>Sin foto</div>
                     )}
-                    <VehicleRibbon visibilidad={vehicle.visibilidad} />
+                    <VehicleRibbon visibilidad={vehicle.visibilidad} clasificacion={vehicle.clasificacion_inventario} />
                   </div>
                 </td>
                 <td>{vehicle.id}</td>
@@ -191,9 +199,15 @@ export const DashboardPage = () => {
                   <VisibilityButtons
                     vehicleId={vehicle.id}
                     current={vehicle.visibilidad ?? "Visible"}
+                    clasificacion={vehicle.clasificacion_inventario ?? "En Stock"}
                     onChanged={(val) =>
                       setVehicles(prev =>
                         prev.map(v => v.id === vehicle.id ? { ...v, visibilidad: val } : v)
+                      )
+                    }
+                    onClasificacionChanged={(val) =>
+                      setVehicles(prev =>
+                        prev.map(v => v.id === vehicle.id ? { ...v, clasificacion_inventario: val } : v)
                       )
                     }
                   />
@@ -201,6 +215,9 @@ export const DashboardPage = () => {
                 <td>
                   <button onClick={() => handleOpenEditModal(vehicle)}>
                     Editar
+                  </button>
+                  <button onClick={() => setHistorialVehicle(vehicle)} title="Historial de estados">
+                    🕓
                   </button>
                   <button onClick={() => handleDelete(vehicle.id)}>
                     Eliminar
@@ -226,6 +243,12 @@ export const DashboardPage = () => {
       >
         <VehicleForm onSuccess={handleSuccess} initialData={editingVehicle} />
       </Modal>
+
+      <VehicleHistorialModal
+        vehicleId={historialVehicle?.id ?? null}
+        vehicleLabel={historialVehicle ? `${historialVehicle.marca} ${historialVehicle.modelo}` : undefined}
+        onClose={() => setHistorialVehicle(null)}
+      />
     </>
   );
 };

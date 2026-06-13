@@ -28,6 +28,7 @@ export interface Vehicle {
   traccion?: string;
   categoria?: string;
   visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
+  clasificacion_inventario?: 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial';
   imagenes?: { id?: number; url: string }[];
   profile?: { imagenes?: { url: string }[] };
   colores_disponibles?: string[];

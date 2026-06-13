@@ -22,4 +22,9 @@ export class ImportacionesController {
 
   @Delete('vehiculos/:id')
   removeVehiculo(@Param('id') id: string) { return this.service.removeVehiculo(+id); }
+
+  @Post('vehiculos/:id/promover')
+  promover(@Param('id') id: string, @Body() data: any) {
+    return this.service.promoverAVehiculo(+id, data);
+  }
 }

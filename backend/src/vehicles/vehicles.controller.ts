@@ -59,6 +59,16 @@ export class VehiclesController {
     return this.vehiclesService.updateVisibility(+id, body.visibilidad);
   }
 
+  @Patch(':id/clasificacion')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  updateClasificacion(
+    @Param('id') id: string,
+    @Body() body: { clasificacion: 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial' },
+  ) {
+    return this.vehiclesService.updateClasificacion(+id, body.clasificacion);
+  }
+
   @Patch(':id/pricing')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('Administrador')
@@ -117,6 +127,12 @@ export class VehiclesController {
   findCatalog() {
     // Corregido: Este es el método correcto en tu servicio
     return this.vehiclesService.findCatalog();
+  }
+
+  @Get(':id/historial')
+  @UseGuards(AuthGuard('jwt'))
+  getHistorial(@Param('id') id: string) {
+    return this.vehiclesService.getHistorial(+id);
   }
 
   @Get(':id')

@@ -6,6 +6,7 @@ import {
   ConflictException,
   InternalServerErrorException,
   Logger,
+  OnApplicationBootstrap,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, MoreThanOrEqual, Not, Repository, DataSource } from 'typeorm';
@@ -20,6 +21,7 @@ import { Bodega } from '../bodegas/bodega.entity';
 import { Lead } from '../leads/lead.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 import { OrdenProducto } from '../productos/orden-producto.entity';
+import { VehicleEstadoHistorial } from './vehicle-estado-historial.entity';
 
 // --- 👇 DEFINE LOS NUEVOS TIPOS AQUÍ (o impórtalos si los pones en otro lado) ---
 // Define un tipo que extiende Vehicle pero sobreescribe campos específicos a string[]
@@ -58,9 +60,32 @@ const splitStringToArray = (text: string | null | undefined): string[] => {
 };
 
 @Injectable()
-export class VehiclesService {
+export class VehiclesService implements OnApplicationBootstrap {
   // Logger para mensajes de servicio
   private readonly logger = new Logger(VehiclesService.name);
+
+  /**
+   * Migración de datos idempotente: los vehículos que aún tienen su estado de
+   * inventario guardado en `visibilidad` (Agotado/Contrapedido) se migran a la
+   * nueva columna `clasificacion_inventario` y se vuelven Visibles en la web.
+   */
+  async onApplicationBootstrap(): Promise<void> {
+    try {
+      const especiales = await this.vehiclesRepository.find({
+        where: [{ visibilidad: 'Agotado' }, { visibilidad: 'Contrapedido' }],
+      });
+      if (especiales.length === 0) return;
+      for (const v of especiales) {
+        await this.vehiclesRepository.update(v.id, {
+          clasificacion_inventario: v.visibilidad as any, // 'Agotado' | 'Contrapedido'
+          visibilidad: 'Visible',
+        });
+      }
+      this.logger.log(`[Migración] ${especiales.length} vehículo(s) migrados a clasificacion_inventario.`);
+    } catch (e) {
+      this.logger.error('[Migración] Error migrando clasificacion_inventario', e as any);
+    }
+  }
 
   constructor(
     @InjectRepository(Vehicle)
@@ -79,7 +104,43 @@ export class VehiclesService {
     private readonly vehicleProfilesRepository: Repository<VehicleProfile>,
     @InjectRepository(OrdenProducto)
     private readonly ordenesRepo: Repository<OrdenProducto>,
+    @InjectRepository(VehicleEstadoHistorial)
+    private readonly historialRepo: Repository<VehicleEstadoHistorial>,
   ) {}
+
+  /** Registra una transición de estado/visibilidad/clasificación de un vehículo */
+  async registrarCambioEstado(
+    vehiculoId: number,
+    anterior: string | undefined,
+    nuevo: string,
+    tipo: 'estado' | 'visibilidad' | 'clasificacion' = 'estado',
+    motivo?: string,
+    usuarioId?: number,
+  ): Promise<void> {
+    if (anterior === nuevo) return;
+    try {
+      const registro = this.historialRepo.create({
+        vehiculo: { id: vehiculoId } as any,
+        estado_anterior: anterior,
+        estado_nuevo: nuevo,
+        tipo,
+        motivo,
+        usuario: usuarioId ? ({ id: usuarioId } as any) : undefined,
+      });
+      await this.historialRepo.save(registro);
+    } catch (e) {
+      this.logger.error(`No se pudo registrar historial de estado veh #${vehiculoId}`, e as any);
+    }
+  }
+
+  /** Línea de tiempo de cambios de un vehículo (más reciente primero) */
+  async getHistorial(vehiculoId: number): Promise<VehicleEstadoHistorial[]> {
+    return this.historialRepo.find({
+      where: { vehiculo: { id: vehiculoId } },
+      relations: ['usuario'],
+      order: { fecha: 'DESC' },
+    });
+  }
 
   // --- Método Create ---
   async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
@@ -327,11 +388,9 @@ export class VehiclesService {
       'findCatalog: Attempting to find available vehicles for catalog...',
     );
     const vehicles = await this.vehiclesRepository.find({
-      where: [
-        { estado: 'Disponible', visibilidad: 'Visible' },
-        { estado: 'Disponible', visibilidad: 'Agotado' },
-        { estado: 'Disponible', visibilidad: 'Contrapedido' },
-      ],
+      // El catálogo muestra todo lo Visible (la clasificación Agotado/Contrapedido
+      // solo cambia el cintillo, no oculta el vehículo)
+      where: { estado: 'Disponible', visibilidad: 'Visible' },
       relations: {
         bodega: true,
         profile: {
@@ -485,8 +544,24 @@ export class VehiclesService {
   async updateVisibility(id: number, visibilidad: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido') {
     const vehicle = await this.vehiclesRepository.findOneBy({ id });
     if (!vehicle) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+    const anterior = vehicle.visibilidad;
     vehicle.visibilidad = visibilidad;
-    return this.vehiclesRepository.save(vehicle);
+    const saved = await this.vehiclesRepository.save(vehicle);
+    await this.registrarCambioEstado(id, anterior, visibilidad, 'visibilidad');
+    return saved;
+  }
+
+  async updateClasificacion(
+    id: number,
+    clasificacion: 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial',
+  ) {
+    const vehicle = await this.vehiclesRepository.findOneBy({ id });
+    if (!vehicle) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+    const anterior = vehicle.clasificacion_inventario;
+    vehicle.clasificacion_inventario = clasificacion;
+    const saved = await this.vehiclesRepository.save(vehicle);
+    await this.registrarCambioEstado(id, anterior, clasificacion, 'clasificacion');
+    return saved;
   }
 
   async updatePricing(id: number, data: { precio_venta?: number; precio_venta_usd?: number; descuento_porcentaje?: number }) {
@@ -518,7 +593,7 @@ export class VehiclesService {
     this.logger.log('getDashboardStats: Fetching general dashboard stats...');
     try {
       const vehiclesInStock = await this.vehiclesRepository.find({
-        where: { estado: 'Disponible', visibilidad: Not(In(['Agotado', 'Contrapedido'])) },
+        where: { estado: 'Disponible', clasificacion_inventario: 'En Stock' },
         relations: { profile: true, bodega: true }, // Carga básica suficiente
       });
       const totalVehicles = vehiclesInStock.length;
@@ -637,6 +712,7 @@ export class VehiclesService {
 
     // Liberar vehículo
     await this.vehiclesRepository.update(id, { estado: 'Disponible' });
+    await this.registrarCambioEstado(id, 'Reservado', 'Disponible', 'estado', 'Liberación manual de reserva');
 
     // Cancelar cotizaciones activas asociadas a este vehículo
     await this.cotizacionesRepository
@@ -698,7 +774,7 @@ export class VehiclesService {
     // ── Vehículos ─────────────────────────────────────────────────────────────
     const [disponibles, reservados, vendidosMes] = await Promise.all([
       // Agotado = sin stock físico → no cuenta como disponible en el dashboard
-      this.vehiclesRepository.count({ where: { estado: 'Disponible', visibilidad: Not(In(['Agotado', 'Contrapedido'])) } }),
+      this.vehiclesRepository.count({ where: { estado: 'Disponible', clasificacion_inventario: 'En Stock' } }),
       this.vehiclesRepository.count({ where: { estado: 'Reservado' } }),
       this.ventasRepository.count({ where: { fecha_venta: MoreThanOrEqual(startOfMonth) } }),
     ]);
@@ -796,7 +872,7 @@ export class VehiclesService {
     );
     try {
       const totalVehicles = await this.vehiclesRepository.count({
-        where: { estado: 'Disponible', visibilidad: Not(In(['Agotado', 'Contrapedido'])) },
+        where: { estado: 'Disponible', clasificacion_inventario: 'En Stock' },
       });
 
       const today = new Date();

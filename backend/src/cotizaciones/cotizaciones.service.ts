@@ -7,6 +7,7 @@ import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 import { ClientesService } from '../clientes/clientes.service';
 import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { VehicleEstadoHistorial } from '../vehicles/vehicle-estado-historial.entity';
 import { Lead } from '../leads/lead.entity';
 
 /** Días de reserva automática al crear una cotización */
@@ -23,6 +24,8 @@ export class CotizacionesService {
     private vehiclesRepository: Repository<Vehicle>,
     @InjectRepository(Lead)
     private leadsRepository: Repository<Lead>,
+    @InjectRepository(VehicleEstadoHistorial)
+    private historialRepo: Repository<VehicleEstadoHistorial>,
     private clientesService: ClientesService,
   ) {}
 
@@ -114,6 +117,13 @@ export class CotizacionesService {
       const vehiculo = await this.vehiclesRepository.findOneBy({ id: cotizacion.vehiculo.id });
       if (vehiculo?.estado === 'Reservado') {
         await this.vehiclesRepository.update(vehiculo.id, { estado: 'Disponible' });
+        await this.historialRepo.save({
+          vehiculo: { id: vehiculo.id } as any,
+          estado_anterior: 'Reservado',
+          estado_nuevo: 'Disponible',
+          tipo: 'estado',
+          motivo: `Liberado al cancelar cotización #${id}`,
+        });
       }
     }
 
@@ -175,6 +185,13 @@ export class CotizacionesService {
     // Marcar vehículo como Reservado
     if (vehiculo.estado === 'Disponible') {
       await this.vehiclesRepository.update(vehiculo.id, { estado: 'Reservado' });
+      await this.historialRepo.save({
+        vehiculo: { id: vehiculo.id } as any,
+        estado_anterior: 'Disponible',
+        estado_nuevo: 'Reservado',
+        tipo: 'estado',
+        motivo: 'Reserva automática por cotización',
+      });
     }
 
     // Fecha de expiración automática: hoy + 4 días (a medianoche CR)
@@ -248,6 +265,13 @@ export class CotizacionesService {
         const v = await this.vehiclesRepository.findOneBy({ id: cot.vehiculo.id });
         if (v?.estado === 'Reservado') {
           await this.vehiclesRepository.update(v.id, { estado: 'Disponible' });
+          await this.historialRepo.save({
+            vehiculo: { id: v.id } as any,
+            estado_anterior: 'Reservado',
+            estado_nuevo: 'Disponible',
+            tipo: 'estado',
+            motivo: `Liberado automáticamente — cotización #${cot.id} vencida`,
+          });
           this.logger.log(`[Scheduler] Vehículo #${v.id} ${v.marca} ${v.modelo} liberado.`);
         }
       }

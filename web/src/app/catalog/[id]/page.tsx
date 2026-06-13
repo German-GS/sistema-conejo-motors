@@ -89,7 +89,7 @@ export default async function VehicleDetailPage({ params }: Props) {
       '@type': 'Offer',
       priceCurrency: 'CRC',
       price: vehicle.precio_venta_final ?? vehicle.precio_venta,
-      availability: vehicle.visibilidad === 'Agotado'
+      availability: (vehicle.clasificacion_inventario ?? vehicle.visibilidad) === 'Agotado'
         ? 'https://schema.org/OutOfStock'
         : 'https://schema.org/InStock',
       seller: { '@type': 'AutoDealer', name: 'Conejo Motors' },

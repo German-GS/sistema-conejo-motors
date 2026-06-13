@@ -15,6 +15,8 @@ import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 
 export type VehicleStatus = 'Disponible' | 'Reservado' | 'Vendido';
 export type VehicleVisibility = 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
+// Clasificación de inventario: separa el stock real de la visibilidad en la web
+export type ClasificacionInventario = 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial';
 export type VehicleCategory =
   | 'Sedan'
   | 'SUV'
@@ -75,6 +77,13 @@ export class Vehicle {
     default: 'Visible',
   })
   visibilidad: VehicleVisibility;
+
+  @Column({
+    type: 'enum',
+    enum: ['En Stock', 'Agotado', 'Contrapedido', 'No Comercial'],
+    default: 'En Stock',
+  })
+  clasificacion_inventario: ClasificacionInventario;
 
   // --- ESPECIFICACIONES TÉCNICAS ---
 

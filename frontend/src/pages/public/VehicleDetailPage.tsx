@@ -19,6 +19,7 @@ interface VehicleDetail {
   precio_venta_usd?: number;
   precio_venta_final?: number;
   visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
+  clasificacion_inventario?: 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial';
   imagenes?: { id: number; url: string }[];
   profile?: { imagenes?: { url: string }[] };
   categoria?: string;
@@ -140,7 +141,7 @@ export const VehicleDetailPage = () => {
       "@type": "Offer",
       "priceCurrency": "CRC",
       "price": vehicle.precio_venta_final ?? vehicle.precio_venta,
-      "availability": vehicle.visibilidad === "Agotado"
+      "availability": (vehicle.clasificacion_inventario ?? vehicle.visibilidad) === "Agotado"
         ? "https://schema.org/OutOfStock"
         : "https://schema.org/InStock",
       "seller": { "@type": "AutoDealer", "name": "Conejo Motors" },
@@ -175,7 +176,7 @@ export const VehicleDetailPage = () => {
               }
               alt={`${vehicle.marca} ${vehicle.modelo}`}
             />
-            <VehicleRibbon visibilidad={vehicle.visibilidad} />
+            <VehicleRibbon visibilidad={vehicle.visibilidad} clasificacion={vehicle.clasificacion_inventario} />
           </div>
           {/* Galería de miniaturas */}
           {(vehicle.imagenes?.length ?? 0) > 1 && (
@@ -196,10 +197,10 @@ export const VehicleDetailPage = () => {
           <h1>{vehicle.marca} {vehicle.modelo} {vehicle.año && `(${vehicle.año})`}</h1>
           <div className={styles.badgeRow}>
             {vehicle.color && <p className={styles.colorBadge}>🎨 {vehicle.color}</p>}
-            {vehicle.visibilidad === 'Agotado' && (
+            {(vehicle.clasificacion_inventario ?? vehicle.visibilidad) === 'Agotado' && (
               <span className={styles.statusBadgeRed}>📦 Agotado</span>
             )}
-            {vehicle.visibilidad === 'Contrapedido' && (
+            {(vehicle.clasificacion_inventario ?? vehicle.visibilidad) === 'Contrapedido' && (
               <span className={styles.statusBadgeBlue}>🔄 Bajo Pedido</span>
             )}
           </div>

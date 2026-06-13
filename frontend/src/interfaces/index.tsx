@@ -31,6 +31,7 @@ export interface Vehicle {
   precio_venta_usd?: number;
   estado: string;
   visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
+  clasificacion_inventario?: 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial';
   bodega?: Bodega;
   profile?: VehicleProfile;
   imagenes?: ProfileImage[]; // Vehicle's own specific images

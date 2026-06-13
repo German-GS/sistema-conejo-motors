@@ -3,6 +3,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Vehicle } from './vehicle.entity';
+import { VehicleEstadoHistorial } from './vehicle-estado-historial.entity';
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesService } from './vehicles.service';
 import { MulterModule } from '@nestjs/platform-express';
@@ -21,6 +22,7 @@ import { OrdenProducto } from '../productos/orden-producto.entity';
   imports: [
     TypeOrmModule.forFeature([
       Vehicle,
+      VehicleEstadoHistorial,
       Bodega,
       Venta,
       Cotizacion,

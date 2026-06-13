@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CosteoVehiculo } from './costeo-vehiculo.entity';
 import { CosteoVehiculosService } from './costeo-vehiculos.service';
 import { CosteoVehiculosController } from './costeo-vehiculos.controller';
+import { Vehicle } from '../vehicles/vehicle.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CosteoVehiculo])],
+  imports: [TypeOrmModule.forFeature([CosteoVehiculo, Vehicle])],
   controllers: [CosteoVehiculosController],
   providers: [CosteoVehiculosService],
   exports: [CosteoVehiculosService],

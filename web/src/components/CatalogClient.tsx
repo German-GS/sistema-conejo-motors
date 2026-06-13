@@ -7,6 +7,13 @@ import type { Vehicle } from '@/types';
 
 const PAGE_SIZE = 12;
 
+// Clasificación de inventario (con respaldo a visibilidad para datos antiguos)
+const claseInv = (v: Vehicle): string => v.clasificacion_inventario ?? v.visibilidad ?? 'En Stock';
+const esEspecial = (v: Vehicle): boolean => {
+  const c = claseInv(v);
+  return c === 'Agotado' || c === 'Contrapedido' || c === 'No Comercial';
+};
+
 export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] }) {
   const [filterCategoria, setFilterCategoria] = useState('Todas');
   const [filterMarca, setFilterMarca] = useState('Todas');
@@ -23,10 +30,8 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
 
   const effectivePrecioMax = filterPrecioMax || precioMaxReal;
 
-  // Solo contar disponibles (excluye Agotado y Contrapedido) para el header
-  const disponibles = useMemo(() => initialVehicles.filter(v =>
-    v.visibilidad !== 'Agotado' && v.visibilidad !== 'Contrapedido'
-  ), [initialVehicles]);
+  // Solo contar en stock (excluye Agotado/Contrapedido/No Comercial) para el header
+  const disponibles = useMemo(() => initialVehicles.filter(v => !esEspecial(v)), [initialVehicles]);
 
   const filtered = useMemo(() => initialVehicles.filter(v => {
     const precio = Number(v.precio_venta_final ?? v.precio_venta);
@@ -39,9 +44,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
     );
   }), [initialVehicles, filterCategoria, filterMarca, filterColor, effectivePrecioMax, filterAutonomiaMin]);
 
-  const filteredDisponibles = useMemo(() => filtered.filter(v =>
-    v.visibilidad !== 'Agotado' && v.visibilidad !== 'Contrapedido'
-  ), [filtered]);
+  const filteredDisponibles = useMemo(() => filtered.filter(v => !esEspecial(v)), [filtered]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -166,8 +169,8 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                 : vehicle.profile?.imagenes?.[0]?.url ? getImageUrl(vehicle.profile.imagenes[0].url)
                 : '/placeholder.png';
               const precio = Number(vehicle.precio_venta_final ?? vehicle.precio_venta);
-              const agotado = vehicle.visibilidad === 'Agotado';
-              const pedido = vehicle.visibilidad === 'Contrapedido';
+              const agotado = claseInv(vehicle) === 'Agotado';
+              const pedido = claseInv(vehicle) === 'Contrapedido';
               return (
                 <Link key={vehicle.id} href={`/catalog/${vehicle.id}`} className="vehicle-card group block">
                   <div className="vehicle-card__img">

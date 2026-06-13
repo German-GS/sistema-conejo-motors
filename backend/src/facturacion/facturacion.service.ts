@@ -7,6 +7,7 @@ import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { Venta } from '../ventas/venta.entity';
 import { Factura } from './factura.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { VehicleEstadoHistorial } from '../vehicles/vehicle-estado-historial.entity';
 import { Lead } from '../leads/lead.entity';
 import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
@@ -158,7 +159,15 @@ export class FacturacionService {
       await manager.save(nuevaFactura);
 
       // Marcar vehículo como Vendido
+      const estadoVehAnterior = cotizacion.vehiculo.estado;
       await manager.update(Vehicle, cotizacion.vehiculo.id, { estado: 'Vendido' });
+      await manager.save(VehicleEstadoHistorial, {
+        vehiculo: { id: cotizacion.vehiculo.id } as any,
+        estado_anterior: estadoVehAnterior,
+        estado_nuevo: 'Vendido',
+        tipo: 'estado',
+        motivo: `Facturado (cotización #${cotizacion.id})`,
+      });
       // Marcar cotización como Facturada
       await manager.update(Cotizacion, cotizacion.id, { estado: 'Facturada' });
 

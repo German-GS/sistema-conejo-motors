@@ -55,3 +55,27 @@
   color: #1d4ed8;
   font-weight: 700;
 }
+.active_EnStock {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #15803d;
+  font-weight: 700;
+}
+.active_NoComercial {
+  background: #f3e8ff;
+  border-color: #7c3aed;
+  color: #6d28d9;
+  font-weight: 700;
+}
+
+/* Dos secciones: visibilidad web + clasificación de inventario */
+.stack { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.miniLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #94a3b8;
+  min-width: 58px;
+}

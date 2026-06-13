@@ -39,6 +39,7 @@ interface CatalogVehicle {
   capacidad_bateria_kwh: number;
   categoria?: string;
   visibilidad?: "Visible" | "Oculto" | "Agotado" | "Contrapedido";
+  clasificacion_inventario?: "En Stock" | "Agotado" | "Contrapedido" | "No Comercial";
   imagenes?: { url: string }[];
   bodega?: { nombre: string };
 }
@@ -255,7 +256,7 @@ export const CatalogPage = () => {
                 {vehicle.categoria && (
                   <span className={styles.catBadge}>{vehicle.categoria}</span>
                 )}
-                <VehicleRibbon visibilidad={vehicle.visibilidad} />
+                <VehicleRibbon visibilidad={vehicle.visibilidad} clasificacion={vehicle.clasificacion_inventario} />
               </div>
               <div className={styles.vehicleInfo}>
                 <h3>{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>

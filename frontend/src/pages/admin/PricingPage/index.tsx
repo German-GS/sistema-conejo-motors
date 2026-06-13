@@ -15,6 +15,7 @@ interface Vehicle {
   vin: string;
   estado: string;
   visibilidad?: "Visible" | "Oculto" | "Agotado" | "Contrapedido";
+  clasificacion_inventario?: "En Stock" | "Agotado" | "Contrapedido" | "No Comercial";
   precio_costo: number;
   precio_venta: number;
   precio_venta_usd: number | null;
@@ -156,7 +157,7 @@ export const PricingPage = () => {
                         {v.imagenes?.[0] && (
                           <img src={getImageUrl(v.imagenes[0].url)} alt="" className={styles.thumb} />
                         )}
-                        <VehicleRibbon visibilidad={v.visibilidad} />
+                        <VehicleRibbon visibilidad={v.visibilidad} clasificacion={v.clasificacion_inventario} />
                       </div>
                       <div>
                         <strong>{v.marca} {v.modelo}</strong>
@@ -248,9 +249,15 @@ export const PricingPage = () => {
                     <VisibilityButtons
                       vehicleId={v.id}
                       current={v.visibilidad ?? "Visible"}
+                      clasificacion={v.clasificacion_inventario ?? "En Stock"}
                       onChanged={(val) =>
                         setVehicles(prev =>
                           prev.map(x => x.id === v.id ? { ...x, visibilidad: val } : x)
+                        )
+                      }
+                      onClasificacionChanged={(val) =>
+                        setVehicles(prev =>
+                          prev.map(x => x.id === v.id ? { ...x, clasificacion_inventario: val } : x)
                         )
                       }
                     />

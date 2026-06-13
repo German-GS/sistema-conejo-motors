@@ -308,7 +308,7 @@ export const PublicCatalogPage = () => {
                   {vehicle.categoria && (
                     <span className={styles.catBadge}>{vehicle.categoria}</span>
                   )}
-                  <VehicleRibbon visibilidad={(vehicle as any).visibilidad} />
+                  <VehicleRibbon visibilidad={(vehicle as any).visibilidad} clasificacion={(vehicle as any).clasificacion_inventario} />
                 </div>
                 <div className={styles.vehicleInfo}>
                   <h3>{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>
