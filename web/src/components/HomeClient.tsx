@@ -407,6 +407,49 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
       {/* ── CALCULADORA ── */}
       <SavingsCalculator />
 
+      {/* ── GARANTÍA ── */}
+      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 55%, #024f7d 100%)', padding: '5.5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-120px', right: '-60px', width: '420px', height: '420px', borderRadius: '50%', background: 'rgba(4,199,178,0.06)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-100px', left: '-80px', width: '360px', height: '360px', borderRadius: '50%', background: 'rgba(69,165,206,0.06)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', color: '#7fe3d4', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0.4rem 1rem', borderRadius: '999px', marginBottom: '1.25rem' }}>
+            🛡️ Respaldo total
+          </span>
+          <h2 style={{ color: '#fff', fontSize: 'clamp(1.8rem, 4vw, 2.7rem)', fontWeight: 900, lineHeight: 1.15, margin: '0 0 1rem' }}>
+            7 años o 100.000 km de garantía
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: 'clamp(1rem, 2vw, 1.15rem)', maxWidth: '640px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
+            Manejá con total tranquilidad. Cada vehículo eléctrico que entregamos está respaldado
+            por una de las garantías más amplias del mercado — porque confiamos en la tecnología
+            BYD tanto como vos vas a confiar en tu nuevo carro.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+            {[
+              { num: '7', unit: 'años', desc: 'de cobertura de fábrica sobre el vehículo' },
+              { num: '100.000', unit: 'km', desc: 'de respaldo en la batería BYD Blade' },
+              { num: '0', unit: '₡ sorpresas', desc: 'mantenimientos más simples que un motor de combustión' },
+            ].map((s) => (
+              <div key={s.unit} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '1.75rem 1.25rem', backdropFilter: 'blur(4px)' }}>
+                <div style={{ color: '#04c7b2', fontSize: 'clamp(2rem, 5vw, 2.8rem)', fontWeight: 900, lineHeight: 1 }}>{s.num}</div>
+                <div style={{ color: '#fff', fontSize: '1rem', fontWeight: 700, margin: '0.35rem 0 0.6rem' }}>{s.unit}</div>
+                <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem', lineHeight: 1.45 }}>{s.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', margin: '0 0 2rem' }}>
+            * La garantía aplica según lo que ocurra primero (7 años o 100.000 km) y bajo las condiciones del fabricante.
+          </p>
+
+          <a href="https://wa.me/50672071157?text=Hola%2C%20quiero%20conocer%20m%C3%A1s%20sobre%20la%20garant%C3%ADa%20de%20sus%20veh%C3%ADculos"
+            target="_blank" rel="noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#25D366', color: '#fff', fontWeight: 700, fontSize: '0.95rem', padding: '0.9rem 2rem', borderRadius: '12px' }}>
+            💬 Consultar sobre la garantía
+          </a>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 60%, #024f7d 100%)', padding: '6rem 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position:'absolute', top:'-100px', left:'50%', width:'500px', height:'500px', borderRadius:'50%', background:'rgba(4,199,178,0.05)', pointerEvents:'none', transform:'translateX(-50%)' }} />

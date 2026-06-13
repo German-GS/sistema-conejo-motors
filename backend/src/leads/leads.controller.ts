@@ -66,6 +66,13 @@ export class LeadsController {
     return this.leadsService.updateStatus(id, dto);
   }
 
+  /** Crear lead manualmente desde el panel (vendedor/admin) */
+  @Post('manual')
+  @Roles('Vendedor', 'Administrador')
+  crearManual(@Body() body: any, @Request() req) {
+    return this.leadsService.createManual(body, req.user);
+  }
+
   /** Agregar actividad al historial */
   @Post(':id/actividades')
   @Roles('Vendedor', 'Administrador')

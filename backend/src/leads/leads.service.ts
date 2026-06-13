@@ -1,5 +1,5 @@
 // backend/src/leads/leads.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, LessThan, Not } from 'typeorm';
 import { Lead } from './lead.entity';
@@ -160,6 +160,72 @@ export class LeadsService {
     }
     const count = await this.leadsRepository.count({ where });
     return { count };
+  }
+
+  /** Creación manual desde el panel (vendedor lo toma para sí; admin lo asigna por turno) */
+  async createManual(
+    body: { nombre: string; email?: string; telefono?: string; fuente?: string; vehiculoId?: number; vendedor_asignado_id?: number },
+    user: User,
+  ): Promise<Lead> {
+    const nombre = (body.nombre ?? '').trim();
+    if (!nombre) throw new BadRequestException('El nombre del cliente es requerido.');
+    if (!body.email && !body.telefono) {
+      throw new BadRequestException('Indique al menos un contacto: email o teléfono.');
+    }
+
+    // Asignación de vendedor
+    let vendedorAsignado: User | null = null;
+    if (body.vendedor_asignado_id) {
+      vendedorAsignado = await this.usersRepository.findOneBy({ id: body.vendedor_asignado_id });
+    } else if (user.rol?.nombre === 'Vendedor') {
+      vendedorAsignado = user; // el vendedor toma su propio lead
+    } else {
+      // Admin sin asignar explícito → round-robin entre vendedores activos
+      const vendedores = await this.usersRepository.find({
+        where: { rol: { nombre: 'Vendedor' }, activo: true },
+        order: { id: 'ASC' },
+      });
+      if (vendedores.length) {
+        LeadsService.lastAssignedSellerIndex = (LeadsService.lastAssignedSellerIndex + 1) % vendedores.length;
+        vendedorAsignado = vendedores[LeadsService.lastAssignedSellerIndex];
+      }
+    }
+
+    let vehiculo: Vehicle | null = null;
+    if (body.vehiculoId) {
+      vehiculo = await this.vehiclesRepository.findOneBy({ id: body.vehiculoId });
+    }
+
+    const nuevoLead = this.leadsRepository.create({
+      nombre_cliente: nombre,
+      email_cliente: body.email?.trim() || '',
+      telefono_cliente: body.telefono?.trim() || undefined,
+      fuente: (body.fuente as any) || 'Presencial',
+      estado: 'Nuevo',
+      vendedor_asignado: vendedorAsignado || undefined,
+      vehiculo_interes: vehiculo || undefined,
+    });
+    const guardado = await this.leadsRepository.save(nuevoLead);
+
+    // Registrar en el historial
+    await this.actividadesRepository.save(
+      this.actividadesRepository.create({
+        lead: guardado,
+        tipo: 'nota',
+        descripcion: `Lead creado manualmente por ${user.nombre_completo ?? user.email}.`,
+        usuario: user,
+      }),
+    );
+
+    if (vendedorAsignado && vendedorAsignado.id !== user.id) {
+      await this.notificationsService.createForUser(
+        vendedorAsignado,
+        `Nuevo lead asignado: ${nombre}.`,
+        `/sales/leads/${guardado.id}`,
+      );
+    }
+
+    return guardado;
   }
 
   async create(createLeadDto: CreateLeadDto): Promise<Lead> {

@@ -37,6 +37,9 @@ export const LeadsPage = () => {
   const [loading, setLoading] = useState(true);
   const [filterEstado, setFilterEstado] = useState("Todos");
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
+  const [showNuevo, setShowNuevo] = useState(false);
+  const [nuevo, setNuevo] = useState({ nombre: "", telefono: "", email: "", fuente: "Presencial" });
+  const [guardandoNuevo, setGuardandoNuevo] = useState(false);
   const location = useLocation();
   const confirm = useConfirm();
   const isAdmin = location.pathname.startsWith("/admin");
@@ -83,6 +86,23 @@ export const LeadsPage = () => {
     } catch {
       setLeads(anterior);
       toast.error("No se pudo cambiar el estado.");
+    }
+  };
+
+  const crearLead = async () => {
+    if (!nuevo.nombre.trim()) return toast.error("El nombre es requerido.");
+    if (!nuevo.email.trim() && !nuevo.telefono.trim()) return toast.error("Indique email o teléfono.");
+    setGuardandoNuevo(true);
+    try {
+      await apiClient.post("/leads/manual", nuevo);
+      toast.success("Lead creado.");
+      setShowNuevo(false);
+      setNuevo({ nombre: "", telefono: "", email: "", fuente: "Presencial" });
+      loadLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error al crear el lead.");
+    } finally {
+      setGuardandoNuevo(false);
     }
   };
 
@@ -190,8 +210,8 @@ export const LeadsPage = () => {
         )}
       </div>
 
-      {/* Toggle de vista */}
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
+      {/* Toggle de vista + Nuevo lead */}
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem", alignItems: "center" }}>
         <button
           onClick={() => setVista("lista")}
           style={toggleStyle(vista === "lista")}
@@ -200,6 +220,10 @@ export const LeadsPage = () => {
           onClick={() => setVista("tablero")}
           style={toggleStyle(vista === "tablero")}
         >▦ Tablero</button>
+        <button
+          onClick={() => setShowNuevo(true)}
+          style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, border: "none", background: "#024f7d", color: "#fff" }}
+        >+ Nuevo Lead</button>
       </div>
 
       {vista === "tablero" ? (
@@ -296,8 +320,61 @@ export const LeadsPage = () => {
         )}
       </Card>
       )}
+
+      {/* Modal: Nuevo Lead manual */}
+      {showNuevo && (
+        <div
+          onClick={() => setShowNuevo(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, width: "min(440px, 94vw)", padding: "1.5rem", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <h2 style={{ margin: "0 0 1rem", fontSize: "1.1rem" }}>➕ Nuevo Lead</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                Nombre del cliente *
+                <input value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
+                  style={inputStyle} placeholder="Ej: María Rodríguez" autoFocus />
+              </label>
+              <div style={{ display: "flex", gap: "0.6rem" }}>
+                <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                  Teléfono
+                  <input value={nuevo.telefono} onChange={(e) => setNuevo({ ...nuevo, telefono: e.target.value })}
+                    style={inputStyle} placeholder="8888-8888" />
+                </label>
+                <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                  Fuente
+                  <select value={nuevo.fuente} onChange={(e) => setNuevo({ ...nuevo, fuente: e.target.value })} style={inputStyle}>
+                    {["Presencial", "Llamada", "WhatsApp", "Referido", "Instagram", "Facebook", "Otro"].map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                Email
+                <input value={nuevo.email} onChange={(e) => setNuevo({ ...nuevo, email: e.target.value })}
+                  style={inputStyle} placeholder="cliente@correo.com" />
+              </label>
+              <p style={{ fontSize: "0.76rem", color: "#94a3b8", margin: 0 }}>
+                Indique al menos teléfono o email. {isAdmin ? "Se asignará por turno a un vendedor." : "Quedará asignado a ti."}
+              </p>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", marginTop: "1.25rem" }}>
+              <button onClick={() => setShowNuevo(false)} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "1px solid #cbd5e1", background: "#fff", color: "#475569", fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={crearLead} disabled={guardandoNuevo} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "none", background: "#024f7d", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
+                {guardandoNuevo ? "Guardando..." : "Crear Lead"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%", marginTop: 4, padding: "0.5rem 0.7rem",
+  border: "1px solid #cbd5e1", borderRadius: 8, fontSize: "0.9rem", boxSizing: "border-box",
 };
 
 const toggleStyle = (active: boolean): React.CSSProperties => ({
