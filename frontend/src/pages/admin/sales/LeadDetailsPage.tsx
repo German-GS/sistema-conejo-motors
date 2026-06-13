@@ -69,6 +69,19 @@ const ESTADO_COLORS: Record<string, string> = {
   Cerrado: "#10b981", Perdido: "#ef4444",
 };
 
+// Normaliza un teléfono a formato internacional CR (506XXXXXXXX)
+const normalizarTelCR = (tel?: string): string | null => {
+  if (!tel) return null;
+  const d = tel.replace(/\D/g, "");
+  if (d.length === 8) return `506${d}`;
+  if (d.length === 11 && d.startsWith("506")) return d;
+  if (d.length >= 8) return d; // ya trae código de país
+  return null;
+};
+
+const waLink = (tel506: string, texto: string) =>
+  `https://wa.me/${tel506}?text=${encodeURIComponent(texto)}`;
+
 export const LeadDetailsPage = () => {
   const { leadId } = useParams();
   const navigate = useNavigate();
@@ -168,6 +181,29 @@ export const LeadDetailsPage = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const escribirWhatsApp = async (texto: string) => {
+    if (!lead) return;
+    const tel = normalizarTelCR(lead.telefono_cliente);
+    if (!tel) { toast.error("El lead no tiene un teléfono válido."); return; }
+    // Abrir WhatsApp con el mensaje precargado
+    window.open(waLink(tel, texto), "_blank", "noopener");
+    // Marcar contactado por WhatsApp y registrar en el timeline
+    try {
+      const [, actRes] = await Promise.all([
+        apiClient.patch(`/leads/${lead.id}`, { contacted_by_whatsapp: true }),
+        apiClient.post(`/leads/${lead.id}/actividades`, {
+          tipo: "whatsapp",
+          descripcion: `Mensaje de WhatsApp enviado: "${texto}"`,
+        }),
+      ]);
+      setLead((prev) => prev ? {
+        ...prev,
+        contacted_by_whatsapp: true,
+        actividades: [actRes.data, ...(prev.actividades ?? [])],
+      } : prev);
+    } catch { /* el chat ya se abrió; no bloquear */ }
   };
 
   const handleAddActividad = async () => {
@@ -287,6 +323,41 @@ export const LeadDetailsPage = () => {
             <p><strong>Email:</strong> {lead.email_cliente}</p>
             <p><strong>Teléfono:</strong> {lead.telefono_cliente || "—"}</p>
             <p><strong>Registrado:</strong> {fmtFecha(lead.fecha_creacion)}</p>
+
+            {/* WhatsApp con plantillas precargadas */}
+            {normalizarTelCR(lead.telefono_cliente) && (() => {
+              const veh = lead.vehiculo_interes
+                ? `${lead.vehiculo_interes.marca} ${lead.vehiculo_interes.modelo} ${lead.vehiculo_interes.año}`
+                : "el vehículo de su interés";
+              const nombre = lead.nombre_cliente.split(" ")[0];
+              const plantillas: { label: string; texto: string }[] = [
+                { label: "Saludo inicial", texto: `Hola ${nombre}, le saluda Conejo Motors 🐰. Gracias por su interés en ${veh}. ¿Cómo le puedo ayudar?` },
+                { label: "Seguimiento", texto: `Hola ${nombre}, ¿sigue interesado en ${veh}? Con gusto le doy más información o agendamos una prueba de manejo.` },
+                { label: "Cotización lista", texto: `Hola ${nombre}, ya tengo lista su cotización de ${veh}. ¿Se la envío por aquí?` },
+              ];
+              return (
+                <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                    💬 Escribir por WhatsApp
+                  </span>
+                  {plantillas.map((p) => (
+                    <button
+                      key={p.label}
+                      onClick={() => escribirWhatsApp(p.texto)}
+                      title={p.texto}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "0.4rem", textAlign: "left",
+                        background: "#dcfce7", border: "1px solid #16a34a", color: "#15803d",
+                        borderRadius: 8, padding: "0.45rem 0.7rem", cursor: "pointer",
+                        fontSize: "0.82rem", fontWeight: 600,
+                      }}
+                    >
+                      💬 {p.label}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
             <div className={styles.checkRow}>
               <label>
                 <input

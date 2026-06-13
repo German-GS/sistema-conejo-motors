@@ -855,12 +855,46 @@ export class VehiclesService implements OnApplicationBootstrap {
       salesData.push({ month: monthNames[d.getMonth()], vehiculos: veh, repuestos: rep });
     }
 
+    // ── Conversión cotización → venta por vendedor (mes actual) ──────────────
+    const cotizPorVendedorRaw = await this.cotizacionesRepository
+      .createQueryBuilder('c')
+      .leftJoin('c.vendedor', 'v')
+      .select('v.nombre_completo', 'nombre')
+      .addSelect('COUNT(c.id)', 'cotizaciones')
+      .where('c.fecha_creacion >= :inicio', { inicio: startOfMonth })
+      .groupBy('v.nombre_completo')
+      .getRawMany();
+    const ventasPorVendedorRaw = await this.ventasRepository
+      .createQueryBuilder('venta')
+      .leftJoin('venta.vendedor', 'v')
+      .select('v.nombre_completo', 'nombre')
+      .addSelect('COUNT(venta.id)', 'ventas')
+      .where('venta.fecha_venta >= :inicio', { inicio: startOfMonth })
+      .groupBy('v.nombre_completo')
+      .getRawMany();
+    const ventasMap = new Map<string, number>();
+    ventasPorVendedorRaw.forEach((r) => ventasMap.set(r.nombre, Number(r.ventas)));
+    const conversionVendedores = cotizPorVendedorRaw
+      .filter((r) => r.nombre)
+      .map((r) => {
+        const cotz = Number(r.cotizaciones);
+        const vts = ventasMap.get(r.nombre) ?? 0;
+        return {
+          nombre: r.nombre,
+          cotizaciones: cotz,
+          ventas: vts,
+          conversion: cotz > 0 ? Math.round((vts / cotz) * 100) : 0,
+        };
+      })
+      .sort((a, b) => b.conversion - a.conversion);
+
     return {
       inventario: { disponibles, reservados, vendidosMes, ingresosVehiculosMes },
       leads: { activos: leadsActivos, cerradosMes: leadsCerradosMes, perdidosMes: leadsPerdidosMes, hoy: leadsHoy },
       cotizaciones: { activas: cotizacionesActivas, vencidas: cotizacionesVencidas, mes: cotizacionesMes },
       repuestos: { ventasMes: repuestosVentasMes, ingresosMes: repuestosIngresosMes },
       topVendedores,
+      conversionVendedores,
       salesData,
     };
   }

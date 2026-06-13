@@ -35,6 +35,7 @@ interface ExtendedStats {
   cotizaciones: { activas: number; vencidas: number; mes: number };
   repuestos: { ventasMes: number; ingresosMes: number };
   topVendedores: { nombre: string; total: string; ingresos: string }[];
+  conversionVendedores: { nombre: string; cotizaciones: number; ventas: number; conversion: number }[];
   salesData: { month: string; vehiculos: number; repuestos: number }[];
 }
 
@@ -303,6 +304,40 @@ export const DashboardHomePage = () => {
           {/* ── Cotizaciones activas ───────────────────────────────────── */}
           <div style={{ marginTop: "1rem" }}>
             <QuotesExpiringWidget basePath="/admin" data={alertas} />
+          </div>
+
+          {/* ── Conversión cotización → venta por vendedor ─────────────── */}
+          <div className={styles.panel} style={{ marginTop: "1rem" }}>
+            <div className={styles.panelHeader}>
+              <span className={styles.panelTitle}>🎯 Conversión por Vendedor (Mes)</span>
+            </div>
+            {!extended?.conversionVendedores?.length ? (
+              <div className={styles.emptyPanel}>
+                <span>📊</span>
+                <p>Sin cotizaciones este mes aún.</p>
+              </div>
+            ) : (
+              <div className={styles.rankList}>
+                {extended.conversionVendedores.map((v) => (
+                  <div key={v.nombre} className={styles.rankRow}>
+                    <div className={styles.rankInfo}>
+                      <span className={styles.rankName}>{v.nombre || "Sin asignar"}</span>
+                      <div className={styles.rankBar}>
+                        <div
+                          className={styles.rankBarFill}
+                          style={{
+                            width: `${Math.min(100, v.conversion)}%`,
+                            background: v.conversion >= 50 ? "#059669" : v.conversion >= 25 ? "#d97706" : "#dc2626",
+                          }}
+                        />
+                      </div>
+                      <span className={styles.rankIngresos}>{v.ventas} de {v.cotizaciones} cotizaciones</span>
+                    </div>
+                    <span className={styles.rankCount} style={{ fontWeight: 700 }}>{v.conversion}%</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ── Cierre de Mes ──────────────────────────────────────────── */}

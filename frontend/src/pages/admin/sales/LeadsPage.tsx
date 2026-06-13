@@ -5,6 +5,7 @@ import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { LeadsKanban } from "@/components/LeadsKanban";
 import styles from "./LeadsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 
@@ -35,6 +36,7 @@ export const LeadsPage = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterEstado, setFilterEstado] = useState("Todos");
+  const [vista, setVista] = useState<"lista" | "tablero">("lista");
   const location = useLocation();
   const confirm = useConfirm();
   const isAdmin = location.pathname.startsWith("/admin");
@@ -68,6 +70,19 @@ export const LeadsPage = () => {
       loadLeads();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Error al eliminar.");
+    }
+  };
+
+  // Mover lead a otro estado (drag&drop del tablero) — optimista
+  const moverLead = async (id: number, nuevoEstado: string) => {
+    const anterior = leads;
+    setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, estado: nuevoEstado } : l)));
+    try {
+      await apiClient.patch(`/leads/${id}`, { estado: nuevoEstado });
+      toast.success(`Lead movido a "${nuevoEstado}".`);
+    } catch {
+      setLeads(anterior);
+      toast.error("No se pudo cambiar el estado.");
     }
   };
 
@@ -175,6 +190,25 @@ export const LeadsPage = () => {
         )}
       </div>
 
+      {/* Toggle de vista */}
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
+        <button
+          onClick={() => setVista("lista")}
+          style={toggleStyle(vista === "lista")}
+        >☰ Lista</button>
+        <button
+          onClick={() => setVista("tablero")}
+          style={toggleStyle(vista === "tablero")}
+        >▦ Tablero</button>
+      </div>
+
+      {vista === "tablero" ? (
+        loading ? (
+          <p>Cargando leads...</p>
+        ) : (
+          <LeadsKanban leads={leads} basePath={basePath} isAdmin={isAdmin} onMove={moverLead} />
+        )
+      ) : (
       <Card title={isAdmin ? `Todos los Leads (${filtered.length})` : `Mis Leads (${filtered.length})`}>
         {loading ? (
           <p>Cargando leads...</p>
@@ -261,6 +295,16 @@ export const LeadsPage = () => {
           </table>
         )}
       </Card>
+      )}
     </div>
   );
 };
+
+const toggleStyle = (active: boolean): React.CSSProperties => ({
+  display: "flex", alignItems: "center", gap: "0.35rem",
+  padding: "0.4rem 0.9rem", borderRadius: 8, cursor: "pointer",
+  fontSize: "0.85rem", fontWeight: 600,
+  border: `1px solid ${active ? "#024f7d" : "#cbd5e1"}`,
+  background: active ? "#024f7d" : "#fff",
+  color: active ? "#fff" : "#475569",
+});

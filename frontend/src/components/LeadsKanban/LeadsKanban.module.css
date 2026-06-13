@@ -1,0 +1,65 @@
+.board {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  align-items: flex-start;
+}
+
+.column {
+  flex: 0 0 240px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 0.6rem;
+  min-height: 120px;
+  transition: background 0.15s ease;
+}
+.columnOver {
+  background: #e0f2fe;
+  outline: 2px dashed #38bdf8;
+  outline-offset: -2px;
+}
+
+.colHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+  padding: 0.25rem 0.4rem 0.6rem;
+}
+.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.count {
+  margin-left: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.cards { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid var(--accent, #94a3b8);
+  border-radius: 9px;
+  padding: 0.55rem 0.65rem;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.card:active { cursor: grabbing; }
+.cardDragging { opacity: 0.4; }
+.cardAlert { border-left-color: #ef4444; background: #fef2f2; }
+
+.name { font-size: 0.85rem; font-weight: 700; color: #1e293b; }
+.meta { font-size: 0.74rem; color: #64748b; margin-top: 0.2rem; display: flex; flex-direction: column; gap: 1px; }
+.followAlert { color: #dc2626; font-weight: 600; }
+
+.cardActions { margin-top: 0.4rem; }
+.verBtn {
+  font-size: 0.72rem; color: #024f7d; text-decoration: none; font-weight: 600;
+}
+.emptyCol { font-size: 0.74rem; color: #94a3b8; text-align: center; padding: 0.75rem 0; }
