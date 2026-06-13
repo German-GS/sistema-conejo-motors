@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import styles from "./GlobalSearch.module.css";
 
@@ -21,6 +21,11 @@ const GROUP_LABEL: Record<string, string> = {
 
 export const GlobalSearch = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // En el portal de ventas (/sales) reescribir las rutas /admin → /sales
+  const enSales = location.pathname.startsWith("/sales");
+  const rutaPortal = (ruta: string) =>
+    enSales ? ruta.replace("/admin/sales", "/sales").replace(/^\/admin/, "/sales") : ruta;
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -83,8 +88,8 @@ export const GlobalSearch = () => {
 
   const irA = useCallback((res: SearchResult) => {
     setOpen(false);
-    navigate(res.ruta);
-  }, [navigate]);
+    navigate(rutaPortal(res.ruta));
+  }, [navigate, enSales]);
 
   const onInputKey = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, results.length - 1)); }

@@ -118,6 +118,13 @@ export const SalesDashboardPage = () => {
         <button className={styles.refreshBtn} onClick={fetchAll} title="Actualizar">↻</button>
       </div>
 
+      {/* ── Accesos rápidos ──────────────────────────────────────────────── */}
+      <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
+        <button onClick={() => navigate("/sales/catalog")} style={qaStyle(true)}>🚗 Nueva cotización</button>
+        <button onClick={() => navigate("/sales/leads")} style={qaStyle(false)}>👥 Mis Leads</button>
+        <button onClick={() => navigate("/sales/quotes")} style={qaStyle(false)}>📄 Mis Cotizaciones</button>
+      </div>
+
       {/* ── KPIs ────────────────────────────────────────────────────────── */}
       <div className={styles.kpiRow}>
         <KpiCard icon="🚗" label="Disponibles" value={String(stats?.totalVehicles ?? 0)}
@@ -259,3 +266,13 @@ const KpiCard = ({
     </div>
   </div>
 );
+
+const qaStyle = (primary: boolean): React.CSSProperties => ({
+  display: "flex", alignItems: "center", gap: "0.5rem",
+  padding: "0.6rem 1rem", borderRadius: 10, cursor: "pointer",
+  fontSize: "0.9rem", fontWeight: 600,
+  border: primary ? "none" : "1px solid #e2e8f0",
+  background: primary ? "#024f7d" : "#fff",
+  color: primary ? "#fff" : "#334155",
+  boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+});

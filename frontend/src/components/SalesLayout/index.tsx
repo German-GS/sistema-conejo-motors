@@ -1,163 +1,189 @@
 import { useState, useEffect } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import styles from "../AdminLayout/AdminLayout.module.css";
 import apiClient from "@/api/apiClient";
 import { jwtDecode } from "jwt-decode";
 import conejoLogo from "../../img/Logos/Logo-Blanco.png";
-import { LuLayoutDashboard, LuCar, LuFileText, LuBell, LuContact, LuCalendarClock } from "react-icons/lu";
+import {
+  LuLayoutDashboard, LuCar, LuFileText, LuBell, LuContact,
+  LuCalendarClock, LuSearch, LuMenu, LuX,
+} from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
-// Interfaz para el objeto de notificación
-interface Notification {
-  id: number;
-  message: string;
-  link: string;
-}
+interface Notification { id: number; message: string; link: string; }
+
+const NAV = [
+  { to: "/sales", icon: <LuLayoutDashboard size={18} />, label: "Dashboard", end: true },
+  { to: "/sales/catalog", icon: <LuCar size={18} />, label: "Catálogo" },
+  { to: "/sales/quotes", icon: <LuFileText size={18} />, label: "Cotizaciones" },
+  { to: "/sales/leads", icon: <LuContact size={18} />, label: "Leads" },
+  { to: "/sales/asistencia", icon: <LuCalendarClock size={18} />, label: "Mi Asistencia" },
+  { to: "/sales/solicitudes", icon: <LuFileText size={18} />, label: "Mis Solicitudes" },
+];
 
 export const SalesLayout = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [pinned, setPinned] = useState(() => {
+    try { return localStorage.getItem("sidebarPinned") === "1"; } catch { return false; }
+  });
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const [userEmail, setUserEmail] = useState("");
-  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1024px)");
+    setIsTablet(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTablet(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => { if (isTablet) setMobileOpen(false); }, [location.pathname, isTablet]);
 
   const fetchNotifications = async () => {
     try {
       const response = await apiClient.get("/notifications/unread");
       setNotifications(response.data);
-    } catch (error) {
-      console.error("Error al cargar notificaciones", error);
-    }
+    } catch { /* silencioso */ }
   };
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      const decodedToken: { email: string } = jwtDecode(token);
-      setUserEmail(decodedToken.email);
+      const decoded: { email: string } = jwtDecode(token);
+      setUserEmail(decoded.email);
     }
-
-    // Buscamos notificaciones al cargar y luego cada minuto
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const togglePin = () => {
+    setPinned(p => {
+      const next = !p;
+      try { localStorage.setItem("sidebarPinned", next ? "1" : "0"); } catch { /* ignorar */ }
+      if (next) setIsCollapsed(false);
+      return next;
+    });
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     navigate("/login");
   };
 
-  const handleNotificationClick = async (notification: Notification) => {
+  const handleNotificationClick = async (n: Notification) => {
     setShowNotifications(false);
     try {
-      await apiClient.patch(`/notifications/${notification.id}/read`);
-      setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
-      navigate(notification.link);
-    } catch (error) {
-      console.error("Error al marcar la notificación como leída", error);
-    }
+      await apiClient.patch(`/notifications/${n.id}/read`);
+      setNotifications((prev) => prev.filter((x) => x.id !== n.id));
+      navigate(n.link);
+    } catch { /* silencioso */ }
   };
 
- return (
+  const colapsadoReal = isCollapsed && !pinned && !isTablet;
+  const showLabels = isTablet ? true : (pinned || !isCollapsed);
+
+  return (
     <div className={styles.layout}>
       <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
+      {isTablet && mobileOpen && (
+        <div className={styles.backdrop} onClick={() => setMobileOpen(false)} />
+      )}
+
       <aside
-        className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
-        onMouseEnter={() => setIsCollapsed(false)}
-        onMouseLeave={() => setIsCollapsed(true)}
+        className={`${styles.sidebar} ${colapsadoReal ? styles.collapsed : ""} ${isTablet && mobileOpen ? styles.mobileOpen : ""}`}
+        onMouseEnter={() => { if (!isTablet && !pinned) setIsCollapsed(false); }}
+        onMouseLeave={() => { if (!isTablet && !pinned) setIsCollapsed(true); }}
       >
         <div className={styles.logoContainer}>
           <img src={conejoLogo} alt="Logo" className={styles.logoImage} />
-          {!isCollapsed && <span className={styles.logoText}>VENTAS</span>}
+          {showLabels && <span className={styles.logoText}>VENTAS</span>}
+          {showLabels && !isTablet && (
+            <button
+              onClick={togglePin}
+              title={pinned ? "Desfijar menú" : "Fijar menú abierto"}
+              style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: pinned ? "#fff" : "rgba(255,255,255,0.5)", fontSize: "1rem", padding: 2 }}
+            >
+              {pinned ? "📌" : "📍"}
+            </button>
+          )}
         </div>
 
         <div className={styles.userInfo}>
-          {!isCollapsed && <span>{userEmail}</span>}
+          {showLabels && <span>{userEmail}</span>}
         </div>
 
         <nav className={styles.nav}>
-          <Link to="/sales">
-            <LuLayoutDashboard size={20} />
-            {!isCollapsed && <span className={styles.linkText}>Dashboard</span>}
-          </Link>
-          <Link to="/sales/catalog">
-            <LuCar size={20} />
-            {!isCollapsed && <span className={styles.linkText}>Catálogo</span>}
-          </Link>
-          <Link to="/sales/quotes">
-            <LuFileText size={20} />
-            {!isCollapsed && (
-              <span className={styles.linkText}>Cotizaciones</span>
-            )}
-          </Link>
-          <Link to="/sales/leads">
-    <LuContact size={20} />
-    {!isCollapsed && <span className={styles.linkText}>Leads</span>}
-  </Link>
-  <Link to="/sales/asistencia">
-    <LuCalendarClock size={20} />
-    {!isCollapsed && <span className={styles.linkText}>Mi Asistencia</span>}
-  </Link>
-  <Link to="/sales/solicitudes">
-    <LuFileText size={20} />
-    {!isCollapsed && <span className={styles.linkText}>Mis Solicitudes</span>}
-  </Link>
+          {NAV.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
+              title={!showLabels ? item.label : undefined}
+            >
+              {item.icon}
+              {showLabels && <span className={styles.linkText}>{item.label}</span>}
+            </NavLink>
+          ))}
         </nav>
       </aside>
-      <div
-        className={`${styles.mainPanel} ${
-          isCollapsed ? styles.mainPanelCollapsed : ""
-        }`}
-      >
-        {/* --- 👇 INICIO DE LA MODIFICACIÓN (4/4): Añadir campana en el header --- */}
+
+      <div className={`${styles.mainPanel} ${colapsadoReal ? styles.mainPanelCollapsed : ""}`}>
         <header className={styles.header}>
-          <div className={styles.headerTitle}>Portal de Ventas</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <button className={styles.hamburger} onClick={() => setMobileOpen(v => !v)} aria-label="Abrir menú">
+              {mobileOpen ? <LuX size={22} /> : <LuMenu size={22} />}
+            </button>
+            <div className={styles.headerTitle}>Portal de Ventas</div>
+          </div>
           <div className={styles.headerActions}>
-            <ClockWidget />
-            <div
-              className={styles.notificationBell}
-              onClick={() => setShowNotifications(!showNotifications)}
+            <button
+              onClick={() => window.dispatchEvent(new Event("global-search:open"))}
+              title="Buscar (⌘/Ctrl + K)"
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.4rem 0.7rem", cursor: "pointer", color: "#64748b", fontSize: "0.85rem" }}
             >
+              <LuSearch size={16} />
+              <span>Buscar</span>
+              <span style={{ fontSize: "0.7rem", border: "1px solid #cbd5e1", borderRadius: 4, padding: "1px 5px", background: "#fff" }}>⌘K</span>
+            </button>
+            <ClockWidget />
+            <div className={styles.notificationBell} onClick={() => setShowNotifications(!showNotifications)}>
               <LuBell size={24} />
-              {notifications.length > 0 && (
-                <span className={styles.notificationBadge}>
-                  {notifications.length}
-                </span>
-              )}
+              {notifications.length > 0 && <span className={styles.notificationBadge}>{notifications.length}</span>}
               {showNotifications && (
                 <div className={styles.notificationDropdown}>
                   {notifications.length > 0 ? (
                     notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => handleNotificationClick(n)}
-                        className={styles.notificationItem}
-                      >
+                      <div key={n.id} onClick={() => handleNotificationClick(n)} className={styles.notificationItem}>
                         {n.message}
                       </div>
                     ))
                   ) : (
-                    <div className={styles.notificationItem}>
-                      No hay notificaciones nuevas
-                    </div>
+                    <div className={styles.notificationItem}>No hay notificaciones nuevas</div>
                   )}
                 </div>
               )}
             </div>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-              Cerrar Sesión
-            </button>
+            <button onClick={handleLogout} className={styles.logoutButton}>Cerrar Sesión</button>
           </div>
         </header>
-        {/* --- 👆 FIN DE LA MODIFICACIÓN --- */}
         <main className={styles.content}>
+          <Breadcrumbs />
           <Outlet />
         </main>
       </div>
       <ChatWidget />
+      <GlobalSearch />
     </div>
   );
 };

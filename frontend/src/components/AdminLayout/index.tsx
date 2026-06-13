@@ -85,6 +85,9 @@ const getDefaultSections = (pathname: string): Set<string> => {
 
 export const AdminLayout = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [pinned, setPinned] = useState(() => {
+    try { return localStorage.getItem("sidebarPinned") === "1"; } catch { return false; }
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [userEmail, setUserEmail] = useState("");
@@ -139,9 +142,20 @@ export const AdminLayout = () => {
     }
   }, [location.pathname]);
 
-  // En tablet siempre mostrar etiquetas (isCollapsed no aplica en móvil/tablet)
-  const showLabels = isTablet ? true : !isCollapsed;
-  const isOpen = (section: string) => (isCollapsed && !isTablet) || openSections.has(section);
+  const togglePin = () => {
+    setPinned(p => {
+      const next = !p;
+      try { localStorage.setItem("sidebarPinned", next ? "1" : "0"); } catch { /* ignorar */ }
+      if (next) setIsCollapsed(false);
+      return next;
+    });
+  };
+
+  // El sidebar está colapsado solo si NO está fijado, no es tablet y el mouse no está encima
+  const colapsadoReal = isCollapsed && !pinned && !isTablet;
+  // En tablet o fijado siempre mostrar etiquetas
+  const showLabels = isTablet ? true : (pinned || !isCollapsed);
+  const isOpen = (section: string) => (colapsadoReal) || openSections.has(section);
 
   const fetchNotifications = async () => {
     try {
@@ -251,14 +265,26 @@ export const AdminLayout = () => {
       )}
 
       <aside
-        className={`${styles.sidebar} ${(isCollapsed && !isTablet) ? styles.collapsed : ""} ${isTablet && mobileOpen ? styles.mobileOpen : ""}`}
-        onMouseEnter={() => { if (!isTablet) setIsCollapsed(false); }}
-        onMouseLeave={() => { if (!isTablet) setIsCollapsed(true); }}
+        className={`${styles.sidebar} ${colapsadoReal ? styles.collapsed : ""} ${isTablet && mobileOpen ? styles.mobileOpen : ""}`}
+        onMouseEnter={() => { if (!isTablet && !pinned) setIsCollapsed(false); }}
+        onMouseLeave={() => { if (!isTablet && !pinned) setIsCollapsed(true); }}
       >
         {/* Logo */}
         <div className={styles.logoContainer}>
           <img src={conejoLogo} alt="Logo" className={styles.logoImage} />
           {showLabels && <span className={styles.logoText}>CONEJO MOTORS</span>}
+          {showLabels && !isTablet && (
+            <button
+              onClick={togglePin}
+              title={pinned ? "Desfijar menú" : "Fijar menú abierto"}
+              style={{
+                marginLeft: "auto", background: "none", border: "none", cursor: "pointer",
+                color: pinned ? "#fff" : "rgba(255,255,255,0.5)", fontSize: "1rem", padding: 2,
+              }}
+            >
+              {pinned ? "📌" : "📍"}
+            </button>
+          )}
         </div>
 
         {/* Usuario */}
@@ -375,7 +401,7 @@ export const AdminLayout = () => {
       </aside>
 
       <div
-        className={`${styles.mainPanel} ${isCollapsed ? styles.mainPanelCollapsed : ""}`}
+        className={`${styles.mainPanel} ${colapsadoReal ? styles.mainPanelCollapsed : ""}`}
       >
         <header className={styles.header}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>

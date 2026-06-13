@@ -137,6 +137,15 @@ export const DashboardHomePage = () => {
         </div>
       </div>
 
+      {/* ── Accesos rápidos ──────────────────────────────────────────────── */}
+      <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
+        <QuickAction emoji="🚗" label="Nueva cotización" onClick={() => navigate("/admin/sales/catalog")} primary />
+        <QuickAction emoji="👥" label="Leads / CRM" onClick={() => navigate("/admin/leads")} />
+        <QuickAction emoji="📦" label="Inventario" onClick={() => navigate("/admin/inventory")} />
+        <QuickAction emoji="🧾" label="Facturación" onClick={() => navigate("/admin/billing")} />
+        <QuickAction emoji="💵" label="Finanzas" onClick={() => navigate("/admin/finanzas")} />
+      </div>
+
       {/* ── Layout principal: KPIs izquierda + Panels derecha ───────────── */}
       <div className={styles.mainGrid}>
 
@@ -355,6 +364,26 @@ export const DashboardHomePage = () => {
     </div>
   );
 };
+
+// ─── sub-componente QuickAction (acceso rápido) ──────────────────────────────
+const QuickAction = ({ emoji, label, onClick, primary }: {
+  emoji: string; label: string; onClick: () => void; primary?: boolean;
+}) => (
+  <button
+    onClick={onClick}
+    style={{
+      display: "flex", alignItems: "center", gap: "0.5rem",
+      padding: "0.6rem 1rem", borderRadius: 10, cursor: "pointer",
+      fontSize: "0.9rem", fontWeight: 600,
+      border: primary ? "none" : "1px solid #e2e8f0",
+      background: primary ? "#024f7d" : "#fff",
+      color: primary ? "#fff" : "#334155",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    }}
+  >
+    <span style={{ fontSize: "1.1rem" }}>{emoji}</span> {label}
+  </button>
+);
 
 // ─── sub-componente MiniKpi (compact) ────────────────────────────────────────
 const MiniKpi = ({
