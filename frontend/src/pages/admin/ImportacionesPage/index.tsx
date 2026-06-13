@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ConfirmDialog";
 import styles from "./ImportacionesPage.module.css";
 import { LuPlus, LuShip, LuChevronDown, LuChevronRight, LuTrash2, LuCircleCheck } from "react-icons/lu";
 
@@ -30,6 +31,7 @@ const estadoColor: Record<string, string> = {
 const emptyVeh = { vin: '', marca: '', modelo: '', anio: '', color: '', costo_estimado_crc: '' };
 
 export default function ImportacionesPage() {
+  const confirm = useConfirm();
   const [lista, setLista] = useState<Importacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -79,13 +81,24 @@ export default function ImportacionesPage() {
   };
 
   const eliminarVehiculo = async (vehId: number) => {
-    if (!window.confirm("¿Eliminar este vehículo de la importación?")) return;
+    const ok = await confirm({
+      title: "Eliminar vehículo de importación",
+      message: "¿Eliminar este vehículo de la importación?",
+      confirmText: "Eliminar",
+      danger: true,
+    });
+    if (!ok) return;
     await apiClient.delete(`/importaciones/vehiculos/${vehId}`);
     cargar();
   };
 
   const promover = async (v: ImpVehiculo) => {
-    if (!window.confirm(`Crear "${v.marca || ''} ${v.modelo || ''} (${v.vin})" en inventario? Quedará oculto hasta completar ficha y precio.`)) return;
+    const ok = await confirm({
+      title: "Crear en inventario",
+      message: `Crear "${v.marca || ''} ${v.modelo || ''} (${v.vin})" en inventario? Quedará oculto hasta completar ficha y precio.`,
+      confirmText: "Crear",
+    });
+    if (!ok) return;
     try {
       const r = await apiClient.post(`/importaciones/vehiculos/${v.id}/promover`, {});
       toast.success(r.data.mensaje || "Vehículo creado en inventario");

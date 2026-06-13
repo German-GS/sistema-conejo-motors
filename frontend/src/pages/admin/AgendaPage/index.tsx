@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./AgendaPage.module.css";
@@ -71,7 +72,7 @@ export default function AgendaPage() {
   };
 
   const guardar = async () => {
-    if (!form.titulo || !form.fecha_hora) return alert("Título y fecha son requeridos");
+    if (!form.titulo || !form.fecha_hora) return toast.error("Título y fecha son requeridos");
     try {
       if (editando) {
         await apiClient.patch(`/agenda/${editando.id}`, form);
@@ -80,7 +81,7 @@ export default function AgendaPage() {
       }
       setShowModal(false);
       cargar();
-    } catch { alert("Error al guardar cita"); }
+    } catch { toast.error("Error al guardar cita"); }
   };
 
   const cambiarEstado = async (id: number, estado: string) => {

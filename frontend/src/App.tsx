@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Toaster, toast } from "react-hot-toast";
+import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
 
@@ -130,6 +131,7 @@ function App() {
         </Helmet>
       )}
       <Toaster position="top-right" reverseOrder={false} />
+      <ConfirmProvider>
       <Routes>
         {/* --- 1. Grupo de Rutas Públicas (Ahora es la entrada principal) --- */}
         <Route path="/" element={<PublicLayout />}>
@@ -230,6 +232,7 @@ function App() {
         {/* --- 6. Ruta para cualquier otra URL no encontrada --- */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </ConfirmProvider>
     </BrowserRouter>
   );
 }

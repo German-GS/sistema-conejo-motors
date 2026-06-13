@@ -4,6 +4,7 @@ import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
 import styles from "./SettingsPage.module.css";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { SiteHomepageSettings } from "../../components/SiteHomepageSettings";
 import { EditProfileModal } from "./EditProfileModal";
 
@@ -177,6 +178,7 @@ const CalcSettings: React.FC = () => {
 
 // --- COMPONENTE PRINCIPAL ---
 export const SettingsPage = () => {
+  const confirm = useConfirm();
   // --- ESTADOS DEL COMPONENTE ---
   const [cargasPatronales, setCargasPatronales] = useState<Parametro[]>([]);
   const [deduccionesEmpleado, setDeduccionesEmpleado] = useState<Parametro[]>(
@@ -320,7 +322,8 @@ export const SettingsPage = () => {
   };
 
   const handleDeleteProfile = async (id: number) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este perfil?")) {
+    const ok = await confirm({ title: "Eliminar perfil", message: "¿Estás seguro de que deseas eliminar este perfil?", confirmText: "Eliminar", danger: true });
+    if (ok) {
       try {
         await apiClient.delete(`/vehicle-profiles/${id}`);
         toast.success("Perfil eliminado.");

@@ -11,10 +11,13 @@ import { Pagination } from "@/components/Pagination";
 import { VisibilityButtons } from "@/components/VisibilityButtons";
 import { VehicleRibbon } from "@/components/VehicleRibbon";
 import { VehicleHistorialModal } from "@/components/VehicleHistorialModal";
+import { useConfirm } from "@/components/ConfirmDialog";
+import { exportToExcel } from "@/utils/exportExcel";
 
 // Interfaz para el tipo de dato Vehicle
 
 export const DashboardPage = () => {
+  const confirm = useConfirm();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +25,8 @@ export const DashboardPage = () => {
   const [historialVehicle, setHistorialVehicle] = useState<Vehicle | null>(null);
   const [search, setSearch] = useState("");
   const [filterEstado, setFilterEstado] = useState("");
+  const [sortKey, setSortKey] = useState<string>("");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 15;
 
@@ -60,6 +65,13 @@ export const DashboardPage = () => {
   };
 
   const handleDelete = async (id: number) => {
+    const ok = await confirm({
+      title: "Eliminar vehículo",
+      message: `¿Eliminar el vehículo #${id}? Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await apiClient.delete(`/vehicles/${id}`);
       toast.success("Vehículo eliminado con éxito."); // <-- 2. Reemplaza alert
@@ -93,8 +105,37 @@ export const DashboardPage = () => {
       list = list.filter(v => `${v.marca} ${v.modelo} ${v.año} ${v.vin} ${v.color}`.toLowerCase().includes(q));
     }
     if (filterEstado) list = list.filter(v => v.estado === filterEstado);
+    // Orden por columna
+    if (sortKey) {
+      list = [...list].sort((a, b) => {
+        const av = (a as any)[sortKey], bv = (b as any)[sortKey];
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        const cmp = typeof av === "number" && typeof bv === "number"
+          ? av - bv
+          : String(av).localeCompare(String(bv), "es", { numeric: true });
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
     return list;
-  }, [vehicles, search, filterEstado]);
+  }, [vehicles, search, filterEstado, sortKey, sortDir]);
+
+  const toggleSort = (key: string) => {
+    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir("asc"); }
+    setPage(1);
+  };
+
+  const exportar = () => {
+    const rows = filtered.map(v => ({
+      ID: v.id, Marca: v.marca, Modelo: v.modelo, Año: v.año, VIN: v.vin,
+      Color: v.color, Ubicación: v.bodega?.nombre || "N/A", Estado: v.estado,
+      "Precio costo": v.precio_costo, "Precio venta": v.precio_venta,
+      "Precio USD": v.precio_venta_usd ?? "", Visibilidad: v.visibilidad,
+      Clasificación: v.clasificacion_inventario ?? "",
+    }));
+    exportToExcel(rows, "Inventario", "Inventario");
+  };
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = useMemo(
@@ -106,9 +147,14 @@ export const DashboardPage = () => {
     <>
       <div className={styles.header}>
         <h1>Inventario de Vehículos</h1>
-        <button className="btn btn-principal" onClick={handleOpenCreateModal}>
-          Añadir Vehículo
-        </button>
+        <div style={{ display: "flex", gap: "0.6rem" }}>
+          <button className="btn" onClick={exportar} style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155" }} title="Exportar a Excel">
+            📊 Exportar Excel
+          </button>
+          <button className="btn btn-principal" onClick={handleOpenCreateModal}>
+            Añadir Vehículo
+          </button>
+        </div>
       </div>
 
       <Card title={
@@ -158,13 +204,13 @@ export const DashboardPage = () => {
           <thead>
             <tr>
               <th>Imagen</th>
-              <th>ID</th>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>Año</th>
+              <Th label="ID" col="id" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+              <Th label="Marca" col="marca" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+              <Th label="Modelo" col="modelo" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+              <Th label="Año" col="año" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
               <th>VIN</th>
               <th>Ubicación</th>
-              <th>Estado</th>
+              <Th label="Estado" col="estado" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
               <th>Visibilidad</th>
               <th>Acciones</th>
             </tr>
@@ -252,3 +298,15 @@ export const DashboardPage = () => {
     </>
   );
 };
+
+// Encabezado de columna ordenable
+const Th = ({ label, col, sortKey, sortDir, onSort }: {
+  label: string; col: string; sortKey: string; sortDir: "asc" | "desc"; onSort: (k: string) => void;
+}) => (
+  <th onClick={() => onSort(col)} style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }} title="Ordenar">
+    {label}
+    <span style={{ marginLeft: 4, opacity: sortKey === col ? 1 : 0.25 }}>
+      {sortKey === col ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
+    </span>
+  </th>
+);

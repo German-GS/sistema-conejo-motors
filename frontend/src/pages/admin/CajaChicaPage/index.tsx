@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./CajaChicaPage.module.css";
@@ -38,13 +39,13 @@ export default function CajaChicaPage() {
   useEffect(() => { cargar(); }, []);
 
   const crearCaja = async () => {
-    if (!cajaForm.nombre || !cajaForm.monto_inicial) return alert("Complete los campos");
+    if (!cajaForm.nombre || !cajaForm.monto_inicial) return toast.error("Complete los campos");
     await apiClient.post("/caja-chica", { nombre: cajaForm.nombre, monto_inicial: +cajaForm.monto_inicial });
     setShowNuevaCaja(false); cargar();
   };
 
   const registrarMov = async () => {
-    if (!movForm.monto || !seleccionada) return alert("Monto requerido");
+    if (!movForm.monto || !seleccionada) return toast.error("Monto requerido");
     await apiClient.post(`/caja-chica/${seleccionada.id}/movimiento`, { ...movForm, monto: +movForm.monto });
     setShowMov(false); cargarMovimientos(seleccionada.id); cargar();
   };

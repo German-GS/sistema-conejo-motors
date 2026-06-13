@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./GarantiasPage.module.css";
@@ -33,7 +34,7 @@ export default function GarantiasPage() {
   useEffect(() => { cargar(); }, []);
 
   const guardar = async () => {
-    if (!form.tipo || !form.fecha_inicio || !form.fecha_fin) return alert("Complete los campos");
+    if (!form.tipo || !form.fecha_inicio || !form.fecha_fin) return toast.error("Complete los campos");
     await apiClient.post("/garantias", { ...form, meses: form.meses ? +form.meses : undefined });
     setShowModal(false); cargar();
   };

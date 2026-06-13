@@ -9,6 +9,7 @@ import styles from "./DashboardHomePage.module.css";
 import { LeadsFollowUpWidget } from "../../components/LeadsFollowUpWidget";
 import { QuotesExpiringWidget } from "../../components/QuotesExpiringWidget";
 import { CierreMesWidget } from "../../components/CierreMesWidget";
+import { Skeleton, SkeletonCards } from "../../components/Skeleton";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 interface BasicStats {
@@ -98,9 +99,15 @@ export const DashboardHomePage = () => {
 
   if (loading) {
     return (
-      <div className={styles.loadingWrap}>
-        <div className={styles.spinner} />
-        <p>Cargando dashboard...</p>
+      <div className={styles.page}>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Skeleton width={220} height={26} />
+          <Skeleton width={300} height={14} style={{ marginTop: 8 }} />
+        </div>
+        <SkeletonCards count={8} height={70} />
+        <div style={{ marginTop: "1.25rem" }}>
+          <SkeletonCards count={2} height={180} />
+        </div>
       </div>
     );
   }

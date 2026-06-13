@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./TesoreriaPage.module.css";
@@ -33,7 +34,7 @@ export default function TesoreriaPage() {
   useEffect(() => { cargar(); }, []);
 
   const crearCuenta = async () => {
-    if (!cuentaForm.banco || !cuentaForm.numero_cuenta) return alert("Complete los campos");
+    if (!cuentaForm.banco || !cuentaForm.numero_cuenta) return toast.error("Complete los campos");
     await apiClient.post("/tesoreria/cuentas", { ...cuentaForm, saldo_inicial: +cuentaForm.saldo_inicial });
     setShowCuenta(false); cargar();
   };

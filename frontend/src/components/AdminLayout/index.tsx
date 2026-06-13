@@ -40,6 +40,9 @@ import {
 } from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { LuSearch } from "react-icons/lu";
 
 // Interfaz para el objeto de notificación
 interface Notification {
@@ -385,6 +388,19 @@ export const AdminLayout = () => {
             <div className={styles.headerTitle}>Panel de Control</div>
           </div>
           <div className={styles.headerActions}>
+            <button
+              onClick={() => window.dispatchEvent(new Event("global-search:open"))}
+              title="Buscar (⌘/Ctrl + K)"
+              style={{
+                display: "flex", alignItems: "center", gap: "0.5rem",
+                background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8,
+                padding: "0.4rem 0.7rem", cursor: "pointer", color: "#64748b", fontSize: "0.85rem",
+              }}
+            >
+              <LuSearch size={16} />
+              <span style={{ }}>Buscar</span>
+              <span style={{ fontSize: "0.7rem", border: "1px solid #cbd5e1", borderRadius: 4, padding: "1px 5px", background: "#fff" }}>⌘K</span>
+            </button>
             <ClockWidget />
             {userRole === "Administrador" && (
               <div
@@ -424,10 +440,12 @@ export const AdminLayout = () => {
           </div>
         </header>
         <main className={styles.content}>
+          <Breadcrumbs />
           <Outlet />
         </main>
       </div>
       <ChatWidget />
+      <GlobalSearch />
     </div>
   );
 };

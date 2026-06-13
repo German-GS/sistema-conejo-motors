@@ -4,6 +4,7 @@ import apiClient from "@/api/apiClient";
 import styles from "./MyQuotesPage.module.css";
 import { Pagination } from "@/components/Pagination";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
+import { useConfirm } from "@/components/ConfirmDialog";
 import toast from "react-hot-toast";
 
 interface Quote {
@@ -48,6 +49,7 @@ interface CancelModal {
 }
 
 export const MyQuotesPage = () => {
+  const confirm = useConfirm();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterEstado, setFilterEstado] = useState("Todas");
@@ -80,7 +82,13 @@ export const MyQuotesPage = () => {
   useEffect(() => { loadQuotes(); }, [endpoint]);
 
   const handleEliminar = async (id: number) => {
-    if (!window.confirm(`¿Eliminar cotización #${id}? Esta acción no se puede deshacer.`)) return;
+    const ok = await confirm({
+      title: "Eliminar cotización",
+      message: `¿Eliminar cotización #${id}? Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      danger: true,
+    });
+    if (!ok) return;
     setEliminandoId(id);
     try {
       await apiClient.delete(`/quotes/${id}`);

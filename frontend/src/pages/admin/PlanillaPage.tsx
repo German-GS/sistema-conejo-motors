@@ -3,6 +3,7 @@ import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
 import styles from "./UsersPage.module.css";
 import { ReciboModal } from "../../components/ReciboModal";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { jwtDecode } from "jwt-decode";
 
 // Definimos los tipos de datos que usaremos
@@ -25,6 +26,7 @@ interface DecodedToken {
 }
 
 export const PlanillaPage = () => {
+  const confirm = useConfirm();
   const [recibos, setRecibos] = useState<Recibo[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
@@ -124,11 +126,13 @@ export const PlanillaPage = () => {
   };
 
   const handleDelete = async (reciboId: number) => {
-    if (
-      window.confirm(
-        `¿Estás seguro de que deseas eliminar el recibo #${reciboId}?`
-      )
-    ) {
+    const ok = await confirm({
+      title: "Eliminar recibo",
+      message: `¿Estás seguro de que deseas eliminar el recibo #${reciboId}?`,
+      confirmText: "Eliminar",
+      danger: true,
+    });
+    if (ok) {
       try {
         await apiClient.delete(`/recibos-pago/${reciboId}`);
         setMensaje(`Recibo #${reciboId} eliminado con éxito.`);

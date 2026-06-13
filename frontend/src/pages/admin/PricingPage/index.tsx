@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import styles from "./PricingPage.module.css";
 import { VisibilityButtons } from "@/components/VisibilityButtons";
 import { VehicleRibbon } from "@/components/VehicleRibbon";
+import { useConfirm } from "@/components/ConfirmDialog";
 
 interface Vehicle {
   id: number;
@@ -34,6 +35,7 @@ const marginColor = (margen: number) => {
 };
 
 export const PricingPage = () => {
+  const confirm = useConfirm();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [editing, setEditing] = useState<Record<number, { precio_venta: string; precio_venta_usd: string; descuento: string }>>({});
   const [loading, setLoading] = useState(true);
@@ -81,9 +83,12 @@ export const PricingPage = () => {
     const bajoCosto = precioFinal < Number(v.precio_costo);
 
     if (bajoCosto) {
-      const ok = window.confirm(
-        `⚠️ ALERTA: El precio final (${CRC(precioFinal)}) es INFERIOR al costo de inventario (${CRC(v.precio_costo)}).\n\n¿Confirmas que deseas guardar este precio?`
-      );
+      const ok = await confirm({
+        title: "Precio bajo costo",
+        message: `El precio final (${CRC(precioFinal)}) es INFERIOR al costo de inventario (${CRC(v.precio_costo)}). ¿Confirmas que deseas guardar este precio?`,
+        confirmText: "Guardar igual",
+        danger: true,
+      });
       if (!ok) return;
     }
 

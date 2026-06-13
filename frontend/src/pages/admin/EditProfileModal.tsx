@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import apiClient from "@/api/apiClient";
 import { getImageUrl } from "@/utils/imageUrl";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ConfirmDialog";
 import styles from "./EditProfileModal.module.css";
 
 interface ProfileImage { id: number; url: string; order?: number; }
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved }) => {
+  const confirm = useConfirm();
   const [data, setData] = useState<ProfileDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -73,7 +75,8 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
   };
 
   const handleDeleteImage = async (imageId: number) => {
-    if (!window.confirm("¿Eliminar esta imagen?")) return;
+    const ok = await confirm({ title: "Eliminar imagen", message: "¿Eliminar esta imagen?", confirmText: "Eliminar", danger: true });
+    if (!ok) return;
     try {
       await apiClient.delete(`/vehicle-profiles/${profileId}/images/${imageId}`);
       setData((prev) => prev

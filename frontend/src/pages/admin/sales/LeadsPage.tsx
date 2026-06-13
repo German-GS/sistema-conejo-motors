@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
+import { useConfirm } from "@/components/ConfirmDialog";
 import styles from "./LeadsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 
@@ -35,6 +36,7 @@ export const LeadsPage = () => {
   const [loading, setLoading] = useState(true);
   const [filterEstado, setFilterEstado] = useState("Todos");
   const location = useLocation();
+  const confirm = useConfirm();
   const isAdmin = location.pathname.startsWith("/admin");
 
   // Base path para el detalle del lead
@@ -53,7 +55,13 @@ export const LeadsPage = () => {
   useEffect(() => { loadLeads(); }, [endpoint]);
 
   const handleEliminar = async (id: number, nombre: string) => {
-    if (!window.confirm(`¿Eliminar lead de "${nombre}"? Esta acción no se puede deshacer.`)) return;
+    const ok = await confirm({
+      title: "Eliminar lead",
+      message: `¿Eliminar lead de "${nombre}"? Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await apiClient.delete(`/leads/${id}`);
       toast.success(`Lead eliminado.`);

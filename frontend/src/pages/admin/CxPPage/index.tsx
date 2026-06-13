@@ -1,7 +1,9 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./CxPPage.module.css";
 import { LuPlus, LuDollarSign, LuTriangleAlert } from "react-icons/lu";
+import { exportToExcel } from "@/utils/exportExcel";
 
 interface CxP {
   id: number; numero: string; concepto: string; factura_proveedor?: string;
@@ -31,7 +33,7 @@ export default function CxPPage() {
   useEffect(() => { cargar(); }, []);
 
   const guardar = async () => {
-    if (!form.concepto || !form.monto_original || !form.fecha_vencimiento) return alert("Complete los campos requeridos");
+    if (!form.concepto || !form.monto_original || !form.fecha_vencimiento) return toast.error("Complete los campos requeridos");
     await apiClient.post("/cxp", { ...form, monto_original: +form.monto_original });
     setShowModal(false); cargar();
   };
@@ -42,11 +44,23 @@ export default function CxPPage() {
     setShowPagoModal(null); cargar();
   };
 
+  const exportar = () => exportToExcel(
+    lista.map(c => ({
+      Número: c.numero, Proveedor: c.proveedor?.nombre || "", Concepto: c.concepto,
+      "Factura proveedor": c.factura_proveedor || "", "Monto original": c.monto_original,
+      "Saldo pendiente": c.saldo_pendiente, Vencimiento: c.fecha_vencimiento, Estado: c.estado,
+    })),
+    "CuentasPorPagar", "CxP",
+  );
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div><h1>Cuentas por Pagar</h1><p>Control de pagos a proveedores</p></div>
-        <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nueva CxP</button>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1" }} onClick={exportar}>📊 Excel</button>
+          <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nueva CxP</button>
+        </div>
       </div>
 
       <div className={styles.kpis}>

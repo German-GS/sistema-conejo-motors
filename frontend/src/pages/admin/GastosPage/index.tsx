@@ -1,7 +1,9 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./GastosPage.module.css";
 import { LuPlus, LuReceipt } from "react-icons/lu";
+import { exportToExcel } from "@/utils/exportExcel";
 
 interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; }
 
@@ -26,18 +28,29 @@ export default function GastosPage() {
   useEffect(() => { cargar(); }, []);
 
   const guardar = async () => {
-    if (!form.descripcion || !form.monto) return alert("Complete los campos");
+    if (!form.descripcion || !form.monto) return toast.error("Complete los campos");
     await apiClient.post("/gastos", { ...form, monto: +form.monto });
     setShowModal(false); cargar();
   };
 
   const f = (k: any) => (e: any) => setForm({...form, [k]: e.target.value});
 
+  const exportar = () => exportToExcel(
+    gastos.map(g => ({
+      Fecha: g.fecha, Categoría: g.categoria, Descripción: g.descripcion,
+      "N° Factura": g.numero_factura || "", Proveedor: g.proveedor?.nombre || "", Monto: g.monto,
+    })),
+    "Gastos", "Gastos",
+  );
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div><h1>Gastos Operativos</h1><p>Control de gastos y costos de operación</p></div>
-        <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nuevo Gasto</button>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1" }} onClick={exportar}>📊 Excel</button>
+          <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nuevo Gasto</button>
+        </div>
       </div>
 
       <div className={styles.kpiCard}>

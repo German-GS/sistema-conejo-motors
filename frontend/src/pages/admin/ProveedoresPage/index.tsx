@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./ProveedoresPage.module.css";
@@ -29,12 +30,12 @@ export default function ProveedoresPage() {
   const abrirEditar = (p: Proveedor) => { setEditando(p); setForm(p); setShowModal(true); };
 
   const guardar = async () => {
-    if (!form.nombre) return alert("Nombre requerido");
+    if (!form.nombre) return toast.error("Nombre requerido");
     try {
       if (editando) await apiClient.patch(`/proveedores/${editando.id}`, form);
       else await apiClient.post("/proveedores", form);
       setShowModal(false); cargar();
-    } catch { alert("Error al guardar"); }
+    } catch { toast.error("Error al guardar"); }
   };
 
   const f = (key: keyof Proveedor) => (e: any) => setForm({ ...form, [key]: e.target.value });

@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./TallerPage.module.css";
@@ -36,7 +37,7 @@ export default function TallerPage() {
   useEffect(() => { cargar(); }, []);
 
   const guardar = async () => {
-    if (!form.descripcion_problema || !form.fecha_ingreso) return alert("Complete los campos requeridos");
+    if (!form.descripcion_problema || !form.fecha_ingreso) return toast.error("Complete los campos requeridos");
     await apiClient.post("/taller", form);
     setShowModal(false); cargar();
   };

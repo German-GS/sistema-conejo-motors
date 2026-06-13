@@ -1,0 +1,75 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 3000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  animation: fade 0.12s ease;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.box {
+  width: min(420px, 94vw);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.body {
+  padding: 1.5rem 1.5rem 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.message {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem 1.25rem;
+}
+.btn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.cancel {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.cancel:hover { background: #f8fafc; }
+.confirm {
+  background: #024f7d;
+  color: #fff;
+}
+.confirm:hover { filter: brightness(1.08); }
+.danger {
+  background: #dc2626;
+  color: #fff;
+}
+.danger:hover { filter: brightness(1.08); }
