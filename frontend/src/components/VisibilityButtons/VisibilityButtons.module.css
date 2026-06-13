@@ -30,43 +30,34 @@
 .emoji { font-size: 0.85rem; }
 .label { font-size: 0.72rem; }
 
-/* Estados activos */
-.active_Visible {
-  background: #dcfce7;
-  border-color: #16a34a;
-  color: #15803d;
-  font-weight: 700;
-}
-.active_Oculto {
-  background: #f1f5f9;
-  border-color: #64748b;
-  color: #334155;
-  font-weight: 700;
-}
-.active_Agotado {
-  background: #fee2e2;
-  border-color: #dc2626;
-  color: #b91c1c;
-  font-weight: 700;
-}
-.active_Contrapedido {
-  background: #dbeafe;
-  border-color: #2563eb;
-  color: #1d4ed8;
-  font-weight: 700;
-}
-.active_EnStock {
-  background: #dcfce7;
-  border-color: #16a34a;
-  color: #15803d;
-  font-weight: 700;
-}
+/* Estados activos — pastilla rellena con color sólido y texto blanco */
+.active_Visible,
+.active_Oculto,
+.active_Agotado,
+.active_Contrapedido,
+.active_EnStock,
 .active_NoComercial {
-  background: #f3e8ff;
-  border-color: #7c3aed;
-  color: #6d28d9;
+  color: #fff;
   font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
+.active_Visible  { background: #16a34a; border-color: #15803d; }
+.active_Oculto   { background: #64748b; border-color: #475569; }
+.active_EnStock  { background: #16a34a; border-color: #15803d; }
+.active_Agotado  { background: #dc2626; border-color: #b91c1c; }
+.active_Contrapedido { background: #2563eb; border-color: #1d4ed8; }
+.active_NoComercial  { background: #7c3aed; border-color: #6d28d9; }
+/* En estado activo el hover solo aclara un poco (mantiene el color sólido) */
+.btn.active_Visible:hover, .btn.active_Oculto:hover, .btn.active_Agotado:hover,
+.btn.active_Contrapedido:hover, .btn.active_EnStock:hover, .btn.active_NoComercial:hover {
+  filter: brightness(1.08);
+}
+.btn.active_Visible:hover  { background: #16a34a; }
+.btn.active_Oculto:hover   { background: #64748b; }
+.btn.active_EnStock:hover  { background: #16a34a; }
+.btn.active_Agotado:hover  { background: #dc2626; }
+.btn.active_Contrapedido:hover { background: #2563eb; }
+.btn.active_NoComercial:hover  { background: #7c3aed; }
 
 /* Dos secciones: visibilidad web + clasificación de inventario */
 .stack { display: flex; flex-direction: column; gap: 6px; }
