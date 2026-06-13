@@ -224,12 +224,12 @@ export function VehicleDetailClient({ vehicle }: { vehicle: Vehicle }) {
           <div style={{ marginBottom:'1.5rem' }}>
             <p style={{ fontSize:'2rem', fontWeight:900, color: BRAND.navy }}>
               {formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
-              {vehicle.precio_venta_usd && (
-                <span style={{ fontSize:'0.7em', color:'#64748b', marginLeft:'0.75rem', fontWeight:500 }}>
-                  / ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
-                </span>
-              )}
             </p>
+            {vehicle.precio_venta_usd && (
+              <p style={{ fontSize:'2rem', fontWeight:900, color:'#0891b2', marginTop:'0.25rem' }}>
+                ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
+              </p>
+            )}
             {vehicle.precio_venta_final && vehicle.precio_venta_final < vehicle.precio_venta && (
               <p style={{ fontSize:'0.875rem', color:'#94a3b8', textDecoration:'line-through' }}>{formatCRC(Number(vehicle.precio_venta))}</p>
             )}

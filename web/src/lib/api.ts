@@ -12,7 +12,7 @@ export function getImageUrl(url?: string | null): string {
 
 export async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    next: { revalidate: 3600 }, // ISR: revalidar cada hora
+    next: { revalidate: 300 }, // ISR: revalidar cada 5 min
     ...options,
   });
   if (!res.ok) throw new Error(`API error ${res.status}: ${path}`);

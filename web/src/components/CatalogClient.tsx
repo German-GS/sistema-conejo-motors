@@ -185,14 +185,12 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                   </div>
                   <div className="vehicle-card__body">
                     <h2 className="vehicle-card__name">{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h2>
-                    <p className="vehicle-card__price">
-                      {formatCRC(precio)}
-                      {vehicle.precio_venta_usd && (
-                        <span style={{ fontSize: '0.7em', color: '#64748b', marginLeft: '0.5rem', fontWeight: 500 }}>
-                          / ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
-                        </span>
-                      )}
-                    </p>
+                    <p className="vehicle-card__price">{formatCRC(precio)}</p>
+                    {vehicle.precio_venta_usd && (
+                      <p className="vehicle-card__price" style={{ color: '#0891b2' }}>
+                        ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
+                      </p>
+                    )}
                     {Number(vehicle.descuento_porcentaje) > 0 && (
                       <p className="vehicle-card__old-price">{formatCRC(Number(vehicle.precio_venta))}</p>
                     )}
