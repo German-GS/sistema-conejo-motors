@@ -3,9 +3,40 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getImageUrl, formatCRC } from '@/lib/api';
+import { colorSwatch } from '@/lib/colors';
 import type { Vehicle } from '@/types';
 
 const PAGE_SIZE = 12;
+
+// Un grupo = un modelo (marca + modelo + año) con sus colores disponibles
+interface GrupoModelo {
+  rep: Vehicle;          // vehículo representativo (para imagen/specs/enlace)
+  colores: string[];     // colores distintos disponibles
+  precioMin: number;
+  precioMax: number;
+  count: number;         // unidades disponibles
+}
+
+const precioDe = (v: Vehicle) => Number(v.precio_venta_final ?? v.precio_venta);
+
+function agruparPorModelo(vehiculos: Vehicle[]): GrupoModelo[] {
+  const mapa = new Map<string, Vehicle[]>();
+  for (const v of vehiculos) {
+    const key = `${v.marca}|${v.modelo}|${v.año}`;
+    const arr = mapa.get(key);
+    if (arr) arr.push(v); else mapa.set(key, [v]);
+  }
+  return Array.from(mapa.values()).map((items) => {
+    // Representativo: el primero que tenga imagen, si no el primero
+    const rep = items.find(v => v.imagenes?.[0]?.url || v.profile?.imagenes?.[0]?.url) ?? items[0];
+    const colores = Array.from(new Set(items.map(v => v.color).filter(Boolean) as string[]));
+    const precios = items.map(precioDe);
+    return {
+      rep, colores, count: items.length,
+      precioMin: Math.min(...precios), precioMax: Math.max(...precios),
+    };
+  });
+}
 
 // Clasificación de inventario (con respaldo a visibilidad para datos antiguos)
 const claseInv = (v: Vehicle): string => v.clasificacion_inventario ?? v.visibilidad ?? 'En Stock';
@@ -46,8 +77,11 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
 
   const filteredDisponibles = useMemo(() => filtered.filter(v => !esEspecial(v)), [filtered]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // Agrupar por modelo (solo en la web pública). Mantiene el orden por precio.
+  const grupos = useMemo(() => agruparPorModelo(filtered).sort((a, b) => a.precioMin - b.precioMin), [filtered]);
+
+  const totalPages = Math.ceil(grupos.length / PAGE_SIZE);
+  const paginated = grupos.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const reset = () => {
     setFilterCategoria('Todas'); setFilterMarca('Todas'); setFilterColor('Todos');
@@ -164,36 +198,54 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
       ) : (
         <>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap:'1.5rem' }}>
-            {paginated.map(vehicle => {
+            {paginated.map(grupo => {
+              const vehicle = grupo.rep;
               const imgSrc = vehicle.imagenes?.[0]?.url ? getImageUrl(vehicle.imagenes[0].url)
                 : vehicle.profile?.imagenes?.[0]?.url ? getImageUrl(vehicle.profile.imagenes[0].url)
                 : '/placeholder.png';
-              const precio = Number(vehicle.precio_venta_final ?? vehicle.precio_venta);
               const agotado = claseInv(vehicle) === 'Agotado';
               const pedido = claseInv(vehicle) === 'Contrapedido';
+              const variosPrecios = grupo.precioMax > grupo.precioMin;
               return (
-                <Link key={vehicle.id} href={`/catalog/${vehicle.id}`} className="vehicle-card group block">
+                <Link key={`${vehicle.marca}-${vehicle.modelo}-${vehicle.año}`} href={`/catalog/${vehicle.id}`} className="vehicle-card group block">
                   <div className="vehicle-card__img">
                     <Image src={imgSrc} alt={`${vehicle.marca} ${vehicle.modelo} ${vehicle.año}`}
                       fill className="object-cover group-hover:scale-105 transition-transform duration-400" sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw" />
-                    {Number(vehicle.descuento_porcentaje) > 0 && (
-                      <span className="badge-discount">−{vehicle.descuento_porcentaje}%</span>
-                    )}
                     {vehicle.categoria && <span className="badge-category">{vehicle.categoria}</span>}
                     {agotado && <div className="badge-agotado">📦 Agotado</div>}
                     {pedido && <div className="badge-pedido">🔄 Bajo Pedido</div>}
                   </div>
                   <div className="vehicle-card__body">
                     <h2 className="vehicle-card__name">{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h2>
-                    <p className="vehicle-card__price">{formatCRC(precio)}</p>
+                    <p className="vehicle-card__price">
+                      {variosPrecios && <span style={{ fontSize: '0.7em', fontWeight: 600, color: '#64748b' }}>Desde </span>}
+                      {formatCRC(grupo.precioMin)}
+                    </p>
                     {vehicle.precio_venta_usd && (
                       <p className="vehicle-card__price" style={{ color: '#0891b2' }}>
+                        {variosPrecios && <span style={{ fontSize: '0.7em', fontWeight: 600 }}>Desde </span>}
                         ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
                       </p>
                     )}
-                    {Number(vehicle.descuento_porcentaje) > 0 && (
-                      <p className="vehicle-card__old-price">{formatCRC(Number(vehicle.precio_venta))}</p>
+
+                    {/* Colores disponibles como círculos */}
+                    {grupo.colores.length > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', margin: '0.5rem 0 0.25rem' }}>
+                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                          {grupo.colores.map((c) => {
+                            const sw = colorSwatch(c);
+                            return (
+                              <span key={c} title={c}
+                                style={{ width: 18, height: 18, borderRadius: '50%', background: sw.hex, border: `1.5px solid ${sw.border ?? 'rgba(0,0,0,0.15)'}`, display: 'inline-block', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }} />
+                            );
+                          })}
+                        </div>
+                        <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                          {grupo.colores.length === 1 ? grupo.colores[0] : `${grupo.colores.length} colores`}
+                        </span>
+                      </div>
                     )}
+
                     <div className="vehicle-card__specs">
                       {vehicle.autonomia_km && <span>🛣️ {vehicle.autonomia_km} km</span>}
                       {vehicle.aceleracion_0_100 && <span>⚡ {vehicle.aceleracion_0_100}s</span>}

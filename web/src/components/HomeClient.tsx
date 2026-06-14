@@ -3,7 +3,23 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getImageUrl, formatCRC } from '@/lib/api';
+import { colorSwatch } from '@/lib/colors';
 import type { Vehicle, CarouselSlide } from '@/types';
+
+// Agrupa por modelo (marca+modelo+año) → un solo card con sus colores
+function agruparDestacados(vehiculos: Vehicle[]) {
+  const mapa = new Map<string, Vehicle[]>();
+  for (const v of vehiculos) {
+    const key = `${v.marca}|${v.modelo}|${v.año}`;
+    const arr = mapa.get(key);
+    if (arr) arr.push(v); else mapa.set(key, [v]);
+  }
+  return Array.from(mapa.values()).map((items) => {
+    const rep = items.find(v => v.imagenes?.[0]?.url || v.profile?.imagenes?.[0]?.url) ?? items[0];
+    const colores = Array.from(new Set(items.map(v => v.color).filter(Boolean) as string[]));
+    return { rep, colores };
+  });
+}
 
 interface Props {
   slides: CarouselSlide[];
@@ -350,14 +366,14 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
               <p className="section-sub mt-2">Modelos disponibles ahora en nuestro concesionario en Escazú</p>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap:'1.5rem' }}>
-              {featuredVehicles.map(vehicle => {
+              {agruparDestacados(featuredVehicles).map(({ rep: vehicle, colores }) => {
                 const imgSrc = vehicle.imagenes?.[0]?.url
                   ? getImageUrl(vehicle.imagenes[0].url)
                   : vehicle.profile?.imagenes?.[0]?.url
                   ? getImageUrl(vehicle.profile.imagenes[0].url)
                   : '/placeholder.png';
                 return (
-                  <div key={vehicle.id} className="vehicle-card">
+                  <div key={`${vehicle.marca}-${vehicle.modelo}-${vehicle.año}`} className="vehicle-card">
                     <div className="vehicle-card__img">
                       <Image src={imgSrc} alt={`${vehicle.marca} ${vehicle.modelo}`}
                         fill className="object-cover transition-transform duration-400" sizes="(max-width:640px) 100vw, 33vw" />
@@ -369,6 +385,19 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                         <p className="vehicle-card__price" style={{ color: '#0891b2' }}>
                           ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
                         </p>
+                      )}
+                      {colores.length > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', margin: '0.4rem 0 0.1rem' }}>
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            {colores.map((c) => {
+                              const sw = colorSwatch(c);
+                              return <span key={c} title={c} style={{ width: 18, height: 18, borderRadius: '50%', background: sw.hex, border: `1.5px solid ${sw.border ?? 'rgba(0,0,0,0.15)'}`, display: 'inline-block', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }} />;
+                            })}
+                          </div>
+                          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                            {colores.length === 1 ? colores[0] : `${colores.length} colores`}
+                          </span>
+                        </div>
                       )}
                       {vehicle.autonomia_km && (
                         <div className="vehicle-card__specs"><span>🛣️ {vehicle.autonomia_km} km</span></div>
