@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl, formatCRC, API } from '@/lib/api';
+import { colorSwatch } from '@/lib/colors';
 import type { Vehicle } from '@/types';
 
 const BRAND = { navy: '#024f7d', teal: '#04c7b2', dark: '#071f37', mid: '#082d4b', light: '#45a5ce' };
@@ -94,7 +95,7 @@ function LoanCalc({ precioBase }: { precioBase: number }) {
   );
 }
 
-export function VehicleDetailClient({ vehicle }: { vehicle: Vehicle }) {
+export function VehicleDetailClient({ vehicle, coloresDisponibles = [] }: { vehicle: Vehicle; coloresDisponibles?: string[] }) {
   const [activeTab, setActiveTab] = useState('rendimiento');
   const [activeImg, setActiveImg] = useState(0);
   const [lead, setLead] = useState({ nombre: '', email: '', telefono: '' });
@@ -179,10 +180,26 @@ export function VehicleDetailClient({ vehicle }: { vehicle: Vehicle }) {
 
         {/* Info + formulario */}
         <div>
-          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'1rem', marginBottom:'1rem' }}>
+          <div style={{ marginBottom:'1rem' }}>
             <h1 style={{ fontSize:'clamp(1.4rem, 3vw, 1.9rem)', fontWeight:900, color:'#071f37', lineHeight:1.2 }}>{vehicleName}</h1>
-            {vehicle.color && (
-              <span style={{ flexShrink:0, fontSize:'0.82rem', background:'#f1f5f9', color:'#64748b', padding:'0.3rem 0.75rem', borderRadius:'99px' }}>🎨 {vehicle.color}</span>
+            {(coloresDisponibles.length > 0 || vehicle.color) && (
+              <div style={{ display:'flex', alignItems:'center', gap:'0.6rem', marginTop:'0.6rem', flexWrap:'wrap' }}>
+                <span style={{ fontSize:'0.78rem', fontWeight:600, color:'#64748b' }}>
+                  {(coloresDisponibles.length || 1) > 1 ? 'Colores disponibles:' : 'Color:'}
+                </span>
+                <div style={{ display:'flex', gap:'0.4rem', flexWrap:'wrap' }}>
+                  {(coloresDisponibles.length ? coloresDisponibles : [vehicle.color as string]).map((c) => {
+                    const sw = colorSwatch(c);
+                    return (
+                      <span key={c} title={c}
+                        style={{ display:'inline-flex', alignItems:'center', gap:'0.35rem', fontSize:'0.78rem', color:'#475569', background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:'99px', padding:'0.2rem 0.6rem 0.2rem 0.3rem' }}>
+                        <span style={{ width:16, height:16, borderRadius:'50%', background: sw.hex, border:`1.5px solid ${sw.border ?? 'rgba(0,0,0,0.15)'}`, display:'inline-block' }} />
+                        {c}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 

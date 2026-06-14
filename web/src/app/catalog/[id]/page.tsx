@@ -57,6 +57,19 @@ export default async function VehicleDetailPage({ params }: Props) {
   }
   if (!vehicle) notFound();
 
+  // Colores disponibles del mismo modelo (marca+modelo+año) para los swatches
+  let coloresDisponibles: string[] = [];
+  try {
+    const catalogo = await fetchAPI<Vehicle[]>('/vehicles/sales/catalog');
+    coloresDisponibles = Array.from(new Set(
+      catalogo
+        .filter(v => v.marca === vehicle!.marca && v.modelo === vehicle!.modelo && v.año === vehicle!.año)
+        .map(v => v.color)
+        .filter(Boolean) as string[],
+    ));
+  } catch { /* si falla, se usa el color del vehículo */ }
+  if (coloresDisponibles.length === 0 && vehicle.color) coloresDisponibles = [vehicle.color];
+
   // JSON-LD Product — renderizado en el servidor
   const vehicleName = `${vehicle.marca} ${vehicle.modelo} ${vehicle.año ?? ''}`.trim();
   const firstImg = vehicle.imagenes?.[0]?.url ? getImageUrl(vehicle.imagenes[0].url) : undefined;
@@ -121,7 +134,7 @@ export default async function VehicleDetailPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <VehicleDetailClient vehicle={vehicle} />
+      <VehicleDetailClient vehicle={vehicle} coloresDisponibles={coloresDisponibles} />
     </>
   );
 }
