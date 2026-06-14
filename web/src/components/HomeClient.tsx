@@ -408,7 +408,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
       <SavingsCalculator />
 
       {/* ── GARANTÍA ── */}
-      <section style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 55%, #024f7d 100%)', padding: '5.5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'hidden' }}>
+      <section id="garantia" style={{ background: 'linear-gradient(135deg, #071f37 0%, #082d4b 55%, #024f7d 100%)', padding: '5.5rem clamp(1rem,4vw,1.5rem)', position: 'relative', overflow: 'hidden', scrollMarginTop: '80px' }}>
         <div style={{ position: 'absolute', top: '-120px', right: '-60px', width: '420px', height: '420px', borderRadius: '50%', background: 'rgba(4,199,178,0.06)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: '-100px', left: '-80px', width: '360px', height: '360px', borderRadius: '50%', background: 'rgba(69,165,206,0.06)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1, textAlign: 'center' }}>

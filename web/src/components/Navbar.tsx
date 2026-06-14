@@ -8,6 +8,7 @@ const LINKS = [
   { href: '/', label: 'Inicio', exact: true },
   { href: '/catalog', label: 'Modelos' },
   { href: '/compare', label: 'Comparador' },
+  { href: '#garantia', label: 'Garantía' },
   { href: '#contacto', label: 'Contacto' },
 ];
 
@@ -21,12 +22,14 @@ export function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  const handleContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleAnchor = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     setOpen(false);
-    const el = document.getElementById('contacto');
+    const href = e.currentTarget.getAttribute('href') || '';
+    const id = href.replace('#', '');
+    const el = document.getElementById(id);
     if (el) { el.scrollIntoView({ behavior: 'smooth' }); }
-    else if (pathname !== '/') { window.location.href = '/#contacto'; }
+    else if (pathname !== '/') { window.location.href = '/' + href; }
   };
 
   const isActive = (href: string, exact?: boolean) => {
@@ -53,7 +56,7 @@ export function Navbar() {
           <nav className="hidden md:flex items-center gap-8">
             {LINKS.map(({ href, label, exact }) =>
               href.startsWith('#') ? (
-                <a key={href} href={href} onClick={handleContact}
+                <a key={href} href={href} onClick={handleAnchor}
                   style={{ color: 'rgba(255,255,255,0.92)', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.03em', paddingBottom: '2px', borderBottom: '2px solid transparent', transition: 'color 0.2s' }}>
                   {label}
                 </a>
@@ -124,7 +127,7 @@ export function Navbar() {
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             {LINKS.map(({ href, label, exact }) =>
               href.startsWith('#') ? (
-                <a key={href} href={href} onClick={handleContact}
+                <a key={href} href={href} onClick={handleAnchor}
                   style={{ display: 'flex', alignItems: 'center', padding: '1rem 1.25rem', borderRadius: '14px', fontSize: '1.35rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '-0.01em', transition: 'background 0.15s, color 0.15s' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; }}>
