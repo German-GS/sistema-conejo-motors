@@ -15,9 +15,19 @@ interface GrupoModelo {
   precioMin: number;
   precioMax: number;
   count: number;         // unidades disponibles
+  estado: string;        // estado del modelo: En Stock / Contrapedido / Agotado
 }
 
 const precioDe = (v: Vehicle) => Number(v.precio_venta_final ?? v.precio_venta);
+
+// Estado del modelo: disponible si hay alguna unidad En Stock; si no, prioriza Bajo Pedido
+const estadoGrupo = (items: Vehicle[]): string => {
+  const clases = items.map(claseInv);
+  if (clases.some(c => c === 'En Stock')) return 'En Stock';
+  if (clases.some(c => c === 'Contrapedido')) return 'Contrapedido';
+  if (clases.some(c => c === 'Agotado')) return 'Agotado';
+  return 'No Comercial';
+};
 
 function agruparPorModelo(vehiculos: Vehicle[]): GrupoModelo[] {
   const mapa = new Map<string, Vehicle[]>();
@@ -32,11 +42,18 @@ function agruparPorModelo(vehiculos: Vehicle[]): GrupoModelo[] {
     const colores = Array.from(new Set(items.map(v => v.color).filter(Boolean) as string[]));
     const precios = items.map(precioDe);
     return {
-      rep, colores, count: items.length,
+      rep, colores, count: items.length, estado: estadoGrupo(items),
       precioMin: Math.min(...precios), precioMax: Math.max(...precios),
     };
   });
 }
+
+// Etiqueta visual por estado de inventario
+const ESTADO_CHIP: Record<string, { label: string; bg: string; color: string }> = {
+  Agotado: { label: '📦 Agotado', bg: '#fee2e2', color: '#b91c1c' },
+  Contrapedido: { label: '🔄 Bajo Pedido', bg: '#dbeafe', color: '#1d4ed8' },
+  'No Comercial': { label: '⛔ No disponible', bg: '#f3e8ff', color: '#6d28d9' },
+};
 
 // Clasificación de inventario (con respaldo a visibilidad para datos antiguos)
 const claseInv = (v: Vehicle): string => v.clasificacion_inventario ?? v.visibilidad ?? 'En Stock';
@@ -203,8 +220,9 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
               const imgSrc = vehicle.imagenes?.[0]?.url ? getImageUrl(vehicle.imagenes[0].url)
                 : vehicle.profile?.imagenes?.[0]?.url ? getImageUrl(vehicle.profile.imagenes[0].url)
                 : '/placeholder.png';
-              const agotado = claseInv(vehicle) === 'Agotado';
-              const pedido = claseInv(vehicle) === 'Contrapedido';
+              const agotado = grupo.estado === 'Agotado';
+              const pedido = grupo.estado === 'Contrapedido';
+              const chip = ESTADO_CHIP[grupo.estado];
               const variosPrecios = grupo.precioMax > grupo.precioMin;
               return (
                 <Link key={`${vehicle.marca}-${vehicle.modelo}-${vehicle.año}`} href={`/catalog/${vehicle.id}`} className="vehicle-card group block">
@@ -217,6 +235,11 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                   </div>
                   <div className="vehicle-card__body">
                     <h2 className="vehicle-card__name">{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h2>
+                    {chip && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', fontSize: '0.74rem', fontWeight: 700, background: chip.bg, color: chip.color, borderRadius: '99px', padding: '0.2rem 0.6rem', marginBottom: '0.4rem' }}>
+                        {chip.label}
+                      </span>
+                    )}
                     <p className="vehicle-card__price">
                       {variosPrecios && <span style={{ fontSize: '0.7em', fontWeight: 600, color: '#64748b' }}>Desde </span>}
                       {formatCRC(grupo.precioMin)}

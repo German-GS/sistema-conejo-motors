@@ -57,17 +57,21 @@ export default async function VehicleDetailPage({ params }: Props) {
   }
   if (!vehicle) notFound();
 
-  // Colores disponibles del mismo modelo (marca+modelo+año) para los swatches
+  // Colores disponibles y estado del mismo modelo (marca+modelo+año)
   let coloresDisponibles: string[] = [];
+  let estadoInventario = (vehicle.clasificacion_inventario ?? vehicle.visibilidad ?? 'En Stock') as string;
   try {
     const catalogo = await fetchAPI<Vehicle[]>('/vehicles/sales/catalog');
-    coloresDisponibles = Array.from(new Set(
-      catalogo
-        .filter(v => v.marca === vehicle!.marca && v.modelo === vehicle!.modelo && v.año === vehicle!.año)
-        .map(v => v.color)
-        .filter(Boolean) as string[],
-    ));
-  } catch { /* si falla, se usa el color del vehículo */ }
+    const delModelo = catalogo.filter(v => v.marca === vehicle!.marca && v.modelo === vehicle!.modelo && v.año === vehicle!.año);
+    coloresDisponibles = Array.from(new Set(delModelo.map(v => v.color).filter(Boolean) as string[]));
+    // Estado del modelo: disponible si hay alguna unidad En Stock; si no, prioriza Bajo Pedido
+    const clases = delModelo.map(v => (v.clasificacion_inventario ?? v.visibilidad ?? 'En Stock') as string);
+    if (clases.length) {
+      estadoInventario = clases.some(c => c === 'En Stock') ? 'En Stock'
+        : clases.some(c => c === 'Contrapedido') ? 'Contrapedido'
+        : clases.some(c => c === 'Agotado') ? 'Agotado' : 'No Comercial';
+    }
+  } catch { /* si falla, se usa el color/estado del vehículo */ }
   if (coloresDisponibles.length === 0 && vehicle.color) coloresDisponibles = [vehicle.color];
 
   // JSON-LD Product — renderizado en el servidor
@@ -134,7 +138,7 @@ export default async function VehicleDetailPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <VehicleDetailClient vehicle={vehicle} coloresDisponibles={coloresDisponibles} />
+      <VehicleDetailClient vehicle={vehicle} coloresDisponibles={coloresDisponibles} estadoInventario={estadoInventario} />
     </>
   );
 }

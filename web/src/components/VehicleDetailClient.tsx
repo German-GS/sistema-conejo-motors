@@ -95,7 +95,14 @@ function LoanCalc({ precioBase }: { precioBase: number }) {
   );
 }
 
-export function VehicleDetailClient({ vehicle, coloresDisponibles = [] }: { vehicle: Vehicle; coloresDisponibles?: string[] }) {
+const ESTADO_CHIP: Record<string, { label: string; bg: string; color: string }> = {
+  Agotado: { label: '📦 Agotado', bg: '#fee2e2', color: '#b91c1c' },
+  Contrapedido: { label: '🔄 Disponible bajo pedido', bg: '#dbeafe', color: '#1d4ed8' },
+  'No Comercial': { label: '⛔ No disponible', bg: '#f3e8ff', color: '#6d28d9' },
+};
+
+export function VehicleDetailClient({ vehicle, coloresDisponibles = [], estadoInventario = 'En Stock' }: { vehicle: Vehicle; coloresDisponibles?: string[]; estadoInventario?: string }) {
+  const estadoChip = ESTADO_CHIP[estadoInventario];
   const [activeTab, setActiveTab] = useState('rendimiento');
   const [activeImg, setActiveImg] = useState(0);
   const [lead, setLead] = useState({ nombre: '', email: '', telefono: '' });
@@ -159,10 +166,10 @@ export function VehicleDetailClient({ vehicle, coloresDisponibles = [] }: { vehi
             ) : (
               <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'4rem', color:'#cbd5e1' }}>🚗</div>
             )}
-            {(vehicle.clasificacion_inventario ?? vehicle.visibilidad) === 'Agotado' && (
+            {estadoInventario === 'Agotado' && (
               <div className="badge-agotado">📦 Agotado</div>
             )}
-            {(vehicle.clasificacion_inventario ?? vehicle.visibilidad) === 'Contrapedido' && (
+            {estadoInventario === 'Contrapedido' && (
               <div className="badge-pedido">🔄 Disponible Bajo Pedido</div>
             )}
           </div>
@@ -181,7 +188,14 @@ export function VehicleDetailClient({ vehicle, coloresDisponibles = [] }: { vehi
         {/* Info + formulario */}
         <div>
           <div style={{ marginBottom:'1rem' }}>
-            <h1 style={{ fontSize:'clamp(1.4rem, 3vw, 1.9rem)', fontWeight:900, color:'#071f37', lineHeight:1.2 }}>{vehicleName}</h1>
+            <div style={{ display:'flex', alignItems:'center', gap:'0.75rem', flexWrap:'wrap' }}>
+              <h1 style={{ fontSize:'clamp(1.4rem, 3vw, 1.9rem)', fontWeight:900, color:'#071f37', lineHeight:1.2 }}>{vehicleName}</h1>
+              {estadoChip && (
+                <span style={{ display:'inline-flex', alignItems:'center', fontSize:'0.8rem', fontWeight:700, background: estadoChip.bg, color: estadoChip.color, borderRadius:'99px', padding:'0.3rem 0.8rem' }}>
+                  {estadoChip.label}
+                </span>
+              )}
+            </div>
             {(coloresDisponibles.length > 0 || vehicle.color) && (
               <div style={{ display:'flex', alignItems:'center', gap:'0.6rem', marginTop:'0.6rem', flexWrap:'wrap' }}>
                 <span style={{ fontSize:'0.78rem', fontWeight:600, color:'#64748b' }}>
