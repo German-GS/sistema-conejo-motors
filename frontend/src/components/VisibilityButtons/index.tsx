@@ -37,6 +37,21 @@ const clasKey: Record<Clasificacion, string> = {
   "No Comercial": "NoComercial",
 };
 
+// Color sólido por estado (se aplica inline al activarse, infalible ante caché/CSS)
+const COLOR_ACTIVO: Record<string, string> = {
+  Visible: "#16a34a",
+  Oculto: "#64748b",
+  "En Stock": "#16a34a",
+  Agotado: "#dc2626",
+  Contrapedido: "#2563eb",
+  "No Comercial": "#7c3aed",
+};
+
+const estiloActivo = (activo: boolean, value: string): React.CSSProperties =>
+  activo
+    ? { background: COLOR_ACTIVO[value], borderColor: COLOR_ACTIVO[value], color: "#fff", fontWeight: 700, boxShadow: "0 1px 3px rgba(0,0,0,0.18)" }
+    : {};
+
 export const VisibilityButtons = ({
   vehicleId,
   current = "Visible",
@@ -91,6 +106,7 @@ export const VisibilityButtons = ({
           <button
             key={opt.value}
             className={`${styles.btn} ${vis === opt.value ? styles[`active_${opt.value}`] : ""}`}
+            style={estiloActivo(vis === opt.value, opt.value)}
             onClick={() => cambiarVis(opt.value)}
             disabled={loading}
             title={opt.label}
@@ -106,6 +122,7 @@ export const VisibilityButtons = ({
           <button
             key={opt.value}
             className={`${styles.btn} ${clas === opt.value ? styles[`active_${clasKey[opt.value]}`] : ""}`}
+            style={estiloActivo(clas === opt.value, opt.value)}
             onClick={() => cambiarClas(opt.value)}
             disabled={loading}
             title={opt.label}
