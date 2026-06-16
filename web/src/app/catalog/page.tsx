@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default async function CatalogPage() {
   let vehicles: Vehicle[] = [];
   try {
-    vehicles = await fetchAPI<Vehicle[]>('/vehicles/sales/catalog');
+    vehicles = await fetchAPI<Vehicle[]>('/vehicles/sales/catalog', undefined, false);
   } catch { /* API en cold start */ }
 
   const jsonLd = {

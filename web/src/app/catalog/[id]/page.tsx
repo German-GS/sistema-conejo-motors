@@ -51,7 +51,7 @@ export default async function VehicleDetailPage({ params }: Props) {
   const { id } = await params;
   let vehicle: Vehicle | null = null;
   try {
-    vehicle = await fetchAPI<Vehicle>(`/vehicles/${id}`);
+    vehicle = await fetchAPI<Vehicle>(`/vehicles/${id}`, undefined, 30);
   } catch {
     notFound();
   }
@@ -61,7 +61,7 @@ export default async function VehicleDetailPage({ params }: Props) {
   let coloresDisponibles: string[] = [];
   let estadoInventario = (vehicle.clasificacion_inventario ?? vehicle.visibilidad ?? 'En Stock') as string;
   try {
-    const catalogo = await fetchAPI<Vehicle[]>('/vehicles/sales/catalog');
+    const catalogo = await fetchAPI<Vehicle[]>('/vehicles/sales/catalog', undefined, 30);
     const delModelo = catalogo.filter(v => v.marca === vehicle!.marca && v.modelo === vehicle!.modelo && v.año === vehicle!.año);
     coloresDisponibles = Array.from(new Set(delModelo.map(v => v.color).filter(Boolean) as string[]));
     // Estado del modelo: disponible si hay alguna unidad En Stock; si no, prioriza Bajo Pedido

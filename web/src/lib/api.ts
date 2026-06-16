@@ -10,11 +10,19 @@ export function getImageUrl(url?: string | null): string {
   return `${API_BASE}/${url}`;
 }
 
-export async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    next: { revalidate: 300 }, // ISR: revalidar cada 5 min
-    ...options,
-  });
+/**
+ * @param revalidate  segundos de ISR (por defecto 300). Pasar `false` para
+ *   datos siempre frescos (cache: 'no-store'), útil en catálogo/precios.
+ */
+export async function fetchAPI<T>(
+  path: string,
+  options?: RequestInit,
+  revalidate: number | false = 300,
+): Promise<T> {
+  const cacheOpts: RequestInit = revalidate === false
+    ? { cache: 'no-store' }
+    : { next: { revalidate } };
+  const res = await fetch(`${API_BASE}${path}`, { ...cacheOpts, ...options });
   if (!res.ok) throw new Error(`API error ${res.status}: ${path}`);
   return res.json();
 }
