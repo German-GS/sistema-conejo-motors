@@ -85,6 +85,23 @@ export const CreateQuotePage = () => {
       .finally(() => setLoading(false));
   }, [vehicleId]);
 
+  const [leadNombre, setLeadNombre] = useState("");
+
+  // Pre-llenar datos del cliente desde el lead
+  useEffect(() => {
+    if (!leadId) return;
+    apiClient.get(`/leads/${leadId}`).then((res) => {
+      const lead = res.data;
+      setLeadNombre(lead.nombre_cliente || "");
+      setCliente(prev => ({
+        ...prev,
+        nombre_completo: prev.nombre_completo || lead.nombre_cliente || "",
+        email: prev.email || lead.email_cliente || "",
+        telefono: prev.telefono || lead.telefono_cliente || lead.whatsapp_cliente || "",
+      }));
+    }).catch(() => {});
+  }, [leadId]);
+
   // El precio de venta YA incluye IVA — hacemos back-calculation
   const precioConIva   = precioLista - descuentoMonto;          // precio que paga el cliente (con IVA)
   const divisor        = 1 + ivaPorcentaje / 100;               // 1.13 para IVA 13%
@@ -138,7 +155,7 @@ export const CreateQuotePage = () => {
       {/* Badge lead existente */}
       {leadId ? (
         <div className={styles.leadBadge}>
-          🔗 Cotización vinculada al Lead #{leadId} — el lead se actualizará automáticamente.
+          🔗 Cotización para <strong>{leadNombre || `Lead #${leadId}`}</strong> — los datos del cliente se pre-llenaron automáticamente. Completá la cédula/pasaporte para continuar.
         </div>
       ) : (
         /* Sin lead previo → selector de fuente para crear uno automático */

@@ -36,6 +36,39 @@ export const UserForm: React.FC<UserFormProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const isEditing = !!initialData;
 
+  // Calculadora de salario bruto/neto
+  const [modoSalario, setModoSalario] = useState<"bruto" | "neto">("bruto");
+  const [calculando, setCalculando] = useState(false);
+  const [calcResult, setCalcResult] = useState<{
+    bruto: number; neto: number; totalDeducciones: number;
+    desglose: { sem: number; ivm: number; bancoPopular: number; renta: number };
+  } | null>(null);
+
+  const fmtCRC = (v: number) =>
+    new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
+
+  const handleCalcular = async () => {
+    const monto = Number(formData.salario_base);
+    if (!monto || monto <= 0) {
+      toast.error("Ingresá primero un monto en el salario.");
+      return;
+    }
+    setCalculando(true);
+    try {
+      const { data } = await apiClient.post("/recibos-pago/convertir-salario", {
+        modo: modoSalario,
+        monto,
+      });
+      setCalcResult(data);
+      // Siempre se almacena el BRUTO (es lo que usa la planilla)
+      setFormData((prev) => ({ ...prev, salario_base: String(data.bruto) }));
+    } catch {
+      toast.error("No se pudo calcular el salario.");
+    } finally {
+      setCalculando(false);
+    }
+  };
+
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -160,8 +193,8 @@ export const UserForm: React.FC<UserFormProps> = ({
         type="number"
         name="salario_base"
         value={formData.salario_base}
-        onChange={handleChange}
-        placeholder="Salario Base Mensual"
+        onChange={(e) => { handleChange(e); setCalcResult(null); }}
+        placeholder="Salario Bruto Mensual (₡)"
         required={!isEditing}
       />
       <input
@@ -200,6 +233,64 @@ export const UserForm: React.FC<UserFormProps> = ({
           </option>
         ))}
       </select>
+      {/* Calculadora de salario bruto/neto */}
+      <div style={{ gridColumn: "1 / -1", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "0.85rem 1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#334155" }}>🧮 Calculadora de salario</span>
+          <span style={{ fontSize: "0.82rem", color: "#64748b" }}>El monto que escribí arriba es:</span>
+          <div style={{ display: "inline-flex", border: "1px solid #cbd5e1", borderRadius: 8, overflow: "hidden" }}>
+            {(["bruto", "neto"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => { setModoSalario(m); setCalcResult(null); }}
+                style={{
+                  border: "none", cursor: "pointer", padding: "0.35rem 0.85rem", fontSize: "0.82rem", fontWeight: 600,
+                  background: modoSalario === m ? "#024f7d" : "#fff",
+                  color: modoSalario === m ? "#fff" : "#475569",
+                }}
+              >
+                {m === "bruto" ? "Bruto" : "Neto (lo que recibe)"}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={handleCalcular}
+            disabled={calculando}
+            style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "0.4rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem" }}
+          >
+            {calculando ? "Calculando…" : "Calcular"}
+          </button>
+        </div>
+
+        <p style={{ fontSize: "0.76rem", color: "#94a3b8", margin: "0.5rem 0 0" }}>
+          Si prometés un <strong>neto</strong> al colaborador, elegí “Neto” y Calcular: el sistema sube el monto al bruto necesario (se guarda el bruto, que es lo que usa la planilla).
+        </p>
+
+        {calcResult && (
+          <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
+              <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase" }}>Salario Bruto</div>
+              <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0a2540" }}>{fmtCRC(calcResult.bruto)}</div>
+              <div style={{ fontSize: "0.68rem", color: "#16a34a" }}>✓ se guarda este</div>
+            </div>
+            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
+              <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase" }}>Neto que recibe</div>
+              <div style={{ fontSize: "1rem", fontWeight: 700, color: "#024f7d" }}>{fmtCRC(calcResult.neto)}</div>
+            </div>
+            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
+              <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase" }}>Deducciones CCSS</div>
+              <div style={{ fontSize: "1rem", fontWeight: 700, color: "#dc2626" }}>−{fmtCRC(calcResult.totalDeducciones)}</div>
+              <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>
+                SEM {fmtCRC(calcResult.desglose.sem)} · IVM {fmtCRC(calcResult.desglose.ivm)} · BP {fmtCRC(calcResult.desglose.bancoPopular)}
+                {calcResult.desglose.renta > 0 ? ` · Renta ${fmtCRC(calcResult.desglose.renta)}` : ""}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <button
         type="submit"
         className="btn btn-principal"

@@ -1,6 +1,6 @@
 import { getImageUrl } from "@/utils/imageUrl";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import styles from "./CatalogPage.module.css";
 import { Pagination } from "@/components/Pagination";
@@ -52,6 +52,8 @@ export const CatalogPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const leadId = searchParams.get("leadId");
   const basePath = location.pathname.startsWith("/admin") ? "/admin/sales" : "/sales";
   const isAdmin = location.pathname.startsWith("/admin");
 
@@ -141,6 +143,16 @@ export const CatalogPage = () => {
         <h1>Catálogo de Vehículos</h1>
         <span className={styles.count}>{filtered.length} de {vehicles.length} vehículos</span>
       </div>
+
+      {leadId && (
+        <div style={{ background: "#eff6ff", border: "1.5px solid #3b82f6", borderRadius: 10, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: "1.2rem" }}>🔗</span>
+          <div>
+            <strong style={{ color: "#1d4ed8" }}>Cotizando para Lead #{leadId}</strong>
+            <span style={{ color: "#3b82f6", marginLeft: 8, fontSize: "0.88rem" }}>— Seleccioná el vehículo para continuar con la cotización</span>
+          </div>
+        </div>
+      )}
 
       {/* ── Panel de Reservados (solo admin) ───────────────────────────── */}
       {isAdmin && reservados.length > 0 && (
@@ -280,9 +292,18 @@ export const CatalogPage = () => {
                   <span>{vehicle.color}</span>
                   {vehicle.bodega && <span>📍 {vehicle.bodega.nombre}</span>}
                 </div>
-                <Link to={`${basePath}/catalog/${vehicle.id}`} className="btn btn-principal">
-                  Ver Detalles
-                </Link>
+                {leadId ? (
+                  <Link
+                    to={`${basePath}/catalog/${vehicle.id}/quote?leadId=${leadId}`}
+                    className="btn btn-principal"
+                  >
+                    📄 Cotizar para este Lead
+                  </Link>
+                ) : (
+                  <Link to={`${basePath}/catalog/${vehicle.id}`} className="btn btn-principal">
+                    Ver Detalles
+                  </Link>
+                )}
               </div>
             </div>
           ))}

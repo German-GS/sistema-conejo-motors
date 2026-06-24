@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/sales/LeadDetailsPage.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
@@ -13,6 +13,8 @@ interface Actividad {
   tipo: string;
   descripcion: string;
   fecha_creacion: string;
+  entidad?: string;
+  estado_fin?: string;
   usuario?: { nombre_completo: string };
 }
 
@@ -32,6 +34,28 @@ interface Financiamiento {
   notas?: string;
   fecha_envio?: string;
   fecha_respuesta?: string;
+  fecha_proximo_seguimiento?: string;
+}
+
+interface LeadDocumento {
+  id: number;
+  nombre: string;
+  tipo_mime?: string;
+  tamano_bytes: number;
+  fecha_creacion: string;
+  fecha_expiracion: string;
+  actividad_id?: number;
+  subido_por?: { nombre_completo: string };
+}
+
+interface CotizacionResumen {
+  id: number;
+  estado: string;
+  total_con_iva: number;
+  fecha_creacion: string;
+  fecha_expiracion: string;
+  vehiculo: { marca: string; modelo: string; año: number };
+  vendedor?: { nombre_completo: string };
 }
 
 interface LeadDetails {
@@ -51,6 +75,7 @@ interface LeadDetails {
   fecha_creacion: string;
   vehiculo_interes?: { id: number; marca: string; modelo: string; año: number };
   vendedor_asignado?: Vendedor;
+  campana?: { id: number; nombre: string; plataforma: string } | null;
   actividades?: Actividad[];
 }
 
@@ -61,8 +86,11 @@ const FUENTE_ICONS: Record<string, string> = {
 
 const TIPO_ICONS: Record<string, string> = {
   nota: "📝", llamada: "📞", email: "📧", whatsapp: "💬",
-  reunion: "🤝", estado_cambio: "🔄", cotizacion_creada: "📄",
+  reunion: "🤝", estado_cambio: "🔄", cotizacion_creada: "📄", financiera: "🏦",
 };
+
+// Tipos que el usuario puede elegir manualmente al registrar una actividad
+const TIPOS_MANUALES = ["nota", "llamada", "email", "whatsapp", "reunion"];
 
 const ESTADO_COLORS: Record<string, string> = {
   Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
@@ -92,7 +120,14 @@ export const LeadDetailsPage = () => {
     : "/sales/catalog";
   const [lead, setLead] = useState<LeadDetails | null>(null);
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
+  const [campanasActivas, setCampanasActivas] = useState<{ id: number; nombre: string; plataforma: string }[]>([]);
+  const [cotizaciones, setCotizaciones] = useState<CotizacionResumen[]>([]);
+  const [documentos, setDocumentos] = useState<LeadDocumento[]>([]);
+  const [subiendoDoc, setSubiendoDoc] = useState(false);
+  const [descargandoId, setDescargandoId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [editandoNombre, setEditandoNombre] = useState(false);
+  const [nombreEdit, setNombreEdit] = useState("");
   const [solicitandoFactura, setSolicitandoFactura] = useState(false);
   const [facturaEnviada, setFacturaEnviada] = useState(false);
   const billingBase = location.pathname.startsWith("/admin") ? "/admin/billing" : "/sales/billing";
@@ -112,44 +147,28 @@ export const LeadDetailsPage = () => {
   const [tipoAct, setTipoAct] = useState("nota");
   const [descAct, setDescAct] = useState("");
   const [addingAct, setAddingAct] = useState(false);
+  const [adjuntosAct, setAdjuntosAct] = useState<File[]>([]);
+  // Vincular la nota a una financiera (opcional)
+  const [actEntidad, setActEntidad] = useState("");
+  const [actEstadoFin, setActEstadoFin] = useState("Enviado");
+  const [actProxSeg, setActProxSeg] = useState("");
 
   // Financiamiento
   const [financiamientos, setFinanciamientos] = useState<Financiamiento[]>([]);
-  const [editingFin, setEditingFin] = useState<Record<string, Financiamiento>>({});
-  const [savingFin, setSavingFin] = useState<Record<string, boolean>>({});
 
-  const ENTIDADES = ["Banco Promerica", "Davivienda", "Lafise", "BAC", "Coopenae"];
-  const ESTADOS_FIN = ["Pendiente", "Enviado", "En Revisión", "Pre-Aprobado", "Aprobado", "Rechazado"];
+  const ENTIDADES = ["Lafise", "Banco Promerica", "Davivienda", "Coopenae", "Flexi Leasing"];
+  const ESTADOS_FIN = ["Pendiente", "Enviado", "En Revisión", "Pre-Aprobado", "Aprobado", "Rechazado", "Desistió"];
   const ESTADO_FIN_COLORS: Record<string, string> = {
     "Pendiente": "#94a3b8", "Enviado": "#3b82f6", "En Revisión": "#f59e0b",
     "Pre-Aprobado": "#8b5cf6", "Aprobado": "#10b981", "Rechazado": "#ef4444",
+    "Desistió": "#78716c",
   };
 
-  const getFinData = (entidad: string): Financiamiento =>
-    editingFin[entidad] ?? financiamientos.find(f => f.entidad === entidad) ?? { entidad, estado: "Pendiente" };
-
-  const handleFinChange = (entidad: string, field: keyof Financiamiento, value: any) => {
-    setEditingFin(prev => ({
-      ...prev,
-      [entidad]: { ...getFinData(entidad), [field]: value },
-    }));
-  };
-
-  const handleSaveFin = async (entidad: string) => {
-    if (!lead) return;
-    const data = editingFin[entidad] ?? getFinData(entidad);
-    setSavingFin(prev => ({ ...prev, [entidad]: true }));
-    try {
-      const res = await apiClient.post(`/leads/${lead.id}/financiamientos`, { ...data, entidad });
-      setFinanciamientos(prev => {
-        const idx = prev.findIndex(f => f.entidad === entidad);
-        if (idx >= 0) { const n = [...prev]; n[idx] = res.data; return n; }
-        return [...prev, res.data];
-      });
-      setEditingFin(prev => { const n = { ...prev }; delete n[entidad]; return n; });
-      toast.success(`${entidad}: guardado.`);
-    } catch { toast.error("Error al guardar."); }
-    finally { setSavingFin(prev => ({ ...prev, [entidad]: false })); }
+  const cargarFinanciamientos = () => {
+    if (!leadId) return;
+    apiClient.get(`/leads/${leadId}/financiamientos`)
+      .then((res) => setFinanciamientos(res.data))
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -163,7 +182,96 @@ export const LeadDetailsPage = () => {
     apiClient.get("/users")
       .then((res) => setVendedores(res.data.filter((u: any) => u.rol?.nombre === "Vendedor" || u.rol?.nombre === "Administrador")))
       .catch(() => {});
+    apiClient.get("/campanas/activas")
+      .then((res) => setCampanasActivas(res.data))
+      .catch(() => {});
+    apiClient.get(`/quotes/by-lead/${leadId}`)
+      .then((res) => setCotizaciones(res.data))
+      .catch(() => {});
+    apiClient.get(`/leads/${leadId}/documentos`)
+      .then((res) => setDocumentos(res.data))
+      .catch(() => {});
   }, [leadId]);
+
+  const cargarDocumentos = () => {
+    if (!leadId) return;
+    apiClient.get(`/leads/${leadId}/documentos`)
+      .then((res) => setDocumentos(res.data))
+      .catch(() => {});
+  };
+
+  /** Sube uno o varios archivos. Devuelve cuántos se subieron OK. */
+  const subirArchivos = async (files: File[], actividadId?: number): Promise<number> => {
+    if (!lead) return 0;
+    let okCount = 0;
+    for (const file of files) {
+      if (file.size > 15 * 1024 * 1024) {
+        toast.error(`"${file.name}" supera el límite de 15 MB.`);
+        continue;
+      }
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        if (actividadId) fd.append("actividadId", String(actividadId));
+        await apiClient.post(`/leads/${lead.id}/documentos`, fd);
+        okCount++;
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || `No se pudo subir "${file.name}".`);
+      }
+    }
+    return okCount;
+  };
+
+  const handleSubirDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = ""; // permitir resubir los mismos archivos
+    if (!files.length || !lead) return;
+    setSubiendoDoc(true);
+    try {
+      const ok = await subirArchivos(files);
+      if (ok > 0) {
+        toast.success(`📎 ${ok} documento(s) subido(s).`);
+        cargarDocumentos();
+      }
+    } finally {
+      setSubiendoDoc(false);
+    }
+  };
+
+  const handleDescargarDoc = async (doc: LeadDocumento) => {
+    if (!lead) return;
+    setDescargandoId(doc.id);
+    try {
+      const res = await apiClient.get(
+        `/leads/${lead.id}/documentos/${doc.id}/descargar`,
+        { responseType: "blob" },
+      );
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.nombre;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      toast.error("No se pudo descargar el documento.");
+    } finally {
+      setDescargandoId(null);
+    }
+  };
+
+  const handleEliminarDoc = async (doc: LeadDocumento) => {
+    if (!lead) return;
+    if (!window.confirm(`¿Eliminar "${doc.nombre}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      await apiClient.delete(`/leads/${lead.id}/documentos/${doc.id}`);
+      toast.success("Documento eliminado.");
+      setDocumentos((prev) => prev.filter((d) => d.id !== doc.id));
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "No se pudo eliminar.");
+    }
+  };
 
   const save = async (updates: Partial<LeadDetails>) => {
     if (!lead) return;
@@ -207,18 +315,46 @@ export const LeadDetailsPage = () => {
   };
 
   const handleAddActividad = async () => {
-    if (!lead || !descAct.trim()) return;
+    const esFinanciera = !!actEntidad;
+    if (!lead || (!descAct.trim() && adjuntosAct.length === 0 && !esFinanciera)) return;
     setAddingAct(true);
     try {
+      const descripcion =
+        descAct.trim() ||
+        (esFinanciera
+          ? `${actEntidad}: ${actEstadoFin}`
+          : `Adjuntó ${adjuntosAct.length} documento(s).`);
       const res = await apiClient.post(`/leads/${lead.id}/actividades`, {
-        tipo: tipoAct,
-        descripcion: descAct,
+        tipo: esFinanciera ? "financiera" : tipoAct,
+        descripcion,
+        entidad: esFinanciera ? actEntidad : undefined,
+        estado_fin: esFinanciera ? actEstadoFin : undefined,
       });
+      const nuevaActividad = res.data;
+      // Subir adjuntos vinculados a esta actividad
+      if (adjuntosAct.length > 0) {
+        const ok = await subirArchivos(adjuntosAct, nuevaActividad.id);
+        if (ok > 0) cargarDocumentos();
+      }
+      // Si la nota es de financiera, actualizar el estado/recordatorio de esa entidad
+      if (esFinanciera) {
+        const payload: any = { entidad: actEntidad, estado: actEstadoFin };
+        if (actProxSeg) payload.fecha_proximo_seguimiento = actProxSeg;
+        if (descAct.trim()) payload.notas = descAct.trim();
+        try {
+          await apiClient.post(`/leads/${lead.id}/financiamientos`, payload);
+          cargarFinanciamientos();
+        } catch { /* la nota ya quedó registrada */ }
+      }
       setLead((prev) =>
-        prev ? { ...prev, actividades: [res.data, ...(prev.actividades ?? [])] } : prev
+        prev ? { ...prev, actividades: [nuevaActividad, ...(prev.actividades ?? [])] } : prev
       );
       setDescAct("");
-      toast.success("Actividad registrada.");
+      setAdjuntosAct([]);
+      setActEntidad("");
+      setActEstadoFin("Enviado");
+      setActProxSeg("");
+      toast.success(esFinanciera ? "Seguimiento de financiera registrado." : "Actividad registrada.");
     } catch {
       toast.error("Error al registrar actividad.");
     } finally {
@@ -250,12 +386,16 @@ export const LeadDetailsPage = () => {
       <div className={styles.topBar}>
         <button className={styles.backBtn} onClick={() => navigate(-1)}>← Volver</button>
         <div className={styles.topActions}>
-          {lead.vehiculo_interes && lead.estado !== "Cerrado" && lead.estado !== "Perdido" && (
+          {lead.estado !== "Cerrado" && lead.estado !== "Perdido" && (
             <button
               className={styles.quoteBtn}
-              onClick={() => navigate(`${catalogBase}/${lead.vehiculo_interes!.id}/quote?leadId=${lead.id}`)}
+              onClick={() =>
+                lead.vehiculo_interes
+                  ? navigate(`${catalogBase}/${lead.vehiculo_interes.id}/quote?leadId=${lead.id}`)
+                  : navigate(`${catalogBase}?leadId=${lead.id}`)
+              }
             >
-              📄 Crear Cotización
+              📄 {lead.vehiculo_interes ? "Crear Cotización" : "Cotizar Vehículo"}
             </button>
           )}
           {/* Botón de facturación: comportamiento diferente por rol */}
@@ -306,8 +446,54 @@ export const LeadDetailsPage = () => {
           {/* Cabecera */}
           <div className={styles.leadHeader}>
             <div className={styles.avatar}>{lead.nombre_cliente[0].toUpperCase()}</div>
-            <div>
-              <h1>{lead.nombre_cliente}</h1>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {editandoNombre ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  <input
+                    autoFocus
+                    value={nombreEdit}
+                    onChange={(e) => setNombreEdit(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const n = nombreEdit.trim();
+                        if (n && n !== lead.nombre_cliente) save({ nombre_cliente: n } as any);
+                        setEditandoNombre(false);
+                      }
+                      if (e.key === "Escape") setEditandoNombre(false);
+                    }}
+                    style={{ fontSize: "1.05rem", fontWeight: 700, padding: "0.3rem 0.5rem", borderRadius: 8, border: "1.5px solid #024f7d", width: "100%" }}
+                  />
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                    <button
+                      onClick={() => {
+                        const n = nombreEdit.trim();
+                        if (n && n !== lead.nombre_cliente) save({ nombre_cliente: n } as any);
+                        setEditandoNombre(false);
+                      }}
+                      style={{ background: "#024f7d", color: "#fff", border: "none", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
+                    >
+                      Guardar
+                    </button>
+                    <button
+                      onClick={() => setEditandoNombre(false)}
+                      style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem" }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <h1 style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span>{lead.nombre_cliente}</span>
+                  <button
+                    onClick={() => { setNombreEdit(lead.nombre_cliente); setEditandoNombre(true); }}
+                    title="Editar nombre"
+                    style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", opacity: 0.6 }}
+                  >
+                    ✏️
+                  </button>
+                </h1>
+              )}
               <span
                 className={styles.estadoBadge}
                 style={{ background: ESTADO_COLORS[lead.estado] ?? "#64748b" }}
@@ -318,8 +504,7 @@ export const LeadDetailsPage = () => {
           </div>
 
           {/* Contacto */}
-          <div className={styles.card}>
-            <h4>📋 Contacto</h4>
+          <SidebarSection id="contacto" title="📋 Contacto" defaultOpen>
             <p><strong>Email:</strong> {lead.email_cliente}</p>
             <p><strong>Teléfono:</strong> {lead.telefono_cliente || "—"}</p>
             <p><strong>Registrado:</strong> {fmtFecha(lead.fecha_creacion)}</p>
@@ -388,21 +573,19 @@ export const LeadDetailsPage = () => {
                 {" "}💬 Contactado por WhatsApp
               </label>
             </div>
-          </div>
+          </SidebarSection>
 
           {/* Vehículo de interés */}
           {lead.vehiculo_interes && (
-            <div className={styles.card}>
-              <h4>🚗 Vehículo de Interés</h4>
+            <SidebarSection id="vehiculo" title="🚗 Vehículo de Interés" defaultOpen>
               <p className={styles.vehicleTag}>
                 {lead.vehiculo_interes.marca} {lead.vehiculo_interes.modelo} ({lead.vehiculo_interes.año})
               </p>
-            </div>
+            </SidebarSection>
           )}
 
           {/* Estado */}
-          <div className={styles.card}>
-            <h4>Estado del Lead</h4>
+          <SidebarSection id="estado" title="Estado del Lead" defaultOpen>
             <select
               value={lead.estado}
               onChange={(e) => save({ estado: e.target.value } as any)}
@@ -413,11 +596,10 @@ export const LeadDetailsPage = () => {
                 <option key={e} value={e}>{e}</option>
               ))}
             </select>
-          </div>
+          </SidebarSection>
 
           {/* Fuente */}
-          <div className={styles.card}>
-            <h4>Fuente</h4>
+          <SidebarSection id="fuente" title="Fuente" defaultOpen={false}>
             <div className={styles.fuenteGrid}>
               {Object.entries(FUENTE_ICONS).map(([f, icon]) => (
                 <button
@@ -429,23 +611,47 @@ export const LeadDetailsPage = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </SidebarSection>
+
+          {/* Campaña — visible si la fuente es red social */}
+          {["Facebook", "Instagram", "TikTok"].includes(lead.fuente) && (
+            <SidebarSection id="campana" title="📣 Campaña" defaultOpen={false}>
+              <select
+                value={lead.campana?.id ?? ""}
+                onChange={(e) => save({ campana_id: e.target.value ? Number(e.target.value) : null } as any)}
+                style={{ width: "100%", padding: "0.5rem 0.75rem", borderRadius: "8px", border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
+              >
+                <option value="">— Orgánico / sin campaña —</option>
+                {/* Siempre mostrar la campaña actual aunque esté pausada/finalizada */}
+                {lead.campana && !campanasActivas.find(c => c.id === lead.campana!.id) && (
+                  <option value={lead.campana.id}>{lead.campana.nombre} (finalizada)</option>
+                )}
+                {campanasActivas
+                  .filter(c => c.plataforma === lead.fuente)
+                  .map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)
+                }
+              </select>
+              {lead.campana && (
+                <p style={{ fontSize: "0.78rem", color: "#16a34a", margin: "0.4rem 0 0" }}>
+                  ✅ Asignado a: <strong>{lead.campana.nombre}</strong>
+                </p>
+              )}
+            </SidebarSection>
+          )}
 
           {/* Seguimiento */}
-          <div className={styles.card}>
-            <h4>📅 Próximo Seguimiento</h4>
+          <SidebarSection id="seguimiento" title="📅 Próximo Seguimiento" defaultOpen>
             <input
               type="date"
               value={lead.fecha_followup ?? ""}
               onChange={(e) => save({ fecha_followup: e.target.value } as any)}
               className={styles.input}
             />
-          </div>
+          </SidebarSection>
 
           {/* Asignación */}
           {vendedores.length > 0 && (
-            <div className={styles.card}>
-              <h4>👤 Vendedor Asignado</h4>
+            <SidebarSection id="vendedor" title="👤 Vendedor Asignado" defaultOpen={false}>
               <select
                 value={lead.vendedor_asignado?.id ?? ""}
                 onChange={(e) => save({ vendedor_asignado_id: Number(e.target.value) } as any)}
@@ -456,12 +662,11 @@ export const LeadDetailsPage = () => {
                   <option key={v.id} value={v.id}>{v.nombre_completo}</option>
                 ))}
               </select>
-            </div>
+            </SidebarSection>
           )}
 
           {/* Notas */}
-          <div className={styles.card}>
-            <h4>📝 Notas Generales</h4>
+          <SidebarSection id="notas" title="📝 Notas Generales" defaultOpen>
             <textarea
               value={lead.notas ?? ""}
               rows={4}
@@ -470,11 +675,10 @@ export const LeadDetailsPage = () => {
               onChange={(e) => setLead((prev) => prev ? { ...prev, notas: e.target.value } : prev)}
               onBlur={(e) => save({ notas: e.target.value } as any)}
             />
-          </div>
+          </SidebarSection>
 
           {/* ── MODALIDAD DE COMPRA ── */}
-          <div className={styles.card}>
-            <h4>💳 Modalidad de Compra</h4>
+          <SidebarSection id="modalidad" title="💳 Modalidad de Compra" defaultOpen={false}>
             <div className={styles.tipoPagoRow}>
               {(["Contado", "Crédito"] as const).map(tipo => (
                 <button
@@ -486,41 +690,356 @@ export const LeadDetailsPage = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </SidebarSection>
+
+          {/* Cotizaciones vinculadas */}
+          <SidebarSection id="cotizaciones" title="📄 Cotizaciones" defaultOpen badge={cotizaciones.length || undefined}>
+            {cotizaciones.length === 0 ? (
+              <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #64748b)", margin: 0 }}>
+                Sin cotizaciones aún.
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {cotizaciones.map((c) => {
+                  const vencida = new Date(c.fecha_expiracion) < new Date();
+                  const estadoColor: Record<string, string> = {
+                    Activa: "#10b981", Expirada: "#f59e0b", Cancelada: "#ef4444",
+                  };
+                  const color = estadoColor[c.estado] ?? "#64748b";
+                  return (
+                    <div
+                      key={c.id}
+                      onClick={() => navigate(`${location.pathname.startsWith("/admin") ? "/admin" : "/sales"}/quotes/${c.id}`)}
+                      style={{
+                        background: "var(--bg, #f8fafc)", border: "1px solid var(--border, #e2e8f0)",
+                        borderRadius: 8, padding: "0.6rem 0.8rem", cursor: "pointer",
+                        borderLeft: `3px solid ${color}`,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+                        <strong style={{ fontSize: "0.85rem" }}>
+                          {c.vehiculo.marca} {c.vehiculo.modelo} ({c.vehiculo.año})
+                        </strong>
+                        <span style={{ fontSize: "0.75rem", fontWeight: 700, color, background: `${color}18`, padding: "2px 7px", borderRadius: 20 }}>
+                          {c.estado}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: "0.78rem", color: "var(--text-secondary, #64748b)", display: "flex", gap: "0.75rem" }}>
+                        <span>#{c.id}</span>
+                        <span>{new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(c.total_con_iva)}</span>
+                        {c.estado === "Activa" && (
+                          <span style={{ color: vencida ? "#ef4444" : "#f59e0b" }}>
+                            {vencida ? "⚠️ Vencida" : `Vence ${fmtFechaLocal(c.fecha_expiracion)}`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </SidebarSection>
+
+          {/* Documentos del cliente */}
+          <SidebarSection id="documentos" title="📎 Documentos del Cliente" defaultOpen badge={documentos.length || undefined}>
+            <p style={{ fontSize: "0.76rem", color: "#64748b", margin: "0 0 0.6rem" }}>
+              Cédula, estados de cuenta, CIC, etc. Se eliminan automáticamente a los 2 meses por seguridad.
+            </p>
+
+            <label
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
+                border: "1.5px dashed #94a3b8", borderRadius: 8, padding: "0.6rem",
+                cursor: subiendoDoc ? "wait" : "pointer", fontSize: "0.85rem", fontWeight: 600,
+                color: "#475569", background: "#f8fafc",
+              }}
+            >
+              {subiendoDoc ? "Subiendo…" : "⬆️ Subir documento(s)"}
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx,.xls,.xlsx"
+                onChange={handleSubirDoc}
+                disabled={subiendoDoc}
+                style={{ display: "none" }}
+              />
+            </label>
+
+            {documentos.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.7rem" }}>
+                {documentos.map((d) => {
+                  const dias = Math.ceil((new Date(d.fecha_expiracion).getTime() - Date.now()) / 86400000);
+                  const porVencer = dias <= 7;
+                  return (
+                    <div
+                      key={d.id}
+                      style={{
+                        background: "#f8fafc", border: "1px solid #e2e8f0",
+                        borderRadius: 8, padding: "0.55rem 0.7rem",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                        <span style={{ flex: 1, fontSize: "0.84rem", fontWeight: 600, wordBreak: "break-word" }}>
+                          {d.tipo_mime?.includes("pdf") ? "📄" : d.tipo_mime?.includes("image") ? "🖼️" : "📎"} {d.nombre}
+                        </span>
+                        <button
+                          onClick={() => handleDescargarDoc(d)}
+                          disabled={descargandoId === d.id}
+                          title="Descargar"
+                          style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "1rem" }}
+                        >
+                          {descargandoId === d.id ? "⏳" : "⬇️"}
+                        </button>
+                        <button
+                          onClick={() => handleEliminarDoc(d)}
+                          title="Eliminar"
+                          style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "0.9rem", color: "#ef4444" }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div style={{ fontSize: "0.72rem", color: porVencer ? "#dc2626" : "#94a3b8", marginTop: 2 }}>
+                        {(d.tamano_bytes / 1024).toFixed(0)} KB ·{" "}
+                        {dias > 0
+                          ? `se elimina en ${dias} día${dias === 1 ? "" : "s"}`
+                          : "se eliminará hoy"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </SidebarSection>
 
           {saving && <p className={styles.savingHint}>Guardando...</p>}
         </div>
 
         {/* COLUMNA DERECHA — timeline de actividades */}
         <div className={styles.main}>
+          {/* Resumen del Lead — datos y avance */}
+          {(() => {
+            const FUNNEL = ["Nuevo", "Contactado", "En Progreso", "Cerrado"];
+            const perdido = lead.estado === "Perdido";
+            const idxActual = FUNNEL.indexOf(lead.estado);
+            const dias = Math.floor((Date.now() - new Date(lead.fecha_creacion).getTime()) / 86400000);
+            const ultimaAct = actividades[0]?.fecha_creacion;
+            const cotsActivas = cotizaciones.filter((c) => c.estado === "Activa");
+            const totalCots = cotsActivas.reduce((s, c) => s + Number(c.total_con_iva || 0), 0);
+            const finAprob = financiamientos.filter((f) => f.estado === "Aprobado").length;
+            const finProceso = financiamientos.filter((f) => ["Enviado", "En Revisión", "Pre-Aprobado"].includes(f.estado)).length;
+            const dato = (icon: string, label: string, value: string) => (
+              <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
+                <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em" }}>{icon} {label}</span>
+                <span style={{ fontSize: "0.92rem", fontWeight: 700, color: "#0a2540" }}>{value}</span>
+              </div>
+            );
+            return (
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.15rem", marginBottom: "1.25rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.8rem" }}>
+                  📊 Resumen del Lead
+                </div>
+
+                {/* Stepper de avance */}
+                {perdido ? (
+                  <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 8, padding: "0.5rem 0.8rem", fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.9rem" }}>
+                    ❌ Lead Perdido
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
+                    {FUNNEL.map((etapa, i) => {
+                      const done = idxActual >= 0 && i <= idxActual;
+                      const actual = i === idxActual;
+                      return (
+                        <div key={etapa} style={{ display: "flex", alignItems: "center", flex: i < FUNNEL.length - 1 ? 1 : "0 0 auto" }}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                            <div style={{
+                              width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: "0.7rem", fontWeight: 700,
+                              background: done ? (ESTADO_COLORS[lead.estado] ?? "#10b981") : "#e2e8f0",
+                              color: done ? "#fff" : "#94a3b8",
+                              boxShadow: actual ? `0 0 0 3px ${(ESTADO_COLORS[lead.estado] ?? "#10b981")}33` : "none",
+                            }}>
+                              {done ? "✓" : i + 1}
+                            </div>
+                            <span style={{ fontSize: "0.68rem", color: actual ? "#0a2540" : "#94a3b8", fontWeight: actual ? 700 : 500, whiteSpace: "nowrap" }}>{etapa}</span>
+                          </div>
+                          {i < FUNNEL.length - 1 && (
+                            <div style={{ flex: 1, height: 2, background: i < idxActual ? (ESTADO_COLORS[lead.estado] ?? "#10b981") : "#e2e8f0", margin: "0 4px", marginBottom: 16 }} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Datos recopilados */}
+                <div style={{ display: "flex", gap: "1.25rem", flexWrap: "wrap" }}>
+                  {dato("📅", "En sistema", `${dias} día${dias === 1 ? "" : "s"}`)}
+                  {dato("🕐", "Últ. actividad", ultimaAct ? fmtFechaLocal(ultimaAct) : "—")}
+                  {dato("💳", "Modalidad", lead.tipo_pago ?? "Sin definir")}
+                  {dato("🚗", "Vehículo", lead.vehiculo_interes ? `${lead.vehiculo_interes.marca} ${lead.vehiculo_interes.modelo}` : "—")}
+                  {dato("📄", "Cotizaciones", cotsActivas.length > 0 ? `${cotsActivas.length} · ${new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(totalCots)}` : String(cotizaciones.length))}
+                  {dato("📎", "Documentos", String(documentos.length))}
+                  {lead.tipo_pago === "Crédito" && dato("🏦", "Financieras", `${finProceso} en proceso · ${finAprob} aprob.`)}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Resumen de financieras (feedback rápido + recordatorios) */}
+          {financiamientos.length > 0 && (() => {
+            const activos = financiamientos.filter((f) => ENTIDADES.includes(f.entidad));
+            const seguimientos = activos
+              .filter((f) => f.fecha_proximo_seguimiento && !["Aprobado", "Rechazado", "Desistió"].includes(f.estado))
+              .sort((a, b) => (a.fecha_proximo_seguimiento! < b.fecha_proximo_seguimiento! ? -1 : 1));
+            return (
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.6rem" }}>
+                  🏦 Estado de Financieras
+                </div>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  {activos.map((f) => {
+                    const color = ESTADO_FIN_COLORS[f.estado] ?? "#64748b";
+                    return (
+                      <span key={f.entidad} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "0.25rem 0.7rem", fontSize: "0.82rem" }}>
+                        <span style={{ width: 9, height: 9, borderRadius: "50%", background: color }} />
+                        <strong>{f.entidad}</strong>
+                        <span style={{ color }}>{f.estado}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+                {seguimientos.length > 0 && (
+                  <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, padding: "0.5rem 0.8rem", marginTop: "0.7rem", fontSize: "0.83rem" }}>
+                    <strong style={{ color: "#92400e" }}>📞 Próximos contactos:</strong>{" "}
+                    {seguimientos.map((s, i) => {
+                      const vencido = new Date(s.fecha_proximo_seguimiento!) < new Date(new Date().toDateString());
+                      return (
+                        <span key={s.entidad} style={{ color: vencido ? "#dc2626" : "#92400e", fontWeight: vencido ? 700 : 400 }}>
+                          {i > 0 && " · "}
+                          {s.entidad} ({fmtFechaLocal(s.fecha_proximo_seguimiento!)}{vencido ? " ⚠️" : ""})
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           <h2>Historial de Actividades</h2>
 
           {/* Formulario nueva actividad */}
           <div className={styles.addActivity}>
             <div className={styles.addRow}>
               <select
-                value={tipoAct}
-                onChange={(e) => setTipoAct(e.target.value)}
+                value={actEntidad ? "financiera" : tipoAct}
+                onChange={(e) => {
+                  if (e.target.value !== "financiera") { setTipoAct(e.target.value); setActEntidad(""); }
+                }}
                 className={styles.select}
+                disabled={!!actEntidad}
               >
-                {Object.entries(TIPO_ICONS).map(([t, icon]) => (
-                  <option key={t} value={t}>{icon} {t.replace("_", " ")}</option>
+                {TIPOS_MANUALES.map((t) => (
+                  <option key={t} value={t}>{TIPO_ICONS[t]} {t.replace("_", " ")}</option>
                 ))}
+                {actEntidad && <option value="financiera">🏦 financiera</option>}
               </select>
             </div>
             <textarea
               value={descAct}
               rows={3}
-              placeholder="Describe la actividad (ej: Llamé al cliente, comentó que revisa financiamiento...)"
+              placeholder={actEntidad
+                ? `¿En qué quedó con ${actEntidad}? (requisitos, respuesta, etc.)`
+                : "Describe la actividad (ej: Llamé al cliente, comentó que revisa financiamiento...)"}
               className={styles.textarea}
               onChange={(e) => setDescAct(e.target.value)}
             />
+
+            {/* Vincular la nota a una financiera */}
+            <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.6rem 0.75rem", margin: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>🏦 Financiera:</span>
+                <select
+                  value={actEntidad}
+                  onChange={(e) => setActEntidad(e.target.value)}
+                  style={{ flex: 1, minWidth: 140, padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit" }}
+                >
+                  <option value="">— Ninguna (nota normal) —</option>
+                  {ENTIDADES.map((e) => <option key={e} value={e}>{e}</option>)}
+                </select>
+              </div>
+              {actEntidad && (
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+                  <select
+                    value={actEstadoFin}
+                    onChange={(e) => setActEstadoFin(e.target.value)}
+                    style={{ flex: 1, minWidth: 130, padding: "0.4rem 0.6rem", borderRadius: 8, border: `1.5px solid ${ESTADO_FIN_COLORS[actEstadoFin] ?? "#e2e8f0"}`, fontSize: "0.85rem", fontFamily: "inherit", fontWeight: 600 }}
+                  >
+                    {ESTADOS_FIN.map((e) => <option key={e} value={e}>{e}</option>)}
+                  </select>
+                  <label style={{ fontSize: "0.78rem", color: "#64748b", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                    📞 Próximo contacto:
+                    <input
+                      type="date"
+                      value={actProxSeg}
+                      onChange={(e) => setActProxSeg(e.target.value)}
+                      style={{ padding: "0.35rem 0.5rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit" }}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {/* Adjuntos de la actividad */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", margin: "0.4rem 0" }}>
+              <label
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                  border: "1px solid #cbd5e1", borderRadius: 8, padding: "0.35rem 0.7rem",
+                  cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, color: "#475569", background: "#f8fafc",
+                }}
+              >
+                📎 Adjuntar documento(s)
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx,.xls,.xlsx"
+                  onChange={(e) => {
+                    setAdjuntosAct(Array.from(e.target.files ?? []));
+                    e.target.value = "";
+                  }}
+                  style={{ display: "none" }}
+                />
+              </label>
+              {adjuntosAct.map((f, i) => (
+                <span
+                  key={i}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                    background: "#e0f2fe", color: "#075985", borderRadius: 6,
+                    padding: "0.2rem 0.5rem", fontSize: "0.76rem",
+                  }}
+                >
+                  📄 {f.name}
+                  <button
+                    type="button"
+                    onClick={() => setAdjuntosAct((prev) => prev.filter((_, j) => j !== i))}
+                    style={{ border: "none", background: "transparent", cursor: "pointer", color: "#0369a1", fontWeight: 700 }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+
             <button
               className={styles.addBtn}
               onClick={handleAddActividad}
-              disabled={addingAct || !descAct.trim()}
+              disabled={addingAct || (!descAct.trim() && adjuntosAct.length === 0 && !actEntidad)}
             >
-              {addingAct ? "Registrando..." : "➕ Registrar actividad"}
+              {addingAct ? "Registrando..." : actEntidad ? "🏦 Registrar seguimiento" : "➕ Registrar actividad"}
             </button>
           </div>
 
@@ -545,7 +1064,43 @@ export const LeadDetailsPage = () => {
                         })}
                       </span>
                     </div>
+                    {act.entidad && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", margin: "0.1rem 0 0.35rem", flexWrap: "wrap" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 6, padding: "0.15rem 0.5rem", fontSize: "0.76rem", fontWeight: 700 }}>
+                          🏦 {act.entidad}
+                        </span>
+                        {act.estado_fin && (
+                          <span style={{ background: ESTADO_FIN_COLORS[act.estado_fin] ?? "#64748b", color: "#fff", borderRadius: 6, padding: "0.15rem 0.5rem", fontSize: "0.74rem", fontWeight: 700 }}>
+                            {act.estado_fin}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <p className={styles.timelineDesc}>{act.descripcion}</p>
+                    {/* Documentos adjuntos a esta actividad */}
+                    {(() => {
+                      const adjuntos = documentos.filter((d) => d.actividad_id === act.id);
+                      if (adjuntos.length === 0) return null;
+                      return (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", margin: "0.4rem 0" }}>
+                          {adjuntos.map((d) => (
+                            <button
+                              key={d.id}
+                              onClick={() => handleDescargarDoc(d)}
+                              disabled={descargandoId === d.id}
+                              title="Descargar"
+                              style={{
+                                display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                                background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 6,
+                                padding: "0.25rem 0.55rem", fontSize: "0.78rem", cursor: "pointer", color: "#334155",
+                              }}
+                            >
+                              {descargandoId === d.id ? "⏳" : (d.tipo_mime?.includes("pdf") ? "📄" : d.tipo_mime?.includes("image") ? "🖼️" : "📎")} {d.nombre}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
                     {act.usuario && (
                       <span className={styles.timelineUser}>— {act.usuario.nombre_completo}</span>
                     )}
@@ -557,104 +1112,40 @@ export const LeadDetailsPage = () => {
         </div>
       </div>
 
-      {/* ── PANEL FINANCIAMIENTO (solo si es Crédito) ── */}
-      {lead.tipo_pago === "Crédito" && (
-        <div className={styles.finPanel}>
-          <h2 className={styles.finTitle}>🏦 Gestión de Financiamiento</h2>
-          <p className={styles.finSubtitle}>
-            Registra el estado de la solicitud con cada entidad bancaria.
-          </p>
-          <div className={styles.finGrid}>
-            {ENTIDADES.map(entidad => {
-              const fin = getFinData(entidad);
-              const isEditing = !!editingFin[entidad];
-              const isSaving = savingFin[entidad];
-              const estadoColor = ESTADO_FIN_COLORS[fin.estado] ?? "#94a3b8";
+    </div>
+  );
+};
 
-              return (
-                <div key={entidad} className={`${styles.finCard} ${fin.estado === "Aprobado" ? styles.finCardAprobado : fin.estado === "Rechazado" ? styles.finCardRechazado : ""}`}>
-                  <div className={styles.finCardHeader}>
-                    <span className={styles.finEntidad}>🏛 {entidad}</span>
-                    <span className={styles.finEstadoBadge} style={{ background: estadoColor }}>
-                      {fin.estado}
-                    </span>
-                  </div>
-
-                  <div className={styles.finFields}>
-                    <div className={styles.finField}>
-                      <label>Estado</label>
-                      <select
-                        value={fin.estado}
-                        onChange={e => handleFinChange(entidad, "estado", e.target.value)}
-                        className={styles.finSelect}
-                      >
-                        {ESTADOS_FIN.map(e => <option key={e} value={e}>{e}</option>)}
-                      </select>
-                    </div>
-                    <div className={styles.finField}>
-                      <label>Monto Solicitado (₡)</label>
-                      <input type="number" placeholder="0" className={styles.finInput}
-                        value={fin.monto_solicitado ?? ""}
-                        onChange={e => handleFinChange(entidad, "monto_solicitado", e.target.value ? Number(e.target.value) : undefined)}
-                      />
-                    </div>
-                    <div className={styles.finField}>
-                      <label>Monto Aprobado (₡)</label>
-                      <input type="number" placeholder="0" className={styles.finInput}
-                        value={fin.monto_aprobado ?? ""}
-                        onChange={e => handleFinChange(entidad, "monto_aprobado", e.target.value ? Number(e.target.value) : undefined)}
-                      />
-                    </div>
-                    <div className={styles.finField}>
-                      <label>Plazo (meses)</label>
-                      <input type="number" placeholder="60" className={styles.finInput}
-                        value={fin.plazo_meses ?? ""}
-                        onChange={e => handleFinChange(entidad, "plazo_meses", e.target.value ? Number(e.target.value) : undefined)}
-                      />
-                    </div>
-                    <div className={styles.finField}>
-                      <label>Tasa Anual (%)</label>
-                      <input type="number" step="0.1" placeholder="12" className={styles.finInput}
-                        value={fin.tasa_anual ?? ""}
-                        onChange={e => handleFinChange(entidad, "tasa_anual", e.target.value ? Number(e.target.value) : undefined)}
-                      />
-                    </div>
-                    <div className={styles.finField}>
-                      <label>Fecha Envío</label>
-                      <input type="date" className={styles.finInput}
-                        value={fin.fecha_envio ?? ""}
-                        onChange={e => handleFinChange(entidad, "fecha_envio", e.target.value)}
-                      />
-                    </div>
-                    <div className={styles.finField}>
-                      <label>Fecha Respuesta</label>
-                      <input type="date" className={styles.finInput}
-                        value={fin.fecha_respuesta ?? ""}
-                        onChange={e => handleFinChange(entidad, "fecha_respuesta", e.target.value)}
-                      />
-                    </div>
-                    <div className={`${styles.finField} ${styles.finFieldFull}`}>
-                      <label>Notas</label>
-                      <textarea rows={2} placeholder="Observaciones, requisitos, contacto..." className={styles.finTextarea}
-                        value={fin.notas ?? ""}
-                        onChange={e => handleFinChange(entidad, "notas", e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    className={styles.finSaveBtn}
-                    onClick={() => handleSaveFin(entidad)}
-                    disabled={isSaving || !isEditing}
-                  >
-                    {isSaving ? "Guardando..." : "💾 Guardar"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+/** Sección colapsable del panel izquierdo. Recuerda su estado en localStorage. */
+const SidebarSection = ({
+  id, title, defaultOpen = true, badge, children,
+}: {
+  id: string;
+  title: ReactNode;
+  defaultOpen?: boolean;
+  badge?: ReactNode;
+  children: ReactNode;
+}) => {
+  const storeKey = `leadSec:${id}`;
+  const [open, setOpen] = useState<boolean>(() => {
+    try {
+      const v = localStorage.getItem(storeKey);
+      return v === null ? defaultOpen : v === "1";
+    } catch { return defaultOpen; }
+  });
+  const toggle = () =>
+    setOpen((o) => {
+      try { localStorage.setItem(storeKey, o ? "0" : "1"); } catch { /* noop */ }
+      return !o;
+    });
+  return (
+    <div className={styles.card}>
+      <button type="button" className={styles.sectionHeader} onClick={toggle} aria-expanded={open}>
+        <span className={styles.sectionTitle}>{title}</span>
+        {badge != null && <span className={styles.sectionBadge}>{badge}</span>}
+        <span className={styles.chevron} style={{ transform: open ? "rotate(0deg)" : "rotate(-90deg)" }}>▾</span>
+      </button>
+      {open && <div className={styles.sectionBody}>{children}</div>}
     </div>
   );
 };

@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { Campana } from '../campanas/campana.entity';
 
 export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Prueba de Manejo' | 'Cotizacion Enviada' | 'Negociacion' | 'Cerrado' | 'Perdido';
 export type LeadFuente = 'Web' | 'Instagram' | 'Facebook' | 'WhatsApp' | 'TikTok' | 'Referido' | 'Presencial' | 'Llamada' | 'Otro';
@@ -72,6 +73,9 @@ export class Lead {
 
   @ManyToOne(() => Vehicle, { nullable: true, eager: true })
   vehiculo_interes?: Vehicle;
+
+  @ManyToOne(() => Campana, { nullable: true, eager: true, onDelete: 'SET NULL' })
+  campana?: Campana;
 
   @OneToMany('LeadActividad', 'lead', { cascade: true })
   actividades: any[];

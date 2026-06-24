@@ -10,6 +10,8 @@ import { UpdateLeadDto } from './dto/update-lead.dto';
 import { CreateActividadDto } from './dto/create-actividad.dto';
 import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { Campana } from '../campanas/campana.entity';
+import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
@@ -27,8 +29,33 @@ export class LeadsService {
     private usersRepository: Repository<User>,
     @InjectRepository(Vehicle)
     private vehiclesRepository: Repository<Vehicle>,
+    @InjectRepository(Campana)
+    private campanasRepository: Repository<Campana>,
+    @InjectRepository(Cotizacion)
+    private cotizacionesRepository: Repository<Cotizacion>,
     private notificationsService: NotificationsService,
   ) {}
+
+  /** Migración: vincula el vehículo de las cotizaciones a los leads que no lo tienen */
+  async fixVehiculosFromCotizaciones(): Promise<{ actualizados: number }> {
+    const leads = await this.leadsRepository.find({
+      where: { vehiculo_interes: null as any },
+      relations: [],
+    });
+    let actualizados = 0;
+    for (const lead of leads) {
+      const cotizacion = await this.cotizacionesRepository.findOne({
+        where: { lead: { id: lead.id } } as any,
+        relations: ['vehiculo'],
+        order: { fecha_creacion: 'DESC' },
+      });
+      if (cotizacion?.vehiculo) {
+        await this.leadsRepository.update(lead.id, { vehiculo_interes: cotizacion.vehiculo });
+        actualizados++;
+      }
+    }
+    return { actualizados };
+  }
 
   /** Admin: todos los leads */
   async findAll(): Promise<Lead[]> {
@@ -70,6 +97,22 @@ export class LeadsService {
   async updateLead(id: number, dto: UpdateLeadDto, user: User): Promise<Lead> {
     const lead = await this.findOne(id);
     const estadoAnterior = lead.estado;
+
+    // Cambio de nombre del cliente — queda en el log del timeline
+    if (dto.nombre_cliente !== undefined) {
+      const nuevoNombre = dto.nombre_cliente.trim();
+      if (nuevoNombre && nuevoNombre !== lead.nombre_cliente) {
+        await this.actividadesRepository.save(
+          this.actividadesRepository.create({
+            lead,
+            tipo: 'estado_cambio',
+            descripcion: `Nombre del cliente corregido de "${lead.nombre_cliente}" a "${nuevoNombre}"`,
+            usuario: user,
+          }),
+        );
+        lead.nombre_cliente = nuevoNombre;
+      }
+    }
 
     // Reasignación de vendedor
     if (dto.vendedor_asignado_id !== undefined) {
@@ -124,6 +167,11 @@ export class LeadsService {
     if (dto.contacted_by_phone !== undefined) lead.contacted_by_phone = dto.contacted_by_phone;
     if (dto.tipo_pago !== undefined) lead.tipo_pago = dto.tipo_pago as any;
     if (dto.contacted_by_whatsapp !== undefined) lead.contacted_by_whatsapp = dto.contacted_by_whatsapp;
+    if (dto.campana_id !== undefined) {
+      lead.campana = dto.campana_id
+        ? await this.campanasRepository.findOneBy({ id: dto.campana_id }) ?? undefined
+        : undefined;
+    }
 
     return this.leadsRepository.save(lead);
   }
@@ -142,6 +190,8 @@ export class LeadsService {
       lead,
       tipo: dto.tipo as any,
       descripcion: dto.descripcion,
+      entidad: dto.entidad,
+      estado_fin: dto.estado_fin,
       usuario: user,
     });
     return this.actividadesRepository.save(actividad);
@@ -164,7 +214,7 @@ export class LeadsService {
 
   /** Creación manual desde el panel (vendedor lo toma para sí; admin lo asigna por turno) */
   async createManual(
-    body: { nombre: string; email?: string; telefono?: string; fuente?: string; vehiculoId?: number; vendedor_asignado_id?: number },
+    body: { nombre: string; email?: string; telefono?: string; fuente?: string; vehiculoId?: number; vendedor_asignado_id?: number; campana_id?: number },
     user: User,
   ): Promise<Lead> {
     const nombre = (body.nombre ?? '').trim();
@@ -196,6 +246,11 @@ export class LeadsService {
       vehiculo = await this.vehiclesRepository.findOneBy({ id: body.vehiculoId });
     }
 
+    let campana: Campana | null = null;
+    if (body.campana_id) {
+      campana = await this.campanasRepository.findOneBy({ id: body.campana_id });
+    }
+
     const nuevoLead = this.leadsRepository.create({
       nombre_cliente: nombre,
       email_cliente: body.email?.trim() || '',
@@ -204,6 +259,7 @@ export class LeadsService {
       estado: 'Nuevo',
       vendedor_asignado: vendedorAsignado || undefined,
       vehiculo_interes: vehiculo || undefined,
+      campana: campana || undefined,
     });
     const guardado = await this.leadsRepository.save(nuevoLead);
 
@@ -291,6 +347,7 @@ export class LeadsService {
       notas?: string;
       fecha_envio?: string;
       fecha_respuesta?: string;
+      fecha_proximo_seguimiento?: string;
     },
   ): Promise<LeadFinanciamiento> {
     const lead = await this.leadsRepository.findOneBy({ id: leadId });

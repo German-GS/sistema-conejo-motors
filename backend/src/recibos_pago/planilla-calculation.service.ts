@@ -42,6 +42,55 @@ export class PlanillaCalculationService {
     };
   }
 
+  /**
+   * Convierte entre salario bruto y neto.
+   * - modo 'bruto': el monto es el bruto → devuelve el neto resultante.
+   * - modo 'neto': el monto es el neto deseado → busca el bruto necesario (bisección).
+   */
+  async convertirSalario(
+    modo: 'bruto' | 'neto',
+    monto: number,
+    datos?: { tiene_conyuge?: boolean; cantidad_hijos?: number },
+  ) {
+    const params = await this.parametrosService.findAll();
+    const user = {
+      tiene_conyuge: datos?.tiene_conyuge ?? false,
+      cantidad_hijos: datos?.cantidad_hijos ?? 0,
+    } as User;
+
+    const resultado = (bruto: number) => {
+      const d = this.calculateDeduccionesEmpleado(bruto, params, user);
+      return {
+        bruto: Math.round(bruto),
+        neto: Math.round(d.salarioNeto),
+        totalDeducciones: Math.round(d.totalDeducciones),
+        desglose: {
+          sem: Math.round(d.desglose.sem),
+          ivm: Math.round(d.desglose.ivm),
+          bancoPopular: Math.round(d.desglose.bancoPopular),
+          renta: Math.round(d.desglose.renta),
+        },
+      };
+    };
+
+    if (modo === 'bruto') {
+      return resultado(monto);
+    }
+
+    // modo 'neto': bisección para hallar el bruto cuyo neto ≈ monto
+    let lo = monto;
+    let hi = monto * 1.8;
+    let bruto = monto;
+    for (let i = 0; i < 60; i++) {
+      bruto = (lo + hi) / 2;
+      const neto = this.calculateDeduccionesEmpleado(bruto, params, user).salarioNeto;
+      if (Math.abs(neto - monto) < 0.5) break;
+      if (neto < monto) lo = bruto;
+      else hi = bruto;
+    }
+    return resultado(bruto);
+  }
+
   // --- MÉTODO FALTANTE AÑADIDO ---
   private calculateDeduccionesEmpleado(
     salarioBruto: number,

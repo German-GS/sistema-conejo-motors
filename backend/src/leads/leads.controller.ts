@@ -24,6 +24,13 @@ export class LeadsController {
     return this.leadsService.findAll();
   }
 
+  /** Admin: migración — vincula vehículo de cotizaciones a leads sin vehículo */
+  @Post('fix-vehiculos')
+  @Roles('Administrador')
+  fixVehiculos() {
+    return this.leadsService.fixVehiculosFromCotizaciones();
+  }
+
   /** Vendedor/Admin: leads propios */
   @Get('my-leads')
   @Roles('Vendedor', 'Administrador')

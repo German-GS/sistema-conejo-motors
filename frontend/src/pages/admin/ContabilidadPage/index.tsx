@@ -34,6 +34,7 @@ export const ContabilidadPage = () => {
 
   const [startDate, setStartDate] = useState(hoyEnCR());
   const [endDate, setEndDate] = useState(hoyEnCR());
+  const [resumenMes, setResumenMes] = useState<any>(null);
 
   // Formulario asiento
   const [showAsientoForm, setShowAsientoForm] = useState(false);
@@ -52,13 +53,16 @@ export const ContabilidadPage = () => {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [c, a, b, ci, p, ch] = await Promise.all([
+      const hoy = hoyEnCR();
+      const primerDiaMes = hoy.slice(0, 7) + "-01";
+      const [c, a, b, ci, p, ch, mes] = await Promise.all([
         apiClient.get("/contabilidad/cuentas"),
         apiClient.get(`/contabilidad/asientos?startDate=${startDate}&endDate=${endDate}`),
         apiClient.get(`/contabilidad/balance?endDate=${endDate}`),
         apiClient.get("/contabilidad/cierres"),
         apiClient.get("/contabilidad/cierres/preview"),
         apiClient.get("/finanzas/checklist-cierre").catch(() => ({ data: null })),
+        apiClient.get(`/contabilidad/resumen-periodo?startDate=${primerDiaMes}&endDate=${hoy}`),
       ]);
       setCuentas(Array.isArray(c.data) ? c.data : []);
       setAsientos(Array.isArray(a.data) ? a.data : []);
@@ -66,6 +70,7 @@ export const ContabilidadPage = () => {
       setCierres(Array.isArray(ci.data) ? ci.data : []);
       setPreview(p.data);
       setChecklist(ch.data);
+      setResumenMes(mes.data);
     } catch { /* silencioso */ }
     finally { setLoading(false); }
   }, [startDate, endDate]);
@@ -160,7 +165,7 @@ export const ContabilidadPage = () => {
       {/* ══ TAB: Dashboard ══════════════════════════════════════════════════ */}
       {tab === "dashboard" && preview && (
         <div>
-          {/* KPIs del día */}
+          {/* ── Resumen del día ── */}
           <div className={styles.sectionTitle}>Resumen del Día — {fmtFecha(preview.fecha)}</div>
           <div className={styles.kpiRow}>
             <KpiCard icon="💰" label="Ingresos Hoy" value={fmtCRC(preview.ingresos)} color="#059669" />
@@ -169,10 +174,10 @@ export const ContabilidadPage = () => {
             <KpiCard icon="📝" label="Asientos" value={String(preview.num_asientos)} color="#7c3aed" />
           </div>
 
-          {preview.ventas_vehiculos > 0 && (
+          {(preview.ventas_vehiculos > 0 || preview.ventas_productos > 0) && (
             <div className={styles.ventasRow}>
-              <div className={styles.ventaCard}><span>🚗 Ventas Vehículos</span><strong>{fmtCRC(preview.ventas_vehiculos)}</strong></div>
-              <div className={styles.ventaCard}><span>📦 Ventas Repuestos</span><strong>{fmtCRC(preview.ventas_productos)}</strong></div>
+              {preview.ventas_vehiculos > 0 && <div className={styles.ventaCard}><span>🚗 Ventas Vehículos</span><strong>{fmtCRC(preview.ventas_vehiculos)}</strong></div>}
+              {preview.ventas_productos > 0 && <div className={styles.ventaCard}><span>📦 Ventas Repuestos</span><strong>{fmtCRC(preview.ventas_productos)}</strong></div>}
             </div>
           )}
 
@@ -188,7 +193,48 @@ export const ContabilidadPage = () => {
             )}
           </div>
 
-          {/* Últimos asientos */}
+          {/* ── Resumen del mes ── */}
+          {resumenMes && (
+            <>
+              <div className={styles.sectionTitle} style={{ marginTop: "1.5rem" }}>
+                Mes en Curso — {new Date().toLocaleDateString("es-CR", { month: "long", year: "numeric" })}
+              </div>
+              <div className={styles.kpiRow}>
+                <KpiCard icon="💰" label="Ingresos MTD" value={fmtCRC(resumenMes.ingresos)} color="#059669" />
+                <KpiCard icon="💸" label="Gastos MTD" value={fmtCRC(resumenMes.gastos)} color="#dc2626" />
+                <KpiCard icon="📈" label="Utilidad MTD" value={fmtCRC(resumenMes.utilidad)} color={resumenMes.utilidad >= 0 ? "#0891b2" : "#dc2626"} />
+                <KpiCard icon="📝" label="Asientos MTD" value={String(resumenMes.num_asientos)} color="#7c3aed" />
+              </div>
+
+              {/* Desglose de gastos del mes */}
+              {resumenMes.gastos_por_tipo && Object.keys(resumenMes.gastos_por_tipo).length > 0 && (
+                <div style={{ background: "var(--bg-card, #fff)", border: "1px solid var(--border, #e2e8f0)", borderRadius: 12, padding: "1rem 1.25rem", marginTop: "1rem" }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-secondary, #64748b)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+                    💸 Desglose de Gastos del Mes
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                    {Object.entries(resumenMes.gastos_por_tipo as Record<string, number>)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([nombre, monto]) => {
+                        const pct = resumenMes.gastos > 0 ? Math.round((monto / resumenMes.gastos) * 100) : 0;
+                        return (
+                          <div key={nombre} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                            <span style={{ flex: 1, fontSize: "0.88rem" }}>{nombre}</span>
+                            <div style={{ flex: 2, background: "#f1f5f9", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                              <div style={{ width: `${pct}%`, height: "100%", background: "#dc2626", borderRadius: 6, transition: "width 0.4s" }} />
+                            </div>
+                            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#dc2626", minWidth: 90, textAlign: "right" }}>{fmtCRC(monto)}</span>
+                            <span style={{ fontSize: "0.75rem", color: "var(--text-secondary, #64748b)", minWidth: 32, textAlign: "right" }}>{pct}%</span>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Últimos asientos del rango seleccionado */}
           <div className={styles.sectionTitle} style={{ marginTop: "1.5rem" }}>Últimos Asientos</div>
           <AsientosTable asientos={asientos.slice(0, 10)} />
         </div>

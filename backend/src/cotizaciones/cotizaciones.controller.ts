@@ -40,6 +40,13 @@ export class CotizacionesController {
     return this.cotizacionesService.findMyQuotes(req.user);
   }
 
+  /** GET /quotes/by-lead/:leadId — cotizaciones vinculadas a un lead */
+  @Get('by-lead/:leadId')
+  @Roles('Vendedor', 'Administrador')
+  findByLead(@Param('leadId', ParseIntPipe) leadId: number) {
+    return this.cotizacionesService.findByLead(leadId);
+  }
+
   @Get(':id')
   @Roles('Vendedor', 'Administrador')
   findOne(@Param('id', ParseIntPipe) id: number) {

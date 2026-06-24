@@ -102,6 +102,32 @@
 .card h4 { margin: 0 0 0.25rem; font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
 .card p { margin: 0; font-size: 0.88rem; color: #334155; }
 
+/* Secciones colapsables del sidebar */
+.sectionHeader {
+  display: flex; align-items: center; gap: 0.5rem;
+  width: 100%; background: none; border: none; padding: 0; margin: 0;
+  cursor: pointer; text-align: left; font-family: inherit;
+}
+.sectionTitle {
+  flex: 1; font-size: 0.8rem; font-weight: 700; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.sectionBadge {
+  background: #024f7d; color: #fff; font-size: 0.7rem; font-weight: 700;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.chevron {
+  color: #94a3b8; font-size: 0.85rem; line-height: 1;
+  transition: transform 0.18s ease; flex-shrink: 0;
+}
+.sectionHeader:hover .chevron { color: #475569; }
+.sectionHeader:hover .sectionTitle { color: #334155; }
+.sectionBody {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
 .vehicleTag {
   background: #e0f2fe; color: #024f7d;
   font-weight: 700; font-size: 0.88rem;

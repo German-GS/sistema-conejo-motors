@@ -37,6 +37,7 @@ import {
   LuChevronDown,
   LuMenu,
   LuX,
+  LuMegaphone,
 } from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -53,7 +54,7 @@ interface Notification {
 
 // Secciones del menú con sus rutas para detectar cuál abrir automáticamente
 const SECTION_ROUTES: Record<string, string[]> = {
-  ventas:       ["/admin/sales", "/admin/leads", "/admin/agenda"],
+  ventas:       ["/admin/sales", "/admin/leads", "/admin/campanas", "/admin/agenda"],
   inventario:   ["/admin/inventory", "/admin/pricing", "/admin/accesorios", "/admin/importaciones", "/admin/import"],
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
@@ -201,7 +202,10 @@ export const AdminLayout = () => {
     try {
       await apiClient.patch(`/notifications/${notification.id}/read`);
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
-      navigate(notification.link);
+      // Resolver el link: si no tiene prefijo /admin o /sales, añadir /admin
+      const link = notification.link || "/admin";
+      const resolved = link.startsWith("/admin") || link.startsWith("/sales") ? link : `/admin${link}`;
+      navigate(resolved);
     } catch (error) {
       console.error("Error al marcar la notificación como leída", error);
     }
@@ -304,6 +308,7 @@ export const AdminLayout = () => {
               <SidebarLink to="/admin/sales/catalog" icon={<LuBookMarked size={18} />} label="Catálogo" />
               <SidebarLink to="/admin/sales/quotes" icon={<LuFileText size={18} />} label="Cotizaciones" />
               <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" />
+              <SidebarLink to="/admin/campanas" icon={<LuMegaphone size={18} />} label="Campañas" />
               <SidebarLink to="/admin/agenda" icon={<LuCalendarDays size={18} />} label="Agenda" />
             </div>
           )}

@@ -64,6 +64,12 @@ export class ContabilidadController {
   @Get('cierres/preview')
   previewCierre(@Query('fecha') fecha?: string) { return this.svc.previewCierre(fecha); }
 
+  /** GET /contabilidad/resumen-periodo?startDate=&endDate= */
+  @Get('resumen-periodo')
+  resumenPeriodo(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
+    return this.svc.resumenPeriodo(startDate, endDate);
+  }
+
   @Post('cierres')
   generarCierre(@Body() body: { fecha?: string; notas?: string }, @Request() req) {
     return this.svc.generarCierre(req.user, body.fecha, body.notas);

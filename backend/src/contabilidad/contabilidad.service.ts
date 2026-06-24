@@ -157,6 +157,23 @@ export class ContabilidadService {
     return this.getAsiento(saved.id);
   }
 
+  /** Elimina los asientos (y sus líneas) ligados a una referencia. Devuelve cuántos borró. */
+  async eliminarAsientosPorReferencia(
+    referencia_tipo: string,
+    referencia_id: number,
+  ): Promise<number> {
+    const asientos = await this.asientosRepo.find({
+      where: { referencia_tipo, referencia_id },
+    });
+    let count = 0;
+    for (const a of asientos) {
+      await this.lineasRepo.delete({ asiento: { id: a.id } as any });
+      await this.asientosRepo.delete(a.id);
+      count++;
+    }
+    return count;
+  }
+
   // ── Balance y Saldos ──────────────────────────────────────────────────────
 
   async getBalance(startDate?: string, endDate?: string): Promise<any> {
@@ -267,6 +284,39 @@ export class ContabilidadService {
     cierre.cerrado_por      = user;
 
     return this.cierresRepo.save(cierre);
+  }
+
+  async resumenPeriodo(startDate: string, endDate: string): Promise<any> {
+    const asientos = await this.asientosRepo.find({
+      where: { fecha: Between(startDate as any, endDate as any) },
+      relations: ['lineas', 'lineas.cuenta'],
+    });
+    let ingresos = 0, gastos = 0, ventasVeh = 0, ventasProd = 0;
+    const gastosPorTipo: Record<string, number> = {};
+    for (const a of asientos) {
+      for (const l of a.lineas) {
+        if (l.cuenta.tipo === 'Ingreso') {
+          const val = Number(l.haber) - Number(l.debe);
+          ingresos += val;
+          if (a.tipo === 'Venta_Vehiculo') ventasVeh  += val;
+          if (a.tipo === 'Venta_Producto') ventasProd += val;
+        }
+        if (l.cuenta.tipo === 'Gasto') {
+          const val = Number(l.debe) - Number(l.haber);
+          gastos += val;
+          gastosPorTipo[l.cuenta.nombre] = (gastosPorTipo[l.cuenta.nombre] ?? 0) + val;
+        }
+      }
+    }
+    return {
+      startDate, endDate,
+      num_asientos: asientos.length,
+      ingresos, gastos,
+      utilidad: ingresos - gastos,
+      ventas_vehiculos: ventasVeh,
+      ventas_productos: ventasProd,
+      gastos_por_tipo: gastosPorTipo,
+    };
   }
 
   async previewCierre(fecha?: string): Promise<any> {

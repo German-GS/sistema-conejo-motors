@@ -16,13 +16,34 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RecibosPagoService } from './recibos_pago.service';
+import { PlanillaCalculationService } from './planilla-calculation.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('recibos-pago')
 @UseGuards(AuthGuard('jwt'))
 export class RecibosPagoController {
-  constructor(private readonly recibosPagoService: RecibosPagoService) {}
+  constructor(
+    private readonly recibosPagoService: RecibosPagoService,
+    private readonly calculationService: PlanillaCalculationService,
+  ) {}
+
+  /** Convierte entre salario bruto y neto para el formulario de empleado */
+  @Post('convertir-salario')
+  @Roles('Administrador')
+  @UseGuards(RolesGuard)
+  convertirSalario(
+    @Body() body: { modo: 'bruto' | 'neto'; monto: number; tiene_conyuge?: boolean; cantidad_hijos?: number },
+  ) {
+    if (!body?.monto || body.monto <= 0) {
+      throw new BadRequestException('Ingresá un monto válido.');
+    }
+    const modo = body.modo === 'neto' ? 'neto' : 'bruto';
+    return this.calculationService.convertirSalario(modo, body.monto, {
+      tiene_conyuge: body.tiene_conyuge,
+      cantidad_hijos: body.cantidad_hijos,
+    });
+  }
 
   // --- 👇 INICIO DE LA MODIFICACIÓN: AÑADIR NUEVA FUNCIÓN COMPLETA 👇 ---
   @Get('calculate-commissions')
@@ -63,6 +84,7 @@ export class RecibosPagoController {
       otrasDeducciones?: number;
       horasExtra?: number;
     },
+    @Request() req,
   ) {
     return this.recibosPagoService.generatePayrollForUser(
       body.userId,
@@ -71,6 +93,7 @@ export class RecibosPagoController {
       body.comisionesGanadas,
       body.otrasDeducciones,
       body.horasExtra,
+      req.user,
     );
   }
 

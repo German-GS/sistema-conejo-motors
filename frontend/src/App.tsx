@@ -61,6 +61,7 @@ import { QuoteDetailsPage } from "./pages/admin/QuoteDetailsPage";
 import { SalesDashboardPage } from "./pages/admin/sales/SalesDashboardPage";
 import { LeadsPage } from "./pages/admin/sales/LeadsPage";
 import { LeadDetailsPage } from "./pages/admin/sales/LeadDetailsPage";
+import { CampanasPage } from "./pages/admin/CampanasPage";
 import { VehicleDetailSalesPage } from "./pages/admin/sales/VehicleDetailSalesPage";
 
 // --- COMPONENTES DE LÓGICA DE RUTAS ---
@@ -186,6 +187,7 @@ function App() {
             <Route path="sales/quotes/:quoteId" element={<QuoteDetailsPage />} />
             <Route path="leads" element={<LeadsPage />} />
             <Route path="leads/:leadId" element={<LeadDetailsPage />} />
+            <Route path="campanas" element={<CampanasPage />} />
             <Route path="asistencia" element={<AsistenciaPage />} />
             <Route path="solicitudes" element={<SolicitudesPage />} />
             <Route path="productos" element={<ProductosPage />} />

@@ -12,6 +12,7 @@ import { Venta } from '../ventas/venta.entity';
 import { PlanillaParametro } from '../planilla-parametros/entities/planilla-parametro.entity';
 import { Salario } from '../salarios/salario.entity';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { ContabilidadModule } from '../contabilidad/contabilidad.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
     PlanillaParametrosModule,
     UsersModule,
     AuditLogsModule,
+    ContabilidadModule,
   ],
   providers: [
     RecibosPagoService,

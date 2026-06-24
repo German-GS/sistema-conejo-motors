@@ -11,6 +11,7 @@ export type EntidadFinanciera =
   | 'Lafise'
   | 'BAC'
   | 'Coopenae'
+  | 'Flexi Leasing'
   | 'Otra';
 
 export type EstadoFinanciamiento =
@@ -19,7 +20,8 @@ export type EstadoFinanciamiento =
   | 'En Revisión'
   | 'Pre-Aprobado'
   | 'Aprobado'
-  | 'Rechazado';
+  | 'Rechazado'
+  | 'Desistió';
 
 @Entity({ name: 'lead_financiamientos' })
 export class LeadFinanciamiento {
@@ -32,13 +34,13 @@ export class LeadFinanciamiento {
 
   @Column({
     type: 'enum',
-    enum: ['Banco Promerica', 'Davivienda', 'Lafise', 'BAC', 'Coopenae', 'Otra'],
+    enum: ['Banco Promerica', 'Davivienda', 'Lafise', 'BAC', 'Coopenae', 'Flexi Leasing', 'Otra'],
   })
   entidad: EntidadFinanciera;
 
   @Column({
     type: 'enum',
-    enum: ['Pendiente', 'Enviado', 'En Revisión', 'Pre-Aprobado', 'Aprobado', 'Rechazado'],
+    enum: ['Pendiente', 'Enviado', 'En Revisión', 'Pre-Aprobado', 'Aprobado', 'Rechazado', 'Desistió'],
     default: 'Pendiente',
   })
   estado: EstadoFinanciamiento;
@@ -63,6 +65,10 @@ export class LeadFinanciamiento {
 
   @Column({ type: 'date', nullable: true })
   fecha_respuesta?: string;
+
+  /** Fecha en que hay que volver a contactar a esta entidad */
+  @Column({ type: 'date', nullable: true })
+  fecha_proximo_seguimiento?: string;
 
   @CreateDateColumn()
   fecha_creacion: Date;

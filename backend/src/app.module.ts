@@ -36,6 +36,7 @@ import { ReportsModule } from './reports/reports.module';
 import { CierreMes } from './reports/cierre-mes.entity';
 import { Lead } from './leads/lead.entity';
 import { LeadActividad } from './leads/lead-actividad.entity';
+import { LeadDocumento } from './leads/lead-documento.entity';
 import { LeadsModule } from './leads/leads.module';
 // CustomersModule desactivado — era un duplicado de ClientesModule (portal web sin uso)
 // import { Customer } from './customers/customer.entity';
@@ -96,6 +97,8 @@ import { CuentaBancaria } from './tesoreria/cuenta-bancaria.entity';
 import { SearchModule } from './search/search.module';
 import { FinanzasModule } from './finanzas/finanzas.module';
 import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
+import { CampanasModule } from './campanas/campanas.module';
+import { Campana } from './campanas/campana.entity';
 
 
 @Module({
@@ -135,6 +138,7 @@ import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
         Notification,
         Lead,
         LeadActividad,
+        LeadDocumento,
         SiteSetting,
         Factura,
         VehicleProfileImage,
@@ -171,6 +175,7 @@ import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
         CuentaBancaria,
         MovimientoBancario,
         CierreMes,
+        Campana,
       ],
       }),
     }),
@@ -214,6 +219,7 @@ import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
     TesoreriaModule,
     SearchModule,
     FinanzasModule,
+    CampanasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

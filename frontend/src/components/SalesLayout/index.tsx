@@ -85,7 +85,9 @@ export const SalesLayout = () => {
     try {
       await apiClient.patch(`/notifications/${n.id}/read`);
       setNotifications((prev) => prev.filter((x) => x.id !== n.id));
-      navigate(n.link);
+      const link = n.link || "/sales";
+      const resolved = link.startsWith("/admin") || link.startsWith("/sales") ? link : `/sales${link}`;
+      navigate(resolved);
     } catch { /* silencioso */ }
   };
 

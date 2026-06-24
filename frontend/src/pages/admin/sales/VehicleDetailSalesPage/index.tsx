@@ -4,7 +4,6 @@ import apiClient from "@/api/apiClient";
 import { getImageUrl } from "@/utils/imageUrl";
 import toast from "react-hot-toast";
 import styles from "./VehicleDetailSalesPage.module.css";
-import { LoanCalculator } from "@/components/LoanCalculator";
 
 interface VehicleDetail {
   id: number;
@@ -204,12 +203,6 @@ export const VehicleDetailSalesPage = () => {
         )}
       </div>
 
-      {/* CALCULADORA DE FINANCIAMIENTO */}
-      <div className={styles.calculatorSection}>
-        <h2>Calculadora de Financiamiento</h2>
-        <p className={styles.calcSubtitle}>Simule las cuotas mensuales según el plazo y la tasa de interés.</p>
-        <LoanCalculator precioBase={Number(vehicle.precio_venta)} />
-      </div>
     </div>
   );
 };

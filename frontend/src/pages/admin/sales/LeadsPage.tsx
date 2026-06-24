@@ -38,8 +38,9 @@ export const LeadsPage = () => {
   const [filterEstado, setFilterEstado] = useState("Todos");
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
   const [showNuevo, setShowNuevo] = useState(false);
-  const [nuevo, setNuevo] = useState({ nombre: "", telefono: "", email: "", fuente: "Presencial" });
+  const [nuevo, setNuevo] = useState({ nombre: "", telefono: "", email: "", fuente: "Presencial", campana_id: "" });
   const [guardandoNuevo, setGuardandoNuevo] = useState(false);
+  const [campanasActivas, setCampanasActivas] = useState<{ id: number; nombre: string; plataforma: string }[]>([]);
   const location = useLocation();
   const confirm = useConfirm();
   const isAdmin = location.pathname.startsWith("/admin");
@@ -58,6 +59,16 @@ export const LeadsPage = () => {
   };
 
   useEffect(() => { loadLeads(); }, [endpoint]);
+
+  useEffect(() => {
+    apiClient.get("/campanas/activas")
+      .then((r) => setCampanasActivas(r.data))
+      .catch(() => {});
+    // Migración silenciosa: vincula vehículo de cotizaciones a leads que no lo tienen
+    if (isAdmin) {
+      apiClient.post("/leads/fix-vehiculos").catch(() => {});
+    }
+  }, [isAdmin]);
 
   const handleEliminar = async (id: number, nombre: string) => {
     const ok = await confirm({
@@ -94,10 +105,13 @@ export const LeadsPage = () => {
     if (!nuevo.email.trim() && !nuevo.telefono.trim()) return toast.error("Indique email o teléfono.");
     setGuardandoNuevo(true);
     try {
-      await apiClient.post("/leads/manual", nuevo);
+      await apiClient.post("/leads/manual", {
+        ...nuevo,
+        campana_id: nuevo.campana_id ? Number(nuevo.campana_id) : undefined,
+      });
       toast.success("Lead creado.");
       setShowNuevo(false);
-      setNuevo({ nombre: "", telefono: "", email: "", fuente: "Presencial" });
+      setNuevo({ nombre: "", telefono: "", email: "", fuente: "Presencial", campana_id: "" });
       loadLeads();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Error al crear el lead.");
@@ -343,13 +357,30 @@ export const LeadsPage = () => {
                 </label>
                 <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
                   Fuente
-                  <select value={nuevo.fuente} onChange={(e) => setNuevo({ ...nuevo, fuente: e.target.value })} style={inputStyle}>
-                    {["Presencial", "Llamada", "WhatsApp", "Referido", "Instagram", "Facebook", "Otro"].map((f) => (
+                  <select value={nuevo.fuente} onChange={(e) => setNuevo({ ...nuevo, fuente: e.target.value, campana_id: "" })} style={inputStyle}>
+                    {["Presencial", "Llamada", "WhatsApp", "Referido", "Instagram", "Facebook", "TikTok", "Otro"].map((f) => (
                       <option key={f} value={f}>{f}</option>
                     ))}
                   </select>
                 </label>
               </div>
+              {/* Campaña — solo si la fuente es red social y hay campañas activas */}
+              {["Facebook", "Instagram", "TikTok"].includes(nuevo.fuente) && campanasActivas.filter(c => c.plataforma === nuevo.fuente).length > 0 && (
+                <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                  📣 Campaña de {nuevo.fuente} (opcional)
+                  <select
+                    value={nuevo.campana_id}
+                    onChange={(e) => setNuevo({ ...nuevo, campana_id: e.target.value })}
+                    style={{ ...inputStyle, borderColor: "#7dd3fc" }}
+                  >
+                    <option value="">— Orgánico / sin campaña —</option>
+                    {campanasActivas
+                      .filter(c => c.plataforma === nuevo.fuente)
+                      .map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)
+                    }
+                  </select>
+                </label>
+              )}
               <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
                 Email
                 <input value={nuevo.email} onChange={(e) => setNuevo({ ...nuevo, email: e.target.value })}

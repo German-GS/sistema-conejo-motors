@@ -9,6 +9,7 @@ import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { VehicleEstadoHistorial } from '../vehicles/vehicle-estado-historial.entity';
 import { Lead } from '../leads/lead.entity';
+import { LeadActividad } from '../leads/lead-actividad.entity';
 
 /** Días de reserva automática al crear una cotización */
 const DIAS_RESERVA = 4;
@@ -26,8 +27,18 @@ export class CotizacionesService {
     private leadsRepository: Repository<Lead>,
     @InjectRepository(VehicleEstadoHistorial)
     private historialRepo: Repository<VehicleEstadoHistorial>,
+    @InjectRepository(LeadActividad)
+    private actividadesRepo: Repository<LeadActividad>,
     private clientesService: ClientesService,
   ) {}
+
+  async findByLead(leadId: number): Promise<Cotizacion[]> {
+    return this.cotizacionesRepository.find({
+      where: { lead: { id: leadId } },
+      relations: ['cliente', 'vehiculo', 'vendedor'],
+      order: { fecha_creacion: 'DESC' },
+    });
+  }
 
   async findMyQuotes(vendedor: User): Promise<Cotizacion[]> {
     return this.cotizacionesRepository.find({
@@ -164,8 +175,11 @@ export class CotizacionesService {
 
     if (createDto.leadId) {
       lead = await this.leadsRepository.findOneBy({ id: createDto.leadId });
-      if (lead && ['Nuevo', 'Contactado'].includes(lead.estado)) {
-        await this.leadsRepository.update(lead.id, { estado: 'En Progreso' });
+      if (lead) {
+        const updates: any = {};
+        if (['Nuevo', 'Contactado'].includes(lead.estado)) updates.estado = 'En Progreso';
+        if (!lead.vehiculo_interes) updates.vehiculo_interes = vehiculo;
+        if (Object.keys(updates).length) await this.leadsRepository.update(lead.id, updates);
       }
     } else {
       const fuente = (createDto.fuente_lead as any) || 'Otro';
@@ -228,7 +242,21 @@ export class CotizacionesService {
       notas_cliente:   createDto.notas_cliente ?? '',
     });
 
-    return this.cotizacionesRepository.save(nuevaCotizacion);
+    const cotizacion = await this.cotizacionesRepository.save(nuevaCotizacion);
+
+    // Registrar actividad en el timeline del lead
+    if (lead) {
+      await this.actividadesRepo.save(
+        this.actividadesRepo.create({
+          lead: { id: lead.id } as Lead,
+          usuario: vendedor,
+          tipo: 'cotizacion_creada',
+          descripcion: `Cotización #${cotizacion.id} creada — ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.año}) por ${new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', maximumFractionDigits: 0 }).format(cotizacion.total_con_iva)}.`,
+        }),
+      );
+    }
+
+    return cotizacion;
   }
 
   /**

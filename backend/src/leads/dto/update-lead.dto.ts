@@ -2,6 +2,10 @@ import { IsString, IsOptional, IsNumber, IsDateString, IsEnum } from 'class-vali
 
 export class UpdateLeadDto {
   @IsOptional()
+  @IsString()
+  nombre_cliente?: string;
+
+  @IsOptional()
   @IsEnum(['Nuevo', 'Contactado', 'En Progreso', 'Cerrado', 'Perdido'])
   estado?: string;
 
@@ -33,4 +37,8 @@ export class UpdateLeadDto {
   @IsOptional()
   @IsEnum(['Contado', 'Crédito'])
   tipo_pago?: string;
+
+  @IsOptional()
+  @IsNumber()
+  campana_id?: number | null;
 }

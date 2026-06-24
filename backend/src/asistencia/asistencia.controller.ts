@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Query,
+  Controller, Get, Post, Patch, Delete, Body, Query, Param,
   UseGuards, Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -64,5 +64,40 @@ export class AsistenciaController {
   ) {
     const hoy = new Date().toISOString().split('T')[0];
     return this.svc.reporteRango(startDate || hoy, endDate || hoy);
+  }
+
+  /** GET /asistencia/sin-salida — cierres automáticos pendientes de revisión (admin) */
+  @Get('sin-salida')
+  @Roles('Administrador')
+  getSinSalida() {
+    return this.svc.getSinSalida();
+  }
+
+  /** POST /asistencia/admin-agregar — admin registra un marcaje (ej. salida olvidada) */
+  @Post('admin-agregar')
+  @Roles('Administrador')
+  adminAgregar(
+    @Body() body: { usuarioId: number; tipo: 'entrada' | 'salida'; fecha_hora: string; nota?: string },
+    @Request() req,
+  ) {
+    return this.svc.adminAgregarMarcaje(body.usuarioId, body.tipo, body.fecha_hora, req.user, body.nota);
+  }
+
+  /** DELETE /asistencia/:id — admin elimina un marcaje (queda en el log) */
+  @Delete(':id')
+  @Roles('Administrador')
+  adminEliminar(@Param('id') id: string, @Request() req) {
+    return this.svc.adminEliminarMarcaje(+id, req.user);
+  }
+
+  /** PATCH /asistencia/:id/corregir — admin corrige hora de un marcaje */
+  @Patch(':id/corregir')
+  @Roles('Administrador')
+  adminCorregir(
+    @Param('id') id: string,
+    @Body() body: { fecha_hora: string; nota_admin: string },
+    @Request() req,
+  ) {
+    return this.svc.adminCorregir(+id, body.fecha_hora, req.user, body.nota_admin);
   }
 }
