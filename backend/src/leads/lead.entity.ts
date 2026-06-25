@@ -65,6 +65,10 @@ export class Lead {
   })
   tipo_pago?: LeadTipoPago;
 
+  /** Prima/cuota inicial que el cliente puede aportar (₡) */
+  @Column({ type: 'numeric', precision: 14, scale: 2, nullable: true })
+  prima_disponible?: number;
+
   @CreateDateColumn()
   fecha_creacion: Date;
 

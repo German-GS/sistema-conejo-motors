@@ -269,10 +269,15 @@ export const LeadsPage = () => {
             <tbody>
               {filtered.map((lead) => {
                 const hoy = new Date();
+                const perdido = lead.estado === "Perdido";
                 const followup = lead.fecha_followup ? new Date(lead.fecha_followup) : null;
-                const followupVencido = followup && followup < hoy && lead.estado !== "Cerrado";
+                const followupVencido = !perdido && followup && followup < hoy && lead.estado !== "Cerrado";
                 return (
-                  <tr key={lead.id} className={followupVencido ? styles.rowAlert : ""}>
+                  <tr
+                    key={lead.id}
+                    className={followupVencido ? styles.rowAlert : ""}
+                    style={perdido ? { opacity: 0.55, background: "#f8fafc" } : undefined}
+                  >
                     <td>
                       <strong>{lead.nombre_cliente}</strong>
                       <br />
@@ -292,13 +297,15 @@ export const LeadsPage = () => {
                     <td>
                       <span
                         className={styles.status}
-                        style={{ background: ESTADO_COLORS[lead.estado] ?? "#64748b" }}
+                        style={{ background: perdido ? "#94a3b8" : (ESTADO_COLORS[lead.estado] ?? "#64748b") }}
                       >
                         {lead.estado}
                       </span>
                     </td>
                     <td>
-                      {followup ? (
+                      {perdido ? (
+                        <span className={styles.sub}>—</span>
+                      ) : followup ? (
                         <span className={followupVencido ? styles.followupAlert : styles.followup}>
                           {followupVencido ? "⚠️ " : "📅 "}
                           {fmtFechaLocal(lead.fecha_followup)}

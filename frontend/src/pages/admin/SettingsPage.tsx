@@ -6,6 +6,7 @@ import styles from "./SettingsPage.module.css";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { SiteHomepageSettings } from "../../components/SiteHomepageSettings";
+import { EntidadesFinancierasSettings } from "../../components/EntidadesFinancierasSettings";
 import { EditProfileModal } from "./EditProfileModal";
 
 // --- INTERFACES ---
@@ -640,6 +641,10 @@ export const SettingsPage = () => {
 
       <Card title="Configuración de Página Principal">
         <SiteHomepageSettings />
+      </Card>
+
+      <Card title="🏦 Entidades Financieras y sus Documentos">
+        <EntidadesFinancierasSettings />
       </Card>
 
       <div className={styles.highlightCard}>

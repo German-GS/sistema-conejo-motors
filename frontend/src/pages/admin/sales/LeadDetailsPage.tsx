@@ -72,6 +72,7 @@ interface LeadDetails {
   contacted_by_phone: boolean;
   contacted_by_whatsapp: boolean;
   tipo_pago?: 'Contado' | 'Crédito';
+  prima_disponible?: number | string | null;
   fecha_creacion: string;
   vehiculo_interes?: { id: number; marca: string; modelo: string; año: number };
   vendedor_asignado?: Vendedor;
@@ -155,8 +156,11 @@ export const LeadDetailsPage = () => {
 
   // Financiamiento
   const [financiamientos, setFinanciamientos] = useState<Financiamiento[]>([]);
+  const [entidadesFin, setEntidadesFin] = useState<{ id: number; nombre: string; documentos: { id: number; nombre: string; url: string; tipo_mime?: string }[] }[]>([]);
 
-  const ENTIDADES = ["Lafise", "Banco Promerica", "Davivienda", "Coopenae", "Flexi Leasing"];
+  const ENTIDADES = entidadesFin.length
+    ? entidadesFin.map((e) => e.nombre)
+    : ["Lafise", "Banco Promerica", "Davivienda", "Coopenae", "Flexi Leasing"];
   const ESTADOS_FIN = ["Pendiente", "Enviado", "En Revisión", "Pre-Aprobado", "Aprobado", "Rechazado", "Desistió"];
   const ESTADO_FIN_COLORS: Record<string, string> = {
     "Pendiente": "#94a3b8", "Enviado": "#3b82f6", "En Revisión": "#f59e0b",
@@ -190,6 +194,9 @@ export const LeadDetailsPage = () => {
       .catch(() => {});
     apiClient.get(`/leads/${leadId}/documentos`)
       .then((res) => setDocumentos(res.data))
+      .catch(() => {});
+    apiClient.get("/entidades-financieras/activas")
+      .then((res) => setEntidadesFin(res.data))
       .catch(() => {});
   }, [leadId]);
 
@@ -378,7 +385,9 @@ export const LeadDetailsPage = () => {
 
   if (!lead) return <PageLoader message="Cargando lead..." />;
 
-  const actividades = lead.actividades ?? [];
+  const actividades = [...(lead.actividades ?? [])].sort(
+    (a, b) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime()
+  );
 
   return (
     <div className={styles.container}>
@@ -619,7 +628,7 @@ export const LeadDetailsPage = () => {
               <select
                 value={lead.campana?.id ?? ""}
                 onChange={(e) => save({ campana_id: e.target.value ? Number(e.target.value) : null } as any)}
-                style={{ width: "100%", padding: "0.5rem 0.75rem", borderRadius: "8px", border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
+                style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.75rem", borderRadius: "8px", border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
               >
                 <option value="">— Orgánico / sin campaña —</option>
                 {/* Siempre mostrar la campaña actual aunque esté pausada/finalizada */}
@@ -690,6 +699,20 @@ export const LeadDetailsPage = () => {
                 </button>
               ))}
             </div>
+            <label style={{ display: "block", marginTop: "0.6rem", fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>
+              💰 Prima que puede aportar (₡)
+            </label>
+            <input
+              type="number"
+              min={0}
+              placeholder="Ej: 3000000"
+              defaultValue={lead.prima_disponible != null ? Number(lead.prima_disponible) : ""}
+              onBlur={(e) => {
+                const v = e.target.value ? Number(e.target.value) : null;
+                if (Number(lead.prima_disponible ?? 0) !== Number(v ?? 0)) save({ prima_disponible: v } as any);
+              }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.65rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
+            />
           </SidebarSection>
 
           {/* Cotizaciones vinculadas */}
@@ -878,6 +901,7 @@ export const LeadDetailsPage = () => {
                   {dato("📅", "En sistema", `${dias} día${dias === 1 ? "" : "s"}`)}
                   {dato("🕐", "Últ. actividad", ultimaAct ? fmtFechaLocal(ultimaAct) : "—")}
                   {dato("💳", "Modalidad", lead.tipo_pago ?? "Sin definir")}
+                  {Number(lead.prima_disponible) > 0 && dato("💰", "Prima disponible", new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(lead.prima_disponible)))}
                   {dato("🚗", "Vehículo", lead.vehiculo_interes ? `${lead.vehiculo_interes.marca} ${lead.vehiculo_interes.modelo}` : "—")}
                   {dato("📄", "Cotizaciones", cotsActivas.length > 0 ? `${cotsActivas.length} · ${new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(totalCots)}` : String(cotizaciones.length))}
                   {dato("📎", "Documentos", String(documentos.length))}
@@ -990,6 +1014,40 @@ export const LeadDetailsPage = () => {
                   </label>
                 </div>
               )}
+
+              {/* Documentos de la entidad seleccionada: descargar o enviar por WhatsApp */}
+              {actEntidad && (() => {
+                const ent = entidadesFin.find((e) => e.nombre === actEntidad);
+                if (!ent || !ent.documentos?.length) return null;
+                const nombreCliente = lead.nombre_cliente.split(" ")[0];
+                return (
+                  <div style={{ marginTop: "0.5rem", borderTop: "1px dashed #cbd5e1", paddingTop: "0.5rem" }}>
+                    <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                      📎 Formularios de {actEntidad}
+                    </span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "0.4rem" }}>
+                      {ent.documentos.map((d) => (
+                        <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.4rem 0.6rem" }}>
+                          <span style={{ flex: 1, fontSize: "0.82rem", minWidth: 120 }}>📄 {d.nombre}</span>
+                          <a
+                            href={d.url} target="_blank" rel="noopener noreferrer"
+                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#024f7d", textDecoration: "none", border: "1px solid #cbd5e1", borderRadius: 6, padding: "0.25rem 0.6rem" }}
+                          >
+                            ⬇️ Descargar
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => escribirWhatsApp(`Hola ${nombreCliente}, para avanzar con su crédito en ${actEntidad}, por favor complete este formulario (${d.nombre}): ${d.url}`)}
+                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#15803d", background: "#dcfce7", border: "1px solid #16a34a", borderRadius: 6, padding: "0.25rem 0.6rem", cursor: "pointer" }}
+                          >
+                            💬 Enviar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Adjuntos de la actividad */}

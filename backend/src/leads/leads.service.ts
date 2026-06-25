@@ -166,6 +166,7 @@ export class LeadsService {
     if (dto.contacted_by_email !== undefined) lead.contacted_by_email = dto.contacted_by_email;
     if (dto.contacted_by_phone !== undefined) lead.contacted_by_phone = dto.contacted_by_phone;
     if (dto.tipo_pago !== undefined) lead.tipo_pago = dto.tipo_pago as any;
+    if (dto.prima_disponible !== undefined) lead.prima_disponible = dto.prima_disponible as any;
     if (dto.contacted_by_whatsapp !== undefined) lead.contacted_by_whatsapp = dto.contacted_by_whatsapp;
     if (dto.campana_id !== undefined) {
       lead.campana = dto.campana_id

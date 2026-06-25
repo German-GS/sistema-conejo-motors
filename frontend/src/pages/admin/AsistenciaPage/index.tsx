@@ -159,14 +159,14 @@ export const AsistenciaPage = () => {
   useEffect(() => { fetchData(); }, [tab]); // eslint-disable-line
 
   const handleCorregir = async () => {
-    if (!corrigiendo || !nuevaHora || !notaAdmin.trim()) {
-      toast.error("Completá la hora y el motivo de la corrección."); return;
+    if (!corrigiendo || !nuevaHora) {
+      toast.error("Indicá la nueva hora de salida."); return;
     }
     setGuardandoCorreccion(true);
     try {
       await apiClient.patch(`/asistencia/${corrigiendo.id}/corregir`, {
         fecha_hora: nuevaHora,
-        nota_admin: notaAdmin,
+        nota_admin: notaAdmin.trim() || "Corrección de hora por administrador",
       });
       toast.success("Marcaje corregido correctamente.");
       setCorrigiendo(null);
@@ -480,7 +480,7 @@ export const AsistenciaPage = () => {
 
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: "block", marginBottom: 4, fontSize: "0.85rem", fontWeight: 600 }}>
-                Motivo de la corrección <span style={{ color: "#ef4444" }}>*</span>
+                Motivo de la corrección <span style={{ color: "#94a3b8", fontWeight: 400 }}>(opcional)</span>
               </label>
               <textarea
                 value={notaAdmin}

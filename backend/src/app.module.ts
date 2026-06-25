@@ -99,6 +99,9 @@ import { FinanzasModule } from './finanzas/finanzas.module';
 import { MovimientoBancario } from './tesoreria/movimiento-bancario.entity';
 import { CampanasModule } from './campanas/campanas.module';
 import { Campana } from './campanas/campana.entity';
+import { EntidadesFinancierasModule } from './entidades-financieras/entidades-financieras.module';
+import { EntidadFinanciera } from './entidades-financieras/entidad-financiera.entity';
+import { EntidadFinancieraDocumento } from './entidades-financieras/entidad-financiera-documento.entity';
 
 
 @Module({
@@ -176,6 +179,8 @@ import { Campana } from './campanas/campana.entity';
         MovimientoBancario,
         CierreMes,
         Campana,
+        EntidadFinanciera,
+        EntidadFinancieraDocumento,
       ],
       }),
     }),
@@ -220,6 +225,7 @@ import { Campana } from './campanas/campana.entity';
     SearchModule,
     FinanzasModule,
     CampanasModule,
+    EntidadesFinancierasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

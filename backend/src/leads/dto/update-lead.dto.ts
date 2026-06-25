@@ -40,5 +40,9 @@ export class UpdateLeadDto {
 
   @IsOptional()
   @IsNumber()
+  prima_disponible?: number | null;
+
+  @IsOptional()
+  @IsNumber()
   campana_id?: number | null;
 }
