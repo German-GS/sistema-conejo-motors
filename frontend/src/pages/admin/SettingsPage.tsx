@@ -177,6 +177,49 @@ const CalcSettings: React.FC = () => {
   );
 };
 
+// --- COMPONENTE DE IMPUESTO (IVA) POR DEFECTO ---
+const ImpuestoSettings: React.FC = () => {
+  const [iva, setIva] = useState(4);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    apiClient.get("/site-settings/public").then((res) => {
+      const v = Number(res.data?.find((x: any) => x.key === "iva_default")?.value);
+      if (!isNaN(v)) setIva(v);
+    }).catch(() => {});
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await apiClient.post("/site-settings", { key: "iva_default", value: String(iva) });
+      toast.success("IVA por defecto guardado.");
+    } catch { toast.error("Error al guardar."); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ color: "#64748b", fontSize: "0.88rem", margin: 0 }}>
+        Impuesto que se aplica a las cotizaciones nuevas. Actualmente, por la exoneración, es del <strong>4%</strong>; si cambia (sube o baja), actualizalo acá y se usará en las próximas cotizaciones. El vendedor igual puede ajustarlo por cotización si tiene permiso.
+      </p>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+          <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>IVA por defecto (%)</label>
+          <input
+            type="number" value={iva} min={0} max={13} step={1}
+            onChange={(e) => setIva(Number(e.target.value))}
+            style={{ width: 140, padding: "0.55rem 0.7rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "1rem", fontFamily: "inherit" }}
+          />
+        </div>
+        <button onClick={save} disabled={saving} className="btn btn-principal">
+          {saving ? "Guardando..." : "Guardar IVA"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // --- COMPONENTE PRINCIPAL ---
 type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla";
 const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string }[] = [
@@ -380,6 +423,12 @@ export const SettingsPage = () => {
       </div>
 
       {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
+
+      {seccion === "vehiculos" && (
+      <Card title="🧾 Impuesto (IVA) por defecto en cotizaciones">
+        <ImpuestoSettings />
+      </Card>
+      )}
 
       {seccion === "vehiculos" && (
       <Card title="Perfiles de Modelos de Vehículos">

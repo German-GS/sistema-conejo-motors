@@ -63,6 +63,7 @@ interface LeadDetails {
   nombre_cliente: string;
   email_cliente: string;
   telefono_cliente?: string;
+  cedula_cliente?: string;
   whatsapp_cliente?: string;
   estado: string;
   fuente: string;
@@ -516,6 +517,19 @@ export const LeadDetailsPage = () => {
           <SidebarSection id="contacto" title="📋 Contacto" defaultOpen>
             <p><strong>Email:</strong> {lead.email_cliente}</p>
             <p><strong>Teléfono:</strong> {lead.telefono_cliente || "—"}</p>
+            <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+              <strong>Cédula:</strong>
+              <input
+                type="text"
+                defaultValue={lead.cedula_cliente ?? ""}
+                placeholder="Agregar cédula"
+                onBlur={(e) => {
+                  const v = e.target.value.trim();
+                  if (v !== (lead.cedula_cliente ?? "")) save({ cedula_cliente: v } as any);
+                }}
+                style={{ flex: 1, minWidth: 120, boxSizing: "border-box", padding: "0.3rem 0.5rem", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: "0.88rem", fontFamily: "inherit" }}
+              />
+            </p>
             <p><strong>Registrado:</strong> {fmtFecha(lead.fecha_creacion)}</p>
 
             {/* WhatsApp con plantillas precargadas */}

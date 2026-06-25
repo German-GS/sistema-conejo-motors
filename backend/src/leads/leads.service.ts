@@ -166,6 +166,7 @@ export class LeadsService {
     if (dto.contacted_by_email !== undefined) lead.contacted_by_email = dto.contacted_by_email;
     if (dto.contacted_by_phone !== undefined) lead.contacted_by_phone = dto.contacted_by_phone;
     if (dto.tipo_pago !== undefined) lead.tipo_pago = dto.tipo_pago as any;
+    if (dto.cedula_cliente !== undefined) lead.cedula_cliente = dto.cedula_cliente;
     if (dto.prima_disponible !== undefined) lead.prima_disponible = dto.prima_disponible as any;
     if (dto.contacted_by_whatsapp !== undefined) lead.contacted_by_whatsapp = dto.contacted_by_whatsapp;
     if (dto.campana_id !== undefined) {
@@ -215,7 +216,7 @@ export class LeadsService {
 
   /** Creación manual desde el panel (vendedor lo toma para sí; admin lo asigna por turno) */
   async createManual(
-    body: { nombre: string; email?: string; telefono?: string; fuente?: string; vehiculoId?: number; vendedor_asignado_id?: number; campana_id?: number },
+    body: { nombre: string; email?: string; telefono?: string; cedula?: string; fuente?: string; vehiculoId?: number; vendedor_asignado_id?: number; campana_id?: number },
     user: User,
   ): Promise<Lead> {
     const nombre = (body.nombre ?? '').trim();
@@ -256,6 +257,7 @@ export class LeadsService {
       nombre_cliente: nombre,
       email_cliente: body.email?.trim() || '',
       telefono_cliente: body.telefono?.trim() || undefined,
+      cedula_cliente: body.cedula?.trim() || undefined,
       fuente: (body.fuente as any) || 'Presencial',
       estado: 'Nuevo',
       vendedor_asignado: vendedorAsignado || undefined,

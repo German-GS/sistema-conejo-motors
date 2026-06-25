@@ -150,7 +150,7 @@ export const QuoteDetailsPage = () => {
     // Cédula Jurídica (izquierda, bajo el logo)
     doc.setFontSize(7.5);
     doc.setTextColor(180, 210, 240);
-    doc.text("Conejo Motors S.A. | Ced. Jur. 3-101-857-775", margin, 38);
+    doc.text("Conejo Motors | Ced. Jur. 3-101-857-775", margin, 38);
     doc.text("Actividad ATV 501001 | TRIBU-CR 4510.0", margin, 43);
 
     let y = 54;
@@ -192,40 +192,42 @@ export const QuoteDetailsPage = () => {
       return "—";
     };
 
-    const priceRows: [string, string, string, string][] = [];
+    const priceRows: [string, string, string][] = [];
 
     if (Number(quote.descuento_monto) > 0) {
       const listaBase = Number(quote.precio_lista || quote.precio_final);
-      priceRows.push(["Precio de lista", "", fmtPDF(listaBase), tipoCambioImplicito > 0 ? fmtUSD(Math.round(listaBase / tipoCambioImplicito)) : "—"]);
+      priceRows.push(["Precio de lista", "", crcToUsd(listaBase)]);
       const descMonto = Number(quote.descuento_monto);
-      priceRows.push(["Descuento aplicado", "", `– ${fmtPDF(descMonto)}`, tipoCambioImplicito > 0 ? `– ${fmtUSD(Math.round(descMonto / tipoCambioImplicito))}` : "—"]);
+      priceRows.push(["Descuento aplicado", "", `– ${crcToUsd(descMonto)}`]);
     }
 
     priceRows.push([
       `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.año}`,
       quote.tipo_combustible || "Eléctrico",
-      fmtPDF(Number(quote.precio_final)),
       crcToUsd(Number(quote.precio_final)),
     ]);
 
     autoTable(doc, {
       startY: y,
-      head: [["DESCRIPCIÓN", "COMBUSTIBLE", "MONTO (CRC)", "MONTO (USD)"]],
+      head: [["DESCRIPCIÓN", "COMBUSTIBLE", "MONTO (USD)"]],
       body: priceRows,
       foot: [
-        ["Base imponible (sin IVA)", "", fmtPDF(Number(quote.precio_final)), crcToUsd(Number(quote.precio_final))],
-        [`IVA (${pdfIvaPct}% desglosado)`, "", fmtPDF(pdfIvaMonto), crcToUsd(pdfIvaMonto)],
-        ["PRECIO TOTAL (IVA incluido)", "", fmtPDF(pdfTotalIva), crcToUsd(pdfTotalIva)],
+        ["Base imponible (sin IVA)", "", crcToUsd(Number(quote.precio_final))],
+        [`IVA (${pdfIvaPct}% desglosado)`, "", crcToUsd(pdfIvaMonto)],
+        ["PRECIO TOTAL (IVA incluido)", "", crcToUsd(pdfTotalIva)],
       ],
       theme: "striped",
       headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: "bold", fontSize: 9 },
       bodyStyles: { fontSize: 9 },
       footStyles: { fontStyle: "bold", fontSize: 9, fillColor: [0, 64, 0] as [number, number, number], textColor: [255, 255, 255] as [number, number, number] },
       columnStyles: {
-        0: { cellWidth: colWidth * 0.43 },
-        1: { cellWidth: colWidth * 0.16 },
-        2: { cellWidth: colWidth * 0.22, halign: "right" },
-        3: { cellWidth: colWidth * 0.19, halign: "right" },
+        0: { cellWidth: colWidth * 0.55 },
+        1: { cellWidth: colWidth * 0.22 },
+        2: { cellWidth: colWidth * 0.23, halign: "right" },
+      },
+      // Alinea a la derecha la columna de montos en TODAS las secciones (encabezado incluido)
+      didParseCell: (data: any) => {
+        if (data.column.index === 2) data.cell.styles.halign = "right";
       },
     });
 
@@ -246,6 +248,7 @@ export const QuoteDetailsPage = () => {
 
     // ── NOTAS ADICIONALES ───────────────────────
     const notas: string[] = [
+      `• El precio incluye los gastos de inscripción.`,
       `• Esta proforma es válida hasta el: ${fmtFechaLocal(quote.fecha_expiracion)}.`,
     ];
     if (quote.notas_cliente?.trim()) {
@@ -278,7 +281,7 @@ export const QuoteDetailsPage = () => {
     // Conejo Motors info derecha
     doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
-    doc.text("Conejo Motors S.A. | Ced. Jur. 3-101-857-775", pW - margin, y + 20, { align: "right" });
+    doc.text("Conejo Motors | Ced. Jur. 3-101-857-775", pW - margin, y + 20, { align: "right" });
     doc.text("Venta de Vehículos Eléctricos BYD", pW - margin, y + 26, { align: "right" });
     doc.text("contabilidad@conejomotors.com", pW - margin, y + 32, { align: "right" });
 

@@ -6,6 +6,10 @@ export class UpdateLeadDto {
   nombre_cliente?: string;
 
   @IsOptional()
+  @IsString()
+  cedula_cliente?: string;
+
+  @IsOptional()
   @IsEnum(['Nuevo', 'Contactado', 'En Progreso', 'Cerrado', 'Perdido'])
   estado?: string;
 

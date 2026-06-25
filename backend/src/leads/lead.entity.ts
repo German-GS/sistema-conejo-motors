@@ -29,6 +29,9 @@ export class Lead {
   @Column({ length: 20, nullable: true })
   telefono_cliente?: string;
 
+  @Column({ length: 30, nullable: true })
+  cedula_cliente?: string;
+
   @Column({
     type: 'enum',
     enum: ['Nuevo', 'Contactado', 'En Progreso', 'Prueba de Manejo', 'Cotizacion Enviada', 'Negociacion', 'Cerrado', 'Perdido'],

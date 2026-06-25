@@ -52,8 +52,16 @@ export const CreateQuotePage = () => {
   // Medio de contacto (solo si no viene de un lead existente)
   const [fuenteLead, setFuenteLead] = useState("Presencial");
 
-  // IVA
-  const [ivaPorcentaje, setIvaPorcentaje] = useState(13);
+  // IVA — por defecto 4% (exoneración actual); configurable desde Configuración
+  const [ivaPorcentaje, setIvaPorcentaje] = useState(4);
+
+  // Cargar el IVA por defecto configurado
+  useEffect(() => {
+    apiClient.get("/site-settings/public").then((res) => {
+      const v = Number(res.data?.find((x: any) => x.key === "iva_default")?.value);
+      if (!isNaN(v)) setIvaPorcentaje(v);
+    }).catch(() => {});
+  }, []);
 
   // Tipo de combustible (requerido por bancos para financiamiento)
   const [tipoCombustible, setTipoCombustible] = useState("Electrico");
@@ -96,6 +104,7 @@ export const CreateQuotePage = () => {
       setCliente(prev => ({
         ...prev,
         nombre_completo: prev.nombre_completo || lead.nombre_cliente || "",
+        cedula: prev.cedula || lead.cedula_cliente || "",
         email: prev.email || lead.email_cliente || "",
         telefono: prev.telefono || lead.telefono_cliente || lead.whatsapp_cliente || "",
       }));
