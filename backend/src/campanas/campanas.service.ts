@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan, Not } from 'typeorm';
+import { Cron } from '@nestjs/schedule';
 import { Campana } from './campana.entity';
 import { CreateCampanaDto } from './dto/create-campana.dto';
 import { GastosService } from '../gastos/gastos.service';
@@ -9,6 +10,8 @@ import { User } from '../users/user.entity';
 
 @Injectable()
 export class CampanasService {
+  private readonly logger = new Logger(CampanasService.name);
+
   constructor(
     @InjectRepository(Campana)
     private repo: Repository<Campana>,
@@ -17,7 +20,29 @@ export class CampanasService {
     private gastosService: GastosService,
   ) {}
 
-  findAll(): Promise<Campana[]> {
+  /** Finaliza automáticamente las campañas cuya fecha de fin ya pasó */
+  async finalizarVencidas(): Promise<number> {
+    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+    const vencidas = await this.repo.find({
+      where: { estado: Not('Finalizada'), fecha_fin: LessThan(hoy) as any },
+    });
+    for (const c of vencidas) {
+      c.estado = 'Finalizada';
+      await this.repo.save(c);
+    }
+    if (vencidas.length) this.logger.log(`Auto-finalización: ${vencidas.length} campaña(s) finalizada(s).`);
+    return vencidas.length;
+  }
+
+  // Cron diario 12:30am CR (06:30 UTC): finaliza campañas vencidas
+  @Cron('30 6 * * *', { timeZone: 'UTC' })
+  async cronFinalizarVencidas() {
+    await this.finalizarVencidas();
+  }
+
+  async findAll(): Promise<Campana[]> {
+    // Auto-finaliza al consultar, para que el estado esté siempre al día
+    await this.finalizarVencidas();
     return this.repo.find({ order: { fecha_creacion: 'DESC' } });
   }
 

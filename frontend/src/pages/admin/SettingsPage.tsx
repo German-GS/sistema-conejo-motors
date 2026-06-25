@@ -178,8 +178,17 @@ const CalcSettings: React.FC = () => {
 };
 
 // --- COMPONENTE PRINCIPAL ---
+type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla";
+const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string }[] = [
+  { id: "vehiculos",      icon: "🚗", label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones" },
+  { id: "sitio",          icon: "🌐", label: "Sitio Web",     desc: "Página principal y contenido público" },
+  { id: "financiamiento", icon: "🏦", label: "Financiamiento", desc: "Entidades, formularios y calculadora" },
+  { id: "planilla",       icon: "💰", label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones" },
+];
+
 export const SettingsPage = () => {
   const confirm = useConfirm();
+  const [seccion, setSeccion] = useState<SeccionConfig>("vehiculos");
   // --- ESTADOS DEL COMPONENTE ---
   const [cargasPatronales, setCargasPatronales] = useState<Parametro[]>([]);
   const [deduccionesEmpleado, setDeduccionesEmpleado] = useState<Parametro[]>(
@@ -336,10 +345,43 @@ export const SettingsPage = () => {
   };
 
   // --- RENDERIZADO DEL COMPONENTE ---
+  const seccionActual = SECCIONES.find((s) => s.id === seccion)!;
   return (
     <>
+      {/* Encabezado + navegación por secciones */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540", margin: "0 0 0.25rem" }}>⚙️ Configuración</h1>
+        <p style={{ color: "#64748b", fontSize: "0.9rem", margin: 0 }}>{seccionActual.desc}</p>
+      </div>
+
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.75rem", borderBottom: "2px solid #f1f5f9", paddingBottom: "0.75rem" }}>
+        {SECCIONES.map((s) => {
+          const activa = s.id === seccion;
+          return (
+            <button
+              key={s.id}
+              onClick={() => setSeccion(s.id)}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                padding: "0.6rem 1.1rem", borderRadius: 10, cursor: "pointer",
+                border: activa ? "1.5px solid #024f7d" : "1.5px solid #e2e8f0",
+                background: activa ? "#024f7d" : "#fff",
+                color: activa ? "#fff" : "#475569",
+                fontWeight: 700, fontSize: "0.9rem", fontFamily: "inherit",
+                boxShadow: activa ? "0 2px 8px rgba(2,79,125,0.25)" : "none",
+                transition: "all 0.15s",
+              }}
+            >
+              <span style={{ fontSize: "1.1rem" }}>{s.icon}</span>
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+
       {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
 
+      {seccion === "vehiculos" && (
       <Card title="Perfiles de Modelos de Vehículos">
         <form onSubmit={handleCreateProfile} className={styles.profileForm}>
           {/* Inputs de texto y selects */}
@@ -638,19 +680,48 @@ export const SettingsPage = () => {
           </tbody>
         </table>
       </Card>
+      )}
 
+      {seccion === "sitio" && (
       <Card title="Configuración de Página Principal">
         <SiteHomepageSettings />
       </Card>
+      )}
 
-      <Card title="🏦 Entidades Financieras y sus Documentos">
-        <EntidadesFinancierasSettings />
-      </Card>
+      {seccion === "financiamiento" && (
+      <>
+        <Card title="🏦 Entidades Financieras y sus Documentos">
+          <EntidadesFinancierasSettings />
+        </Card>
 
-      <div className={styles.highlightCard}>
-        <Card title="Parámetros de Comisiones">
+        <Card title="🧮 Calculadora de Financiamiento — Parámetros predeterminados">
+          <CalcSettings />
+        </Card>
+      </>
+      )}
+
+      {seccion === "planilla" && (
+      <>
+        <div className={styles.highlightCard}>
+          <Card title="Parámetros de Comisiones">
+            <ParametrosTable
+              parametros={comisiones}
+              editId={editId}
+              editValue={editValue}
+              onEdit={(id: number, value: number) => {
+                setEditId(id);
+                setEditValue(value);
+              }}
+              onCancel={() => setEditId(null)}
+              onSave={handleUpdate}
+              onValueChange={setEditValue}
+            />
+          </Card>
+        </div>
+
+        <Card title="Obligaciones del Patrono (Planilla)">
           <ParametrosTable
-            parametros={comisiones}
+            parametros={cargasPatronales}
             editId={editId}
             editValue={editValue}
             onEdit={(id: number, value: number) => {
@@ -662,41 +733,23 @@ export const SettingsPage = () => {
             onValueChange={setEditValue}
           />
         </Card>
-      </div>
 
-      <Card title="Obligaciones del Patrono (Planilla)">
-        <ParametrosTable
-          parametros={cargasPatronales}
-          editId={editId}
-          editValue={editValue}
-          onEdit={(id: number, value: number) => {
-            setEditId(id);
-            setEditValue(value);
-          }}
-          onCancel={() => setEditId(null)}
-          onSave={handleUpdate}
-          onValueChange={setEditValue}
-        />
-      </Card>
-
-      <Card title="Deducciones del Colaborador (Planilla)">
-        <ParametrosTable
-          parametros={deduccionesEmpleado}
-          editId={editId}
-          editValue={editValue}
-          onEdit={(id: number, value: number) => {
-            setEditId(id);
-            setEditValue(value);
-          }}
-          onCancel={() => setEditId(null)}
-          onSave={handleUpdate}
-          onValueChange={setEditValue}
-        />
-      </Card>
-
-      <Card title="🧮 Calculadora de Financiamiento — Parámetros predeterminados">
-        <CalcSettings />
-      </Card>
+        <Card title="Deducciones del Colaborador (Planilla)">
+          <ParametrosTable
+            parametros={deduccionesEmpleado}
+            editId={editId}
+            editValue={editValue}
+            onEdit={(id: number, value: number) => {
+              setEditId(id);
+              setEditValue(value);
+            }}
+            onCancel={() => setEditId(null)}
+            onSave={handleUpdate}
+            onValueChange={setEditValue}
+          />
+        </Card>
+      </>
+      )}
 
       {/* Modal de edición de perfil */}
       {editingProfileId !== null && (
