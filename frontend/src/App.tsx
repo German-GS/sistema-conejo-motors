@@ -62,6 +62,7 @@ import { SalesDashboardPage } from "./pages/admin/sales/SalesDashboardPage";
 import { LeadsPage } from "./pages/admin/sales/LeadsPage";
 import { LeadDetailsPage } from "./pages/admin/sales/LeadDetailsPage";
 import { CampanasPage } from "./pages/admin/CampanasPage";
+import { ClientesPage } from "./pages/admin/ClientesPage";
 import { VehicleDetailSalesPage } from "./pages/admin/sales/VehicleDetailSalesPage";
 
 // --- COMPONENTES DE LÓGICA DE RUTAS ---
@@ -188,6 +189,7 @@ function App() {
             <Route path="leads" element={<LeadsPage />} />
             <Route path="leads/:leadId" element={<LeadDetailsPage />} />
             <Route path="campanas" element={<CampanasPage />} />
+            <Route path="clientes" element={<ClientesPage />} />
             <Route path="asistencia" element={<AsistenciaPage />} />
             <Route path="solicitudes" element={<SolicitudesPage />} />
             <Route path="productos" element={<ProductosPage />} />

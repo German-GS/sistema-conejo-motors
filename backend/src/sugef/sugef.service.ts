@@ -6,13 +6,8 @@ import { LeadSugefRetencion } from './lead-sugef-retencion.entity';
 import { Lead } from '../leads/lead.entity';
 import { Factura } from '../facturacion/factura.entity';
 
-/** Campos KYC obligatorios para poder facturar (los de contacto viven en el lead) */
-export const CAMPOS_KYC_REQUERIDOS: (keyof LeadSugefKyc)[] = [
-  'nacionalidad', 'fecha_nacimiento', 'lugar_nacimiento',
-  'direccion', 'pais_residencia',
-  'profesion', 'empleador', 'es_pep',
-  'origen_fondos', 'monto_estimado_usd',
-];
+/** Total de campos requeridos (para la barra de progreso del front) */
+export const SUGEF_TOTAL_REQUERIDOS = 9;
 
 @Injectable()
 export class SugefService {
@@ -37,6 +32,12 @@ export class SugefService {
     }
     if (!kyc) kyc = this.kycRepo.create({ lead: { id: leadId } as Lead });
     Object.assign(kyc, data);
+    // Origen de fondos derivado del tipo de ingreso (no se pide como texto libre)
+    if (kyc.tipo_ingreso === 'asalariado') {
+      kyc.origen_fondos = `Salario${kyc.empleador ? ' — ' + kyc.empleador : ''}`;
+    } else if (kyc.tipo_ingreso === 'independiente') {
+      kyc.origen_fondos = `Actividad independiente${kyc.profesion ? ': ' + kyc.profesion : ''}`;
+    }
     return this.kycRepo.save(kyc);
   }
 
@@ -54,13 +55,22 @@ export class SugefService {
     return new Date(`${r.retener_hasta}T23:59:59`) >= new Date();
   }
 
-  /** Campos KYC que faltan (nombres crudos). Vacío = completo. */
+  /** Campos KYC que faltan (nombres crudos). Vacío = completo. Requeridos condicionales. */
   faltantesKyc(kyc: LeadSugefKyc | null): string[] {
-    const faltan: string[] = [];
-    for (const campo of CAMPOS_KYC_REQUERIDOS) {
+    const vacio = (campo: string) => {
       const v = kyc ? (kyc as any)[campo] : undefined;
-      const vacio = v === null || v === undefined || v === '';
-      if (vacio) faltan.push(campo as string);
+      return v === null || v === undefined || v === '';
+    };
+    // Base requerida (9 campos)
+    const requeridos = [
+      'nacionalidad', 'fecha_nacimiento', 'lugar_nacimiento',
+      'direccion', 'pais_residencia',
+      'tipo_ingreso', 'profesion', 'es_pep', 'monto_estimado_usd',
+    ];
+    const faltan = requeridos.filter((c) => vacio(c));
+    // Si es asalariado, el empleador también es obligatorio (cuenta aparte)
+    if (kyc?.tipo_ingreso === 'asalariado' && vacio('empleador')) {
+      faltan.push('empleador');
     }
     return faltan;
   }

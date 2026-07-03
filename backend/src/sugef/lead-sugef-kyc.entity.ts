@@ -33,6 +33,10 @@ export class LeadSugefKyc {
   pais_residencia?: string;
 
   // ── Perfil económico ──
+  /** 'asalariado' | 'independiente' */
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  tipo_ingreso?: string;
+
   @Column({ type: 'varchar', length: 150, nullable: true })
   profesion?: string;
 

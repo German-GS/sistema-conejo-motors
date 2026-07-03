@@ -117,32 +117,7 @@ const ETAPAS = [
   "Cotización solicitada",
 ];
 
-// Campos SUGEF/KYC agrupados. `req` = requerido para poder facturar.
-type SugefCampo = { key: string; label: string; tipo: "text" | "date" | "number" | "bool"; req: boolean };
-const SUGEF_GRUPOS: { grupo: string; campos: SugefCampo[] }[] = [
-  { grupo: "🪪 Identidad", campos: [
-    { key: "nacionalidad", label: "Nacionalidad", tipo: "text", req: true },
-    { key: "fecha_nacimiento", label: "Fecha de nacimiento", tipo: "date", req: true },
-    { key: "lugar_nacimiento", label: "Lugar de nacimiento", tipo: "text", req: true },
-  ]},
-  { grupo: "🏠 Domicilio", campos: [
-    { key: "direccion", label: "Dirección exacta", tipo: "text", req: true },
-    { key: "pais_residencia", label: "País de residencia", tipo: "text", req: true },
-  ]},
-  { grupo: "💼 Perfil económico", campos: [
-    { key: "profesion", label: "Profesión / ocupación", tipo: "text", req: true },
-    { key: "empleador", label: "Empleador o actividad propia", tipo: "text", req: true },
-    { key: "es_pep", label: "¿Es PEP? (persona expuesta políticamente)", tipo: "bool", req: true },
-  ]},
-  { grupo: "💵 Origen de fondos", campos: [
-    { key: "origen_fondos", label: "Origen de fondos (descripción)", tipo: "text", req: true },
-    { key: "monto_estimado_usd", label: "Monto estimado (USD)", tipo: "number", req: true },
-  ]},
-  { grupo: "✍️ Declaración", campos: [
-    { key: "declaracion_fecha", label: "Fecha de declaración firmada", tipo: "date", req: false },
-  ]},
-];
-const SUGEF_TOTAL_REQ = SUGEF_GRUPOS.flatMap((g) => g.campos).filter((c) => c.req).length;
+const NACIONALIDADES = ["Costarricense", "Nicaragüense", "Panameña", "Colombiana", "Venezolana", "Estadounidense", "Otra"];
 
 const TIPOS_DOC = [
   { value: "otro", label: "Otro" },
@@ -260,12 +235,13 @@ export const LeadDetailsPage = () => {
       .catch(() => {});
   }, [leadId]);
 
-  const guardarKyc = (campo: string, valor: any) => {
+  const guardarKycObj = (obj: Record<string, any>) => {
     if (!lead || sugef.bajoRetencion) return;
-    apiClient.patch(`/leads/${lead.id}/sugef`, { [campo]: valor })
+    apiClient.patch(`/leads/${lead.id}/sugef`, obj)
       .then((res) => setSugef((prev: any) => ({ ...prev, kyc: res.data.kyc, faltantes: res.data.faltantes })))
       .catch(() => toast.error("No se pudo guardar el dato SUGEF."));
   };
+  const guardarKyc = (campo: string, valor: any) => guardarKycObj({ [campo]: valor });
 
   const cargarDocumentos = () => {
     if (!leadId) return;
@@ -712,28 +688,50 @@ export const LeadDetailsPage = () => {
             </div>
           </SidebarSection>
 
-          {/* Expediente SUGEF / KYC */}
+          {/* Expediente SUGEF / KYC — formulario inteligente */}
           {(() => {
             const kyc = sugef.kyc ?? {};
-            const completos = SUGEF_TOTAL_REQ - (sugef.faltantes?.length ?? SUGEF_TOTAL_REQ);
-            const pct = Math.round((completos / SUGEF_TOTAL_REQ) * 100);
             const ro = sugef.bajoRetencion;
-            const inputStyle: React.CSSProperties = {
+            const asalariado = kyc.tipo_ingreso === "asalariado";
+            const independiente = kyc.tipo_ingreso === "independiente";
+            const totalReq = 9 + (asalariado ? 1 : 0);
+            const completos = totalReq - (sugef.faltantes?.length ?? totalReq);
+            const pct = Math.round((completos / totalReq) * 100);
+            const iSt: React.CSSProperties = {
               width: "100%", boxSizing: "border-box", padding: "0.4rem 0.55rem", borderRadius: 6,
               border: "1px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit",
               background: ro ? "#f1f5f9" : "#fff",
             };
+            const lleno = (k: string) => { const v = kyc[k]; return v !== null && v !== undefined && v !== ""; };
+            const mark = (k: string) => (lleno(k) ? "✅" : "⚠️");
+            // Campo de texto/fecha/número reutilizable
+            const Campo = (k: string, label: string, tipo: "text" | "date" | "number" = "text") => (
+              <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                <span>{mark(k)} {label}</span>
+                <input
+                  type={tipo} defaultValue={kyc[k] ?? ""} disabled={ro} key={String(kyc[k] ?? "")}
+                  onBlur={(e) => {
+                    const v = tipo === "number" ? (e.target.value ? Number(e.target.value) : null) : (e.target.value || null);
+                    if (String(v ?? "") !== String(kyc[k] ?? "")) guardarKyc(k, v);
+                  }}
+                  style={iSt}
+                />
+              </label>
+            );
+            const grupoTitulo = (t: string) => (
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.03em", margin: "0.5rem 0 0.35rem" }}>{t}</div>
+            );
             return (
-              <SidebarSection id="sugef" title="📋 Expediente SUGEF" defaultOpen={pct < 100} badge={ro ? "🔒" : `${completos}/${SUGEF_TOTAL_REQ}`}>
+              <SidebarSection id="sugef" title="📋 Expediente SUGEF" defaultOpen={pct < 100} badge={ro ? "🔒" : `${completos}/${totalReq}`}>
                 {ro && sugef.retencion && (
                   <div style={{ background: "#dcfce7", border: "1px solid #16a34a", borderRadius: 8, padding: "0.5rem 0.7rem", fontSize: "0.8rem", color: "#15803d", fontWeight: 600 }}>
                     ✅ Venta facturada — expediente bajo retención hasta {fmtFechaLocal(sugef.retencion.retener_hasta)}. Solo lectura.
                   </div>
                 )}
                 {/* Barra de progreso */}
-                <div style={{ margin: "0.2rem 0 0.5rem" }}>
+                <div style={{ margin: "0.2rem 0 0.3rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#64748b", marginBottom: 3 }}>
-                    <span>{completos} de {SUGEF_TOTAL_REQ} campos completados</span>
+                    <span>{completos} de {totalReq} campos completados</span>
                     <span style={{ fontWeight: 700, color: pct === 100 ? "#16a34a" : "#f59e0b" }}>{pct}%</span>
                   </div>
                   <div style={{ background: "#f1f5f9", borderRadius: 6, height: 8, overflow: "hidden" }}>
@@ -741,45 +739,74 @@ export const LeadDetailsPage = () => {
                   </div>
                 </div>
 
-                {SUGEF_GRUPOS.map((g) => (
-                  <div key={g.grupo} style={{ marginBottom: "0.6rem" }}>
-                    <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.03em", marginBottom: "0.35rem" }}>{g.grupo}</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
-                      {g.campos.map((c) => {
-                        const val = kyc[c.key];
-                        const lleno = val !== null && val !== undefined && val !== "";
-                        return (
-                          <label key={c.key} style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
-                            <span>{c.req && (lleno ? "✅" : "⚠️")} {c.label}</span>
-                            {c.tipo === "bool" ? (
-                              <select
-                                defaultValue={val === true ? "si" : val === false ? "no" : ""}
-                                disabled={ro}
-                                onChange={(e) => guardarKyc(c.key, e.target.value === "" ? null : e.target.value === "si")}
-                                style={inputStyle}
-                              >
-                                <option value="">— Sin definir —</option>
-                                <option value="no">No</option>
-                                <option value="si">Sí</option>
-                              </select>
-                            ) : (
-                              <input
-                                type={c.tipo === "number" ? "number" : c.tipo === "date" ? "date" : "text"}
-                                defaultValue={val ?? ""}
-                                disabled={ro}
-                                onBlur={(e) => {
-                                  const v = c.tipo === "number" ? (e.target.value ? Number(e.target.value) : null) : (e.target.value || null);
-                                  if (String(v ?? "") !== String(val ?? "")) guardarKyc(c.key, v);
-                                }}
-                                style={inputStyle}
-                              />
-                            )}
-                          </label>
-                        );
-                      })}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                  {grupoTitulo("🪪 Identidad")}
+                  {/* Nacionalidad: al elegir Costarricense, autocompleta país de residencia */}
+                  <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                    <span>{mark("nacionalidad")} Nacionalidad</span>
+                    <select
+                      value={kyc.nacionalidad ?? ""} disabled={ro}
+                      onChange={(e) => {
+                        const v = e.target.value || null;
+                        const obj: any = { nacionalidad: v };
+                        if (v === "Costarricense" && !kyc.pais_residencia) obj.pais_residencia = "Costa Rica";
+                        guardarKycObj(obj);
+                      }}
+                      style={iSt}
+                    >
+                      <option value="">— Seleccioná —</option>
+                      {NACIONALIDADES.map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                  {Campo("fecha_nacimiento", "Fecha de nacimiento", "date")}
+                  {Campo("lugar_nacimiento", "Lugar de nacimiento")}
+
+                  {grupoTitulo("🏠 Domicilio")}
+                  {Campo("direccion", "Dirección exacta")}
+                  {Campo("pais_residencia", "País de residencia")}
+
+                  {grupoTitulo("💼 Perfil económico y origen de fondos")}
+                  <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                    <span>{mark("tipo_ingreso")} Tipo de ingreso</span>
+                    <select
+                      value={kyc.tipo_ingreso ?? ""} disabled={ro}
+                      onChange={(e) => guardarKyc("tipo_ingreso", e.target.value || null)}
+                      style={iSt}
+                    >
+                      <option value="">— Seleccioná —</option>
+                      <option value="asalariado">Asalariado</option>
+                      <option value="independiente">Independiente</option>
+                    </select>
+                  </label>
+                  {asalariado && (
+                    <>
+                      {Campo("empleador", "Empleador (empresa)")}
+                      {Campo("profesion", "Puesto / ocupación")}
+                    </>
+                  )}
+                  {independiente && Campo("profesion", "¿A qué se dedica?")}
+                  {kyc.tipo_ingreso && (
+                    <div style={{ fontSize: "0.72rem", color: "#16a34a", background: "#f0fdf4", borderRadius: 6, padding: "0.3rem 0.5rem" }}>
+                      💵 Origen de fondos: {asalariado ? `Salario${kyc.empleador ? " — " + kyc.empleador : ""}` : `Actividad independiente${kyc.profesion ? ": " + kyc.profesion : ""}`}
                     </div>
-                  </div>
-                ))}
+                  )}
+                  <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                    <span>{kyc.es_pep === true || kyc.es_pep === false ? "✅" : "⚠️"} ¿Es PEP? (persona expuesta políticamente)</span>
+                    <select
+                      value={kyc.es_pep === true ? "si" : kyc.es_pep === false ? "no" : ""} disabled={ro}
+                      onChange={(e) => guardarKyc("es_pep", e.target.value === "" ? null : e.target.value === "si")}
+                      style={iSt}
+                    >
+                      <option value="">— Sin definir —</option>
+                      <option value="no">No</option>
+                      <option value="si">Sí</option>
+                    </select>
+                  </label>
+                  {Campo("monto_estimado_usd", "Monto estimado (USD)", "number")}
+
+                  {grupoTitulo("✍️ Declaración")}
+                  {Campo("declaracion_fecha", "Fecha de declaración firmada", "date")}
+                </div>
               </SidebarSection>
             );
           })()}

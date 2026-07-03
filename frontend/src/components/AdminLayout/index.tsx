@@ -54,7 +54,7 @@ interface Notification {
 
 // Secciones del menú con sus rutas para detectar cuál abrir automáticamente
 const SECTION_ROUTES: Record<string, string[]> = {
-  ventas:       ["/admin/sales", "/admin/leads", "/admin/campanas", "/admin/agenda"],
+  ventas:       ["/admin/sales", "/admin/leads", "/admin/clientes", "/admin/campanas", "/admin/agenda"],
   inventario:   ["/admin/inventory", "/admin/pricing", "/admin/accesorios", "/admin/importaciones", "/admin/import"],
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
@@ -308,6 +308,7 @@ export const AdminLayout = () => {
               <SidebarLink to="/admin/sales/catalog" icon={<LuBookMarked size={18} />} label="Catálogo" />
               <SidebarLink to="/admin/sales/quotes" icon={<LuFileText size={18} />} label="Cotizaciones" />
               <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" />
+              <SidebarLink to="/admin/clientes" icon={<LuUsers size={18} />} label="Clientes" />
               <SidebarLink to="/admin/campanas" icon={<LuMegaphone size={18} />} label="Campañas" />
               <SidebarLink to="/admin/agenda" icon={<LuCalendarDays size={18} />} label="Agenda" />
             </div>
