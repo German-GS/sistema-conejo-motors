@@ -102,6 +102,9 @@ import { Campana } from './campanas/campana.entity';
 import { EntidadesFinancierasModule } from './entidades-financieras/entidades-financieras.module';
 import { EntidadFinanciera } from './entidades-financieras/entidad-financiera.entity';
 import { EntidadFinancieraDocumento } from './entidades-financieras/entidad-financiera-documento.entity';
+import { SugefModule } from './sugef/sugef.module';
+import { LeadSugefKyc } from './sugef/lead-sugef-kyc.entity';
+import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
 
 
 @Module({
@@ -181,6 +184,8 @@ import { EntidadFinancieraDocumento } from './entidades-financieras/entidad-fina
         Campana,
         EntidadFinanciera,
         EntidadFinancieraDocumento,
+        LeadSugefKyc,
+        LeadSugefRetencion,
       ],
       }),
     }),
@@ -226,6 +231,7 @@ import { EntidadFinancieraDocumento } from './entidades-financieras/entidad-fina
     FinanzasModule,
     CampanasModule,
     EntidadesFinancierasModule,
+    SugefModule,
   ],
   controllers: [AppController],
   providers: [AppService],

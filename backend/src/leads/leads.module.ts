@@ -9,16 +9,19 @@ import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { Campana } from '../campanas/campana.entity';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
+import { SiteSetting } from '../site-settings/site-setting.entity';
 import { LeadsController } from './leads.controller';
 import { LeadDocumentosController } from './lead-documentos.controller';
 import { LeadsService } from './leads.service';
 import { LeadDocumentosService } from './lead-documentos.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SugefModule } from '../sugef/sugef.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Lead, LeadActividad, LeadFinanciamiento, LeadDocumento, User, Vehicle, Campana, Cotizacion]),
+    TypeOrmModule.forFeature([Lead, LeadActividad, LeadFinanciamiento, LeadDocumento, User, Vehicle, Campana, Cotizacion, SiteSetting]),
     NotificationsModule,
+    SugefModule,
   ],
   controllers: [LeadsController, LeadDocumentosController],
   providers: [LeadsService, LeadDocumentosService],

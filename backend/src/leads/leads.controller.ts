@@ -1,7 +1,7 @@
 // backend/src/leads/leads.controller.ts
 import {
   Controller, Get, Param, ParseIntPipe, UseGuards,
-  Request, Patch, Body, Post, Delete,
+  Request, Patch, Body, Post, Delete, Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { LeadsService } from './leads.service';
@@ -29,6 +29,23 @@ export class LeadsController {
   @Roles('Administrador')
   fixVehiculos() {
     return this.leadsService.fixVehiculosFromCotizaciones();
+  }
+
+  /** Reporte de conversión por fuente (admin) */
+  @Get('reporte-fuentes')
+  @Roles('Administrador')
+  reportePorFuente() {
+    return this.leadsService.reportePorFuente();
+  }
+
+  /** Informe integral de CRM/Leads (admin) */
+  @Get('analytics')
+  @Roles('Administrador')
+  analytics(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.leadsService.analytics(startDate, endDate);
   }
 
   /** Vendedor/Admin: leads propios */

@@ -16,6 +16,7 @@ interface Lead {
   telefono_cliente?: string;
   estado: string;
   fuente: string;
+  temperatura?: string | null;
   fecha_followup?: string;
   fecha_creacion: string;
   vehiculo_interes?: { marca: string; modelo: string };
@@ -24,13 +25,16 @@ interface Lead {
 
 const ESTADO_COLORS: Record<string, string> = {
   Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
-  Cerrado: "#10b981", Perdido: "#ef4444",
+  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "#94a3b8",
 };
+
+const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
 
 const FUENTE_ICONS: Record<string, string> = {
   Web: "🌐", Instagram: "📸", Facebook: "👍", WhatsApp: "💬",
-  TikTok: "🎵", Referido: "🤝", Presencial: "🏢", Otro: "📋",
+  TikTok: "🎵", Referido: "🤝", Presencial: "🏢", Llamada: "📞", Otro: "📋",
 };
+const FUENTES = ["Facebook", "Instagram", "TikTok", "WhatsApp", "Web", "Referido", "Llamada", "Presencial", "Otro"];
 
 export const LeadsPage = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -38,9 +42,19 @@ export const LeadsPage = () => {
   const [filterEstado, setFilterEstado] = useState("Todos");
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
   const [showNuevo, setShowNuevo] = useState(false);
-  const [nuevo, setNuevo] = useState({ nombre: "", telefono: "", email: "", fuente: "Presencial", campana_id: "" });
+  const [nuevo, setNuevo] = useState({ nombre: "", telefono: "", email: "", fuente: "", campana_id: "" });
   const [guardandoNuevo, setGuardandoNuevo] = useState(false);
   const [campanasActivas, setCampanasActivas] = useState<{ id: number; nombre: string; plataforma: string }[]>([]);
+  const [reporteFuentes, setReporteFuentes] = useState<any[]>([]);
+  const [showReporte, setShowReporte] = useState(false);
+  const [sugefEstados, setSugefEstados] = useState<Record<number, string>>({});
+
+  const toggleReporte = () => {
+    if (!showReporte && reporteFuentes.length === 0) {
+      apiClient.get("/leads/reporte-fuentes").then((r) => setReporteFuentes(r.data)).catch(() => {});
+    }
+    setShowReporte((v) => !v);
+  };
   const location = useLocation();
   const confirm = useConfirm();
   const isAdmin = location.pathname.startsWith("/admin");
@@ -61,6 +75,9 @@ export const LeadsPage = () => {
   useEffect(() => { loadLeads(); }, [endpoint]);
 
   useEffect(() => {
+    apiClient.get("/sugef/estados")
+      .then((r) => setSugefEstados(r.data ?? {}))
+      .catch(() => {});
     apiClient.get("/campanas/activas")
       .then((r) => setCampanasActivas(r.data))
       .catch(() => {});
@@ -102,6 +119,7 @@ export const LeadsPage = () => {
 
   const crearLead = async () => {
     if (!nuevo.nombre.trim()) return toast.error("El nombre es requerido.");
+    if (!nuevo.fuente) return toast.error("Seleccioná la fuente del lead.");
     if (!nuevo.email.trim() && !nuevo.telefono.trim()) return toast.error("Indique email o teléfono.");
     setGuardandoNuevo(true);
     try {
@@ -111,7 +129,7 @@ export const LeadsPage = () => {
       });
       toast.success("Lead creado.");
       setShowNuevo(false);
-      setNuevo({ nombre: "", telefono: "", email: "", fuente: "Presencial", campana_id: "" });
+      setNuevo({ nombre: "", telefono: "", email: "", fuente: "", campana_id: "" });
       loadLeads();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Error al crear el lead.");
@@ -204,9 +222,53 @@ export const LeadsPage = () => {
         </div>
       )}
 
+      {/* Reporte de conversión por fuente (admin) */}
+      {isAdmin && (
+        <div style={{ marginBottom: "1rem" }}>
+          <button
+            onClick={toggleReporte}
+            style={{ border: "1px solid #cbd5e1", background: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#024f7d" }}
+          >
+            📊 {showReporte ? "Ocultar" : "Ver"} reporte de conversión por fuente
+          </button>
+          {showReporte && (
+            <div style={{ overflowX: "auto", marginTop: "0.75rem", border: "1px solid #e2e8f0", borderRadius: 12 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+                <thead>
+                  <tr style={{ background: "#024f7d", color: "#fff", textAlign: "left" }}>
+                    <th style={{ padding: "0.6rem 0.8rem" }}>Fuente</th>
+                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>Total</th>
+                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>En Progreso</th>
+                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center", color: "#a7f3d0" }}>Cerrado</th>
+                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center", color: "#fecaca" }}>Perdido</th>
+                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center", color: "#e2e8f0" }}>Descartado</th>
+                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>Tasa cierre</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reporteFuentes.length === 0 ? (
+                    <tr><td colSpan={7} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8" }}>Sin datos.</td></tr>
+                  ) : reporteFuentes.map((r) => (
+                    <tr key={r.fuente} style={{ borderTop: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "0.55rem 0.8rem", fontWeight: 600 }}>{FUENTE_ICONS[r.fuente] ?? "📋"} {r.fuente}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700 }}>{r.total}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center" }}>{r.En_Progreso}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#10b981", fontWeight: 700 }}>{r.Cerrado}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#ef4444" }}>{r.Perdido}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#94a3b8" }}>{r.Descartado}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700, color: r.tasaCierre >= 20 ? "#10b981" : "#64748b" }}>{r.tasaCierre}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* KPIs rápidos */}
       <div className={styles.kpiRow}>
-        {["Nuevo", "Contactado", "En Progreso", "Cerrado", "Perdido"].map((e) => (
+        {["Nuevo", "Contactado", "En Progreso", "Cerrado", "Perdido", "Descartado"].map((e) => (
           <button
             key={e}
             className={`${styles.kpi} ${filterEstado === e ? styles.kpiActive : ""}`}
@@ -269,17 +331,35 @@ export const LeadsPage = () => {
             <tbody>
               {filtered.map((lead) => {
                 const hoy = new Date();
-                const perdido = lead.estado === "Perdido";
+                const archivado = lead.estado === "Perdido" || lead.estado === "Descartado";
                 const followup = lead.fecha_followup ? new Date(lead.fecha_followup) : null;
-                const followupVencido = !perdido && followup && followup < hoy && lead.estado !== "Cerrado";
+                const followupVencido = !archivado && followup && followup < hoy && lead.estado !== "Cerrado";
                 return (
                   <tr
                     key={lead.id}
                     className={followupVencido ? styles.rowAlert : ""}
-                    style={perdido ? { opacity: 0.55, background: "#f8fafc" } : undefined}
+                    style={archivado ? { opacity: 0.55, background: "#f8fafc" } : undefined}
                   >
                     <td>
-                      <strong>{lead.nombre_cliente}</strong>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        {lead.temperatura && (
+                          <span
+                            title={`Temperatura: ${lead.temperatura}`}
+                            style={{ width: 9, height: 9, borderRadius: "50%", background: TEMP_COLOR[lead.temperatura] ?? "#cbd5e1", flexShrink: 0 }}
+                          />
+                        )}
+                        <strong>{lead.nombre_cliente}</strong>
+                        {(() => {
+                          const st = sugefEstados[lead.id];
+                          const avanzada = ["En Progreso", "Prueba de Manejo", "Cotizacion Enviada", "Negociacion"].includes(lead.estado);
+                          let icon = "", title = "";
+                          if (st === "retencion") { icon = "🔒"; title = "SUGEF: facturado, bajo retención"; }
+                          else if (st === "completo") { icon = "🟢"; title = "SUGEF: expediente completo"; }
+                          else if (st === "incompleto") { icon = "🟡"; title = "SUGEF: expediente incompleto"; }
+                          else if (avanzada) { icon = "🔴"; title = "SUGEF: sin datos"; }
+                          return icon ? <span title={title} style={{ fontSize: "0.72rem" }}>{icon}</span> : null;
+                        })()}
+                      </span>
                       <br />
                       <span className={styles.sub}>{lead.email_cliente}</span>
                     </td>
@@ -297,13 +377,13 @@ export const LeadsPage = () => {
                     <td>
                       <span
                         className={styles.status}
-                        style={{ background: perdido ? "#94a3b8" : (ESTADO_COLORS[lead.estado] ?? "#64748b") }}
+                        style={{ background: ESTADO_COLORS[lead.estado] ?? "#64748b" }}
                       >
                         {lead.estado}
                       </span>
                     </td>
                     <td>
-                      {perdido ? (
+                      {archivado ? (
                         <span className={styles.sub}>—</span>
                       ) : followup ? (
                         <span className={followupVencido ? styles.followupAlert : styles.followup}>
@@ -363,10 +443,16 @@ export const LeadsPage = () => {
                     style={inputStyle} placeholder="8888-8888" />
                 </label>
                 <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
-                  Fuente
-                  <select value={nuevo.fuente} onChange={(e) => setNuevo({ ...nuevo, fuente: e.target.value, campana_id: "" })} style={inputStyle}>
-                    {["Presencial", "Llamada", "WhatsApp", "Referido", "Instagram", "Facebook", "TikTok", "Otro"].map((f) => (
-                      <option key={f} value={f}>{f}</option>
+                  Fuente <span style={{ color: "#ef4444" }}>*</span>
+                  <select
+                    value={nuevo.fuente}
+                    onChange={(e) => setNuevo({ ...nuevo, fuente: e.target.value, campana_id: "" })}
+                    style={{ ...inputStyle, borderColor: nuevo.fuente ? "#e2e8f0" : "#fca5a5" }}
+                    required
+                  >
+                    <option value="">— Seleccioná la fuente —</option>
+                    {FUENTES.map((f) => (
+                      <option key={f} value={f}>{FUENTE_ICONS[f] ?? "📋"} {f}</option>
                     ))}
                   </select>
                 </label>

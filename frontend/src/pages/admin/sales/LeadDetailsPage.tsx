@@ -41,6 +41,7 @@ interface LeadDocumento {
   id: number;
   nombre: string;
   tipo_mime?: string;
+  tipo?: string;
   tamano_bytes: number;
   fecha_creacion: string;
   fecha_expiracion: string;
@@ -74,6 +75,8 @@ interface LeadDetails {
   contacted_by_whatsapp: boolean;
   tipo_pago?: 'Contado' | 'Crédito';
   prima_disponible?: number | string | null;
+  temperatura?: 'Caliente' | 'Tibio' | 'Frio' | null;
+  ultima_etapa?: string | null;
   fecha_creacion: string;
   vehiculo_interes?: { id: number; marca: string; modelo: string; año: number };
   vendedor_asignado?: Vendedor;
@@ -96,8 +99,59 @@ const TIPOS_MANUALES = ["nota", "llamada", "email", "whatsapp", "reunion"];
 
 const ESTADO_COLORS: Record<string, string> = {
   Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
-  Cerrado: "#10b981", Perdido: "#ef4444",
+  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "#94a3b8",
 };
+
+const TEMPERATURAS: { value: "Caliente" | "Tibio" | "Frio"; label: string; color: string }[] = [
+  { value: "Caliente", label: "🔥 Caliente", color: "#ef4444" },
+  { value: "Tibio",    label: "🌤️ Tibio",    color: "#f59e0b" },
+  { value: "Frio",     label: "❄️ Frío",     color: "#3b82f6" },
+];
+const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
+
+const ETAPAS = [
+  "Preguntó precio",
+  "Preguntó garantía/specs",
+  "Pidió ubicación o fotos",
+  "Pidió test drive",
+  "Cotización solicitada",
+];
+
+// Campos SUGEF/KYC agrupados. `req` = requerido para poder facturar.
+type SugefCampo = { key: string; label: string; tipo: "text" | "date" | "number" | "bool"; req: boolean };
+const SUGEF_GRUPOS: { grupo: string; campos: SugefCampo[] }[] = [
+  { grupo: "🪪 Identidad", campos: [
+    { key: "nacionalidad", label: "Nacionalidad", tipo: "text", req: true },
+    { key: "fecha_nacimiento", label: "Fecha de nacimiento", tipo: "date", req: true },
+    { key: "lugar_nacimiento", label: "Lugar de nacimiento", tipo: "text", req: true },
+  ]},
+  { grupo: "🏠 Domicilio", campos: [
+    { key: "direccion", label: "Dirección exacta", tipo: "text", req: true },
+    { key: "pais_residencia", label: "País de residencia", tipo: "text", req: true },
+  ]},
+  { grupo: "💼 Perfil económico", campos: [
+    { key: "profesion", label: "Profesión / ocupación", tipo: "text", req: true },
+    { key: "empleador", label: "Empleador o actividad propia", tipo: "text", req: true },
+    { key: "es_pep", label: "¿Es PEP? (persona expuesta políticamente)", tipo: "bool", req: true },
+  ]},
+  { grupo: "💵 Origen de fondos", campos: [
+    { key: "origen_fondos", label: "Origen de fondos (descripción)", tipo: "text", req: true },
+    { key: "monto_estimado_usd", label: "Monto estimado (USD)", tipo: "number", req: true },
+  ]},
+  { grupo: "✍️ Declaración", campos: [
+    { key: "declaracion_fecha", label: "Fecha de declaración firmada", tipo: "date", req: false },
+  ]},
+];
+const SUGEF_TOTAL_REQ = SUGEF_GRUPOS.flatMap((g) => g.campos).filter((c) => c.req).length;
+
+const TIPOS_DOC = [
+  { value: "otro", label: "Otro" },
+  { value: "cedula", label: "Cédula" },
+  { value: "constancia_salarial", label: "Constancia salarial" },
+  { value: "estado_cuenta", label: "Estado de cuenta" },
+  { value: "carta_bancaria", label: "Carta bancaria" },
+  { value: "declaracion_firmada", label: "Declaración firmada" },
+];
 
 // Normaliza un teléfono a formato internacional CR (506XXXXXXXX)
 const normalizarTelCR = (tel?: string): string | null => {
@@ -127,6 +181,8 @@ export const LeadDetailsPage = () => {
   const [documentos, setDocumentos] = useState<LeadDocumento[]>([]);
   const [subiendoDoc, setSubiendoDoc] = useState(false);
   const [descargandoId, setDescargandoId] = useState<number | null>(null);
+  // SUGEF / KYC
+  const [sugef, setSugef] = useState<any>({ kyc: null, faltantes: [], retencion: null, bajoRetencion: false });
   const [saving, setSaving] = useState(false);
   const [editandoNombre, setEditandoNombre] = useState(false);
   const [nombreEdit, setNombreEdit] = useState("");
@@ -199,7 +255,17 @@ export const LeadDetailsPage = () => {
     apiClient.get("/entidades-financieras/activas")
       .then((res) => setEntidadesFin(res.data))
       .catch(() => {});
+    apiClient.get(`/leads/${leadId}/sugef`)
+      .then((res) => setSugef(res.data))
+      .catch(() => {});
   }, [leadId]);
+
+  const guardarKyc = (campo: string, valor: any) => {
+    if (!lead || sugef.bajoRetencion) return;
+    apiClient.patch(`/leads/${lead.id}/sugef`, { [campo]: valor })
+      .then((res) => setSugef((prev: any) => ({ ...prev, kyc: res.data.kyc, faltantes: res.data.faltantes })))
+      .catch(() => toast.error("No se pudo guardar el dato SUGEF."));
+  };
 
   const cargarDocumentos = () => {
     if (!leadId) return;
@@ -450,6 +516,32 @@ export const LeadDetailsPage = () => {
         </div>
       )}
 
+      {/* Alertas de cumplimiento por etapa */}
+      {(() => {
+        if (sugef.bajoRetencion) return null;
+        const estado = lead.estado;
+        // Etapas básicas: falta contacto
+        if (estado === "Nuevo" || estado === "Contactado") {
+          const faltan = [!lead.cedula_cliente && "cédula", !lead.email_cliente && "correo"].filter(Boolean);
+          if (faltan.length === 0) return null;
+          return (
+            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 10, padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: "0.9rem" }}>
+              ℹ️ Completá los datos básicos de contacto (falta: {faltan.join(" y ")}).
+            </div>
+          );
+        }
+        // Etapas avanzadas: faltan campos SUGEF
+        const avanzadas = ["En Progreso", "Prueba de Manejo", "Cotizacion Enviada", "Negociacion"];
+        if (avanzadas.includes(estado) && (sugef.faltantes?.length ?? 0) > 0) {
+          return (
+            <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", color: "#92400e", borderRadius: 10, padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: "0.9rem", fontWeight: 600 }}>
+              ⚠️ Faltan {sugef.faltantes.length} campo(s) de cumplimiento SUGEF para poder facturar. Podés seguir trabajando el lead; completalos en el "Expediente SUGEF".
+            </div>
+          );
+        }
+        return null;
+      })()}
+
       <div className={styles.layout}>
         {/* COLUMNA IZQUIERDA — datos del lead */}
         <div className={styles.sidebar}>
@@ -510,6 +602,28 @@ export const LeadDetailsPage = () => {
               >
                 {lead.estado}
               </span>
+
+              {/* Temperatura del lead */}
+              <div style={{ display: "flex", gap: "0.35rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+                {TEMPERATURAS.map((t) => {
+                  const activa = lead.temperatura === t.value;
+                  return (
+                    <button
+                      key={t.value}
+                      onClick={() => save({ temperatura: activa ? null : t.value } as any)}
+                      title={`Marcar como ${t.value}`}
+                      style={{
+                        fontSize: "0.72rem", fontWeight: 700, cursor: "pointer",
+                        border: `1.5px solid ${t.color}`, borderRadius: 20, padding: "2px 9px",
+                        background: activa ? t.color : "#fff",
+                        color: activa ? "#fff" : t.color,
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -598,6 +712,78 @@ export const LeadDetailsPage = () => {
             </div>
           </SidebarSection>
 
+          {/* Expediente SUGEF / KYC */}
+          {(() => {
+            const kyc = sugef.kyc ?? {};
+            const completos = SUGEF_TOTAL_REQ - (sugef.faltantes?.length ?? SUGEF_TOTAL_REQ);
+            const pct = Math.round((completos / SUGEF_TOTAL_REQ) * 100);
+            const ro = sugef.bajoRetencion;
+            const inputStyle: React.CSSProperties = {
+              width: "100%", boxSizing: "border-box", padding: "0.4rem 0.55rem", borderRadius: 6,
+              border: "1px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit",
+              background: ro ? "#f1f5f9" : "#fff",
+            };
+            return (
+              <SidebarSection id="sugef" title="📋 Expediente SUGEF" defaultOpen={pct < 100} badge={ro ? "🔒" : `${completos}/${SUGEF_TOTAL_REQ}`}>
+                {ro && sugef.retencion && (
+                  <div style={{ background: "#dcfce7", border: "1px solid #16a34a", borderRadius: 8, padding: "0.5rem 0.7rem", fontSize: "0.8rem", color: "#15803d", fontWeight: 600 }}>
+                    ✅ Venta facturada — expediente bajo retención hasta {fmtFechaLocal(sugef.retencion.retener_hasta)}. Solo lectura.
+                  </div>
+                )}
+                {/* Barra de progreso */}
+                <div style={{ margin: "0.2rem 0 0.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#64748b", marginBottom: 3 }}>
+                    <span>{completos} de {SUGEF_TOTAL_REQ} campos completados</span>
+                    <span style={{ fontWeight: 700, color: pct === 100 ? "#16a34a" : "#f59e0b" }}>{pct}%</span>
+                  </div>
+                  <div style={{ background: "#f1f5f9", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#16a34a" : "#f59e0b", transition: "width 0.3s" }} />
+                  </div>
+                </div>
+
+                {SUGEF_GRUPOS.map((g) => (
+                  <div key={g.grupo} style={{ marginBottom: "0.6rem" }}>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.03em", marginBottom: "0.35rem" }}>{g.grupo}</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                      {g.campos.map((c) => {
+                        const val = kyc[c.key];
+                        const lleno = val !== null && val !== undefined && val !== "";
+                        return (
+                          <label key={c.key} style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                            <span>{c.req && (lleno ? "✅" : "⚠️")} {c.label}</span>
+                            {c.tipo === "bool" ? (
+                              <select
+                                defaultValue={val === true ? "si" : val === false ? "no" : ""}
+                                disabled={ro}
+                                onChange={(e) => guardarKyc(c.key, e.target.value === "" ? null : e.target.value === "si")}
+                                style={inputStyle}
+                              >
+                                <option value="">— Sin definir —</option>
+                                <option value="no">No</option>
+                                <option value="si">Sí</option>
+                              </select>
+                            ) : (
+                              <input
+                                type={c.tipo === "number" ? "number" : c.tipo === "date" ? "date" : "text"}
+                                defaultValue={val ?? ""}
+                                disabled={ro}
+                                onBlur={(e) => {
+                                  const v = c.tipo === "number" ? (e.target.value ? Number(e.target.value) : null) : (e.target.value || null);
+                                  if (String(v ?? "") !== String(val ?? "")) guardarKyc(c.key, v);
+                                }}
+                                style={inputStyle}
+                              />
+                            )}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </SidebarSection>
+            );
+          })()}
+
           {/* Vehículo de interés */}
           {lead.vehiculo_interes && (
             <SidebarSection id="vehiculo" title="🚗 Vehículo de Interés" defaultOpen>
@@ -615,7 +801,7 @@ export const LeadDetailsPage = () => {
               className={styles.select}
               style={{ borderColor: ESTADO_COLORS[lead.estado] ?? "#cbd5e1" }}
             >
-              {["Nuevo", "Contactado", "En Progreso", "Cerrado", "Perdido"].map((e) => (
+              {["Nuevo", "Contactado", "En Progreso", "Cerrado", "Perdido", "Descartado"].map((e) => (
                 <option key={e} value={e}>{e}</option>
               ))}
             </select>
@@ -661,6 +847,18 @@ export const LeadDetailsPage = () => {
               )}
             </SidebarSection>
           )}
+
+          {/* Última etapa alcanzada */}
+          <SidebarSection id="etapa" title="🎯 Última Etapa Alcanzada" defaultOpen>
+            <select
+              value={lead.ultima_etapa ?? ""}
+              onChange={(e) => save({ ultima_etapa: e.target.value || null } as any)}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.75rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
+            >
+              <option value="">— Sin definir —</option>
+              {ETAPAS.map((et) => <option key={et} value={et}>{et}</option>)}
+            </select>
+          </SidebarSection>
 
           {/* Seguimiento */}
           <SidebarSection id="seguimiento" title="📅 Próximo Seguimiento" defaultOpen>
@@ -835,11 +1033,26 @@ export const LeadDetailsPage = () => {
                           ✕
                         </button>
                       </div>
-                      <div style={{ fontSize: "0.72rem", color: porVencer ? "#dc2626" : "#94a3b8", marginTop: 2 }}>
-                        {(d.tamano_bytes / 1024).toFixed(0)} KB ·{" "}
-                        {dias > 0
-                          ? `se elimina en ${dias} día${dias === 1 ? "" : "s"}`
-                          : "se eliminará hoy"}
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: 4 }}>
+                        <select
+                          defaultValue={d.tipo ?? "otro"}
+                          disabled={sugef.bajoRetencion}
+                          onChange={(e) => {
+                            if (!lead) return;
+                            apiClient.patch(`/leads/${lead.id}/documentos/${d.id}/tipo`, { tipo: e.target.value })
+                              .then(() => cargarDocumentos())
+                              .catch(() => toast.error("No se pudo cambiar el tipo."));
+                          }}
+                          style={{ fontSize: "0.72rem", padding: "0.2rem 0.35rem", borderRadius: 6, border: "1px solid #e2e8f0", fontFamily: "inherit" }}
+                        >
+                          {TIPOS_DOC.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                        <span style={{ fontSize: "0.7rem", color: sugef.bajoRetencion ? "#16a34a" : (porVencer ? "#dc2626" : "#94a3b8") }}>
+                          {(d.tamano_bytes / 1024).toFixed(0)} KB ·{" "}
+                          {sugef.bajoRetencion
+                            ? "🔒 en retención"
+                            : dias > 0 ? `se elimina en ${dias}d` : "se eliminará hoy"}
+                        </span>
                       </div>
                     </div>
                   );
@@ -915,6 +1128,15 @@ export const LeadDetailsPage = () => {
                   {dato("📅", "En sistema", `${dias} día${dias === 1 ? "" : "s"}`)}
                   {dato("🕐", "Últ. actividad", ultimaAct ? fmtFechaLocal(ultimaAct) : "—")}
                   {dato("💳", "Modalidad", lead.tipo_pago ?? "Sin definir")}
+                  {lead.temperatura && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
+                      <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em" }}>🌡️ Temperatura</span>
+                      <span style={{ fontSize: "0.92rem", fontWeight: 700, color: TEMP_COLOR[lead.temperatura] ?? "#0a2540" }}>
+                        {TEMPERATURAS.find((t) => t.value === lead.temperatura)?.label ?? lead.temperatura}
+                      </span>
+                    </div>
+                  )}
+                  {lead.ultima_etapa && dato("🎯", "Última etapa", lead.ultima_etapa)}
                   {Number(lead.prima_disponible) > 0 && dato("💰", "Prima disponible", new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(lead.prima_disponible)))}
                   {dato("🚗", "Vehículo", lead.vehiculo_interes ? `${lead.vehiculo_interes.marca} ${lead.vehiculo_interes.modelo}` : "—")}
                   {dato("📄", "Cotizaciones", cotsActivas.length > 0 ? `${cotsActivas.length} · ${new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(totalCots)}` : String(cotizaciones.length))}

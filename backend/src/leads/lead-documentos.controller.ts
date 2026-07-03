@@ -1,6 +1,6 @@
 // backend/src/leads/lead-documentos.controller.ts
 import {
-  Controller, Get, Post, Delete, Param, ParseIntPipe,
+  Controller, Get, Post, Patch, Delete, Param, ParseIntPipe,
   UseGuards, UseInterceptors, UploadedFile, Request, Res, Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -31,9 +31,21 @@ export class LeadDocumentosController {
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile() file: Express.Multer.File,
     @Body('actividadId') actividadId: string,
+    @Body('tipo') tipo: string,
     @Request() req,
   ) {
-    return this.svc.subir(id, file, req.user, actividadId ? +actividadId : undefined);
+    return this.svc.subir(id, file, req.user, actividadId ? +actividadId : undefined, tipo);
+  }
+
+  /** PATCH /leads/:id/documentos/:docId/tipo — cambiar el tipo SUGEF del documento */
+  @Patch(':docId/tipo')
+  @Roles('Vendedor', 'Administrador')
+  setTipo(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('docId', ParseIntPipe) docId: number,
+    @Body('tipo') tipo: string,
+  ) {
+    return this.svc.setTipo(id, docId, tipo);
   }
 
   /** GET /leads/:id/documentos/:docId/descargar — descarga autenticada (stream) */

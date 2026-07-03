@@ -11,9 +11,10 @@ import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { Campana } from '../campanas/campana.entity';
 
-export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Prueba de Manejo' | 'Cotizacion Enviada' | 'Negociacion' | 'Cerrado' | 'Perdido';
+export type LeadStatus = 'Nuevo' | 'Contactado' | 'En Progreso' | 'Prueba de Manejo' | 'Cotizacion Enviada' | 'Negociacion' | 'Cerrado' | 'Perdido' | 'Descartado';
 export type LeadFuente = 'Web' | 'Instagram' | 'Facebook' | 'WhatsApp' | 'TikTok' | 'Referido' | 'Presencial' | 'Llamada' | 'Otro';
 export type LeadTipoPago = 'Contado' | 'Crédito';
+export type LeadTemperatura = 'Caliente' | 'Tibio' | 'Frio';
 
 @Entity({ name: 'leads' })
 export class Lead {
@@ -34,10 +35,22 @@ export class Lead {
 
   @Column({
     type: 'enum',
-    enum: ['Nuevo', 'Contactado', 'En Progreso', 'Prueba de Manejo', 'Cotizacion Enviada', 'Negociacion', 'Cerrado', 'Perdido'],
+    enum: ['Nuevo', 'Contactado', 'En Progreso', 'Prueba de Manejo', 'Cotizacion Enviada', 'Negociacion', 'Cerrado', 'Perdido', 'Descartado'],
     default: 'Nuevo',
   })
   estado: LeadStatus;
+
+  /** Temperatura/interés del lead (independiente del estado) */
+  @Column({
+    type: 'enum',
+    enum: ['Caliente', 'Tibio', 'Frio'],
+    nullable: true,
+  })
+  temperatura?: LeadTemperatura;
+
+  /** Última etapa de interés alcanzada (informativa) */
+  @Column({ type: 'varchar', length: 40, nullable: true })
+  ultima_etapa?: string;
 
   @Column({
     type: 'enum',

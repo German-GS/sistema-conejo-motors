@@ -13,6 +13,7 @@ type ReportType =
   | "sales-by-vehicle"
   | "detailed-sales"
   | "leads-by-seller"
+  | "leads-crm"
   | "most-quoted"
   | "inventory"
   | "payroll";
@@ -23,10 +24,17 @@ const reportOptions: { value: ReportType; label: string; icon: string; needsDate
   { value: "sales-by-vehicle", label: "Ventas por Vehículo",         icon: "🚗", needsDates: true  },
   { value: "detailed-sales",   label: "Listado General de Ventas",   icon: "📋", needsDates: true  },
   { value: "leads-by-seller",  label: "Leads por Vendedor",          icon: "👥", needsDates: true  },
+  { value: "leads-crm",        label: "Análisis de Leads (CRM)",     icon: "🎯", needsDates: true  },
   { value: "most-quoted",      label: "Vehículos Más Cotizados",     icon: "📊", needsDates: true  },
   { value: "inventory",        label: "Inventario Actual",           icon: "📦", needsDates: false },
   { value: "payroll",          label: "Informe de Planilla",         icon: "💼", needsDates: true  },
 ];
+
+const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
+const ESTADO_COLOR: Record<string, string> = {
+  Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
+  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "#94a3b8",
+};
 
 const fmtCRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
@@ -81,9 +89,9 @@ export const ReportsPage = () => {
     setLoading(true);
     setReportData(null);
     try {
-      const res = await apiClient.get("/reports/summary", {
-        params: { type: reportType, startDate, endDate },
-      });
+      const res = reportType === "leads-crm"
+        ? await apiClient.get("/leads/analytics", { params: { startDate, endDate } })
+        : await apiClient.get("/reports/summary", { params: { type: reportType, startDate, endDate } });
       setReportData(res.data);
     } catch {
       toast.error("Error al generar el informe.");
@@ -104,6 +112,11 @@ export const ReportsPage = () => {
         rows = reportData.vehicles.map((v: any) => ({ ID: v.id, Marca: v.marca, Modelo: v.modelo, Año: v.año, VIN: v.vin, "Costo CRC": v.precio_costo })); break;
       case "payroll":
         rows = reportData.map((r: any) => ({ Nombre: r.nombre_completo, Cédula: r.cedula, Banco: r.banco, Cuenta: r.numero_cuenta, Monto: r.monto_deposito })); break;
+      case "leads-crm":
+        rows = reportData.porFuente.map((r: any) => ({
+          Fuente: r.fuente, Total: r.total, "En Progreso": r.En_Progreso,
+          Cerrado: r.Cerrado, Perdido: r.Perdido, Descartado: r.Descartado, "Tasa cierre %": r.tasaCierre,
+        })); break;
       default:
         rows = reportData;
     }
@@ -320,6 +333,118 @@ export const ReportsPage = () => {
             </tbody>
           </table>
         );
+
+      // ── ANÁLISIS DE LEADS (CRM) ─────────────────────────────────
+      case "leads-crm": {
+        const d = reportData;
+        const maxFunnel = Math.max(1, ...d.funnel.map((f: any) => f.total));
+        const cell: React.CSSProperties = { padding: "0.5rem 0.7rem", textAlign: "center" };
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            {/* KPIs */}
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+              {[
+                { n: d.total, l: "Total leads", c: "#0a2540" },
+                { n: `${d.tasaCierreGlobal}%`, l: "Tasa de cierre", c: "#10b981" },
+                { n: d.cerrados, l: "Cerrados", c: "#10b981" },
+                { n: d.seguimientos.vencidos, l: "Seguimientos vencidos", c: d.seguimientos.vencidos > 0 ? "#ef4444" : "#10b981" },
+                { n: d.descartados, l: "Descartados", c: "#94a3b8" },
+              ].map((k) => (
+                <div key={k.l} style={{ flex: 1, minWidth: 130, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.9rem 1rem" }}>
+                  <div style={{ fontSize: "1.5rem", fontWeight: 800, color: k.c }}>{k.n}</div>
+                  <div style={{ fontSize: "0.78rem", color: "#64748b" }}>{k.l}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Embudo */}
+            <div>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>📊 Embudo por estado</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                {d.funnel.map((f: any) => (
+                  <div key={f.estado} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span style={{ width: 100, fontSize: "0.85rem", fontWeight: 600 }}>{f.estado}</span>
+                    <div style={{ flex: 1 }}><Bar value={f.total} max={maxFunnel} color={ESTADO_COLOR[f.estado] ?? "#024f7d"} /></div>
+                    <span style={{ width: 40, textAlign: "right", fontWeight: 700 }}>{f.total}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Conversión por fuente */}
+            <div>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>📣 Conversión por fuente</h3>
+              <table className={styles.reportTable}>
+                <thead><tr><th>Fuente</th><th>Total</th><th>En Progreso</th><th>Cerrado</th><th>Perdido</th><th>Descartado</th><th>Tasa cierre</th></tr></thead>
+                <tbody>
+                  {d.porFuente.map((r: any) => (
+                    <tr key={r.fuente}>
+                      <td><strong>{r.fuente}</strong></td>
+                      <td style={cell}>{r.total}</td>
+                      <td style={cell}>{r.En_Progreso}</td>
+                      <td style={{ ...cell, color: "#10b981", fontWeight: 700 }}>{r.Cerrado}</td>
+                      <td style={{ ...cell, color: "#ef4444" }}>{r.Perdido}</td>
+                      <td style={{ ...cell, color: "#94a3b8" }}>{r.Descartado}</td>
+                      <td style={{ ...cell, fontWeight: 700 }}>{r.tasaCierre}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Temperatura */}
+            <div>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>🌡️ Por temperatura (¿convierten más los calientes?)</h3>
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                {d.porTemperatura.map((t: any) => (
+                  <div key={t.temperatura} style={{ flex: 1, minWidth: 140, background: "#fff", border: `1px solid ${TEMP_COLOR[t.temperatura]}`, borderRadius: 12, padding: "0.8rem 1rem" }}>
+                    <div style={{ fontWeight: 800, color: TEMP_COLOR[t.temperatura] }}>{t.temperatura}</div>
+                    <div style={{ fontSize: "0.85rem", color: "#334155" }}>{t.total} leads · {t.cerrados} cerrados</div>
+                    <div style={{ fontSize: "1.15rem", fontWeight: 800, color: "#10b981" }}>{t.tasaCierre}% cierre</div>
+                  </div>
+                ))}
+                <div style={{ flex: 1, minWidth: 140, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.8rem 1rem" }}>
+                  <div style={{ fontWeight: 800, color: "#94a3b8" }}>Sin temperatura</div>
+                  <div style={{ fontSize: "0.85rem", color: "#334155" }}>{d.sinTemperatura} leads sin clasificar</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Etapa — dónde se quedan */}
+            <div>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>🎯 ¿Dónde se quedan los leads? (última etapa alcanzada)</h3>
+              <table className={styles.reportTable}>
+                <thead><tr><th>Última etapa</th><th>Leads</th></tr></thead>
+                <tbody>
+                  {d.porEtapa.map((e: any) => (
+                    <tr key={e.etapa}><td>{e.etapa}</td><td style={cell}>{e.total}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Disciplina de seguimiento por vendedor */}
+            <div>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>👤 Seguimiento por vendedor</h3>
+              <table className={styles.reportTable}>
+                <thead><tr><th>Vendedor</th><th>Total</th><th>Activos</th><th>Vencidos</th><th>Cerrados</th><th>Tasa cierre</th></tr></thead>
+                <tbody>
+                  {d.porVendedor.map((v: any) => (
+                    <tr key={v.vendedor}>
+                      <td><strong>{v.vendedor}</strong></td>
+                      <td style={cell}>{v.total}</td>
+                      <td style={cell}>{v.activos}</td>
+                      <td style={{ ...cell, color: v.vencidos > 0 ? "#ef4444" : "#94a3b8", fontWeight: v.vencidos > 0 ? 700 : 400 }}>{v.vencidos}</td>
+                      <td style={{ ...cell, color: "#10b981" }}>{v.cerrados}</td>
+                      <td style={{ ...cell, fontWeight: 700 }}>{v.tasaCierre}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      }
 
       default:
         return <p>Selecciona un tipo de informe válido.</p>;

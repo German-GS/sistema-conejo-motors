@@ -12,6 +12,7 @@ import { LeadDocumento } from './lead-documento.entity';
 import { Lead } from './lead.entity';
 import { User } from '../users/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
+import { SugefService } from '../sugef/sugef.service';
 
 const GCS_BUCKET = process.env.GCS_BUCKET ?? 'conejo-motors-media';
 const gcsStorage = new Storage();
@@ -42,6 +43,7 @@ export class LeadDocumentosService {
     @InjectRepository(Lead)
     private leadsRepo: Repository<Lead>,
     private notificationsService: NotificationsService,
+    private sugefService: SugefService,
   ) {}
 
   async listar(leadId: number): Promise<Omit<LeadDocumento, 'gcs_path' | 'lead'>[]> {
@@ -58,6 +60,7 @@ export class LeadDocumentosService {
     file: Express.Multer.File,
     usuario: User,
     actividadId?: number,
+    tipo?: string,
   ): Promise<LeadDocumento> {
     if (!file) throw new BadRequestException('No se recibió ningún archivo.');
     if (file.size > MAX_BYTES) {
@@ -89,6 +92,7 @@ export class LeadDocumentosService {
       tamano_bytes: file.size,
       fecha_expiracion: fechaExpiracion,
       actividad_id: actividadId ? Number(actividadId) : undefined,
+      tipo: tipo || 'otro',
       lead: { id: leadId } as Lead,
       subido_por: usuario,
     });
@@ -105,12 +109,26 @@ export class LeadDocumentosService {
     return { doc, buffer };
   }
 
+  async setTipo(leadId: number, docId: number, tipo: string): Promise<{ ok: boolean }> {
+    await this.docsRepo.update({ id: docId, lead: { id: leadId } } as any, { tipo: tipo || 'otro' });
+    return { ok: true };
+  }
+
   async eliminar(leadId: number, docId: number, usuario: User): Promise<{ ok: boolean }> {
     const doc = await this.docsRepo.findOne({
       where: { id: docId, lead: { id: leadId } },
       relations: ['subido_por'],
     });
     if (!doc) throw new NotFoundException('Documento no encontrado.');
+
+    // Retención SUGEF: si el lead tiene expediente bajo retención vigente, no se borra
+    if (await this.sugefService.estaBajoRetencion(leadId)) {
+      const ret = await this.sugefService.getRetencion(leadId);
+      const fecha = ret ? new Date(`${ret.retener_hasta}T00:00:00`).toLocaleDateString('es-CR') : '';
+      throw new ForbiddenException(
+        `Este documento no puede eliminarse. El expediente SUGEF de esta venta debe conservarse hasta el ${fecha}.`,
+      );
+    }
 
     // Solo el admin o quien lo subió puede borrarlo manualmente
     const esAdmin = usuario.rol?.nombre === 'Administrador';
@@ -170,13 +188,18 @@ export class LeadDocumentosService {
     try {
       const vencidos = await this.docsRepo.find({
         where: { fecha_expiracion: LessThanOrEqual(new Date()) },
+        relations: ['lead'],
       });
+      let borrados = 0;
       for (const d of vencidos) {
+        // Retención SUGEF: nunca borrar documentos de un lead facturado bajo retención
+        if (d.lead && (await this.sugefService.estaBajoRetencion(d.lead.id))) continue;
         await this._borrarBlob(d.gcs_path);
         await this.docsRepo.delete(d.id);
+        borrados++;
       }
-      if (vencidos.length) {
-        this.logger.log(`Borrado automático: ${vencidos.length} documento(s) de cliente eliminado(s).`);
+      if (borrados) {
+        this.logger.log(`Borrado automático: ${borrados} documento(s) de cliente eliminado(s).`);
       }
     } catch (e) {
       this.logger.error('Error en borrado automático de documentos', (e as Error).message);

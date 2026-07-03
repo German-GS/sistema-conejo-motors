@@ -10,8 +10,16 @@ export class UpdateLeadDto {
   cedula_cliente?: string;
 
   @IsOptional()
-  @IsEnum(['Nuevo', 'Contactado', 'En Progreso', 'Cerrado', 'Perdido'])
+  @IsEnum(['Nuevo', 'Contactado', 'En Progreso', 'Cerrado', 'Perdido', 'Descartado'])
   estado?: string;
+
+  @IsOptional()
+  @IsEnum(['Caliente', 'Tibio', 'Frio'])
+  temperatura?: string | null;
+
+  @IsOptional()
+  @IsString()
+  ultima_etapa?: string | null;
 
   @IsOptional()
   @IsEnum(['Web', 'Instagram', 'Facebook', 'WhatsApp', 'TikTok', 'Referido', 'Presencial', 'Otro'])

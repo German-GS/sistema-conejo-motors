@@ -97,6 +97,8 @@ const PendingBillingPage = () => {
     factura_notas:       "",
   });
   const [procesando, setProcesando] = useState(false);
+  const [depositoConfirmado, setDepositoConfirmado] = useState(false);
+  const [sugefModal, setSugefModal] = useState<{ faltantes: string[]; leadId?: number } | null>(null);
 
   // Filtro pendientes
   const [filtroPend, setFiltroPend] = useState("");
@@ -178,20 +180,37 @@ const PendingBillingPage = () => {
       toast.error("Nombre, cédula y email son requeridos para la factura.");
       return;
     }
+    if (!depositoConfirmado) {
+      toast.error("Confirmá que el depósito/financiamiento está listo antes de facturar.");
+      return;
+    }
+    await enviarFactura(false);
+  };
+
+  const enviarFactura = async (omitirSugef: boolean) => {
+    if (!cotSeleccionada) return;
     setProcesando(true);
     try {
       await apiClient.post("/billing/facturar", {
         cotizacionId: cotSeleccionada.id,
-        datos: form,
+        datos: { ...form, deposito_confirmado: true, sugef_omitir: omitirSugef },
       });
       toast.success("✅ Venta completada y factura generada exitosamente.");
       setCotSeleccionada(null);
       setResultados([]);
       setBusqueda("");
+      setDepositoConfirmado(false);
+      setSugefModal(null);
       fetchAll();
       setTab("historial");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Error al procesar la factura.");
+      const data = err.response?.data;
+      if (data?.code === "SUGEF_INCOMPLETO") {
+        // Mostrar modal con pendientes SUGEF
+        setSugefModal({ faltantes: data.faltantes ?? [], leadId: (cotSeleccionada as any).lead?.id });
+      } else {
+        toast.error(data?.message || "Error al procesar la factura.");
+      }
     } finally { setProcesando(false); }
   };
 
@@ -370,9 +389,15 @@ const PendingBillingPage = () => {
                   Solicite la aprobación a su supervisor.
                 </div>
               ) : (
-                <button type="submit" className={styles.facturarBtn} disabled={procesando}>
-                  {procesando ? "Procesando..." : `💼 Completar Venta · ${fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}`}
-                </button>
+                <>
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, padding: "0.6rem 0.8rem", margin: "0.5rem 0", fontSize: "0.85rem", color: "#92400e", cursor: "pointer" }}>
+                    <input type="checkbox" checked={depositoConfirmado} onChange={(e) => setDepositoConfirmado(e.target.checked)} style={{ marginTop: 3 }} />
+                    <span>Confirmo que el <strong>depósito / financiamiento está listo</strong> y validado con el banco para firmar.</span>
+                  </label>
+                  <button type="submit" className={styles.facturarBtn} disabled={procesando || !depositoConfirmado}>
+                    {procesando ? "Procesando..." : `💼 Completar Venta · ${fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}`}
+                  </button>
+                </>
               )}
             </form>
           </div>
@@ -472,6 +497,41 @@ const PendingBillingPage = () => {
             </div>
           )}
         </>
+      )}
+
+      {/* Modal de verificación SUGEF */}
+      {sugefModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div style={{ background: "#fff", borderRadius: 12, padding: 26, width: "min(480px, 100%)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
+            <h3 style={{ margin: "0 0 8px", color: "#92400e" }}>⚠️ Cumplimiento SUGEF incompleto</h3>
+            <p style={{ fontSize: "0.9rem", color: "#475569", margin: "0 0 12px" }}>
+              El expediente de este cliente tiene <strong>{sugefModal.faltantes.length}</strong> campo(s) pendiente(s) para cumplir con SUGEF:
+            </p>
+            <ul style={{ fontSize: "0.85rem", color: "#334155", margin: "0 0 16px", paddingLeft: 18 }}>
+              {sugefModal.faltantes.map((f) => (
+                <li key={f}>{f.replace(/_/g, " ")}</li>
+              ))}
+            </ul>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
+              {sugefModal.leadId && (
+                <a href={`/admin/leads/${sugefModal.leadId}`} className="btn btn-principal" style={{ textDecoration: "none" }}>
+                  Completar ahora
+                </a>
+              )}
+              <button className="btn btn-secondary" onClick={() => setSugefModal(null)}>Cancelar</button>
+              <button
+                onClick={() => enviarFactura(true)}
+                disabled={procesando}
+                style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700 }}
+              >
+                Facturar de todas formas
+              </button>
+            </div>
+            <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: "10px 0 0" }}>
+              "Facturar de todas formas" registra el incumplimiento en el historial del lead.
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -38,6 +38,10 @@ export class LeadDocumento {
   @Column({ nullable: true })
   actividad_id?: number;
 
+  /** Tipo SUGEF: cedula | constancia_salarial | estado_cuenta | carta_bancaria | declaracion_firmada | otro */
+  @Column({ type: 'varchar', length: 50, default: 'otro' })
+  tipo: string;
+
   @CreateDateColumn()
   fecha_creacion: Date;
 

@@ -220,12 +220,56 @@ const ImpuestoSettings: React.FC = () => {
   );
 };
 
+// --- COMPONENTE DE CONFIGURACIÓN DE LEADS (CRM) ---
+const LeadsConfigSettings: React.FC = () => {
+  const [dias, setDias] = useState(4);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    apiClient.get("/site-settings/public").then((res) => {
+      const v = Number(res.data?.find((x: any) => x.key === "lead_descarte_dias")?.value);
+      if (!isNaN(v) && v > 0) setDias(v);
+    }).catch(() => {});
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await apiClient.post("/site-settings", { key: "lead_descarte_dias", value: String(dias) });
+      toast.success("Configuración guardada.");
+    } catch { toast.error("Error al guardar."); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ color: "#64748b", fontSize: "0.88rem", margin: 0 }}>
+        Un lead marcado como <strong>Tibio</strong> que no tenga actividad registrada después de su fecha de seguimiento se moverá automáticamente a <strong>Descartado</strong> pasados estos días. Se avisa al vendedor <strong>1 día antes</strong>.
+      </p>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+          <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Días para auto-descartar leads tibios</label>
+          <input
+            type="number" value={dias} min={1} max={60} step={1}
+            onChange={(e) => setDias(Number(e.target.value))}
+            style={{ width: 140, padding: "0.55rem 0.7rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "1rem", fontFamily: "inherit" }}
+          />
+        </div>
+        <button onClick={save} disabled={saving} className="btn btn-principal">
+          {saving ? "Guardando..." : "Guardar"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // --- COMPONENTE PRINCIPAL ---
-type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla";
+type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm";
 const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string }[] = [
   { id: "vehiculos",      icon: "🚗", label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones" },
   { id: "sitio",          icon: "🌐", label: "Sitio Web",     desc: "Página principal y contenido público" },
   { id: "financiamiento", icon: "🏦", label: "Financiamiento", desc: "Entidades, formularios y calculadora" },
+  { id: "crm",            icon: "🎯", label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads" },
   { id: "planilla",       icon: "💰", label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones" },
 ];
 
@@ -747,6 +791,12 @@ export const SettingsPage = () => {
           <CalcSettings />
         </Card>
       </>
+      )}
+
+      {seccion === "crm" && (
+      <Card title="🎯 Auto-descarte de leads tibios">
+        <LeadsConfigSettings />
+      </Card>
       )}
 
       {seccion === "planilla" && (

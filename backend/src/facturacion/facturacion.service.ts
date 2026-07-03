@@ -9,11 +9,13 @@ import { Factura } from './factura.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { VehicleEstadoHistorial } from '../vehicles/vehicle-estado-historial.entity';
 import { Lead } from '../leads/lead.entity';
+import { LeadActividad } from '../leads/lead-actividad.entity';
 import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
 import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { SugefService } from '../sugef/sugef.service';
 
 export interface DatosFacturacion {
   factura_nombre: string;
@@ -23,6 +25,10 @@ export interface DatosFacturacion {
   factura_telefono?: string;
   metodo_pago: string;
   factura_notas?: string;
+  /** Cumplimiento SUGEF: confirmación de depósito/financiamiento listo */
+  deposito_confirmado?: boolean;
+  /** Facturar aunque falten campos SUGEF (queda registrado) */
+  sugef_omitir?: boolean;
 }
 
 @Injectable()
@@ -38,6 +44,8 @@ export class FacturacionService {
     private vehiclesRepo: Repository<Vehicle>,
     @InjectRepository(Lead)
     private leadsRepo: Repository<Lead>,
+    @InjectRepository(LeadActividad)
+    private actividadesRepo: Repository<LeadActividad>,
     @InjectRepository(CuentaCobrar)
     private cxcRepo: Repository<CuentaCobrar>,
     private readonly httpService: HttpService,
@@ -46,6 +54,7 @@ export class FacturacionService {
     private readonly cryptoService: CryptoService,
     private readonly contabilidad: ContabilidadService,
     private readonly notifications: NotificationsService,
+    private readonly sugefService: SugefService,
   ) {}
 
   // ── Lista de cotizaciones listas para facturar ────────────────────────────
@@ -126,6 +135,35 @@ export class FacturacionService {
       throw new BadRequestException('Esta cotización ya fue facturada.');
     }
 
+    // ── CUMPLIMIENTO SUGEF / depósito (validado en backend) ────────────────────
+    // Confirmación de depósito/financiamiento listo para firmar con el banco
+    if (!datos.deposito_confirmado) {
+      throw new BadRequestException(
+        'Debe confirmar que el depósito/financiamiento está listo (validado con el banco) antes de facturar.',
+      );
+    }
+    // KYC completo si el lead está bajo debida diligencia
+    if (cotizacion.lead?.id) {
+      const kycCompleto = await this.sugefService.kycCompleto(cotizacion.lead.id);
+      if (!kycCompleto && !datos.sugef_omitir) {
+        const kyc = await this.sugefService.getKyc(cotizacion.lead.id);
+        throw new BadRequestException({
+          message: 'Faltan campos de cumplimiento SUGEF para facturar.',
+          code: 'SUGEF_INCOMPLETO',
+          faltantes: this.sugefService.faltantesKyc(kyc),
+        });
+      }
+      if (!kycCompleto && datos.sugef_omitir) {
+        // Se factura de todas formas → queda registrado en el historial del lead
+        await this.actividadesRepo.save(this.actividadesRepo.create({
+          lead: { id: cotizacion.lead.id } as any,
+          tipo: 'estado_cambio',
+          descripcion: `⚠️ Facturado por ${adminUser?.nombre_completo ?? 'admin'} con expediente SUGEF INCOMPLETO (incumplimiento registrado).`,
+          usuario: adminUser,
+        }));
+      }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // FACTURA ELECTRÓNICA — MODO SIMULADO (Hacienda Costa Rica v4.4)
     //
@@ -148,6 +186,7 @@ export class FacturacionService {
     const payload = await this.xmlGenerator.buildPayload(cotizacion);
     const { Clave: clave_numerica, NumeroConsecutivo: consecutivo } = payload.FacturaElectronica;
 
+    let facturaCreada: Factura | undefined;
     const venta = await this.ventasRepo.manager.transaction(async (manager) => {
       const ivaMonto    = Number(cotizacion.iva_monto)    || +(Number(cotizacion.precio_final) * 0.13).toFixed(2);
       const totalConIva = Number(cotizacion.total_con_iva) || +(Number(cotizacion.precio_final) * 1.13).toFixed(2);
@@ -178,6 +217,7 @@ export class FacturacionService {
         venta:         nuevaVenta,
       });
       await manager.save(nuevaFactura);
+      facturaCreada = nuevaFactura;
 
       // Marcar vehículo como Vendido
       const estadoVehAnterior = cotizacion.vehiculo.estado;
@@ -220,6 +260,15 @@ export class FacturacionService {
 
       return nuevaVenta;
     });
+
+    // ── Retención SUGEF (5 años) — evento de venta confirmada ──────────────────
+    if (cotizacion.lead?.id) {
+      try {
+        await this.sugefService.registrarRetencion(cotizacion.lead.id, facturaCreada);
+      } catch (e) {
+        console.warn('[Facturacion] No se pudo registrar la retención SUGEF:', (e as Error).message);
+      }
+    }
 
     // ── Asiento contable automático ───────────────────────────────────────────
     // Solo si el plan de cuentas ya fue inicializado
@@ -365,6 +414,8 @@ export class FacturacionService {
       factura_cedula:      cotizacion.cliente?.cedula ?? '',
       factura_email:       cotizacion.cliente?.email ?? '',
       metodo_pago:         'Efectivo',
+      deposito_confirmado: true,
+      sugef_omitir:        true,
     }, adminUser);
   }
 }

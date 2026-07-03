@@ -13,16 +13,19 @@ import { Vehicle } from '../vehicles/vehicle.entity';
 import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
 import { Lead } from '../leads/lead.entity';
+import { LeadActividad } from '../leads/lead-actividad.entity';
 import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
 import { ContabilidadModule } from '../contabilidad/contabilidad.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SugefModule } from '../sugef/sugef.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead, CuentaCobrar]),
+    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead, LeadActividad, CuentaCobrar]),
     HttpModule,
     ContabilidadModule,
     NotificationsModule,
+    SugefModule,
   ],
   providers: [FacturacionService, CryptoService, XmlGeneratorService],
   controllers: [FacturacionController],

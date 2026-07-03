@@ -1,7 +1,8 @@
 // backend/src/leads/leads.service.ts
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, LessThan, Not } from 'typeorm';
+import { Repository, In, LessThan, Not, MoreThan } from 'typeorm';
+import { Cron } from '@nestjs/schedule';
 import { Lead } from './lead.entity';
 import { LeadActividad } from './lead-actividad.entity';
 import { LeadFinanciamiento, EntidadFinanciera, EstadoFinanciamiento } from './lead-financiamiento.entity';
@@ -12,11 +13,14 @@ import { User } from '../users/user.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { Campana } from '../campanas/campana.entity';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
+import { SiteSetting } from '../site-settings/site-setting.entity';
 import { NotificationsService } from '../notifications/notifications.service';
+import { SugefService } from '../sugef/sugef.service';
 
 @Injectable()
 export class LeadsService {
   private static lastAssignedSellerIndex = -1;
+  private readonly logger = new Logger(LeadsService.name);
 
   constructor(
     @InjectRepository(Lead)
@@ -33,8 +37,184 @@ export class LeadsService {
     private campanasRepository: Repository<Campana>,
     @InjectRepository(Cotizacion)
     private cotizacionesRepository: Repository<Cotizacion>,
+    @InjectRepository(SiteSetting)
+    private siteSettingsRepository: Repository<SiteSetting>,
     private notificationsService: NotificationsService,
+    private sugefService: SugefService,
   ) {}
+
+  /** Días de inactividad tras el seguimiento para auto-descartar leads tibios */
+  private async getDiasDescarte(): Promise<number> {
+    const s = await this.siteSettingsRepository.findOneBy({ key: 'lead_descarte_dias' });
+    const n = Number(s?.value);
+    return !isNaN(n) && n > 0 ? n : 4;
+  }
+
+  /** Indica si un lead tuvo actividad después de cierta fecha */
+  private async tuvoActividadDespuesDe(leadId: number, fecha: Date): Promise<boolean> {
+    const count = await this.actividadesRepository.count({
+      where: { lead: { id: leadId }, fecha_creacion: MoreThan(fecha) },
+    });
+    return count > 0;
+  }
+
+  // ── CRON: auto-archivado de leads tibios sin seguimiento (3:00am CR = 09:00 UTC) ──
+  @Cron('0 9 * * *', { timeZone: 'UTC' })
+  async cronAutoDescarte(): Promise<void> {
+    try {
+      const dias = await this.getDiasDescarte();
+      const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+
+      const candidatos = await this.leadsRepository.find({
+        where: {
+          temperatura: 'Tibio' as any,
+          estado: Not(In(['Cerrado', 'Perdido', 'Descartado'])),
+        },
+        relations: ['vendedor_asignado'],
+      });
+
+      for (const lead of candidatos) {
+        if (!lead.fecha_followup) continue;
+        const fseg = new Date(`${lead.fecha_followup}T00:00:00`);
+        const limite = new Date(fseg); limite.setDate(limite.getDate() + dias);
+        const avisoDia = new Date(limite); avisoDia.setDate(avisoDia.getDate() - 1);
+
+        // ¿Hubo actividad después del seguimiento? Si sí, no se descarta.
+        if (await this.tuvoActividadDespuesDe(lead.id, fseg)) continue;
+
+        if (hoy >= limite) {
+          lead.estado = 'Descartado';
+          await this.leadsRepository.save(lead);
+          await this.actividadesRepository.save(this.actividadesRepository.create({
+            lead, tipo: 'estado_cambio',
+            descripcion: `Lead descartado automáticamente: tibio y sin actividad ${dias} días después del seguimiento (${lead.fecha_followup}).`,
+          }));
+          if (lead.vendedor_asignado) {
+            await this.notificationsService.createForUser(
+              lead.vendedor_asignado,
+              `🗃️ El lead ${lead.nombre_cliente} se descartó automáticamente por inactividad.`,
+              '/sales/leads',
+            );
+          }
+        } else if (hoy.getTime() === avisoDia.getTime() && lead.vendedor_asignado) {
+          // Aviso 1 día antes
+          await this.notificationsService.createForUser(
+            lead.vendedor_asignado,
+            `⏳ El lead ${lead.nombre_cliente} (tibio) se descartará mañana si no registrás actividad.`,
+            '/sales/leads',
+          );
+        }
+      }
+    } catch (e) {
+      this.logger.error('Error en auto-descarte de leads', (e as Error).message);
+    }
+  }
+
+  /** Informe integral de CRM/Leads para mejora de procesos */
+  async analytics(startDate?: string, endDate?: string): Promise<any> {
+    let leads = await this.leadsRepository.find({ relations: ['vendedor_asignado', 'campana'] });
+    if (startDate && endDate) {
+      const ini = new Date(`${startDate}T00:00:00-06:00`).getTime();
+      const fin = new Date(`${endDate}T23:59:59-06:00`).getTime();
+      leads = leads.filter((l) => {
+        const t = new Date(l.fecha_creacion).getTime();
+        return t >= ini && t <= fin;
+      });
+    }
+
+    const total = leads.length;
+    const cuenta = (pred: (l: Lead) => boolean) => leads.filter(pred).length;
+
+    // Embudo por estado
+    const ESTADOS = ['Nuevo', 'Contactado', 'En Progreso', 'Cerrado', 'Perdido', 'Descartado'];
+    const funnel = ESTADOS.map((e) => ({ estado: e, total: cuenta((l) => l.estado === e) }));
+    const cerradosTotal = cuenta((l) => l.estado === 'Cerrado');
+
+    // Por temperatura (con tasa de cierre)
+    const TEMPS = ['Caliente', 'Tibio', 'Frio'];
+    const porTemperatura = TEMPS.map((t) => {
+      const ls = leads.filter((l) => l.temperatura === t);
+      const cerr = ls.filter((l) => l.estado === 'Cerrado').length;
+      return { temperatura: t, total: ls.length, cerrados: cerr, tasaCierre: ls.length ? Math.round((cerr / ls.length) * 100) : 0 };
+    });
+    const sinTemperatura = cuenta((l) => !l.temperatura);
+
+    // Por última etapa alcanzada (dónde se quedan los leads)
+    const etapasMap = new Map<string, number>();
+    for (const l of leads) {
+      const k = l.ultima_etapa || 'Sin etapa registrada';
+      etapasMap.set(k, (etapasMap.get(k) ?? 0) + 1);
+    }
+    const porEtapa = Array.from(etapasMap.entries())
+      .map(([etapa, t]) => ({ etapa, total: t }))
+      .sort((a, b) => b.total - a.total);
+
+    // Seguimientos (solo leads activos)
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const activos = leads.filter((l) => !['Cerrado', 'Perdido', 'Descartado'].includes(l.estado));
+    const segVencidos = activos.filter((l) => l.fecha_followup && new Date(`${l.fecha_followup}T00:00:00`) < hoy).length;
+    const segAlDia = activos.filter((l) => l.fecha_followup && new Date(`${l.fecha_followup}T00:00:00`) >= hoy).length;
+    const segSinFecha = activos.filter((l) => !l.fecha_followup).length;
+
+    // Por vendedor (activos, cerrados, vencidos)
+    const vendMap = new Map<string, any>();
+    for (const l of leads) {
+      const v = l.vendedor_asignado?.nombre_completo || 'Sin asignar';
+      if (!vendMap.has(v)) vendMap.set(v, { vendedor: v, total: 0, cerrados: 0, activos: 0, vencidos: 0 });
+      const e = vendMap.get(v);
+      e.total++;
+      if (l.estado === 'Cerrado') e.cerrados++;
+      if (!['Cerrado', 'Perdido', 'Descartado'].includes(l.estado)) {
+        e.activos++;
+        if (l.fecha_followup && new Date(`${l.fecha_followup}T00:00:00`) < hoy) e.vencidos++;
+      }
+    }
+    const porVendedor = Array.from(vendMap.values())
+      .map((r) => ({ ...r, tasaCierre: r.total ? Math.round((r.cerrados / r.total) * 100) : 0 }))
+      .sort((a, b) => b.total - a.total);
+
+    return {
+      total,
+      tasaCierreGlobal: total ? Math.round((cerradosTotal / total) * 100) : 0,
+      cerrados: cerradosTotal,
+      descartados: cuenta((l) => l.estado === 'Descartado'),
+      perdidos: cuenta((l) => l.estado === 'Perdido'),
+      funnel,
+      porFuente: await this.reportePorFuente(startDate, endDate),
+      porTemperatura,
+      sinTemperatura,
+      porEtapa,
+      seguimientos: { vencidos: segVencidos, alDia: segAlDia, sinFecha: segSinFecha, totalActivos: activos.length },
+      porVendedor,
+    };
+  }
+
+  /** Reporte de conversión por fuente: cuántos leads por fuente en cada estado */
+  async reportePorFuente(startDate?: string, endDate?: string): Promise<any[]> {
+    let leads = await this.leadsRepository.find({ relations: ['campana'] });
+    if (startDate && endDate) {
+      const ini = new Date(`${startDate}T00:00:00-06:00`).getTime();
+      const fin = new Date(`${endDate}T23:59:59-06:00`).getTime();
+      leads = leads.filter((l) => {
+        const t = new Date(l.fecha_creacion).getTime();
+        return t >= ini && t <= fin;
+      });
+    }
+    const map = new Map<string, any>();
+    for (const l of leads) {
+      const key = l.fuente || 'Otro';
+      if (!map.has(key)) {
+        map.set(key, { fuente: key, total: 0, En_Progreso: 0, Cerrado: 0, Descartado: 0, Perdido: 0, Nuevo: 0 });
+      }
+      const e = map.get(key);
+      e.total++;
+      const estadoKey = ['Cerrado', 'Descartado', 'Perdido', 'Nuevo'].includes(l.estado) ? l.estado : 'En_Progreso';
+      e[estadoKey] = (e[estadoKey] ?? 0) + 1;
+    }
+    return Array.from(map.values())
+      .map((r) => ({ ...r, tasaCierre: r.total > 0 ? Math.round((r.Cerrado / r.total) * 100) : 0 }))
+      .sort((a, b) => b.total - a.total);
+  }
 
   /** Migración: vincula el vehículo de las cotizaciones a los leads que no lo tienen */
   async fixVehiculosFromCotizaciones(): Promise<{ actualizados: number }> {
@@ -89,6 +269,13 @@ export class LeadsService {
   /** Elimina un lead permanentemente (con sus actividades por cascade) */
   async eliminarLead(id: number): Promise<{ mensaje: string }> {
     const lead = await this.findOne(id);
+    // No se puede eliminar un lead con expediente SUGEF bajo retención
+    const ret = await this.sugefService.getRetencion(id);
+    if (ret) {
+      throw new BadRequestException(
+        `No se puede eliminar: este lead tiene una venta facturada con expediente SUGEF que debe conservarse hasta el ${new Date(`${ret.retener_hasta}T00:00:00`).toLocaleDateString('es-CR')}.`,
+      );
+    }
     await this.leadsRepository.delete(lead.id);
     return { mensaje: `Lead #${id} eliminado correctamente.` };
   }
@@ -167,6 +354,8 @@ export class LeadsService {
     if (dto.contacted_by_phone !== undefined) lead.contacted_by_phone = dto.contacted_by_phone;
     if (dto.tipo_pago !== undefined) lead.tipo_pago = dto.tipo_pago as any;
     if (dto.cedula_cliente !== undefined) lead.cedula_cliente = dto.cedula_cliente;
+    if (dto.temperatura !== undefined) lead.temperatura = (dto.temperatura || undefined) as any;
+    if (dto.ultima_etapa !== undefined) lead.ultima_etapa = dto.ultima_etapa || undefined;
     if (dto.prima_disponible !== undefined) lead.prima_disponible = dto.prima_disponible as any;
     if (dto.contacted_by_whatsapp !== undefined) lead.contacted_by_whatsapp = dto.contacted_by_whatsapp;
     if (dto.campana_id !== undefined) {
