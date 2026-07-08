@@ -110,6 +110,7 @@ export const ContabilidadPage = () => {
   const [vehiculosInv, setVehiculosInv] = useState<any[]>([]);
   const [editItem, setEditItem] = useState<any | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [categoriasDep, setCategoriasDep] = useState<any[]>([]);
   const [cierresPeriodo, setCierresPeriodo] = useState<any[]>([]);
   const [periodoCierre, setPeriodoCierre] = useState(() => hoyEnCR().slice(0, 7));
   const [tipoCierre, setTipoCierre] = useState<"Mensual" | "Anual">("Mensual");
@@ -194,7 +195,12 @@ export const ContabilidadPage = () => {
     } catch { /* silencioso */ }
   }, []);
 
-  useEffect(() => { if (tab === "activos") fetchActivos(); }, [tab, fetchActivos]);
+  useEffect(() => {
+    if (tab === "activos") {
+      fetchActivos();
+      apiClient.get("/depreciacion/categorias?activas=true").then((r) => setCategoriasDep(r.data ?? [])).catch(() => {});
+    }
+  }, [tab, fetchActivos]);
 
   const crearActivo = async () => {
     if (!activoForm.nombre.trim()) { toast.error("Poné un nombre."); return; }
@@ -665,19 +671,40 @@ export const ContabilidadPage = () => {
             <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Nombre
               <input value={activoForm.nombre} onChange={(e) => setActivoForm(f => ({ ...f, nombre: e.target.value }))} placeholder="Ej: Elevador de taller" style={inputStyle} />
             </label>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Categoría
-              <select value={activoForm.categoria} onChange={(e) => {
-                const categoria = e.target.value;
-                const cuenta_activo = categoria === "Edificio / Instalaciones" ? "1500" : "1510";
-                setActivoForm(f => ({ ...f, categoria, cuenta_activo }));
-              }} style={inputStyle}>
-                <option>Mobiliario</option>
-                <option>Equipo de Cómputo</option>
-                <option>Equipo de Taller</option>
-                <option>Edificio / Instalaciones</option>
-                <option>Otro</option>
-              </select>
-            </label>
+            {categoriasDep.length > 0 ? (
+              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Categoría (tabla depreciación)
+                <select
+                  value={activoForm.categoria}
+                  onChange={(e) => {
+                    const cat = categoriasDep.find((c) => c.nombre === e.target.value);
+                    setActivoForm(f => ({
+                      ...f,
+                      categoria: e.target.value,
+                      cuenta_activo: cat?.cuenta_activo ?? f.cuenta_activo,
+                      vida_util_meses: cat?.vida_util_meses ?? f.vida_util_meses,
+                    }));
+                  }}
+                  style={inputStyle}
+                >
+                  <option value="">— elegir —</option>
+                  {categoriasDep.map((c) => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                </select>
+              </label>
+            ) : (
+              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Categoría
+                <select value={activoForm.categoria} onChange={(e) => {
+                  const categoria = e.target.value;
+                  const cuenta_activo = categoria === "Edificio / Instalaciones" ? "1500" : "1510";
+                  setActivoForm(f => ({ ...f, categoria, cuenta_activo }));
+                }} style={inputStyle}>
+                  <option>Mobiliario</option>
+                  <option>Equipo de Cómputo</option>
+                  <option>Equipo de Taller</option>
+                  <option>Edificio / Instalaciones</option>
+                  <option>Otro</option>
+                </select>
+              </label>
+            )}
             <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Costo (₡)
               <input type="number" value={activoForm.costo || ""} onChange={(e) => setActivoForm(f => ({ ...f, costo: Number(e.target.value) }))} style={inputStyle} />
             </label>

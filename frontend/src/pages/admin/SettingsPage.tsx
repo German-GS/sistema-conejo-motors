@@ -264,14 +264,102 @@ const LeadsConfigSettings: React.FC = () => {
 };
 
 // --- COMPONENTE PRINCIPAL ---
-type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm";
+type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion";
 const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string }[] = [
   { id: "vehiculos",      icon: "🚗", label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones" },
   { id: "sitio",          icon: "🌐", label: "Sitio Web",     desc: "Página principal y contenido público" },
   { id: "financiamiento", icon: "🏦", label: "Financiamiento", desc: "Entidades, formularios y calculadora" },
   { id: "crm",            icon: "🎯", label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads" },
   { id: "planilla",       icon: "💰", label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones" },
+  { id: "depreciacion",   icon: "📉", label: "Depreciación",  desc: "Tabla de vida útil por categoría de activo" },
 ];
+
+// --- Editor de la tabla de depreciación ---
+const DepreciacionConfig: React.FC = () => {
+  const [cats, setCats] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const cargar = () => {
+    apiClient.get("/depreciacion/categorias").then((r) => setCats(r.data ?? [])).finally(() => setLoading(false));
+  };
+  useEffect(() => { cargar(); }, []);
+
+  const setCampo = (id: number, campo: string, valor: any) =>
+    setCats((prev) => prev.map((c) => (c.id === id ? { ...c, [campo]: valor } : c)));
+
+  const guardar = async (c: any) => {
+    try {
+      await apiClient.patch(`/depreciacion/categorias/${c.id}`, {
+        nombre: c.nombre, vida_util_meses: Number(c.vida_util_meses) || 0,
+        tasa_anual: Number(c.tasa_anual) || 0, cuenta_activo: c.cuenta_activo, activo: c.activo,
+      });
+      toast.success("Categoría guardada.");
+    } catch { toast.error("Error al guardar."); }
+  };
+  const agregar = async () => {
+    try { const r = await apiClient.post("/depreciacion/categorias", { nombre: "Nueva categoría", vida_util_meses: 120 }); setCats((p) => [...p, r.data]); }
+    catch { toast.error("Error al agregar."); }
+  };
+  const eliminar = async (id: number) => {
+    if (!window.confirm("¿Eliminar esta categoría?")) return;
+    try { await apiClient.delete(`/depreciacion/categorias/${id}`); setCats((p) => p.filter((c) => c.id !== id)); }
+    catch { toast.error("Error al eliminar."); }
+  };
+  const sembrar = async () => {
+    try { const r = await apiClient.post("/depreciacion/categorias/seed"); toast.success(`${r.data.seeded} categorías creadas.`); cargar(); }
+    catch { toast.error("Error."); }
+  };
+
+  const inp: React.CSSProperties = { padding: "0.35rem 0.5rem", borderRadius: 6, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
+
+  if (loading) return <p style={{ color: "#94a3b8" }}>Cargando…</p>;
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+        <div>
+          <strong style={{ fontSize: "1rem", color: "#0a2540" }}>Tabla de depreciación</strong>
+          <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "#64748b", maxWidth: 620 }}>
+            Vida útil por categoría de activo. La tasa anual es informativa; la depreciación usa la vida útil (meses).
+            Valores por defecto — <strong>verificá y ajustá</strong> según el Reglamento de la Ley del Impuesto sobre la Renta vigente.
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          {cats.length === 0 && <button onClick={sembrar} className={styles.saveButton}>Sembrar tabla</button>}
+          <button onClick={agregar} className={styles.saveButton}>+ Agregar</button>
+        </div>
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", minWidth: 640 }}>
+          <thead>
+            <tr style={{ textAlign: "left", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>
+              <th style={{ padding: "6px" }}>Categoría</th>
+              <th style={{ padding: "6px", width: 120 }}>Vida útil (meses)</th>
+              <th style={{ padding: "6px", width: 100 }}>Tasa anual %</th>
+              <th style={{ padding: "6px", width: 90 }}>Cuenta</th>
+              <th style={{ padding: "6px", width: 70 }}>Activa</th>
+              <th style={{ padding: "6px", width: 130 }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {cats.map((c) => (
+              <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <td style={{ padding: "6px" }}><input value={c.nombre} onChange={(e) => setCampo(c.id, "nombre", e.target.value)} style={inp} /></td>
+                <td style={{ padding: "6px" }}><input type="number" value={c.vida_util_meses} onChange={(e) => setCampo(c.id, "vida_util_meses", e.target.value)} style={inp} /></td>
+                <td style={{ padding: "6px" }}><input type="number" value={c.tasa_anual} onChange={(e) => setCampo(c.id, "tasa_anual", e.target.value)} style={inp} /></td>
+                <td style={{ padding: "6px" }}><input value={c.cuenta_activo} onChange={(e) => setCampo(c.id, "cuenta_activo", e.target.value)} style={inp} /></td>
+                <td style={{ padding: "6px", textAlign: "center" }}><input type="checkbox" checked={c.activo} onChange={(e) => setCampo(c.id, "activo", e.target.checked)} /></td>
+                <td style={{ padding: "6px", whiteSpace: "nowrap" }}>
+                  <button onClick={() => guardar(c)} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.75rem", marginRight: 4 }}>Guardar</button>
+                  <button onClick={() => eliminar(c.id)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: "0.75rem" }}>✕</button>
+                </td>
+              </tr>
+            ))}
+            {cats.length === 0 && <tr><td colSpan={6} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8" }}>Sin categorías. Usá "Sembrar tabla" para los valores por defecto.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
 
 export const SettingsPage = () => {
   const confirm = useConfirm();
@@ -796,6 +884,12 @@ export const SettingsPage = () => {
       {seccion === "crm" && (
       <Card title="🎯 Auto-descarte de leads tibios">
         <LeadsConfigSettings />
+      </Card>
+      )}
+
+      {seccion === "depreciacion" && (
+      <Card title="📉 Tabla de depreciación por categoría de activo">
+        <DepreciacionConfig />
       </Card>
       )}
 

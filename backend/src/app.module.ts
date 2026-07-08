@@ -60,6 +60,7 @@ import { Producto } from './productos/producto.entity';
 import { OrdenProducto, LineaOrden } from './productos/orden-producto.entity';
 import { ContabilidadModule } from './contabilidad/contabilidad.module';
 import { ActivosFijosModule } from './activos-fijos/activos-fijos.module';
+import { DepreciacionModule } from './depreciacion/depreciacion.module';
 import { CuentaContable } from './contabilidad/cuenta.entity';
 import { AsientoContable, LineaAsiento } from './contabilidad/asiento.entity';
 import { CierreDiario } from './contabilidad/cierre-diario.entity';
@@ -216,6 +217,7 @@ import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
     ProductosModule,
     ContabilidadModule,
     ActivosFijosModule,
+    DepreciacionModule,
     // Nuevos módulos
     AgendaModule,
     CosteoVehiculosModule,
