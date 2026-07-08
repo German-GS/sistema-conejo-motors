@@ -80,6 +80,9 @@ export class Vehicle {
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   depreciacion_acumulada: number;   // Depreciación acumulada mientras es Demo
 
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  valor_residual_demo: number;      // Valor residual: la depreciación se detiene en costo − residual
+
   @Column({
     type: 'enum',
     enum: ['Visible', 'Oculto', 'Agotado', 'Contrapedido'],

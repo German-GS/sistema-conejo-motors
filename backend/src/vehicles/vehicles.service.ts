@@ -345,9 +345,13 @@ export class VehiclesService implements OnApplicationBootstrap {
     for (const v of demos) {
       const costo = Number(v.precio_costo) || 0;
       if (costo <= 0) continue;
+      // Base depreciable = costo − valor residual (misma fórmula que activos-fijos genéricos).
+      const residual = Number(v.valor_residual_demo) || 0;
+      const base = costo - residual;
+      if (base <= 0) continue;
       const acum = Number(v.depreciacion_acumulada) || 0;
-      if (acum >= costo) continue; // totalmente depreciado
-      const cuota = Math.min(+(costo / VehiclesService.VIDA_UTIL_MESES_DEMO).toFixed(2), +(costo - acum).toFixed(2));
+      if (acum >= base) continue; // totalmente depreciado hasta el valor residual
+      const cuota = Math.min(+(base / VehiclesService.VIDA_UTIL_MESES_DEMO).toFixed(2), +(base - acum).toFixed(2));
       if (cuota <= 0) continue;
 
       await this.contabilidad

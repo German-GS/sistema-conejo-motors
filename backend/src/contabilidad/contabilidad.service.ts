@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, EntityManager } from 'typeorm';
 import { CuentaContable } from './cuenta.entity';
 import { AsientoContable, LineaAsiento, TipoAsiento } from './asiento.entity';
 import { CierreDiario } from './cierre-diario.entity';
+import { CierrePeriodo, TipoCierre } from './cierre-periodo.entity';
 import { User } from '../users/user.entity';
 
 @Injectable()
@@ -17,6 +18,8 @@ export class ContabilidadService {
     private lineasRepo: Repository<LineaAsiento>,
     @InjectRepository(CierreDiario)
     private cierresRepo: Repository<CierreDiario>,
+    @InjectRepository(CierrePeriodo)
+    private cierrePeriodosRepo: Repository<CierrePeriodo>,
   ) {}
 
   // ── Plan de Cuentas ───────────────────────────────────────────────────────
@@ -118,6 +121,20 @@ export class ContabilidadService {
     return a;
   }
 
+  /** Devuelve el cierre que bloquea esa fecha (mes o año cerrado), o null. */
+  async periodoQueBloquea(fecha: string, manager?: EntityManager): Promise<CierrePeriodo | null> {
+    const repo = manager ? manager.getRepository(CierrePeriodo) : this.cierrePeriodosRepo;
+    const mes = fecha.slice(0, 7); // YYYY-MM
+    const anio = fecha.slice(0, 4); // YYYY
+    const cierre = await repo.findOne({
+      where: [
+        { periodo: mes, cerrado: true },
+        { periodo: anio, cerrado: true },
+      ],
+    });
+    return cierre ?? null;
+  }
+
   async crearAsiento(
     user: User,
     body: {
@@ -128,7 +145,24 @@ export class ContabilidadService {
       referencia_tipo?: string;
       lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[];
     },
+    opciones?: { forzar?: boolean; manager?: EntityManager },
   ): Promise<AsientoContable> {
+    // Repos: si viene un EntityManager (transacción), usarlo; si no, los inyectados.
+    const mgr = opciones?.manager;
+    const asientosRepo = mgr ? mgr.getRepository(AsientoContable) : this.asientosRepo;
+    const lineasRepo   = mgr ? mgr.getRepository(LineaAsiento)   : this.lineasRepo;
+    const cuentasRepo  = mgr ? mgr.getRepository(CuentaContable) : this.cuentasRepo;
+
+    // Bloqueo de período cerrado (salvo que se fuerce, p.ej. Admin o el propio cierre)
+    if (!opciones?.forzar) {
+      const bloqueo = await this.periodoQueBloquea(body.fecha, mgr);
+      if (bloqueo) {
+        throw new BadRequestException(
+          `El período ${bloqueo.periodo} está cerrado; no se pueden registrar asientos con fecha ${body.fecha}. Un administrador puede forzar un asiento de ajuste.`,
+        );
+      }
+    }
+
     // Validar partida doble: suma debe = suma haber
     const sumaDebe  = body.lineas.reduce((s, l) => s + (l.debe  ?? 0), 0);
     const sumaHaber = body.lineas.reduce((s, l) => s + (l.haber ?? 0), 0);
@@ -138,7 +172,7 @@ export class ContabilidadService {
       );
     }
 
-    const asiento = this.asientosRepo.create({
+    const asiento = asientosRepo.create({
       fecha: body.fecha,
       descripcion: body.descripcion,
       tipo: body.tipo ?? 'Manual',
@@ -146,39 +180,79 @@ export class ContabilidadService {
       referencia_tipo: body.referencia_tipo,
       creado_por: user,
     });
-    const saved = await this.asientosRepo.save(asiento);
+    const saved = await asientosRepo.save(asiento);
 
     for (const l of body.lineas) {
-      const cuenta = await this.cuentasRepo.findOneBy({ id: l.cuentaId });
+      const cuenta = await cuentasRepo.findOneBy({ id: l.cuentaId });
       if (!cuenta) throw new NotFoundException(`Cuenta #${l.cuentaId} no encontrada.`);
-      const linea = this.lineasRepo.create({
+      const linea = lineasRepo.create({
         asiento: saved,
         cuenta,
         debe:  l.debe  ?? 0,
         haber: l.haber ?? 0,
         descripcion: l.descripcion,
       });
-      await this.lineasRepo.save(linea);
+      await lineasRepo.save(linea);
     }
 
-    return this.getAsiento(saved.id);
+    return asientosRepo.findOne({
+      where: { id: saved.id },
+      relations: ['lineas', 'lineas.cuenta', 'creado_por'],
+    }) as Promise<AsientoContable>;
   }
 
-  /** Elimina los asientos (y sus líneas) ligados a una referencia. Devuelve cuántos borró. */
+  /**
+   * Anula contablemente los asientos ligados a una referencia mediante ASIENTOS DE
+   * REVERSA (débito/crédito invertidos), en vez de borrarlos físicamente. Preserva la
+   * pista de auditoría. Idempotente: no re-reversa lo ya reversado. Devuelve cuántos revirtió.
+   */
+  async reversarAsientosPorReferencia(
+    referencia_tipo: string,
+    referencia_id: number,
+    user?: User,
+    motivo?: string,
+  ): Promise<number> {
+    const asientos = await this.asientosRepo.find({
+      where: { referencia_tipo, referencia_id },
+      relations: ['lineas', 'lineas.cuenta'],
+    });
+    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+    let count = 0;
+    for (const a of asientos) {
+      // Idempotencia: si ya existe la reversa de este asiento, saltar.
+      const yaReversado = await this.asientosRepo.count({
+        where: { referencia_tipo: 'Reversa', referencia_id: a.id },
+      });
+      if (yaReversado > 0) continue;
+
+      await this.crearAsiento(
+        (user ?? undefined) as any,
+        {
+          fecha: hoy,
+          descripcion: `Reversa de asiento #${a.id} — ${a.descripcion}${motivo ? ` (${motivo})` : ''}`,
+          tipo: 'Ajuste',
+          referencia_id: a.id,
+          referencia_tipo: 'Reversa',
+          lineas: a.lineas.map((l) => ({
+            cuentaId: l.cuenta.id,
+            debe: Number(l.haber) || 0,
+            haber: Number(l.debe) || 0,
+            descripcion: `Reversa — ${l.descripcion ?? ''}`,
+          })),
+        },
+        { forzar: true },
+      );
+      count++;
+    }
+    return count;
+  }
+
+  /** @deprecated Usar reversarAsientosPorReferencia. Se mantiene por compatibilidad de llamadores. */
   async eliminarAsientosPorReferencia(
     referencia_tipo: string,
     referencia_id: number,
   ): Promise<number> {
-    const asientos = await this.asientosRepo.find({
-      where: { referencia_tipo, referencia_id },
-    });
-    let count = 0;
-    for (const a of asientos) {
-      await this.lineasRepo.delete({ asiento: { id: a.id } as any });
-      await this.asientosRepo.delete(a.id);
-      count++;
-    }
-    return count;
+    return this.reversarAsientosPorReferencia(referencia_tipo, referencia_id);
   }
 
   /** Devuelve la cuenta con ese código; si no existe (plan ya sembrado antes), la crea. */
@@ -280,6 +354,7 @@ export class ContabilidadService {
       .innerJoin('l.asiento', 'a')
       .innerJoin('l.cuenta', 'c')
       .where('a.fecha = :dia', { dia })
+      .andWhere("a.tipo != 'Cierre'")
       .select('c.tipo', 'tipo')
       .addSelect('a.tipo', 'tipo_asiento')
       .addSelect('SUM(l.debe)',  'debe')
@@ -324,6 +399,7 @@ export class ContabilidadService {
     let ingresos = 0, gastos = 0, ventasVeh = 0, ventasProd = 0;
     const gastosPorTipo: Record<string, number> = {};
     for (const a of asientos) {
+      if (a.tipo === 'Cierre') continue; // los asientos de cierre no cuentan en el P&L
       for (const l of a.lineas) {
         if (l.cuenta.tipo === 'Ingreso') {
           const val = Number(l.haber) - Number(l.debe);
@@ -358,6 +434,7 @@ export class ContabilidadService {
 
     let ingresos = 0, gastos = 0, ventasVeh = 0, ventasProd = 0;
     for (const a of asientos) {
+      if (a.tipo === 'Cierre') continue;
       for (const l of a.lineas) {
         if (l.cuenta.tipo === 'Ingreso') {
           ingresos += Number(l.haber) - Number(l.debe);
@@ -378,5 +455,119 @@ export class ContabilidadService {
       ventas_productos: ventasProd,
       ya_cerrado: (await this.cierresRepo.findOneBy({ fecha: dia as any }))?.cerrado ?? false,
     };
+  }
+
+  // ── Cierre de período con bloqueo (mensual/anual) ─────────────────────────
+
+  async listarCierresPeriodo(): Promise<CierrePeriodo[]> {
+    return this.cierrePeriodosRepo.find({ relations: ['cerrado_por'], order: { periodo: 'DESC' } });
+  }
+
+  async reabrirPeriodo(periodo: string): Promise<CierrePeriodo> {
+    const c = await this.cierrePeriodosRepo.findOneBy({ periodo });
+    if (!c) throw new NotFoundException(`No hay cierre para el período ${periodo}.`);
+    c.cerrado = false;
+    return this.cierrePeriodosRepo.save(c);
+  }
+
+  /**
+   * Cierra un período contable: postea el asiento de cierre que salda las cuentas de
+   * resultado (Ingresos/Gastos → 3300) para el mes, o traslada 3300 → 3200 en el año,
+   * y bloquea la fecha para nuevos asientos.
+   */
+  async cerrarPeriodo(user: User, periodo: string, tipo: TipoCierre = 'Mensual'): Promise<CierrePeriodo> {
+    const existente = await this.cierrePeriodosRepo.findOneBy({ periodo });
+    if (existente?.cerrado) throw new BadRequestException(`El período ${periodo} ya está cerrado.`);
+
+    const resultado = await this.asegurarCuenta('3300', { nombre: 'Utilidad / Pérdida del Período', tipo: 'Patrimonio' });
+    let asientoId: number | null = null;
+    let totalIngresos = 0, totalGastos = 0, utilidad = 0, fechaCierre: string;
+
+    if (tipo === 'Mensual') {
+      if (!/^\d{4}-\d{2}$/.test(periodo)) throw new BadRequestException("Período mensual debe ser 'YYYY-MM'.");
+      const [y, m] = periodo.split('-').map(Number);
+      const primer = `${periodo}-01`;
+      const ultimo = new Date(y, m, 0).toLocaleDateString('en-CA'); // último día del mes
+      fechaCierre = ultimo;
+
+      const rows = await this.lineasRepo
+        .createQueryBuilder('l')
+        .innerJoin('l.asiento', 'a')
+        .innerJoin('l.cuenta', 'c')
+        .where('a.fecha BETWEEN :p AND :u', { p: primer, u: ultimo })
+        .andWhere("a.tipo != 'Cierre'")
+        .andWhere('c.tipo IN (:...tipos)', { tipos: ['Ingreso', 'Gasto'] })
+        .groupBy('c.id').addGroupBy('c.tipo')
+        .select('c.id', 'id').addSelect('c.tipo', 'tipo')
+        .addSelect('SUM(l.debe)', 'debe').addSelect('SUM(l.haber)', 'haber')
+        .getRawMany();
+
+      const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [];
+      for (const r of rows) {
+        const debe = Number(r.debe) || 0, haber = Number(r.haber) || 0;
+        if (r.tipo === 'Ingreso') {
+          const saldo = +(haber - debe).toFixed(2);
+          if (Math.abs(saldo) < 0.01) continue;
+          totalIngresos += saldo;
+          lineas.push({ cuentaId: Number(r.id), debe: saldo, haber: 0, descripcion: `Cierre ingresos ${periodo}` });
+        } else {
+          const saldo = +(debe - haber).toFixed(2);
+          if (Math.abs(saldo) < 0.01) continue;
+          totalGastos += saldo;
+          lineas.push({ cuentaId: Number(r.id), debe: 0, haber: saldo, descripcion: `Cierre gastos ${periodo}` });
+        }
+      }
+      utilidad = +(totalIngresos - totalGastos).toFixed(2);
+      if (Math.abs(utilidad) >= 0.01) {
+        if (utilidad > 0) lineas.push({ cuentaId: resultado.id, debe: 0, haber: utilidad, descripcion: `Utilidad del período ${periodo}` });
+        else lineas.push({ cuentaId: resultado.id, debe: -utilidad, haber: 0, descripcion: `Pérdida del período ${periodo}` });
+      }
+
+      if (lineas.length) {
+        const asiento = await this.crearAsiento(user, {
+          fecha: ultimo, descripcion: `Cierre mensual ${periodo}`,
+          tipo: 'Cierre', referencia_tipo: 'CierrePeriodo', lineas,
+        }, { forzar: true });
+        asientoId = asiento.id;
+      }
+    } else {
+      // Anual: mover el saldo acumulado de 3300 a 3200 Utilidades Retenidas
+      if (!/^\d{4}$/.test(periodo)) throw new BadRequestException("Período anual debe ser 'YYYY'.");
+      const ultimo = `${periodo}-12-31`;
+      fechaCierre = ultimo;
+      const retenidas = await this.asegurarCuenta('3200', { nombre: 'Utilidades Retenidas', tipo: 'Patrimonio' });
+      const saldoRow = await this.lineasRepo
+        .createQueryBuilder('l')
+        .innerJoin('l.asiento', 'a')
+        .where('l.cuentaId = :cid', { cid: resultado.id })
+        .andWhere('a.fecha <= :u', { u: ultimo })
+        .select('SUM(l.debe)', 'debe').addSelect('SUM(l.haber)', 'haber')
+        .getRawOne();
+      const saldo = +(((Number(saldoRow?.haber) || 0) - (Number(saldoRow?.debe) || 0))).toFixed(2);
+      utilidad = saldo;
+      if (Math.abs(saldo) >= 0.01) {
+        const lineas = saldo > 0
+          ? [{ cuentaId: resultado.id, debe: saldo, haber: 0, descripcion: `Cierre anual ${periodo}` },
+             { cuentaId: retenidas.id, debe: 0, haber: saldo, descripcion: `Traslado a utilidades retenidas ${periodo}` }]
+          : [{ cuentaId: resultado.id, debe: 0, haber: -saldo, descripcion: `Cierre anual ${periodo}` },
+             { cuentaId: retenidas.id, debe: -saldo, haber: 0, descripcion: `Traslado (pérdida) a utilidades retenidas ${periodo}` }];
+        const asiento = await this.crearAsiento(user, {
+          fecha: ultimo, descripcion: `Cierre anual ${periodo} — traslado a Utilidades Retenidas`,
+          tipo: 'Cierre', referencia_tipo: 'CierrePeriodo', lineas,
+        }, { forzar: true });
+        asientoId = asiento.id;
+      }
+    }
+
+    const cierre = existente ?? this.cierrePeriodosRepo.create({ periodo });
+    cierre.tipo = tipo;
+    cierre.cerrado = true;
+    cierre.total_ingresos = totalIngresos;
+    cierre.total_gastos = totalGastos;
+    cierre.utilidad_neta = utilidad;
+    cierre.asiento_cierre_id = asientoId;
+    cierre.fecha_cierre = fechaCierre;
+    cierre.cerrado_por = user;
+    return this.cierrePeriodosRepo.save(cierre);
   }
 }

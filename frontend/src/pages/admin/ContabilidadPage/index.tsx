@@ -30,6 +30,9 @@ const tdStyle: CSSProperties = { padding: "0.55rem 0.8rem", color: "#334155" };
 export const ContabilidadPage = () => {
   const [tab, setTab] = useState<"dashboard" | "cuentas" | "asientos" | "balance" | "cierres" | "activos">("dashboard");
   const [activos, setActivos] = useState<{ items: any[]; totales: any } | null>(null);
+  const [cierresPeriodo, setCierresPeriodo] = useState<any[]>([]);
+  const [periodoCierre, setPeriodoCierre] = useState(() => hoyEnCR().slice(0, 7));
+  const [tipoCierre, setTipoCierre] = useState<"Mensual" | "Anual">("Mensual");
   const [activoForm, setActivoForm] = useState({ nombre: "", categoria: "Mobiliario", cuenta_activo: "1510", costo: 0, valor_residual: 0, vida_util_meses: 60, contrapartida: "2100", notas: "" });
   const [savingActivo, setSavingActivo] = useState(false);
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
@@ -124,6 +127,36 @@ export const ContabilidadPage = () => {
       fetchActivos();
     } catch (e: any) { toast.error(e.response?.data?.message || "Error al registrar."); }
     finally { setSavingActivo(false); }
+  };
+
+  // ── Cierres de período ────────────────────────────────────────────────────
+  const fetchCierresPeriodo = useCallback(async () => {
+    try {
+      const res = await apiClient.get("/contabilidad/cierres-periodo");
+      setCierresPeriodo(res.data ?? []);
+    } catch { /* silencioso */ }
+  }, []);
+
+  useEffect(() => { if (tab === "cierres") fetchCierresPeriodo(); }, [tab, fetchCierresPeriodo]);
+
+  const cerrarPeriodo = async () => {
+    const periodo = tipoCierre === "Anual" ? periodoCierre.slice(0, 4) : periodoCierre;
+    if (!window.confirm(`Se cerrará el período ${periodo} (${tipoCierre}): se genera el asiento de cierre y se BLOQUEA para nuevos asientos. ¿Continuar?`)) return;
+    try {
+      await apiClient.post("/contabilidad/cierres-periodo", { periodo, tipo: tipoCierre });
+      toast.success(`🔒 Período ${periodo} cerrado.`);
+      fetchCierresPeriodo();
+      fetchAll();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error al cerrar el período."); }
+  };
+
+  const reabrirPeriodo = async (periodo: string) => {
+    if (!window.confirm(`¿Reabrir el período ${periodo}? Se permitirán nuevos asientos con esa fecha.`)) return;
+    try {
+      await apiClient.post("/contabilidad/cierres-periodo/reabrir", { periodo });
+      toast.success(`🔓 Período ${periodo} reabierto.`);
+      fetchCierresPeriodo();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error."); }
   };
 
   const darDeBajaActivo = async (id: number, nombre: string) => {
@@ -515,6 +548,37 @@ export const ContabilidadPage = () => {
       {/* ══ TAB: Cierres ════════════════════════════════════════════════════ */}
       {tab === "cierres" && (
         <>
+        {/* Cierre de período con bloqueo */}
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
+            <strong style={{ fontSize: "1rem" }}>🔒 Cierre de período</strong>
+            <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Salda ingresos/gastos a resultados y bloquea la fecha</span>
+          </div>
+          <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "end" }}>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Tipo
+              <select value={tipoCierre} onChange={(e) => setTipoCierre(e.target.value as any)} style={{ ...inputStyle, width: "auto" }}>
+                <option value="Mensual">Mensual</option>
+                <option value="Anual">Anual</option>
+              </select>
+            </label>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Período
+              <input type="month" value={periodoCierre} onChange={(e) => setPeriodoCierre(e.target.value)} style={{ ...inputStyle, width: "auto" }} />
+            </label>
+            <button onClick={cerrarPeriodo} className={styles.seedBtn} style={{ height: 38 }}>🔒 Cerrar {tipoCierre === "Anual" ? periodoCierre.slice(0, 4) : periodoCierre}</button>
+          </div>
+          {cierresPeriodo.length > 0 && (
+            <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              {cierresPeriodo.map((c) => (
+                <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", fontSize: "0.85rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.4rem" }}>
+                  <span><strong>{c.periodo}</strong> <span style={{ fontSize: "0.72rem", background: "#e0e7ff", color: "#3730a3", borderRadius: 20, padding: "1px 8px" }}>{c.tipo}</span> {c.cerrado ? "🔒" : "🔓"}</span>
+                  <span style={{ color: "#64748b" }}>Utilidad: {fmtCRC(c.utilidad_neta)}</span>
+                  {c.cerrado && <button onClick={() => reabrirPeriodo(c.periodo)} style={{ background: "none", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem", color: "#64748b" }}>Reabrir</button>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Checklist de cierre */}
         {checklist && (
           <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>

@@ -154,6 +154,9 @@ export class ProductosService {
     vendedor: User,
     metodoPago: string,
   ): Promise<void> {
+    // Idempotencia: no duplicar el asiento si la orden ya fue contabilizada (reintento).
+    if (await this.contabilidad.existeAsientoPorReferencia('OrdenProducto', orden.id)) return;
+
     const cuentas = await this.contabilidad['cuentasRepo'].find();
     if (!cuentas.length) return;
 
@@ -232,6 +235,10 @@ export class ProductosService {
     for (const l of orden.lineas) {
       await this.productosRepo.increment({ id: l.producto.id }, 'stock', l.cantidad);
     }
+    // Reversar el asiento de la venta (ingreso, IVA y costo) para no dejar movimientos fantasma
+    await this.contabilidad
+      .reversarAsientosPorReferencia('OrdenProducto', orden.id, undefined, 'Anulación de orden')
+      .catch(() => { /* no bloquear la anulación */ });
     orden.estado = 'Anulada';
     return this.ordenesRepo.save(orden);
   }

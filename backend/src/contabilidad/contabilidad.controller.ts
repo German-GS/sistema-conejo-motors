@@ -45,7 +45,10 @@ export class ContabilidadController {
 
   @Post('asientos')
   crearAsiento(@Body() body: any, @Request() req) {
-    return this.svc.crearAsiento(req.user, body);
+    // Solo un Administrador puede forzar un asiento dentro de un período cerrado.
+    const esAdmin = req.user?.rol?.nombre === 'Administrador';
+    const forzar = body?.forzar === true && esAdmin;
+    return this.svc.crearAsiento(req.user, body, { forzar });
   }
 
   // ── Balance ───────────────────────────────────────────────────────────────
@@ -73,5 +76,22 @@ export class ContabilidadController {
   @Post('cierres')
   generarCierre(@Body() body: { fecha?: string; notas?: string }, @Request() req) {
     return this.svc.generarCierre(req.user, body.fecha, body.notas);
+  }
+
+  // ── Cierre de período con bloqueo (mensual/anual) ─────────────────────────
+
+  @Get('cierres-periodo')
+  listarCierresPeriodo() { return this.svc.listarCierresPeriodo(); }
+
+  @Post('cierres-periodo')
+  @Roles('Administrador')
+  cerrarPeriodo(@Body() body: { periodo: string; tipo?: 'Mensual' | 'Anual' }, @Request() req) {
+    return this.svc.cerrarPeriodo(req.user, body.periodo, body.tipo ?? 'Mensual');
+  }
+
+  @Post('cierres-periodo/reabrir')
+  @Roles('Administrador')
+  reabrirPeriodo(@Body() body: { periodo: string }) {
+    return this.svc.reabrirPeriodo(body.periodo);
   }
 }

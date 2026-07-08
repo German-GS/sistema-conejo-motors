@@ -29,6 +29,11 @@ export class Gasto {
   @Column({ length: 100, nullable: true })
   numero_factura?: string;
 
+  // Método de pago: define la contrapartida contable (Efectivo→1100, Banco/Tarjeta/SINPE/
+  // Transferencia→1110, Crédito→2100 CxP). Por defecto Efectivo si no se indica.
+  @Column({ length: 30, nullable: true })
+  metodo_pago?: string;
+
   @ManyToOne(() => Proveedor, { nullable: true })
   proveedor?: Proveedor;
 

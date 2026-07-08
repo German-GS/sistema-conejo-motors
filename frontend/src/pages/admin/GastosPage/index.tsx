@@ -13,7 +13,7 @@ export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ categoria: 'Otro', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', notas: '' });
+  const [form, setForm] = useState({ categoria: 'Otro', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', metodo_pago: 'Efectivo', notas: '' });
   const [totalMes, setTotalMes] = useState(0);
 
   const cargar = async () => {
@@ -85,6 +85,7 @@ export default function GastosPage() {
               <div className={`${styles.fg} ${styles.full}`}><label>Descripción *</label><input value={form.descripcion} onChange={f('descripcion')} /></div>
               <div className={styles.fg}><label>Fecha</label><input type="date" value={form.fecha} onChange={f('fecha')} /></div>
               <div className={styles.fg}><label>N° Factura</label><input value={form.numero_factura} onChange={f('numero_factura')} /></div>
+              <div className={styles.fg}><label>Método de pago</label><select value={form.metodo_pago} onChange={f('metodo_pago')}><option>Efectivo</option><option>Banco</option><option>Transferencia</option><option>SINPE</option><option>Tarjeta</option><option>Cheque</option><option>Credito</option></select></div>
               <div className={`${styles.fg} ${styles.full}`}><label>Notas</label><textarea value={form.notas} onChange={f('notas')} rows={2} /></div>
             </div>
             <div className={styles.actions}><button className={styles.btnSecondary} onClick={() => setShowModal(false)}>Cancelar</button><button className={styles.btnPrimary} onClick={guardar}>Guardar</button></div>

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { ActivoFijo, CategoriaActivo } from './activo-fijo.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
@@ -26,7 +26,10 @@ export class ActivosFijosService {
     @InjectRepository(Vehicle)
     private readonly vehiclesRepo: Repository<Vehicle>,
     private readonly contabilidad: ContabilidadService,
+    private readonly dataSource: DataSource,
   ) {}
+
+  private readonly logger = new Logger(ActivosFijosService.name);
 
   private hoyCR(): string {
     return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
@@ -47,27 +50,32 @@ export class ActivosFijosService {
     const costo = Number(dto.costo) || 0;
     if (costo <= 0) throw new BadRequestException('El costo del activo debe ser mayor a 0.');
 
-    const activo = await this.activosRepo.save(this.activosRepo.create({
-      nombre: dto.nombre,
-      categoria: dto.categoria ?? 'Otro',
-      cuenta_activo: dto.cuenta_activo ?? '1510',
-      costo,
-      valor_residual: Number(dto.valor_residual) || 0,
-      vida_util_meses: Number(dto.vida_util_meses) || 60,
-      fecha_adquisicion: dto.fecha_adquisicion ?? this.hoyCR(),
-      depreciacion_acumulada: 0,
-      activo: true,
-      notas: dto.notas ?? null,
-    }));
+    // Asegurar cuentas ANTES de la transacción (dato de referencia).
+    const cuentaActivoCod = dto.cuenta_activo ?? '1510';
+    const codContra = dto.contrapartida ?? '2100';
+    const cActivo = await this.contabilidad.asegurarCuenta(cuentaActivoCod, { nombre: dto.nombre, tipo: 'Activo' });
+    const cContra = await this.contabilidad.asegurarCuenta(codContra, {
+      nombre: codContra === '2100' ? 'Cuentas por Pagar' : 'Banco — Cuenta Corriente',
+      tipo: codContra === '2100' ? 'Pasivo' : 'Activo',
+    });
 
-    // Asiento de alta: Debe [cuenta_activo] / Haber [contrapartida]
-    try {
-      const cActivo = await this.contabilidad.asegurarCuenta(activo.cuenta_activo, { nombre: activo.nombre, tipo: 'Activo' });
-      const codContra = dto.contrapartida ?? '2100';
-      const cContra = await this.contabilidad.asegurarCuenta(codContra, {
-        nombre: codContra === '2100' ? 'Cuentas por Pagar' : 'Banco — Cuenta Corriente',
-        tipo: codContra === '2100' ? 'Pasivo' : 'Activo',
-      });
+    // Atómico: el activo y su asiento de alta se guardan (o se revierten) juntos.
+    return this.dataSource.transaction(async (manager) => {
+      const activo = await manager.getRepository(ActivoFijo).save(
+        manager.getRepository(ActivoFijo).create({
+          nombre: dto.nombre,
+          categoria: dto.categoria ?? 'Otro',
+          cuenta_activo: cuentaActivoCod,
+          costo,
+          valor_residual: Number(dto.valor_residual) || 0,
+          vida_util_meses: Number(dto.vida_util_meses) || 60,
+          fecha_adquisicion: dto.fecha_adquisicion ?? this.hoyCR(),
+          depreciacion_acumulada: 0,
+          activo: true,
+          notas: dto.notas ?? null,
+        }),
+      );
+
       await this.contabilidad.crearAsiento(userId ? ({ id: userId } as any) : (undefined as any), {
         fecha: activo.fecha_adquisicion,
         descripcion: `Alta de activo fijo — ${activo.nombre}`,
@@ -78,10 +86,10 @@ export class ActivosFijosService {
           { cuentaId: cActivo.id, debe: costo, haber: 0, descripcion: `Alta ${activo.nombre}` },
           { cuentaId: cContra.id, debe: 0, haber: costo, descripcion: `Contrapartida alta ${activo.nombre}` },
         ],
-      });
-    } catch { /* no bloquear el alta si la contabilidad falla */ }
+      }, { manager });
 
-    return activo;
+      return activo;
+    });
   }
 
   async actualizar(id: number, dto: Partial<CrearActivoDto>): Promise<ActivoFijo> {
@@ -125,7 +133,9 @@ export class ActivosFijosService {
         referencia_tipo: 'ActivoFijo_Baja',
         lineas,
       });
-    } catch { /* ignorar fallo contable */ }
+    } catch (e) {
+      this.logger.error(`No se pudo postear la baja del activo #${a.id}: ${(e as Error).message}`);
+    }
 
     a.activo = false;
     return this.activosRepo.save(a);
@@ -234,7 +244,9 @@ export class ActivosFijosService {
         a.depreciacion_acumulada = +(acum + cuota).toFixed(2);
         a.ultimo_periodo_depreciado = periodo;
         await this.activosRepo.save(a);
-      } catch { /* continuar con el resto */ }
+      } catch (e) {
+        this.logger.error(`Depreciación del activo #${a.id} falló: ${(e as Error).message}`);
+      }
     }
   }
 }

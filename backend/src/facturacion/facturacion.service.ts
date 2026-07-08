@@ -293,6 +293,9 @@ export class FacturacionService {
     datos: DatosFacturacion,
     adminUser: any,
   ): Promise<void> {
+    // Idempotencia: no duplicar el asiento si la venta ya fue contabilizada (reintento).
+    if (await this.contabilidad.existeAsientoPorReferencia('Venta', venta.id)) return;
+
     const cuentas = await this.contabilidad['cuentasRepo'].find();
     if (!cuentas.length) return; // Plan de cuentas no inicializado
 
