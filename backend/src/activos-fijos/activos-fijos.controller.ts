@@ -30,4 +30,9 @@ export class ActivosFijosController {
   darDeBaja(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     return this.svc.darDeBaja(id, req.user?.id);
   }
+
+  @Patch(':id/vender')
+  vender(@Param('id', ParseIntPipe) id: number, @Body() body: { monto: number; contrapartida?: string }, @Request() req: any) {
+    return this.svc.vender(id, body.monto, body.contrapartida ?? '1110', req.user?.id);
+  }
 }

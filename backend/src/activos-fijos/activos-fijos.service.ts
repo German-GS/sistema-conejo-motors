@@ -141,6 +141,56 @@ export class ActivosFijosService {
     return this.activosRepo.save(a);
   }
 
+  /** Vende un activo fijo: registra el efectivo recibido y la ganancia/pérdida vs. valor neto. */
+  async vender(id: number, montoVenta: number, contrapartida = '1110', userId?: number): Promise<ActivoFijo> {
+    const a = await this.activosRepo.findOneBy({ id });
+    if (!a) throw new NotFoundException(`Activo #${id} no encontrado.`);
+    if (!a.activo) throw new BadRequestException('El activo ya está dado de baja o vendido.');
+    const monto = Number(montoVenta) || 0;
+    if (monto < 0) throw new BadRequestException('El monto de venta no puede ser negativo.');
+
+    const costo = Number(a.costo) || 0;
+    const acum = Number(a.depreciacion_acumulada) || 0;
+    const neto = +(costo - acum).toFixed(2);
+    const resultado = +(monto - neto).toFixed(2); // + ganancia / − pérdida
+
+    try {
+      const cActivo = await this.contabilidad.asegurarCuenta(a.cuenta_activo, { nombre: a.nombre, tipo: 'Activo' });
+      const dep = this.cuentaDepAcumFor(a.cuenta_activo);
+      const cDep = await this.contabilidad.asegurarCuenta(dep.codigo, { nombre: dep.nombre, tipo: 'Activo' });
+      const cCobro = await this.contabilidad.asegurarCuenta(contrapartida, {
+        nombre: contrapartida === '1100' ? 'Caja' : 'Banco — Cuenta Corriente', tipo: 'Activo',
+      });
+
+      const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [];
+      if (monto > 0) lineas.push({ cuentaId: cCobro.id, debe: monto, haber: 0, descripcion: `Cobro venta ${a.nombre}` });
+      if (acum > 0) lineas.push({ cuentaId: cDep.id, debe: acum, haber: 0, descripcion: `Reversa dep. acumulada ${a.nombre}` });
+      lineas.push({ cuentaId: cActivo.id, debe: 0, haber: costo, descripcion: `Baja por venta ${a.nombre}` });
+      if (resultado > 0.01) {
+        const cGanancia = await this.contabilidad.asegurarCuenta('4300', { nombre: 'Otros Ingresos', tipo: 'Ingreso' });
+        lineas.push({ cuentaId: cGanancia.id, debe: 0, haber: resultado, descripcion: `Ganancia en venta de activo ${a.nombre}` });
+      } else if (resultado < -0.01) {
+        const cPerdida = await this.contabilidad.asegurarCuenta('5700', { nombre: 'Otros Gastos', tipo: 'Gasto' });
+        lineas.push({ cuentaId: cPerdida.id, debe: -resultado, haber: 0, descripcion: `Pérdida en venta de activo ${a.nombre}` });
+      }
+
+      await this.contabilidad.crearAsiento(userId ? ({ id: userId } as any) : (undefined as any), {
+        fecha: this.hoyCR(),
+        descripcion: `Venta de activo fijo — ${a.nombre}`,
+        tipo: 'Ajuste',
+        referencia_id: a.id,
+        referencia_tipo: 'ActivoFijo_Venta',
+        lineas,
+      });
+    } catch (e) {
+      this.logger.error(`No se pudo postear la venta del activo #${a.id}: ${(e as Error).message}`);
+    }
+
+    a.activo = false;
+    a.notas = `${a.notas ?? ''}\n[Vendido ${this.hoyCR()} por ₡${monto}]`.trim();
+    return this.activosRepo.save(a);
+  }
+
   // ── Listado consolidado (activos fijos genéricos + vehículos demo) ─────────
 
   async listar(): Promise<any> {

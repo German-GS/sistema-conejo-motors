@@ -101,6 +101,11 @@ export class ContabilidadService {
 
   // ── Asientos Contables ────────────────────────────────────────────────────
 
+  /**
+   * Libro diario en un rango de fechas.
+   * NOTA: si no se pasan startDate/endDate, devuelve SOLO los asientos de HOY
+   * (no todo el histórico). Para ver otro período hay que pasar el rango.
+   */
   async getAsientos(startDate?: string, endDate?: string): Promise<AsientoContable[]> {
     const hoy = new Date().toISOString().split('T')[0];
     const desde = startDate ?? hoy;
@@ -326,7 +331,7 @@ export class ContabilidadService {
     return {
       cuentas: porTipo,
       totales: { totalActivos, totalPasivos, totalPatrimonio, totalIngresos, totalGastos, utilidad },
-      equilibrado: Math.abs(totalActivos - (totalPasivos + totalPatrimonio + utilidad)) < 1,
+      equilibrado: Math.abs(totalActivos - (totalPasivos + totalPatrimonio + utilidad)) < 0.01,
     };
   }
 

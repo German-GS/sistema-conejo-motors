@@ -144,43 +144,70 @@ export class RecibosPagoService {
 
     const reciboGuardado = await this.recibosRepository.save(nuevoRecibo);
 
-    // Asiento contable automático de la planilla
-    await this._registrarAsientoPlanilla(reciboGuardado, user, generadoPor);
+    // Asiento contable automático de la planilla (incluye cargas patronales y provisiones)
+    await this._registrarAsientoPlanilla(
+      reciboGuardado,
+      user,
+      payrollResult.resumenPatrono.totalCargas,
+      generadoPor,
+    );
 
     return reciboGuardado;
   }
 
+  // Factores de provisión (Costa Rica): aguinaldo = 1/12 (8.33%), vacaciones ≈ 1/24 (4.17%).
+  private static readonly FACTOR_AGUINALDO = 1 / 12;
+  private static readonly FACTOR_VACACIONES = 1 / 24;
+
   /**
-   * Asiento contable de partida doble al generar un recibo de planilla:
-   *   Debe  5300 Gastos de Personal   = salario bruto
-   *   Haber 1100 Caja                 = salario neto pagado al colaborador
-   *   Haber 2100 Cuentas por Pagar    = deducciones retenidas (CCSS, renta, otras)
+   * Asiento de partida doble de la planilla, reconociendo el costo patronal completo:
+   *   Debe  5300 Gastos de Personal = salario bruto + cargas patronales + provisiones
+   *   Haber 1100 Caja               = salario neto pagado al colaborador
+   *   Haber 2100 Cuentas por Pagar  = deducciones retenidas + cargas patronales por pagar (CCSS/INS)
+   *   Haber 2300 Provisiones        = aguinaldo (1/12) + vacaciones (≈1/24)
    */
   private async _registrarAsientoPlanilla(
     recibo: ReciboPago,
     empleado: User,
+    cargasPatronales: number,
     generadoPor?: User,
   ): Promise<void> {
     try {
       const bruto = Number(recibo.salario_bruto) || 0;
       if (bruto <= 0) return;
-      const neto = Number(recibo.salario_neto) || 0;
-      const retenido = Math.round((bruto - neto) * 100) / 100; // deducciones + otras
+      // Idempotencia: no duplicar si el recibo ya fue contabilizado.
+      if (await this.contabilidadService.existeAsientoPorReferencia('ReciboPago', recibo.id)) return;
 
-      const cuentas = await this.contabilidadService.getCuentas();
-      if (!cuentas.length) return; // plan de cuentas no inicializado
-      const idDe = (codigo: string) => cuentas.find((c) => c.codigo === codigo)?.id;
-      const cGasto = idDe('5300');
-      const cCaja = idDe('1100');
-      const cPorPagar = idDe('2100');
-      if (!cGasto || !cCaja) return;
+      const neto = Number(recibo.salario_neto) || 0;
+      const retenido = Math.round((bruto - neto) * 100) / 100; // deducciones empleado + otras
+      const cargas = Math.round((Number(cargasPatronales) || 0) * 100) / 100;
+      const aguinaldo = Math.round(bruto * RecibosPagoService.FACTOR_AGUINALDO * 100) / 100;
+      const vacaciones = Math.round(bruto * RecibosPagoService.FACTOR_VACACIONES * 100) / 100;
+
+      const cGasto = (await this.contabilidadService.asegurarCuenta('5300', { nombre: 'Gastos de Personal', tipo: 'Gasto' })).id;
+      const cCaja = (await this.contabilidadService.asegurarCuenta('1100', { nombre: 'Caja', tipo: 'Activo' })).id;
+      const cPorPagar = (await this.contabilidadService.asegurarCuenta('2100', { nombre: 'Cuentas por Pagar', tipo: 'Pasivo' })).id;
+      const cProvisiones = (await this.contabilidadService.asegurarCuenta('2300', { nombre: 'Provisiones y Accruals', tipo: 'Pasivo' })).id;
 
       const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [
         { cuentaId: cGasto, debe: bruto, haber: 0, descripcion: 'Salario bruto del período' },
         { cuentaId: cCaja, debe: 0, haber: neto, descripcion: 'Salario neto pagado' },
       ];
-      if (retenido > 0 && cPorPagar) {
-        lineas.push({ cuentaId: cPorPagar, debe: 0, haber: retenido, descripcion: 'Deducciones retenidas (CCSS/renta)' });
+      if (retenido > 0) {
+        lineas.push({ cuentaId: cPorPagar, debe: 0, haber: retenido, descripcion: 'Deducciones retenidas (CCSS/renta empleado)' });
+      }
+      if (cargas > 0) {
+        lineas.push(
+          { cuentaId: cGasto, debe: cargas, haber: 0, descripcion: 'Cargas patronales (CCSS/INS patrono)' },
+          { cuentaId: cPorPagar, debe: 0, haber: cargas, descripcion: 'Cargas patronales por pagar' },
+        );
+      }
+      const provision = Math.round((aguinaldo + vacaciones) * 100) / 100;
+      if (provision > 0) {
+        lineas.push(
+          { cuentaId: cGasto, debe: provision, haber: 0, descripcion: 'Provisión aguinaldo y vacaciones' },
+          { cuentaId: cProvisiones, debe: 0, haber: provision, descripcion: `Provisión aguinaldo (${aguinaldo}) + vacaciones (${vacaciones})` },
+        );
       }
 
       const fechaPago = recibo.fecha_pago instanceof Date ? recibo.fecha_pago : new Date(recibo.fecha_pago);

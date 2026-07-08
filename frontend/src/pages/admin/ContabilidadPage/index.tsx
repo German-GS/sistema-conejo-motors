@@ -168,6 +168,18 @@ export const ContabilidadPage = () => {
     } catch (e: any) { toast.error(e.response?.data?.message || "Error."); }
   };
 
+  const venderActivo = async (id: number, nombre: string) => {
+    const montoStr = window.prompt(`Vender "${nombre}". ¿Monto de venta recibido (₡)?`, "0");
+    if (montoStr === null) return;
+    const monto = Number(montoStr);
+    if (!(monto >= 0)) { toast.error("Monto inválido."); return; }
+    try {
+      await apiClient.patch(`/activos-fijos/${id}/vender`, { monto });
+      toast.success("Venta de activo registrada.");
+      fetchActivos();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error."); }
+  };
+
   // ── Suma partida doble ────────────────────────────────────────────────────
   const sumaDebe  = lineasForm.reduce((s, l) => s + (l.debe  || 0), 0);
   const sumaHaber = lineasForm.reduce((s, l) => s + (l.haber || 0), 0);
@@ -530,7 +542,10 @@ export const ContabilidadPage = () => {
                     <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{fmtCRC(a.valor_neto)}</td>
                     <td style={{ ...tdStyle, textAlign: "right" }}>
                       {a.tipo === "Activo" && a.activo && (
-                        <button onClick={() => darDeBajaActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Dar de baja</button>
+                        <span style={{ display: "inline-flex", gap: "0.35rem" }}>
+                          <button onClick={() => venderActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Vender</button>
+                          <button onClick={() => darDeBajaActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Dar de baja</button>
+                        </span>
                       )}
                       {a.tipo === "Vehículo Demo" && <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>gestionar en vehículos</span>}
                     </td>
