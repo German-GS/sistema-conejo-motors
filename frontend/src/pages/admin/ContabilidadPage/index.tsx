@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { CSSProperties } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
@@ -23,6 +23,82 @@ const TIPO_CUENTA_COLORS: Record<string, string> = {
   Ingreso: "#059669", Gasto: "#d97706",
 };
 
+// Nombres legibles de las cuentas de activo
+const CUENTA_NOMBRES: Record<string, string> = {
+  "1500": "Edificio / Instalaciones",
+  "1510": "Mobiliario y Equipo",
+  "1520": "Vehículos Demo / Uso Interno",
+};
+const nombreCuenta = (cod: string) => CUENTA_NOMBRES[cod] ? `${cod} · ${CUENTA_NOMBRES[cod]}` : `Cuenta ${cod}`;
+
+// Paleta categórica validada (dataviz) — orden fijo, CVD-safe
+const SERIES = ["#2a78d6", "#1baf7a", "#eda100", "#4a3aa7", "#e34948", "#e87ba4"];
+
+// Dona: distribución del costo de activos por cuenta contable
+const DonutCuentas = ({ data }: { data: { cuenta: string; costo: number; color: string }[] }) => {
+  const total = data.reduce((s, d) => s + d.costo, 0);
+  if (total <= 0) return <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Sin datos.</p>;
+  const R = 60, r = 38, cx = 70, cy = 70;
+  let acc = 0;
+  const arc = (frac0: number, frac1: number) => {
+    const a0 = 2 * Math.PI * frac0 - Math.PI / 2;
+    const a1 = 2 * Math.PI * frac1 - Math.PI / 2;
+    const large = frac1 - frac0 > 0.5 ? 1 : 0;
+    return `M ${cx + R * Math.cos(a0)} ${cy + R * Math.sin(a0)} A ${R} ${R} 0 ${large} 1 ${cx + R * Math.cos(a1)} ${cy + R * Math.sin(a1)} L ${cx + r * Math.cos(a1)} ${cy + r * Math.sin(a1)} A ${r} ${r} 0 ${large} 0 ${cx + r * Math.cos(a0)} ${cy + r * Math.sin(a0)} Z`;
+  };
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+      <svg viewBox="0 0 140 140" width="140" height="140" role="img" aria-label="Costo de activos por cuenta">
+        {data.length === 1 ? (
+          // Una sola cuenta: anillo completo (el arco degeneraría con inicio=fin)
+          <>
+            <circle cx={cx} cy={cy} r={(R + r) / 2} fill="none" stroke={data[0].color} strokeWidth={R - r} />
+          </>
+        ) : (
+          data.map((d) => {
+            const f0 = acc / total; acc += d.costo; const f1 = acc / total;
+            return <path key={d.cuenta} d={arc(f0, f1)} fill={d.color} stroke="#fff" strokeWidth={1.5} />;
+          })
+        )}
+      </svg>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "0.8rem" }}>
+        {data.map((d) => (
+          <div key={d.cuenta} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ width: 11, height: 11, borderRadius: 3, background: d.color, flexShrink: 0 }} />
+            <span style={{ color: "#334155" }}>{nombreCuenta(d.cuenta)}</span>
+            <strong style={{ color: "#0a2540", marginLeft: "auto" }}>{fmtCRC(d.costo)}</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Barras: valor neto vs depreciación acumulada por cuenta (suman el costo)
+const BarrasNeto = ({ data }: { data: { cuenta: string; costo: number; dep: number; neto: number }[] }) => {
+  const max = Math.max(...data.map((d) => d.costo), 1);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
+      {data.map((d) => (
+        <div key={d.cuenta}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", marginBottom: 2 }}>
+            <span style={{ color: "#334155" }}>{nombreCuenta(d.cuenta)}</span>
+            <span style={{ color: "#64748b" }}>neto {fmtCRC(d.neto)} · dep {fmtCRC(d.dep)}</span>
+          </div>
+          <div style={{ display: "flex", height: 16, borderRadius: 4, overflow: "hidden", background: "#f1f5f9", width: `${(d.costo / max) * 100}%`, minWidth: "30%", gap: 2 }}>
+            <div title={`Valor neto ${fmtCRC(d.neto)}`} style={{ background: "#2a78d6", width: `${(d.neto / d.costo) * 100}%`, borderRadius: "4px 0 0 4px" }} />
+            <div title={`Depreciación ${fmtCRC(d.dep)}`} style={{ background: "#eda100", width: `${(d.dep / d.costo) * 100}%` }} />
+          </div>
+        </div>
+      ))}
+      <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>
+        <span><span style={{ display: "inline-block", width: 10, height: 10, background: "#2a78d6", borderRadius: 2, marginRight: 4 }} />Valor neto</span>
+        <span><span style={{ display: "inline-block", width: 10, height: 10, background: "#eda100", borderRadius: 2, marginRight: 4 }} />Depreciación acumulada</span>
+      </div>
+    </div>
+  );
+};
+
 const inputStyle: CSSProperties = { display: "block", width: "100%", marginTop: 4, padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit", boxSizing: "border-box" };
 const thStyle: CSSProperties = { padding: "0.6rem 0.8rem", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em" };
 const tdStyle: CSSProperties = { padding: "0.55rem 0.8rem", color: "#334155" };
@@ -30,6 +106,8 @@ const tdStyle: CSSProperties = { padding: "0.55rem 0.8rem", color: "#334155" };
 export const ContabilidadPage = () => {
   const [tab, setTab] = useState<"dashboard" | "cuentas" | "asientos" | "balance" | "cierres" | "activos">("dashboard");
   const [activos, setActivos] = useState<{ items: any[]; totales: any } | null>(null);
+  const [showMigrar, setShowMigrar] = useState(false);
+  const [vehiculosInv, setVehiculosInv] = useState<any[]>([]);
   const [cierresPeriodo, setCierresPeriodo] = useState<any[]>([]);
   const [periodoCierre, setPeriodoCierre] = useState(() => hoyEnCR().slice(0, 7));
   const [tipoCierre, setTipoCierre] = useState<"Mensual" | "Anual">("Mensual");
@@ -166,6 +244,42 @@ export const ContabilidadPage = () => {
       toast.success("Activo dado de baja.");
       fetchActivos();
     } catch (e: any) { toast.error(e.response?.data?.message || "Error."); }
+  };
+
+  // Agregación de activos por cuenta contable (para los gráficos)
+  const activosPorCuenta = useMemo(() => {
+    if (!activos) return [] as { cuenta: string; costo: number; dep: number; neto: number; color: string }[];
+    const map = new Map<string, { costo: number; dep: number; neto: number }>();
+    for (const a of activos.items) {
+      const k = a.cuenta ?? "—";
+      const cur = map.get(k) ?? { costo: 0, dep: 0, neto: 0 };
+      cur.costo += a.costo; cur.dep += a.depreciacion_acumulada; cur.neto += a.valor_neto;
+      map.set(k, cur);
+    }
+    return [...map.entries()]
+      .sort((a, b) => b[1].costo - a[1].costo)
+      .map(([cuenta, v], i) => ({ cuenta, ...v, color: SERIES[i % SERIES.length] }));
+  }, [activos]);
+
+  // Migración de vehículos de inventario (venta) → uso interno (Demo)
+  const abrirMigrar = async () => {
+    setShowMigrar((s) => !s);
+    if (!showMigrar) {
+      try {
+        const r = await apiClient.get("/vehicles");
+        setVehiculosInv((r.data ?? []).filter((v: any) => v.estado === "Disponible" || v.estado === "Reservado"));
+      } catch { toast.error("No se pudieron cargar los vehículos."); }
+    }
+  };
+
+  const migrarVehiculo = async (id: number, nombre: string) => {
+    if (!window.confirm(`Migrar "${nombre}" a uso interno (Demo). Se genera el asiento 1300→1520 y sale del catálogo. ¿Continuar?`)) return;
+    try {
+      await apiClient.patch(`/vehicles/${id}/demo`);
+      toast.success("Vehículo migrado a uso interno.");
+      setVehiculosInv((prev) => prev.filter((v) => v.id !== id));
+      fetchActivos();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error al migrar."); }
   };
 
   const venderActivo = async (id: number, nombre: string) => {
@@ -477,6 +591,46 @@ export const ContabilidadPage = () => {
               <KpiCard icon="💎" label="Valor neto en libros" value={fmtCRC(activos.totales.valor_neto)} color="#059669" />
             </div>
           )}
+
+          {/* Gráficos por cuenta contable */}
+          {activosPorCuenta.length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem", margin: "1rem 0" }}>
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.75rem" }}>Costo por cuenta</div>
+                <DonutCuentas data={activosPorCuenta} />
+              </div>
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.75rem" }}>Valor neto vs. depreciación</div>
+                <BarrasNeto data={activosPorCuenta} />
+              </div>
+            </div>
+          )}
+
+          {/* Migración de vehículos de venta → uso interno */}
+          <div style={{ margin: "1rem 0" }}>
+            <button onClick={abrirMigrar} className={styles.seedBtn}>
+              🔄 {showMigrar ? "Cerrar migración" : "Migrar vehículo a uso interno"}
+            </button>
+            {showMigrar && (
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
+                <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 0 }}>
+                  Reclasifica un vehículo del inventario de venta (1300) a activo fijo de uso interno / demo (1520). Genera el asiento y lo saca del catálogo.
+                </p>
+                {vehiculosInv.length === 0 ? (
+                  <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>No hay vehículos disponibles para migrar.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", maxHeight: 260, overflowY: "auto" }}>
+                    {vehiculosInv.map((v) => (
+                      <div key={v.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.4rem", fontSize: "0.85rem" }}>
+                        <span>{v.marca} {v.modelo} <span style={{ color: "#94a3b8" }}>· VIN {v.vin} · {fmtCRC(Number(v.precio_costo) || 0)}</span></span>
+                        <button onClick={() => migrarVehiculo(v.id, `${v.marca} ${v.modelo}`)} style={{ background: "#ede9fe", border: "1px solid #ddd6fe", color: "#7c3aed", borderRadius: 6, padding: "2px 10px", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, whiteSpace: "nowrap" }}>Migrar →</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Formulario alta */}
           <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", margin: "1rem 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem", alignItems: "end" }}>

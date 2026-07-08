@@ -59,8 +59,7 @@ const SECTION_ROUTES: Record<string, string[]> = {
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
   compras:      ["/admin/proveedores", "/admin/gastos"],
-  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria"],
-  contabilidad: ["/admin/contabilidad"],
+  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad"],
   postventa:    ["/admin/taller", "/admin/garantias"],
   operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
 };
@@ -354,8 +353,8 @@ export const AdminLayout = () => {
             </div>
           )}
 
-          {/* ── FINANZAS ── */}
-          <SectionHeader id="finanzas" label="FINANZAS" />
+          {/* ── FINANZAS Y CONTABILIDAD ── */}
+          <SectionHeader id="finanzas" label="FINANZAS Y CONTABILIDAD" />
           {isOpen("finanzas") && (
             <div className={styles.sectionItems}>
               <SidebarLink to="/admin/finanzas" icon={<LuWallet size={18} />} label="Resumen Financiero" />
@@ -363,19 +362,10 @@ export const AdminLayout = () => {
               <SidebarLink to="/admin/cxp" icon={<LuTrendingDown size={18} />} label="Cuentas x Pagar" />
               <SidebarLink to="/admin/caja-chica" icon={<LuWallet size={18} />} label="Caja Chica" />
               <SidebarLink to="/admin/tesoreria" icon={<LuBanknote size={18} />} label="Tesorería" />
-            </div>
-          )}
-
-          {/* ── CONTABILIDAD ── (solo Administración y Contabilidad) */}
-          {(userRole === "Administrador" || userRole === "Contador") && (
-            <>
-              <SectionHeader id="contabilidad" label="CONTABILIDAD" />
-              {isOpen("contabilidad") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
-                </div>
+              {(userRole === "Administrador" || userRole === "Contador") && (
+                <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
               )}
-            </>
+            </div>
           )}
 
           {/* ── POSTVENTA ── */}
