@@ -183,19 +183,21 @@ export class VehiclesService implements OnApplicationBootstrap {
       ['Marchamo', Number(v.marchamo) || 0],
     ].filter(([, val]) => (val as number) > 0) as [string, number][];
 
-    const sumComp = componentes.reduce((s, [, val]) => s + val, 0);
-    const resto = +(costo - sumComp).toFixed(2);
+    // Aritmética en céntimos: el desglose debe sumar EXACTAMENTE el costo capitalizado.
+    const costoCents = Math.round(costo * 100);
+    const sumCompCents = componentes.reduce((s, [, val]) => s + Math.round(val * 100), 0);
+    const restoCents = costoCents - sumCompCents;
 
     const debeLineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [];
     // Si el desglose no cuadra con el costo total, usamos una sola línea para garantizar la partida doble.
-    if (componentes.length === 0 || sumComp > costo + 0.01) {
+    if (componentes.length === 0 || sumCompCents > costoCents) {
       debeLineas.push({ cuentaId: inv.id, debe: costo, haber: 0, descripcion: `Ingreso a inventario VIN ${v.vin}` });
     } else {
       for (const [label, val] of componentes) {
-        debeLineas.push({ cuentaId: inv.id, debe: +val.toFixed(2), haber: 0, descripcion: `${label} — VIN ${v.vin}` });
+        debeLineas.push({ cuentaId: inv.id, debe: Math.round(val * 100) / 100, haber: 0, descripcion: `${label} — VIN ${v.vin}` });
       }
-      if (resto >= 0.01) {
-        debeLineas.push({ cuentaId: inv.id, debe: resto, haber: 0, descripcion: `Otros costos — VIN ${v.vin}` });
+      if (restoCents >= 1) {
+        debeLineas.push({ cuentaId: inv.id, debe: restoCents / 100, haber: 0, descripcion: `Otros costos — VIN ${v.vin}` });
       }
     }
 

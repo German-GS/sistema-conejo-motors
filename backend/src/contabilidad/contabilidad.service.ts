@@ -6,6 +6,7 @@ import { AsientoContable, LineaAsiento, TipoAsiento } from './asiento.entity';
 import { CierreDiario } from './cierre-diario.entity';
 import { CierrePeriodo, TipoCierre } from './cierre-periodo.entity';
 import { User } from '../users/user.entity';
+import { toCents, fromCents, roundMoney } from './money.util';
 
 @Injectable()
 export class ContabilidadService {
@@ -168,12 +169,12 @@ export class ContabilidadService {
       }
     }
 
-    // Validar partida doble: suma debe = suma haber
-    const sumaDebe  = body.lineas.reduce((s, l) => s + (l.debe  ?? 0), 0);
-    const sumaHaber = body.lineas.reduce((s, l) => s + (l.haber ?? 0), 0);
-    if (Math.abs(sumaDebe - sumaHaber) > 0.01) {
+    // Validar partida doble en céntimos (enteros) → sin deriva de float, cuadre exacto.
+    const debeCents  = body.lineas.reduce((s, l) => s + toCents(l.debe), 0);
+    const haberCents = body.lineas.reduce((s, l) => s + toCents(l.haber), 0);
+    if (debeCents !== haberCents) {
       throw new BadRequestException(
-        `El asiento no cuadra: Debe=${sumaDebe.toFixed(2)} ≠ Haber=${sumaHaber.toFixed(2)}`,
+        `El asiento no cuadra: Debe=${fromCents(debeCents).toFixed(2)} ≠ Haber=${fromCents(haberCents).toFixed(2)}`,
       );
     }
 
@@ -193,8 +194,9 @@ export class ContabilidadService {
       const linea = lineasRepo.create({
         asiento: saved,
         cuenta,
-        debe:  l.debe  ?? 0,
-        haber: l.haber ?? 0,
+        // Cada línea se persiste redondeada al céntimo de forma determinista.
+        debe:  roundMoney(l.debe),
+        haber: roundMoney(l.haber),
         descripcion: l.descripcion,
       });
       await lineasRepo.save(linea);
@@ -311,27 +313,37 @@ export class ContabilidadService {
     };
 
     for (const s of saldos) {
-      const debe  = Number(s.total_debe  ?? 0);
-      const haber = Number(s.total_haber ?? 0);
-      // Activos y Gastos: saldo = debe - haber
-      // Pasivos, Patrimonio, Ingresos: saldo = haber - debe
-      const saldo = ['Activo', 'Gasto'].includes(s.tipo)
-        ? debe - haber
-        : haber - debe;
-      porTipo[s.tipo]?.push({ ...s, saldo, total_debe: debe, total_haber: haber });
+      // Saldos en céntimos (enteros) para evitar deriva de float.
+      const debeC  = toCents(s.total_debe);
+      const haberC = toCents(s.total_haber);
+      // Activos y Gastos: saldo = debe - haber ; resto: saldo = haber - debe
+      const saldoC = ['Activo', 'Gasto'].includes(s.tipo) ? debeC - haberC : haberC - debeC;
+      porTipo[s.tipo]?.push({ ...s, saldo: fromCents(saldoC), total_debe: fromCents(debeC), total_haber: fromCents(haberC), _saldoC: saldoC });
     }
 
-    const totalActivos    = porTipo.Activo.reduce((s, c) => s + c.saldo, 0);
-    const totalPasivos    = porTipo.Pasivo.reduce((s, c) => s + c.saldo, 0);
-    const totalPatrimonio = porTipo.Patrimonio.reduce((s, c) => s + c.saldo, 0);
-    const totalIngresos   = porTipo.Ingreso.reduce((s, c) => s + c.saldo, 0);
-    const totalGastos     = porTipo.Gasto.reduce((s, c) => s + c.saldo, 0);
-    const utilidad        = totalIngresos - totalGastos;
+    const sumC = (arr: any[]) => arr.reduce((s, c) => s + (c._saldoC ?? 0), 0);
+    const totalActivosC    = sumC(porTipo.Activo);
+    const totalPasivosC    = sumC(porTipo.Pasivo);
+    const totalPatrimonioC = sumC(porTipo.Patrimonio);
+    const totalIngresosC   = sumC(porTipo.Ingreso);
+    const totalGastosC     = sumC(porTipo.Gasto);
+    const utilidadC        = totalIngresosC - totalGastosC;
+
+    // Limpiar el campo interno _saldoC antes de devolver
+    for (const tipo of Object.keys(porTipo)) porTipo[tipo].forEach((c: any) => delete c._saldoC);
 
     return {
       cuentas: porTipo,
-      totales: { totalActivos, totalPasivos, totalPatrimonio, totalIngresos, totalGastos, utilidad },
-      equilibrado: Math.abs(totalActivos - (totalPasivos + totalPatrimonio + utilidad)) < 0.01,
+      totales: {
+        totalActivos: fromCents(totalActivosC),
+        totalPasivos: fromCents(totalPasivosC),
+        totalPatrimonio: fromCents(totalPatrimonioC),
+        totalIngresos: fromCents(totalIngresosC),
+        totalGastos: fromCents(totalGastosC),
+        utilidad: fromCents(utilidadC),
+      },
+      // Cuadre exacto en céntimos (sin tolerancia arbitraria).
+      equilibrado: totalActivosC === (totalPasivosC + totalPatrimonioC + utilidadC),
     };
   }
 

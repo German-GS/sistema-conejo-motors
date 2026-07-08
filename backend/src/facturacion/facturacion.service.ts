@@ -317,9 +317,11 @@ export class FacturacionService {
 
     const baseImponible = Number(cotizacion.precio_final) || 0;
     const ivaMonto      = Number(venta.iva_monto)    || +(baseImponible * 0.13).toFixed(2);
-    const totalCobrado  = Number(venta.total_con_iva) || +(baseImponible * 1.13).toFixed(2);
     const costo = Number(cotizacion.vehiculo?.precio_costo) || 0;
     const cuentaIva = porCodigo('2200'); // IVA por Pagar
+    // El cobro se deriva de base + IVA efectivamente reconocidos → cuadre exacto al céntimo.
+    const ivaReconocido = (ivaMonto > 0 && cuentaIva) ? ivaMonto : 0;
+    const totalCobrado  = Math.round((baseImponible + ivaReconocido) * 100) / 100;
 
     const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [
       // Cobro total (incluye IVA)
