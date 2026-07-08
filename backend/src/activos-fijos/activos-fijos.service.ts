@@ -210,6 +210,8 @@ export class ActivosFijosService {
         depreciacion_acumulada: acum,
         valor_neto: +(costo - acum).toFixed(2),
         vida_util_meses: a.vida_util_meses,
+        valor_residual: Number(a.valor_residual) || 0,
+        notas: a.notas ?? '',
         fecha: a.fecha_adquisicion,
         activo: a.activo,
       };
@@ -227,7 +229,10 @@ export class ActivosFijosService {
         costo,
         depreciacion_acumulada: acum,
         valor_neto: +(costo - acum).toFixed(2),
-        vida_util_meses: 60,
+        vida_util_meses: Number(v.vida_util_meses_demo) || 60,
+        valor_residual: Number(v.valor_residual_demo) || 0,
+        placa: v.placa ?? '',
+        marchamo: Number(v.marchamo) || 0,
         fecha: v.fecha_demo_desde,
         activo: true,
       };

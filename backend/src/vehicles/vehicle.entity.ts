@@ -83,6 +83,12 @@ export class Vehicle {
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   valor_residual_demo: number;      // Valor residual: la depreciación se detiene en costo − residual
 
+  @Column({ type: 'int', default: 60 })
+  vida_util_meses_demo: number;     // Vida útil para depreciación como demo (meses)
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  placa: string | null;             // Placa/matrícula cuando el vehículo es demo/uso interno
+
   @Column({
     type: 'enum',
     enum: ['Visible', 'Oculto', 'Agotado', 'Contrapedido'],

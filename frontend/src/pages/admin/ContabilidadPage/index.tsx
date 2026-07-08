@@ -108,6 +108,8 @@ export const ContabilidadPage = () => {
   const [activos, setActivos] = useState<{ items: any[]; totales: any } | null>(null);
   const [showMigrar, setShowMigrar] = useState(false);
   const [vehiculosInv, setVehiculosInv] = useState<any[]>([]);
+  const [editItem, setEditItem] = useState<any | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [cierresPeriodo, setCierresPeriodo] = useState<any[]>([]);
   const [periodoCierre, setPeriodoCierre] = useState(() => hoyEnCR().slice(0, 7));
   const [tipoCierre, setTipoCierre] = useState<"Mensual" | "Anual">("Mensual");
@@ -280,6 +282,32 @@ export const ContabilidadPage = () => {
       setVehiculosInv((prev) => prev.filter((v) => v.id !== id));
       fetchActivos();
     } catch (e: any) { toast.error(e.response?.data?.message || "Error al migrar."); }
+  };
+
+  const guardarEdicion = async () => {
+    if (!editItem) return;
+    setSavingEdit(true);
+    try {
+      if (editItem.tipo === "Vehículo Demo") {
+        await apiClient.patch(`/vehicles/${editItem.id}/demo-datos`, {
+          placa: editItem.placa ?? "",
+          marchamo: Number(editItem.marchamo) || 0,
+          valor_residual_demo: Number(editItem.valor_residual) || 0,
+          vida_util_meses_demo: Number(editItem.vida_util_meses) || 60,
+        });
+      } else {
+        await apiClient.patch(`/activos-fijos/${editItem.id}`, {
+          nombre: editItem.nombre,
+          vida_util_meses: Number(editItem.vida_util_meses) || 60,
+          valor_residual: Number(editItem.valor_residual) || 0,
+          notas: editItem.notas ?? "",
+        });
+      }
+      toast.success("Activo actualizado.");
+      setEditItem(null);
+      fetchActivos();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error al guardar."); }
+    finally { setSavingEdit(false); }
   };
 
   const venderActivo = async (id: number, nombre: string) => {
@@ -695,13 +723,17 @@ export const ContabilidadPage = () => {
                     <td style={{ ...tdStyle, textAlign: "right", color: "#dc2626" }}>{fmtCRC(a.depreciacion_acumulada)}</td>
                     <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{fmtCRC(a.valor_neto)}</td>
                     <td style={{ ...tdStyle, textAlign: "right" }}>
-                      {a.tipo === "Activo" && a.activo && (
-                        <span style={{ display: "inline-flex", gap: "0.35rem" }}>
-                          <button onClick={() => venderActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Vender</button>
-                          <button onClick={() => darDeBajaActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Dar de baja</button>
-                        </span>
-                      )}
-                      {a.tipo === "Vehículo Demo" && <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>gestionar en vehículos</span>}
+                      <span style={{ display: "inline-flex", gap: "0.35rem" }}>
+                        {a.activo && (
+                          <button onClick={() => setEditItem({ ...a })} style={{ background: "none", border: "1px solid #e2e8f0", color: "#475569", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Editar</button>
+                        )}
+                        {a.tipo === "Activo" && a.activo && (
+                          <>
+                            <button onClick={() => venderActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Vender</button>
+                            <button onClick={() => darDeBajaActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Dar de baja</button>
+                          </>
+                        )}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -709,8 +741,50 @@ export const ContabilidadPage = () => {
             </table>
           </div>
           <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "0.75rem" }}>
-            La depreciación se calcula automáticamente el día 1 de cada mes (línea recta). Los vehículos Demo se administran desde la sección de vehículos.
+            La depreciación se calcula automáticamente el día 1 de cada mes (línea recta), sobre la base costo − valor residual y la vida útil de cada activo (editable).
           </p>
+
+          {/* Modal de edición */}
+          {editItem && (
+            <div onClick={() => setEditItem(null)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }}>
+              <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 12, padding: "1.25rem", width: "min(460px, 100%)", maxHeight: "90vh", overflowY: "auto" }}>
+                <h3 style={{ margin: "0 0 0.25rem", color: "#0a2540" }}>Editar activo</h3>
+                <p style={{ margin: "0 0 1rem", fontSize: "0.82rem", color: "#64748b" }}>{editItem.nombre}</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                  {editItem.tipo === "Activo" && (
+                    <label style={{ gridColumn: "1 / -1", fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Nombre
+                      <input value={editItem.nombre} onChange={(e) => setEditItem({ ...editItem, nombre: e.target.value })} style={inputStyle} />
+                    </label>
+                  )}
+                  {editItem.tipo === "Vehículo Demo" && (
+                    <>
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Placa
+                        <input value={editItem.placa ?? ""} onChange={(e) => setEditItem({ ...editItem, placa: e.target.value })} placeholder="Ej: CM-1234" style={inputStyle} />
+                      </label>
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Marchamo (₡)
+                        <input type="number" value={editItem.marchamo ?? 0} onChange={(e) => setEditItem({ ...editItem, marchamo: e.target.value })} style={inputStyle} />
+                      </label>
+                    </>
+                  )}
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Vida útil (meses)
+                    <input type="number" value={editItem.vida_util_meses ?? 60} onChange={(e) => setEditItem({ ...editItem, vida_util_meses: e.target.value })} style={inputStyle} />
+                  </label>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Valor residual (₡)
+                    <input type="number" value={editItem.valor_residual ?? 0} onChange={(e) => setEditItem({ ...editItem, valor_residual: e.target.value })} style={inputStyle} />
+                  </label>
+                  {editItem.tipo === "Activo" && (
+                    <label style={{ gridColumn: "1 / -1", fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Notas
+                      <textarea value={editItem.notas ?? ""} onChange={(e) => setEditItem({ ...editItem, notas: e.target.value })} rows={2} style={{ ...inputStyle, resize: "vertical" }} />
+                    </label>
+                  )}
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1.25rem" }}>
+                  <button onClick={() => setEditItem(null)} style={{ background: "#fff", border: "1px solid #e2e8f0", color: "#475569", borderRadius: 8, padding: "0.45rem 1rem", cursor: "pointer" }}>Cancelar</button>
+                  <button onClick={guardarEdicion} disabled={savingEdit} className={styles.seedBtn}>{savingEdit ? "Guardando…" : "Guardar"}</button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 

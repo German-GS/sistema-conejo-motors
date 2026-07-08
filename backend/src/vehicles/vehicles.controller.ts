@@ -77,6 +77,17 @@ export class VehiclesController {
     return this.vehiclesService.marcarDemo(+id, req.user?.id);
   }
 
+  /** Edita datos del vehículo demo/uso interno (placa, marchamo, vida útil, residual). */
+  @Patch(':id/demo-datos')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador', 'Contador')
+  actualizarDatosDemo(
+    @Param('id') id: string,
+    @Body() body: { placa?: string | null; marchamo?: number; valor_residual_demo?: number; vida_util_meses_demo?: number },
+  ) {
+    return this.vehiclesService.actualizarDatosDemo(+id, body);
+  }
+
   /** Regresa un vehículo Demo al inventario de venta. */
   @Patch(':id/quitar-demo')
   @UseGuards(AuthGuard('jwt'), RolesGuard)

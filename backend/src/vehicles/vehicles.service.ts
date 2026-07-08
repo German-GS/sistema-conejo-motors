@@ -300,6 +300,21 @@ export class VehiclesService implements OnApplicationBootstrap {
     return this.vehiclesRepository.findOneByOrFail({ id });
   }
 
+  /** Edita los datos de un vehículo demo/uso interno: placa, marchamo, vida útil y valor residual. */
+  async actualizarDatosDemo(
+    id: number,
+    datos: { placa?: string | null; marchamo?: number; valor_residual_demo?: number; vida_util_meses_demo?: number },
+  ): Promise<Vehicle> {
+    const v = await this.vehiclesRepository.findOneBy({ id });
+    if (!v) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+    if (datos.placa !== undefined) v.placa = datos.placa || null;
+    if (datos.marchamo !== undefined) v.marchamo = Number(datos.marchamo) || 0;
+    if (datos.valor_residual_demo !== undefined) v.valor_residual_demo = Number(datos.valor_residual_demo) || 0;
+    if (datos.vida_util_meses_demo !== undefined) v.vida_util_meses_demo = Number(datos.vida_util_meses_demo) || 60;
+    await this.vehiclesRepository.save(v);
+    return this.vehiclesRepository.findOneByOrFail({ id });
+  }
+
   /**
    * Carga inicial: crea el asiento de apertura para todos los vehículos en stock
    * (Disponible/Reservado → 1300, Demo → 1520) contra 3900 Balance de Apertura.
@@ -351,9 +366,10 @@ export class VehiclesService implements OnApplicationBootstrap {
       const residual = Number(v.valor_residual_demo) || 0;
       const base = costo - residual;
       if (base <= 0) continue;
+      const vidaUtil = Number(v.vida_util_meses_demo) || VehiclesService.VIDA_UTIL_MESES_DEMO;
       const acum = Number(v.depreciacion_acumulada) || 0;
       if (acum >= base) continue; // totalmente depreciado hasta el valor residual
-      const cuota = Math.min(+(base / VehiclesService.VIDA_UTIL_MESES_DEMO).toFixed(2), +(base - acum).toFixed(2));
+      const cuota = Math.min(+(base / vidaUtil).toFixed(2), +(base - acum).toFixed(2));
       if (cuota <= 0) continue;
 
       await this.contabilidad
