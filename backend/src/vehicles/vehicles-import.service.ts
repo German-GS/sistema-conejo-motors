@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { Vehicle } from './vehicle.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 import { AccesorioVehiculo } from '../accesorios/accesorio.entity';
+import { VehiclesService } from './vehicles.service';
 
 export interface ImportPreviewRow {
   rowIndex: number;
@@ -24,6 +25,7 @@ export interface ImportPreviewRow {
   costo_nacionalizacion: number;
   inscripcion_traspaso: number;
   marchamo: number;
+  iva_importacion: number;
   costo_total_crc: number;
   estado: string;
   // accesorios
@@ -53,6 +55,7 @@ export class VehiclesImportService {
     private profilesRepo: Repository<VehicleProfile>,
     @InjectRepository(AccesorioVehiculo)
     private accesoriosRepo: Repository<AccesorioVehiculo>,
+    private readonly vehiclesService: VehiclesService,
   ) {}
 
   /** Normaliza un string de header para comparación robusta */
@@ -188,6 +191,7 @@ export class VehiclesImportService {
       const nacion      = this.col(row, colMap, 'costo nacionalizacion');
       const inscripcion = this.col(row, colMap, 'inscripcion traspaso');
       const marchamo    = this.col(row, colMap, 'marchamo');
+      const ivaImport   = this.col(row, colMap, 'iva importacion', 'iva de importacion', 'iva acreditable', 'iva');
       const costoTotal  = this.col(row, colMap, 'costo total inventario crc', 'costo total crc');
       const estadoCol   = this.col(row, colMap, 'estado', 'estado vehiculo', 'nuevo o usado');
 
@@ -209,6 +213,7 @@ export class VehiclesImportService {
         costo_nacionalizacion: Number(nacion) || 0,
         inscripcion_traspaso: Number(inscripcion) || 0,
         marchamo: Number(marchamo) || 0,
+        iva_importacion: Number(ivaImport) || 0,
         costo_total_crc: Number(costoTotal) || 0,
         estado: estadoCol?.toString().trim() ?? '',
         profileId: matchedProfile?.id,
@@ -236,15 +241,21 @@ export class VehiclesImportService {
         profile = await this.profilesRepo.findOneBy({ id: row.profileId });
       }
 
+      // El IVA de importación es crédito fiscal acreditable: NO capitaliza al inventario.
+      // precio_costo (costo de inventario y base de COGS) = costo total − IVA.
+      const iva = Number(row.iva_importacion) || 0;
+      const costoInventario = +(Number(row.costo_total_crc) - iva).toFixed(2);
+
       const vehicle = this.vehiclesRepo.create({
         vin: row.vin,
         marca: row.marca,
         modelo: row.modelo,
         año: row.año ?? undefined,
         color: row.color,
-        precio_costo: row.costo_total_crc,
-        precio_venta: row.costo_total_crc,   // Precio de lista inicial = costo (ajustar en /admin/pricing)
-        precio_venta_final: row.costo_total_crc,
+        precio_costo: costoInventario,
+        precio_venta: costoInventario,   // Precio de lista inicial = costo (ajustar en /admin/pricing)
+        precio_venta_final: costoInventario,
+        iva_importacion: iva,
         descuento_porcentaje: 0,
         estado: 'Disponible',
         cuenta_contable: row.cuenta_contable,
@@ -279,6 +290,12 @@ export class VehiclesImportService {
         filtro_polen: row.filtro_polen,
       });
       await this.accesoriosRepo.save(acc);
+
+      // Asiento de compra automático (Debe 1300 Inventario / Haber 2100 CxP).
+      // El costo capitaliza el landed cost completo del Excel (FOB + nacionalización + impuestos + acarreo…).
+      await this.vehiclesService
+        .registrarCompraVehiculo(savedVehicle)
+        .catch(() => { /* no bloquear la importación si la contabilidad falla */ });
 
       imported++;
     }

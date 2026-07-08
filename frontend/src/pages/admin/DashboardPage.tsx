@@ -246,6 +246,12 @@ export const DashboardPage = () => {
                     vehicleId={vehicle.id}
                     current={vehicle.visibilidad ?? "Visible"}
                     clasificacion={vehicle.clasificacion_inventario ?? "En Stock"}
+                    estado={(vehicle.estado as any) ?? "Disponible"}
+                    onEstadoChanged={(val) =>
+                      setVehicles(prev =>
+                        prev.map(v => v.id === vehicle.id ? { ...v, estado: val } : v)
+                      )
+                    }
                     onChanged={(val) =>
                       setVehicles(prev =>
                         prev.map(v => v.id === vehicle.id ? { ...v, visibilidad: val } : v)

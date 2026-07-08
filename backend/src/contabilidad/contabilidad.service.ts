@@ -50,10 +50,14 @@ export class ContabilidadService {
       { codigo: '1110', nombre: 'Banco — Cuenta Corriente', tipo: 'Activo', descripcion: 'Saldo en banco cuenta corriente' },
       { codigo: '1120', nombre: 'Banco — Cuenta de Ahorros', tipo: 'Activo', descripcion: 'Saldo en banco cuenta ahorros' },
       { codigo: '1200', nombre: 'Cuentas por Cobrar', tipo: 'Activo', descripcion: 'Clientes con deuda pendiente' },
+      { codigo: '1210', nombre: 'IVA Acreditable (Crédito Fiscal)', tipo: 'Activo', descripcion: 'IVA pagado en importaciones/compras, recuperable contra el IVA de ventas' },
       { codigo: '1300', nombre: 'Inventario Vehículos', tipo: 'Activo', descripcion: 'Valor de vehículos en stock' },
       { codigo: '1400', nombre: 'Inventario Repuestos y Accesorios', tipo: 'Activo', descripcion: 'Valor de productos en stock' },
       { codigo: '1500', nombre: 'Activos Fijos', tipo: 'Activo', acepta_movimientos: false },
       { codigo: '1510', nombre: 'Mobiliario y Equipo', tipo: 'Activo' },
+      { codigo: '1520', nombre: 'Vehículos Demo / Uso Interno', tipo: 'Activo', descripcion: 'Unidades de test drive / uso interno (no para venta)' },
+      { codigo: '1525', nombre: 'Depreciación Acumulada — Vehículos Demo', tipo: 'Activo', descripcion: 'Contra-activo: depreciación acumulada de unidades demo' },
+      { codigo: '1590', nombre: 'Depreciación Acumulada — Mobiliario y Equipo', tipo: 'Activo', descripcion: 'Contra-activo: depreciación acumulada de activos fijos (no vehículos)' },
       // PASIVOS
       { codigo: '2000', nombre: 'PASIVOS', tipo: 'Pasivo', acepta_movimientos: false },
       { codigo: '2100', nombre: 'Cuentas por Pagar', tipo: 'Pasivo' },
@@ -76,8 +80,11 @@ export class ContabilidadService {
       { codigo: '5300', nombre: 'Gastos de Personal', tipo: 'Gasto' },
       { codigo: '5400', nombre: 'Gastos de Administración', tipo: 'Gasto' },
       { codigo: '5500', nombre: 'Gastos de Ventas y Comisiones', tipo: 'Gasto' },
+      { codigo: '5450', nombre: 'Gasto por Depreciación', tipo: 'Gasto', descripcion: 'Depreciación de activos fijos (incl. vehículos demo)' },
       { codigo: '5600', nombre: 'Gastos Financieros', tipo: 'Gasto' },
       { codigo: '5700', nombre: 'Otros Gastos', tipo: 'Gasto' },
+      // PATRIMONIO — apertura
+      { codigo: '3900', nombre: 'Balance de Apertura', tipo: 'Patrimonio', descripcion: 'Contrapartida de la carga inicial de saldos' },
     ];
 
     let seeded = 0;
@@ -172,6 +179,29 @@ export class ContabilidadService {
       count++;
     }
     return count;
+  }
+
+  /** Devuelve la cuenta con ese código; si no existe (plan ya sembrado antes), la crea. */
+  async asegurarCuenta(
+    codigo: string,
+    defaults: Partial<CuentaContable>,
+  ): Promise<CuentaContable> {
+    let c = await this.cuentasRepo.findOneBy({ codigo });
+    if (!c) {
+      c = await this.cuentasRepo.save(
+        this.cuentasRepo.create({ codigo, acepta_movimientos: true, ...defaults }),
+      );
+    }
+    return c;
+  }
+
+  /** ¿Existe ya al menos un asiento para esta referencia? (idempotencia) */
+  async existeAsientoPorReferencia(
+    referencia_tipo: string,
+    referencia_id: number,
+  ): Promise<boolean> {
+    const n = await this.asientosRepo.count({ where: { referencia_tipo, referencia_id } });
+    return n > 0;
   }
 
   // ── Balance y Saldos ──────────────────────────────────────────────────────

@@ -13,7 +13,9 @@ import { Bodega } from '../bodegas/bodega.entity';
 import { TrackingHistory } from '../tracking/tracking.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 
-export type VehicleStatus = 'Disponible' | 'Reservado' | 'Vendido';
+// 'Demo' = vehículo de test drive / uso interno: NO está a la venta y
+// contablemente se trata como Activo Fijo (cuenta 1520), sujeto a depreciación.
+export type VehicleStatus = 'Disponible' | 'Reservado' | 'Vendido' | 'Demo';
 export type VehicleVisibility = 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
 // Clasificación de inventario: separa el stock real de la visibilidad en la web
 export type ClasificacionInventario = 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial';
@@ -66,10 +68,17 @@ export class Vehicle {
 
   @Column({
     type: 'enum',
-    enum: ['Disponible', 'Reservado', 'Vendido'],
+    enum: ['Disponible', 'Reservado', 'Vendido', 'Demo'],
     default: 'Disponible',
   })
   estado: VehicleStatus;
+
+  // ── Control de vehículo Demo / uso interno (Activo Fijo) ──────────────────
+  @Column({ type: 'date', nullable: true })
+  fecha_demo_desde: string | null;  // Fecha en que se pasó a Demo/uso interno
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  depreciacion_acumulada: number;   // Depreciación acumulada mientras es Demo
 
   @Column({
     type: 'enum',
@@ -194,6 +203,11 @@ export class Vehicle {
 
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   marchamo: number;
+
+  // IVA de importación acreditable (crédito fiscal). NO forma parte del costo de
+  // inventario: precio_costo se mantiene neto de este IVA. Va a la cuenta 1210.
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
+  iva_importacion: number;
 
   @Column({ type: 'text', nullable: true })
   observaciones: string;

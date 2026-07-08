@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import type { CSSProperties } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./ContabilidadPage.module.css";
@@ -22,8 +23,15 @@ const TIPO_CUENTA_COLORS: Record<string, string> = {
   Ingreso: "#059669", Gasto: "#d97706",
 };
 
+const inputStyle: CSSProperties = { display: "block", width: "100%", marginTop: 4, padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit", boxSizing: "border-box" };
+const thStyle: CSSProperties = { padding: "0.6rem 0.8rem", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em" };
+const tdStyle: CSSProperties = { padding: "0.55rem 0.8rem", color: "#334155" };
+
 export const ContabilidadPage = () => {
-  const [tab, setTab] = useState<"dashboard" | "cuentas" | "asientos" | "balance" | "cierres">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "cuentas" | "asientos" | "balance" | "cierres" | "activos">("dashboard");
+  const [activos, setActivos] = useState<{ items: any[]; totales: any } | null>(null);
+  const [activoForm, setActivoForm] = useState({ nombre: "", categoria: "Mobiliario", cuenta_activo: "1510", costo: 0, valor_residual: 0, vida_util_meses: 60, contrapartida: "2100", notas: "" });
+  const [savingActivo, setSavingActivo] = useState(false);
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
   const [asientos, setAsientos] = useState<Asiento[]>([]);
   const [balance, setBalance] = useState<Balance | null>(null);
@@ -85,6 +93,48 @@ export const ContabilidadPage = () => {
     } catch (e: any) { toast.error(e.response?.data?.message || "Error"); }
   };
 
+  const cargarInventarioInicial = async () => {
+    if (!window.confirm("Se generará el asiento de apertura del inventario para los vehículos en stock que aún no tengan asiento contable (contra 'Balance de Apertura'). ¿Continuar?")) return;
+    try {
+      const res = await apiClient.post("/vehicles/inventario/carga-inicial");
+      const { creados, omitidos, monto_total } = res.data;
+      toast.success(`✅ ${creados} vehículo(s) cargados (₡${Number(monto_total).toLocaleString("es-CR")}). ${omitidos} omitidos.`);
+      fetchAll();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error al cargar inventario."); }
+  };
+
+  // ── Activos Fijos ─────────────────────────────────────────────────────────
+  const fetchActivos = useCallback(async () => {
+    try {
+      const res = await apiClient.get("/activos-fijos");
+      setActivos(res.data);
+    } catch { /* silencioso */ }
+  }, []);
+
+  useEffect(() => { if (tab === "activos") fetchActivos(); }, [tab, fetchActivos]);
+
+  const crearActivo = async () => {
+    if (!activoForm.nombre.trim()) { toast.error("Poné un nombre."); return; }
+    if (!(activoForm.costo > 0)) { toast.error("El costo debe ser mayor a 0."); return; }
+    setSavingActivo(true);
+    try {
+      await apiClient.post("/activos-fijos", activoForm);
+      toast.success("✅ Activo fijo registrado.");
+      setActivoForm({ nombre: "", categoria: "Mobiliario", cuenta_activo: "1510", costo: 0, valor_residual: 0, vida_util_meses: 60, contrapartida: "2100", notas: "" });
+      fetchActivos();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error al registrar."); }
+    finally { setSavingActivo(false); }
+  };
+
+  const darDeBajaActivo = async (id: number, nombre: string) => {
+    if (!window.confirm(`¿Dar de baja "${nombre}"? Se generará el asiento de baja.`)) return;
+    try {
+      await apiClient.patch(`/activos-fijos/${id}/baja`);
+      toast.success("Activo dado de baja.");
+      fetchActivos();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error."); }
+  };
+
   // ── Suma partida doble ────────────────────────────────────────────────────
   const sumaDebe  = lineasForm.reduce((s, l) => s + (l.debe  || 0), 0);
   const sumaHaber = lineasForm.reduce((s, l) => s + (l.haber || 0), 0);
@@ -139,11 +189,18 @@ export const ContabilidadPage = () => {
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <h1>📊 Contabilidad</h1>
-        {cuentas.length === 0 && (
-          <button className={styles.seedBtn} onClick={seedCuentas}>
-            ⚙️ Inicializar Plan de Cuentas Estándar
-          </button>
-        )}
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          {cuentas.length === 0 && (
+            <button className={styles.seedBtn} onClick={seedCuentas}>
+              ⚙️ Inicializar Plan de Cuentas Estándar
+            </button>
+          )}
+          {cuentas.length > 0 && (
+            <button className={styles.seedBtn} onClick={cargarInventarioInicial} title="Genera el asiento de apertura del inventario de vehículos en stock">
+              🚗 Cargar inventario inicial
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
@@ -152,6 +209,7 @@ export const ContabilidadPage = () => {
           { key: "dashboard", label: "📊 Resumen" },
           { key: "asientos",  label: "📝 Asientos" },
           { key: "balance",   label: "⚖️ Balance" },
+          { key: "activos",   label: "🏢 Activos Fijos" },
           { key: "cierres",   label: "🔒 Cierres" },
           { key: "cuentas",   label: "📋 Plan de Cuentas" },
         ].map(t => (
@@ -360,6 +418,97 @@ export const ContabilidadPage = () => {
               {balance.equilibrado ? "✅ Balance en equilibrio" : "⚠️ Balance desbalanceado — revisar asientos"}
             </div>
           </div>
+        </>
+      )}
+
+      {/* ══ TAB: Activos Fijos ══════════════════════════════════════════════ */}
+      {tab === "activos" && (
+        <>
+          <div className={styles.sectionTitle}>Activos Fijos</div>
+          {activos && (
+            <div className={styles.kpiRow}>
+              <KpiCard icon="🏢" label="Costo total" value={fmtCRC(activos.totales.costo)} color="#0891b2" />
+              <KpiCard icon="📉" label="Depreciación acumulada" value={fmtCRC(activos.totales.depreciacion_acumulada)} color="#dc2626" />
+              <KpiCard icon="💎" label="Valor neto en libros" value={fmtCRC(activos.totales.valor_neto)} color="#059669" />
+            </div>
+          )}
+
+          {/* Formulario alta */}
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", margin: "1rem 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem", alignItems: "end" }}>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Nombre
+              <input value={activoForm.nombre} onChange={(e) => setActivoForm(f => ({ ...f, nombre: e.target.value }))} placeholder="Ej: Elevador de taller" style={inputStyle} />
+            </label>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Categoría
+              <select value={activoForm.categoria} onChange={(e) => {
+                const categoria = e.target.value;
+                const cuenta_activo = categoria === "Edificio / Instalaciones" ? "1500" : "1510";
+                setActivoForm(f => ({ ...f, categoria, cuenta_activo }));
+              }} style={inputStyle}>
+                <option>Mobiliario</option>
+                <option>Equipo de Cómputo</option>
+                <option>Equipo de Taller</option>
+                <option>Edificio / Instalaciones</option>
+                <option>Otro</option>
+              </select>
+            </label>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Costo (₡)
+              <input type="number" value={activoForm.costo || ""} onChange={(e) => setActivoForm(f => ({ ...f, costo: Number(e.target.value) }))} style={inputStyle} />
+            </label>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Valor residual (₡)
+              <input type="number" value={activoForm.valor_residual || ""} onChange={(e) => setActivoForm(f => ({ ...f, valor_residual: Number(e.target.value) }))} style={inputStyle} />
+            </label>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Vida útil (meses)
+              <input type="number" value={activoForm.vida_util_meses || ""} onChange={(e) => setActivoForm(f => ({ ...f, vida_util_meses: Number(e.target.value) }))} style={inputStyle} />
+            </label>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Se pagó con
+              <select value={activoForm.contrapartida} onChange={(e) => setActivoForm(f => ({ ...f, contrapartida: e.target.value }))} style={inputStyle}>
+                <option value="2100">Crédito (Cuentas por Pagar)</option>
+                <option value="1110">Banco</option>
+                <option value="1100">Caja</option>
+              </select>
+            </label>
+            <button onClick={crearActivo} disabled={savingActivo} className={styles.seedBtn} style={{ height: 38 }}>
+              {savingActivo ? "Guardando…" : "➕ Registrar activo"}
+            </button>
+          </div>
+
+          {/* Tabla */}
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+              <thead>
+                <tr style={{ background: "#f8fafc", textAlign: "left", color: "#475569" }}>
+                  <th style={thStyle}>Activo</th><th style={thStyle}>Tipo</th><th style={thStyle}>Cuenta</th>
+                  <th style={{ ...thStyle, textAlign: "right" }}>Costo</th>
+                  <th style={{ ...thStyle, textAlign: "right" }}>Dep. acum.</th>
+                  <th style={{ ...thStyle, textAlign: "right" }}>Valor neto</th>
+                  <th style={thStyle}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {(!activos || activos.items.length === 0) ? (
+                  <tr><td colSpan={7} style={{ padding: "1.5rem", textAlign: "center", color: "#94a3b8" }}>Sin activos fijos registrados.</td></tr>
+                ) : activos.items.map((a) => (
+                  <tr key={`${a.tipo}-${a.id}`} style={{ borderTop: "1px solid #f1f5f9", opacity: a.activo ? 1 : 0.5 }}>
+                    <td style={tdStyle}>{a.nombre}</td>
+                    <td style={tdStyle}><span style={{ fontSize: "0.72rem", background: a.tipo === "Vehículo Demo" ? "#ede9fe" : "#e0f2fe", color: a.tipo === "Vehículo Demo" ? "#7c3aed" : "#0369a1", borderRadius: 20, padding: "1px 8px", fontWeight: 700 }}>{a.tipo}</span></td>
+                    <td style={tdStyle}>{a.cuenta}</td>
+                    <td style={{ ...tdStyle, textAlign: "right" }}>{fmtCRC(a.costo)}</td>
+                    <td style={{ ...tdStyle, textAlign: "right", color: "#dc2626" }}>{fmtCRC(a.depreciacion_acumulada)}</td>
+                    <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{fmtCRC(a.valor_neto)}</td>
+                    <td style={{ ...tdStyle, textAlign: "right" }}>
+                      {a.tipo === "Activo" && a.activo && (
+                        <button onClick={() => darDeBajaActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Dar de baja</button>
+                      )}
+                      {a.tipo === "Vehículo Demo" && <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>gestionar en vehículos</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "0.75rem" }}>
+            La depreciación se calcula automáticamente el día 1 de cada mes (línea recta). Los vehículos Demo se administran desde la sección de vehículos.
+          </p>
         </>
       )}
 

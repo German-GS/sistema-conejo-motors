@@ -255,6 +255,12 @@ export const PricingPage = () => {
                       vehicleId={v.id}
                       current={v.visibilidad ?? "Visible"}
                       clasificacion={v.clasificacion_inventario ?? "En Stock"}
+                      estado={(v.estado as any) ?? "Disponible"}
+                      onEstadoChanged={(val) =>
+                        setVehicles(prev =>
+                          prev.map(x => x.id === v.id ? { ...x, estado: val, visibilidad: val === "Demo" ? "Oculto" : "Visible", clasificacion_inventario: val === "Demo" ? "No Comercial" : "En Stock" } : x)
+                        )
+                      }
                       onChanged={(val) =>
                         setVehicles(prev =>
                           prev.map(x => x.id === v.id ? { ...x, visibilidad: val } : x)

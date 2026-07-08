@@ -22,6 +22,8 @@ import { Lead } from '../leads/lead.entity';
 import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 import { OrdenProducto } from '../productos/orden-producto.entity';
 import { VehicleEstadoHistorial } from './vehicle-estado-historial.entity';
+import { ContabilidadService } from '../contabilidad/contabilidad.service';
+import { Cron } from '@nestjs/schedule';
 
 // --- 👇 DEFINE LOS NUEVOS TIPOS AQUÍ (o impórtalos si los pones en otro lado) ---
 // Define un tipo que extiende Vehicle pero sobreescribe campos específicos a string[]
@@ -106,6 +108,7 @@ export class VehiclesService implements OnApplicationBootstrap {
     private readonly ordenesRepo: Repository<OrdenProducto>,
     @InjectRepository(VehicleEstadoHistorial)
     private readonly historialRepo: Repository<VehicleEstadoHistorial>,
+    private readonly contabilidad: ContabilidadService,
   ) {}
 
   /** Registra una transición de estado/visibilidad/clasificación de un vehículo */
@@ -143,6 +146,230 @@ export class VehiclesService implements OnApplicationBootstrap {
   }
 
   // --- Método Create ---
+  // ══════════════════════════════════════════════════════════════════════════
+  // CONTABILIDAD DE VEHÍCULOS (activos)
+  //  - Inventario de venta      → cuenta 1300
+  //  - Demo / uso interno       → cuenta 1520 (Activo Fijo) + 1525 (dep. acum.)
+  //  - Contrapartida de compra  → cuenta 2100 (Cuentas por Pagar)
+  //  - Contrapartida de apertura→ cuenta 3900 (Balance de Apertura)
+  // ══════════════════════════════════════════════════════════════════════════
+  private static readonly VIDA_UTIL_MESES_DEMO = 60; // 5 años, línea recta
+
+  private hoyCR(): string {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+  }
+
+  /** Asiento de compra al ingresar el vehículo: Debe 1300 Inventario / Haber 2100 CxP. */
+  async registrarCompraVehiculo(v: Vehicle, userId?: number): Promise<void> {
+    const costo = Number(v.precio_costo) || 0;
+    if (costo <= 0) return;
+    // Idempotencia: si el vehículo ya tiene su asiento de inventario, no duplicar.
+    if (await this.contabilidad.existeAsientoPorReferencia('Vehiculo', v.id)) return;
+
+    const inv = await this.contabilidad.asegurarCuenta('1300', { nombre: 'Inventario Vehículos', tipo: 'Activo' });
+    const cxp = await this.contabilidad.asegurarCuenta('2100', { nombre: 'Cuentas por Pagar', tipo: 'Pasivo' });
+
+    // IVA de importación acreditable → cuenta de activo aparte (no capitaliza al inventario).
+    const iva = Number(v.iva_importacion) || 0;
+
+    // Desglose del landed cost (todo capitaliza a inventario 1300, pero se detalla cada componente).
+    const costoFacturaCrc = +((Number(v.costo_factura_usd) || 0) * (Number(v.tipo_cambio) || 0)).toFixed(2);
+    const componentes: [string, number][] = [
+      ['Costo factura (FOB/CIF)', costoFacturaCrc],
+      ['Tasa caldera', Number(v.tasa_caldera) || 0],
+      ['Acarreo', Number(v.acarreo) || 0],
+      ['Nacionalización e impuestos', Number(v.costo_nacionalizacion) || 0],
+      ['Inscripción y traspaso', Number(v.inscripcion_traspaso) || 0],
+      ['Marchamo', Number(v.marchamo) || 0],
+    ].filter(([, val]) => (val as number) > 0) as [string, number][];
+
+    const sumComp = componentes.reduce((s, [, val]) => s + val, 0);
+    const resto = +(costo - sumComp).toFixed(2);
+
+    const debeLineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [];
+    // Si el desglose no cuadra con el costo total, usamos una sola línea para garantizar la partida doble.
+    if (componentes.length === 0 || sumComp > costo + 0.01) {
+      debeLineas.push({ cuentaId: inv.id, debe: costo, haber: 0, descripcion: `Ingreso a inventario VIN ${v.vin}` });
+    } else {
+      for (const [label, val] of componentes) {
+        debeLineas.push({ cuentaId: inv.id, debe: +val.toFixed(2), haber: 0, descripcion: `${label} — VIN ${v.vin}` });
+      }
+      if (resto >= 0.01) {
+        debeLineas.push({ cuentaId: inv.id, debe: resto, haber: 0, descripcion: `Otros costos — VIN ${v.vin}` });
+      }
+    }
+
+    // IVA acreditable como débito adicional; la CxP total = costo (neto) + IVA.
+    if (iva > 0) {
+      const ivaAcred = await this.contabilidad.asegurarCuenta('1210', { nombre: 'IVA Acreditable (Crédito Fiscal)', tipo: 'Activo' });
+      debeLineas.push({ cuentaId: ivaAcred.id, debe: iva, haber: 0, descripcion: `IVA acreditable importación — VIN ${v.vin}` });
+    }
+
+    await this.contabilidad.crearAsiento(userId ? ({ id: userId } as any) : (undefined as any), {
+      fecha: this.hoyCR(),
+      descripcion: `Compra vehículo — ${v.marca} ${v.modelo} (VIN ${v.vin})`,
+      tipo: 'Compra',
+      referencia_id: v.id,
+      referencia_tipo: 'Vehiculo',
+      lineas: [
+        ...debeLineas,
+        { cuentaId: cxp.id, debe: 0, haber: +(costo + iva).toFixed(2), descripcion: `Cuenta por pagar — compra VIN ${v.vin}` },
+      ],
+    });
+  }
+
+  /** Reclasifica un vehículo a Demo/uso interno: Activo circulante (1300) → Activo Fijo (1520). */
+  async marcarDemo(id: number, userId?: number): Promise<Vehicle> {
+    const v = await this.vehiclesRepository.findOneBy({ id });
+    if (!v) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+    if (v.estado === 'Vendido') throw new ConflictException('Un vehículo vendido no puede pasar a Demo.');
+    if (v.estado === 'Demo') return v;
+
+    const anterior = v.estado;
+    const costo = Number(v.precio_costo) || 0;
+
+    v.estado = 'Demo';
+    v.fecha_demo_desde = this.hoyCR();
+    v.visibilidad = 'Oculto';
+    v.clasificacion_inventario = 'No Comercial';
+    await this.vehiclesRepository.save(v);
+    await this.registrarCambioEstado(id, anterior, 'Demo', 'estado', 'Reclasificado a Demo / uso interno', userId);
+
+    if (costo > 0) {
+      const inv = await this.contabilidad.asegurarCuenta('1300', { nombre: 'Inventario Vehículos', tipo: 'Activo' });
+      const fijo = await this.contabilidad.asegurarCuenta('1520', { nombre: 'Vehículos Demo / Uso Interno', tipo: 'Activo' });
+      await this.contabilidad
+        .crearAsiento(userId ? ({ id: userId } as any) : (undefined as any), {
+          fecha: this.hoyCR(),
+          descripcion: `Reclasificación a Demo — ${v.marca} ${v.modelo} (VIN ${v.vin})`,
+          tipo: 'Ajuste',
+          referencia_id: v.id,
+          referencia_tipo: 'Vehiculo_Demo',
+          lineas: [
+            { cuentaId: fijo.id, debe: costo, haber: 0, descripcion: `Alta activo fijo demo VIN ${v.vin}` },
+            { cuentaId: inv.id, debe: 0, haber: costo, descripcion: `Salida de inventario VIN ${v.vin}` },
+          ],
+        })
+        .catch((e) => this.logger.warn(`[Contabilidad] Reclasif. demo #${id}: ${(e as Error).message}`));
+    }
+    return this.vehiclesRepository.findOneByOrFail({ id });
+  }
+
+  /** Regresa un vehículo Demo al inventario de venta, arrastrando su depreciación acumulada. */
+  async quitarDemo(id: number, userId?: number): Promise<Vehicle> {
+    const v = await this.vehiclesRepository.findOneBy({ id });
+    if (!v) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
+    if (v.estado !== 'Demo') return v;
+
+    const costo = Number(v.precio_costo) || 0;
+    const acum = Number(v.depreciacion_acumulada) || 0;
+    const neto = +(costo - acum).toFixed(2);
+
+    v.estado = 'Disponible';
+    v.fecha_demo_desde = null;
+    v.depreciacion_acumulada = 0;
+    v.visibilidad = 'Visible';
+    v.clasificacion_inventario = 'En Stock';
+    await this.vehiclesRepository.save(v);
+    await this.registrarCambioEstado(id, 'Demo', 'Disponible', 'estado', 'Regresado a inventario de venta', userId);
+
+    if (costo > 0) {
+      const inv = await this.contabilidad.asegurarCuenta('1300', { nombre: 'Inventario Vehículos', tipo: 'Activo' });
+      const fijo = await this.contabilidad.asegurarCuenta('1520', { nombre: 'Vehículos Demo / Uso Interno', tipo: 'Activo' });
+      const depAcum = await this.contabilidad.asegurarCuenta('1525', { nombre: 'Depreciación Acumulada — Vehículos Demo', tipo: 'Activo' });
+      const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [
+        { cuentaId: inv.id, debe: neto, haber: 0, descripcion: `Reingreso a inventario (valor neto) VIN ${v.vin}` },
+        { cuentaId: fijo.id, debe: 0, haber: costo, descripcion: `Baja activo fijo demo VIN ${v.vin}` },
+      ];
+      if (acum > 0) {
+        lineas.splice(1, 0, { cuentaId: depAcum.id, debe: acum, haber: 0, descripcion: `Reversa depreciación acumulada VIN ${v.vin}` });
+      }
+      await this.contabilidad
+        .crearAsiento(userId ? ({ id: userId } as any) : (undefined as any), {
+          fecha: this.hoyCR(),
+          descripcion: `Regreso a inventario — ${v.marca} ${v.modelo} (VIN ${v.vin})`,
+          tipo: 'Ajuste',
+          referencia_id: v.id,
+          referencia_tipo: 'Vehiculo_Demo',
+          lineas,
+        })
+        .catch((e) => this.logger.warn(`[Contabilidad] Baja demo #${id}: ${(e as Error).message}`));
+    }
+    return this.vehiclesRepository.findOneByOrFail({ id });
+  }
+
+  /**
+   * Carga inicial: crea el asiento de apertura para todos los vehículos en stock
+   * (Disponible/Reservado → 1300, Demo → 1520) contra 3900 Balance de Apertura.
+   * Idempotente: omite los que ya tengan asiento de inventario.
+   */
+  async cargarInventarioInicial(userId?: number): Promise<{ creados: number; omitidos: number; monto_total: number }> {
+    const vehiculos = await this.vehiclesRepository.find({
+      where: { estado: In(['Disponible', 'Reservado', 'Demo']) },
+    });
+    const inv = await this.contabilidad.asegurarCuenta('1300', { nombre: 'Inventario Vehículos', tipo: 'Activo' });
+    const fijo = await this.contabilidad.asegurarCuenta('1520', { nombre: 'Vehículos Demo / Uso Interno', tipo: 'Activo' });
+    const apertura = await this.contabilidad.asegurarCuenta('3900', { nombre: 'Balance de Apertura', tipo: 'Patrimonio' });
+
+    let creados = 0, omitidos = 0, monto_total = 0;
+    for (const v of vehiculos) {
+      const costo = Number(v.precio_costo) || 0;
+      if (costo <= 0) { omitidos++; continue; }
+      if (await this.contabilidad.existeAsientoPorReferencia('Vehiculo', v.id)) { omitidos++; continue; }
+      const activo = v.estado === 'Demo' ? fijo : inv;
+      await this.contabilidad.crearAsiento(userId ? ({ id: userId } as any) : (undefined as any), {
+        fecha: this.hoyCR(),
+        descripcion: `Carga inicial de inventario — ${v.marca} ${v.modelo} (VIN ${v.vin})`,
+        tipo: 'Ajuste',
+        referencia_id: v.id,
+        referencia_tipo: 'Vehiculo',
+        lineas: [
+          { cuentaId: activo.id, debe: costo, haber: 0, descripcion: `Saldo inicial VIN ${v.vin}` },
+          { cuentaId: apertura.id, debe: 0, haber: costo, descripcion: `Contrapartida apertura VIN ${v.vin}` },
+        ],
+      });
+      creados++; monto_total += costo;
+    }
+    return { creados, omitidos, monto_total: +monto_total.toFixed(2) };
+  }
+
+  /** Depreciación mensual (línea recta, 5 años) de los vehículos Demo. Día 1 de cada mes. */
+  @Cron('0 6 1 * *')
+  async depreciarVehiculosDemo(): Promise<void> {
+    const demos = await this.vehiclesRepository.find({ where: { estado: 'Demo' } });
+    if (!demos.length) return;
+
+    const gasto = await this.contabilidad.asegurarCuenta('5450', { nombre: 'Gasto por Depreciación', tipo: 'Gasto' });
+    const depAcum = await this.contabilidad.asegurarCuenta('1525', { nombre: 'Depreciación Acumulada — Vehículos Demo', tipo: 'Activo' });
+
+    for (const v of demos) {
+      const costo = Number(v.precio_costo) || 0;
+      if (costo <= 0) continue;
+      const acum = Number(v.depreciacion_acumulada) || 0;
+      if (acum >= costo) continue; // totalmente depreciado
+      const cuota = Math.min(+(costo / VehiclesService.VIDA_UTIL_MESES_DEMO).toFixed(2), +(costo - acum).toFixed(2));
+      if (cuota <= 0) continue;
+
+      await this.contabilidad
+        .crearAsiento(undefined as any, {
+          fecha: this.hoyCR(),
+          descripcion: `Depreciación mensual — ${v.marca} ${v.modelo} (VIN ${v.vin})`,
+          tipo: 'Ajuste',
+          referencia_id: v.id,
+          referencia_tipo: 'Depreciacion_Demo',
+          lineas: [
+            { cuentaId: gasto.id, debe: cuota, haber: 0, descripcion: `Depreciación VIN ${v.vin}` },
+            { cuentaId: depAcum.id, debe: 0, haber: cuota, descripcion: `Dep. acumulada VIN ${v.vin}` },
+          ],
+        })
+        .then(async () => {
+          v.depreciacion_acumulada = +(acum + cuota).toFixed(2);
+          await this.vehiclesRepository.save(v);
+        })
+        .catch((e) => this.logger.warn(`[Contabilidad] Depreciación demo #${v.id}: ${(e as Error).message}`));
+    }
+  }
+
   async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
     this.logger.log(
       `Attempting to create vehicle with DTO: ${JSON.stringify(
@@ -253,6 +480,14 @@ export class VehiclesService implements OnApplicationBootstrap {
       const savedVehicle = await this.vehiclesRepository.save(newVehicle);
       this.logger.log(
         `Vehicle created successfully with ID: ${savedVehicle.id}`,
+      );
+
+      // Asiento de compra automático: Debe 1300 Inventario / Haber 2100 CxP.
+      // No bloquea la creación del vehículo si la contabilidad falla.
+      await this.registrarCompraVehiculo(savedVehicle).catch((e) =>
+        this.logger.warn(
+          `[Contabilidad] No se pudo registrar la compra del vehículo #${savedVehicle.id}: ${(e as Error).message}`,
+        ),
       );
       // Recarga explícita para asegurar relaciones
       return await this.vehiclesRepository.findOneOrFail({

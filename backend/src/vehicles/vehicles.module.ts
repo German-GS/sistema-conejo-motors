@@ -17,9 +17,11 @@ import { VehicleProfile } from '../vehicle-profiles/vehicle-profile.entity';
 import { VehiclesImportService } from './vehicles-import.service';
 import { AccesorioVehiculo } from '../accesorios/accesorio.entity';
 import { OrdenProducto } from '../productos/orden-producto.entity';
+import { ContabilidadModule } from '../contabilidad/contabilidad.module';
 
 @Module({
   imports: [
+    ContabilidadModule,
     TypeOrmModule.forFeature([
       Vehicle,
       VehicleEstadoHistorial,

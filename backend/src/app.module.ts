@@ -59,6 +59,7 @@ import { ProductosModule } from './productos/productos.module';
 import { Producto } from './productos/producto.entity';
 import { OrdenProducto, LineaOrden } from './productos/orden-producto.entity';
 import { ContabilidadModule } from './contabilidad/contabilidad.module';
+import { ActivosFijosModule } from './activos-fijos/activos-fijos.module';
 import { CuentaContable } from './contabilidad/cuenta.entity';
 import { AsientoContable, LineaAsiento } from './contabilidad/asiento.entity';
 import { CierreDiario } from './contabilidad/cierre-diario.entity';
@@ -214,6 +215,7 @@ import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
     ChatModule,
     ProductosModule,
     ContabilidadModule,
+    ActivosFijosModule,
     // Nuevos módulos
     AgendaModule,
     CosteoVehiculosModule,

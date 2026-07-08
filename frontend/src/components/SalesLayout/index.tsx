@@ -35,6 +35,7 @@ export const SalesLayout = () => {
   const [userEmail, setUserEmail] = useState("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [esAdmin, setEsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -58,8 +59,9 @@ export const SalesLayout = () => {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      const decoded: { email: string } = jwtDecode(token);
+      const decoded: { email: string; rol?: { nombre: string } } = jwtDecode(token);
       setUserEmail(decoded.email);
+      setEsAdmin(decoded.rol?.nombre === "Administrador");
     }
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 60000);
@@ -149,6 +151,20 @@ export const SalesLayout = () => {
             <div className={styles.headerTitle}>Portal de Ventas</div>
           </div>
           <div className={styles.headerActions}>
+            {esAdmin && (
+              <button
+                onClick={() => navigate("/admin")}
+                title="Volver al panel de administrador"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                  background: "#024f7d", border: "none", color: "#fff",
+                  borderRadius: 8, padding: "0.45rem 0.85rem", cursor: "pointer",
+                  fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap",
+                }}
+              >
+                ← Volver a Admin
+              </button>
+            )}
             <button
               onClick={() => window.dispatchEvent(new Event("global-search:open"))}
               title="Buscar (⌘/Ctrl + K)"

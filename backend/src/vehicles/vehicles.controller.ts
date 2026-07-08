@@ -69,6 +69,30 @@ export class VehiclesController {
     return this.vehiclesService.updateClasificacion(+id, body.clasificacion);
   }
 
+  /** Marca el vehículo como Demo / uso interno (Activo Fijo, no para venta). */
+  @Patch(':id/demo')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  marcarDemo(@Param('id') id: string, @Req() req: any) {
+    return this.vehiclesService.marcarDemo(+id, req.user?.id);
+  }
+
+  /** Regresa un vehículo Demo al inventario de venta. */
+  @Patch(':id/quitar-demo')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  quitarDemo(@Param('id') id: string, @Req() req: any) {
+    return this.vehiclesService.quitarDemo(+id, req.user?.id);
+  }
+
+  /** Carga inicial contable del inventario de vehículos en stock (asiento de apertura). */
+  @Post('inventario/carga-inicial')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  cargarInventarioInicial(@Req() req: any) {
+    return this.vehiclesService.cargarInventarioInicial(req.user?.id);
+  }
+
   @Patch(':id/pricing')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('Administrador')

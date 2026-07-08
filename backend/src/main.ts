@@ -18,10 +18,18 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter()); // <-- 2. Registrar el filtro globalmente
   // -------------------------
 
-  // CORS: en producción solo permite el dominio del frontend
-  const allowedOrigins = (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
+  // CORS: dominios de producción siempre permitidos + los que agregue CORS_ORIGINS
+  const origenesBase = [
+    'https://sistema.conejomotors.com',
+    'https://conejo-motors.web.app',
+    'https://conejo-motors.firebaseapp.com',
+    'http://localhost:5173',
+  ];
+  const origenesEnv = (process.env.CORS_ORIGINS ?? '')
     .split(',')
-    .map((o) => o.trim());
+    .map((o) => o.trim())
+    .filter(Boolean);
+  const allowedOrigins = [...new Set([...origenesBase, ...origenesEnv])];
 
   app.enableCors({
     origin: (origin, callback) => {

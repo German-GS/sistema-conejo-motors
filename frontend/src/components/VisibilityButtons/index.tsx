@@ -14,8 +14,10 @@ interface Props {
   vehicleId: number;
   current?: "Visible" | "Oculto" | "Agotado" | "Contrapedido";
   clasificacion?: Clasificacion;
+  estado?: "Disponible" | "Reservado" | "Vendido" | "Demo";
   onChanged?: (newValue: Visibilidad) => void;
   onClasificacionChanged?: (newValue: Clasificacion) => void;
+  onEstadoChanged?: (newValue: "Disponible" | "Demo") => void;
 }
 
 const VIS_OPTIONS: { value: Visibilidad; label: string; emoji: string }[] = [
@@ -56,17 +58,41 @@ export const VisibilityButtons = ({
   vehicleId,
   current = "Visible",
   clasificacion = "En Stock",
+  estado = "Disponible",
   onChanged,
   onClasificacionChanged,
+  onEstadoChanged,
 }: Props) => {
   const [loading, setLoading] = useState(false);
   // Datos antiguos podían traer Agotado/Contrapedido en visibilidad → normaliza a Visible
   const [vis, setVis] = useState<Visibilidad>(current === "Oculto" ? "Oculto" : "Visible");
   const [clas, setClas] = useState<Clasificacion>(clasificacion);
+  const [esDemo, setEsDemo] = useState(estado === "Demo");
 
   // Sincroniza con los props cuando cambian los datos del vehículo (carga async, refetch)
   useEffect(() => { setVis(current === "Oculto" ? "Oculto" : "Visible"); }, [current]);
   useEffect(() => { setClas(clasificacion); }, [clasificacion]);
+  useEffect(() => { setEsDemo(estado === "Demo"); }, [estado]);
+
+  const vendido = estado === "Vendido";
+
+  const toggleDemo = async () => {
+    if (loading || vendido) return;
+    const activar = !esDemo;
+    setLoading(true);
+    try {
+      await apiClient.patch(`/vehicles/${vehicleId}/${activar ? "demo" : "quitar-demo"}`);
+      setEsDemo(activar);
+      onEstadoChanged?.(activar ? "Demo" : "Disponible");
+      if (activar) { setVis("Oculto"); setClas("No Comercial"); }
+      else { setVis("Visible"); setClas("En Stock"); }
+      toast.success(activar ? "Marcado como Demo / Test drive (Activo Fijo)" : "Regresado a inventario de venta");
+    } catch {
+      toast.error("Error al cambiar el estado Demo.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const cambiarVis = async (newVal: Visibilidad) => {
     if (newVal === vis || loading) return;
@@ -131,6 +157,19 @@ export const VisibilityButtons = ({
             <span className={styles.label}>{opt.label}</span>
           </button>
         ))}
+      </div>
+      <div className={styles.row}>
+        <span className={styles.miniLabel}>Uso</span>
+        <button
+          className={styles.btn}
+          style={estiloActivo(esDemo, "No Comercial")}
+          onClick={toggleDemo}
+          disabled={loading || vendido}
+          title={esDemo ? "Regresar a inventario de venta" : "Marcar como Demo / Test drive (Activo Fijo, no para venta)"}
+        >
+          <span className={styles.emoji}>🚗</span>
+          <span className={styles.label}>{esDemo ? "Demo / Test drive" : "Marcar Demo"}</span>
+        </button>
       </div>
     </div>
   );

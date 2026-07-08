@@ -366,12 +366,16 @@ export const AdminLayout = () => {
             </div>
           )}
 
-          {/* ── CONTABILIDAD ── */}
-          <SectionHeader id="contabilidad" label="CONTABILIDAD" />
-          {isOpen("contabilidad") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
-            </div>
+          {/* ── CONTABILIDAD ── (solo Administración y Contabilidad) */}
+          {(userRole === "Administrador" || userRole === "Contador") && (
+            <>
+              <SectionHeader id="contabilidad" label="CONTABILIDAD" />
+              {isOpen("contabilidad") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
+                </div>
+              )}
+            </>
           )}
 
           {/* ── POSTVENTA ── */}
@@ -466,6 +470,20 @@ export const AdminLayout = () => {
                   </div>
                 )}
               </div>
+            )}
+            {userRole === "Administrador" && (
+              <button
+                onClick={() => navigate("/sales")}
+                title="Previsualizar el sistema como lo ve un vendedor"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                  background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d",
+                  borderRadius: 8, padding: "0.45rem 0.85rem", cursor: "pointer",
+                  fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap",
+                }}
+              >
+                👁️ Ver como Vendedor
+              </button>
             )}
             <button onClick={handleLogout} className={styles.logoutButton}>
               Cerrar Sesión
