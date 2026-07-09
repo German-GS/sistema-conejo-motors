@@ -314,11 +314,6 @@ export const PublicCatalogPage = () => {
                   <h3>{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>
                   <p className={styles.price}>
                     {formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
-                    {vehicle.precio_venta_usd && (
-                      <span style={{ fontSize: "0.8em", color: "#64748b", marginLeft: "0.5rem" }}>
-                        / ${Number(vehicle.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })} USD
-                      </span>
-                    )}
                   </p>
                   {Number(vehicle.descuento_porcentaje) > 0 && (
                     <p className={styles.oldPrice}>{formatCRC(Number(vehicle.precio_venta))}</p>
