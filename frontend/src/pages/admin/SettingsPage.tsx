@@ -312,6 +312,7 @@ const DepreciacionConfig: React.FC = () => {
   };
 
   const inp: React.CSSProperties = { padding: "0.35rem 0.5rem", borderRadius: 6, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
+  const btnNavy: React.CSSProperties = { background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap" };
 
   if (loading) return <p style={{ color: "#94a3b8" }}>Cargando…</p>;
   return (
@@ -327,8 +328,8 @@ const DepreciacionConfig: React.FC = () => {
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          {cats.length === 0 && <button onClick={sembrar} className={styles.saveButton}>Sembrar tabla</button>}
-          <button onClick={agregar} className={styles.saveButton}>+ Agregar</button>
+          {cats.length === 0 && <button onClick={sembrar} style={btnNavy}>Sembrar tabla</button>}
+          <button onClick={agregar} style={btnNavy}>+ Agregar</button>
         </div>
       </div>
       <div style={{ overflowX: "auto" }}>
