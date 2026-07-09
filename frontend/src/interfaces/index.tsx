@@ -29,6 +29,8 @@ export interface Vehicle {
   precio_costo: number;
   precio_venta: number;
   precio_venta_usd?: number;
+  precio_venta_final?: number | null;
+  descuento_porcentaje?: number | null;
   estado: string;
   visibilidad?: 'Visible' | 'Oculto' | 'Agotado' | 'Contrapedido';
   clasificacion_inventario?: 'En Stock' | 'Agotado' | 'Contrapedido' | 'No Comercial';

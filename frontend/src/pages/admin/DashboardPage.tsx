@@ -14,7 +14,26 @@ import { VehicleHistorialModal } from "@/components/VehicleHistorialModal";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { exportToExcel } from "@/utils/exportExcel";
 
-// Interfaz para el tipo de dato Vehicle
+const CRC = (v: number) =>
+  new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
+
+// Mapa de nombres de color → hex para el punto visual
+const COLOR_HEX: Record<string, string> = {
+  negro: "#111827", blanco: "#f8fafc", gris: "#9ca3af", plateado: "#cbd5e1", plata: "#cbd5e1",
+  celeste: "#7dd3fc", azul: "#2563eb", "azul marino": "#1e3a8a", rojo: "#dc2626", verde: "#16a34a",
+  amarillo: "#eab308", naranja: "#f97316", cafe: "#92400e", "café": "#92400e", morado: "#7c3aed",
+  dorado: "#d4af37", beige: "#e7dcc8", vino: "#7f1d1d",
+};
+const colorHex = (c?: string) => COLOR_HEX[(c ?? "").trim().toLowerCase()] ?? "#cbd5e1";
+
+const ESTADO_STYLE: Record<string, { bg: string; fg: string }> = {
+  Disponible: { bg: "#dcfce7", fg: "#15803d" },
+  Reservado: { bg: "#fef3c7", fg: "#92400e" },
+  Vendido: { bg: "#e2e8f0", fg: "#475569" },
+  Demo: { bg: "#ede9fe", fg: "#7c3aed" },
+};
+
+const marginColor = (m: number) => (m < 0 ? "#dc2626" : m < 5 ? "#d97706" : "#16a34a");
 
 export const DashboardPage = () => {
   const confirm = useConfirm();
@@ -25,9 +44,9 @@ export const DashboardPage = () => {
   const [historialVehicle, setHistorialVehicle] = useState<Vehicle | null>(null);
   const [search, setSearch] = useState("");
   const [filterEstado, setFilterEstado] = useState("");
-  const [sortKey, setSortKey] = useState<string>("");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [editing, setEditing] = useState<Record<number, { precio_venta: string; precio_venta_usd: string; descuento: string }>>({});
   const PAGE_SIZE = 15;
 
   const fetchVehicles = async () => {
@@ -40,63 +59,105 @@ export const DashboardPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
+  useEffect(() => { fetchVehicles(); }, []);
 
-  const handleOpenCreateModal = () => {
-    setEditingVehicle(null); // Nos aseguramos de que no hay datos de edición
-    setIsModalOpen(true);
-  };
-
-  const handleOpenEditModal = (vehicle: Vehicle) => {
-    setEditingVehicle(vehicle); // Pasamos los datos del vehículo a editar
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingVehicle(null);
-  };
-
-  const handleSuccess = () => {
-    fetchVehicles(); // Refresca la lista
-    handleCloseModal(); // Cierra el modal
-  };
+  const handleOpenCreateModal = () => { setEditingVehicle(null); setIsModalOpen(true); };
+  const handleOpenEditModal = (vehicle: Vehicle) => { setEditingVehicle(vehicle); setIsModalOpen(true); };
+  const handleCloseModal = () => { setIsModalOpen(false); setEditingVehicle(null); };
+  const handleSuccess = () => { fetchVehicles(); handleCloseModal(); };
 
   const handleDelete = async (id: number) => {
     const ok = await confirm({
       title: "Eliminar vehículo",
       message: `¿Eliminar el vehículo #${id}? Esta acción no se puede deshacer.`,
-      confirmText: "Eliminar",
-      danger: true,
+      confirmText: "Eliminar", danger: true,
     });
     if (!ok) return;
     try {
       await apiClient.delete(`/vehicles/${id}`);
-      toast.success("Vehículo eliminado con éxito."); // <-- 2. Reemplaza alert
+      toast.success("Vehículo eliminado con éxito.");
       fetchVehicles();
     } catch (err) {
-      const errorMessage = "Error al eliminar el vehículo.";
-      setError(errorMessage);
-      toast.error(errorMessage); // <-- 3. Añade toast de error
-      console.error(err);
+      const msg = "Error al eliminar el vehículo.";
+      setError(msg); toast.error(msg); console.error(err);
     }
   };
 
-  // Clasificación de inventario: solo "En Stock" cuenta como stock activo
+  const copyVin = (vin: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard?.writeText(vin).then(() => toast.success(`VIN copiado: ${vin}`)).catch(() => {});
+  };
+
+  const toggleExpand = (id: number) => {
+    setExpanded(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else { n.add(id); startEdit(id); }
+      return n;
+    });
+  };
+
+  // ── Edición de precios (inline) ─────────────────────────────────────────
+  const startEdit = (id: number) => {
+    const v = vehicles.find(x => x.id === id);
+    if (!v) return;
+    setEditing(prev => ({
+      ...prev,
+      [id]: {
+        precio_venta: String(v.precio_venta ?? v.precio_costo),
+        precio_venta_usd: v.precio_venta_usd != null ? String(v.precio_venta_usd) : "",
+        descuento: String(v.descuento_porcentaje ?? 0),
+      },
+    }));
+  };
+
+  const setEdit = (id: number, campo: string, valor: string) =>
+    setEditing(prev => ({ ...prev, [id]: { ...prev[id], [campo]: valor } }));
+
+  const getPreview = (v: Vehicle) => {
+    const e = editing[v.id];
+    if (!e) return null;
+    const pv = parseFloat((e.precio_venta || "").replace(/,/g, "")) || 0;
+    const d = parseFloat(e.descuento) || 0;
+    const final = pv * (1 - d / 100);
+    const costo = Number(v.precio_costo);
+    const margen = costo > 0 ? ((final - costo) / costo) * 100 : 0;
+    return { final, margen };
+  };
+
+  const handleSavePrecio = async (v: Vehicle) => {
+    const e = editing[v.id];
+    const precio_venta = parseFloat((e.precio_venta || "").replace(/,/g, ""));
+    const precio_venta_usd = e.precio_venta_usd.trim() ? parseFloat(e.precio_venta_usd.replace(/,/g, "")) : null;
+    const descuento = parseFloat(e.descuento);
+    if (isNaN(precio_venta) || precio_venta <= 0) return toast.error("Precio de venta inválido.");
+    if (precio_venta_usd !== null && (isNaN(precio_venta_usd) || precio_venta_usd <= 0)) return toast.error("Precio USD inválido.");
+    if (isNaN(descuento) || descuento < 0 || descuento > 100) return toast.error("Descuento debe ser 0–100.");
+
+    const precioFinal = precio_venta * (1 - descuento / 100);
+    const bajoCosto = precioFinal < Number(v.precio_costo);
+    if (bajoCosto) {
+      const ok = await confirm({
+        title: "Precio bajo costo",
+        message: `El precio final (${CRC(precioFinal)}) es INFERIOR al costo de inventario (${CRC(v.precio_costo)}). ¿Guardar igual?`,
+        confirmText: "Guardar igual", danger: true,
+      });
+      if (!ok) return;
+    }
+    try {
+      await apiClient.patch(`/vehicles/${v.id}/pricing`, { precio_venta, precio_venta_usd, descuento_porcentaje: descuento });
+      toast.success(`✅ Precio actualizado${bajoCosto ? " — ⚠️ bajo costo" : ""}`);
+      fetchVehicles();
+    } catch { toast.error("Error al guardar el precio."); }
+  };
+
+  // ── Métricas / filtros ──────────────────────────────────────────────────
   const esEspecial = (v: Vehicle) => {
     const c = v.clasificacion_inventario;
-    if (c) return c !== 'En Stock';
-    // Compatibilidad con datos antiguos (antes de la migración)
-    return v.visibilidad === 'Agotado' || v.visibilidad === 'Contrapedido';
+    if (c) return c !== "En Stock";
+    return v.visibilidad === "Agotado" || v.visibilidad === "Contrapedido";
   };
-  const stockActivo = useMemo(() =>
-    vehicles.filter(v => v.estado === 'Disponible' && !esEspecial(v)).length,
-  [vehicles]);
-  const especiales = useMemo(() =>
-    vehicles.filter(esEspecial),
-  [vehicles]);
+  const stockActivo = useMemo(() => vehicles.filter(v => v.estado === "Disponible" && !esEspecial(v)).length, [vehicles]);
+  const especiales = useMemo(() => vehicles.filter(esEspecial), [vehicles]);
 
   const filtered = useMemo(() => {
     let list = vehicles;
@@ -105,26 +166,8 @@ export const DashboardPage = () => {
       list = list.filter(v => `${v.marca} ${v.modelo} ${v.año} ${v.vin} ${v.color}`.toLowerCase().includes(q));
     }
     if (filterEstado) list = list.filter(v => v.estado === filterEstado);
-    // Orden por columna
-    if (sortKey) {
-      list = [...list].sort((a, b) => {
-        const av = (a as any)[sortKey], bv = (b as any)[sortKey];
-        if (av == null) return 1;
-        if (bv == null) return -1;
-        const cmp = typeof av === "number" && typeof bv === "number"
-          ? av - bv
-          : String(av).localeCompare(String(bv), "es", { numeric: true });
-        return sortDir === "asc" ? cmp : -cmp;
-      });
-    }
     return list;
-  }, [vehicles, search, filterEstado, sortKey, sortDir]);
-
-  const toggleSort = (key: string) => {
-    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir("asc"); }
-    setPage(1);
-  };
+  }, [vehicles, search, filterEstado]);
 
   const exportar = () => {
     const rows = filtered.map(v => ({
@@ -138,10 +181,9 @@ export const DashboardPage = () => {
   };
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = useMemo(
-    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [filtered, page]
-  );
+  const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
+
+  const inp: React.CSSProperties = { padding: "0.4rem 0.55rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
 
   return (
     <>
@@ -151,9 +193,7 @@ export const DashboardPage = () => {
           <button className="btn" onClick={exportar} style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155" }} title="Exportar a Excel">
             📊 Exportar Excel
           </button>
-          <button className="btn btn-principal" onClick={handleOpenCreateModal}>
-            Añadir Vehículo
-          </button>
+          <button className="btn btn-principal" onClick={handleOpenCreateModal}>Añadir Vehículo</button>
         </div>
       </div>
 
@@ -171,148 +211,140 @@ export const DashboardPage = () => {
       }>
         {error && <p style={{ color: "red" }}>{error}</p>}
 
-        {/* Filtros rápidos */}
         <div className={styles.filterBar}>
           <input
             type="text"
-            placeholder="🔍 Buscar por marca, modelo, VIN, color..."
+            placeholder="🔍 Buscar por marca, modelo, VIN, color…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className={styles.searchInput}
           />
-          <select
-            value={filterEstado}
-            onChange={(e) => { setFilterEstado(e.target.value); setPage(1); }}
-            className={styles.filterSelect}
-          >
+          <select value={filterEstado} onChange={(e) => { setFilterEstado(e.target.value); setPage(1); }} className={styles.filterSelect}>
             <option value="">Todos los estados</option>
             <option value="Disponible">Disponible</option>
             <option value="Reservado">Reservado</option>
             <option value="Vendido">Vendido</option>
+            <option value="Demo">Demo / uso interno</option>
           </select>
           {(search || filterEstado) && (
-            <button
-              className={styles.clearBtn}
-              onClick={() => { setSearch(""); setFilterEstado(""); setPage(1); }}
-            >
-              ✕ Limpiar
-            </button>
+            <button className={styles.clearBtn} onClick={() => { setSearch(""); setFilterEstado(""); setPage(1); }}>✕ Limpiar</button>
           )}
         </div>
 
-        <table className={styles.inventoryTable}>
-          <thead>
-            <tr>
-              <th>Imagen</th>
-              <Th label="ID" col="id" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-              <Th label="Marca" col="marca" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-              <Th label="Modelo" col="modelo" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-              <Th label="Año" col="año" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-              <th>VIN</th>
-              <th>Ubicación</th>
-              <Th label="Estado" col="estado" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-              <th>Visibilidad</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.map((vehicle) => (
-              <tr key={vehicle.id}>
-                <td>
-                  <div className={styles.thumbWrapper}>
-                    {vehicle.profile?.imagenes && vehicle.profile.imagenes.length > 0 ? (
-                      <img
-                        src={getImageUrl(
-                          [...vehicle.profile.imagenes].sort((a, b) => a.order - b.order)[0].url
-                        )}
-                        alt={`${vehicle.marca} ${vehicle.modelo}`}
-                        className={styles.thumbnail}
-                      />
-                    ) : (
-                      <div className={styles.noImage}>Sin foto</div>
-                    )}
-                    <VehicleRibbon visibilidad={vehicle.visibilidad} clasificacion={vehicle.clasificacion_inventario} />
+        {/* Lista de unidades (filas expandibles) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          {paginated.length === 0 && <p style={{ textAlign: "center", color: "#94a3b8", padding: "1.5rem" }}>Sin vehículos.</p>}
+          {paginated.map((v) => {
+            const abierto = expanded.has(v.id);
+            const est = ESTADO_STYLE[v.estado] ?? ESTADO_STYLE.Vendido;
+            const precioFinal = Number(v.precio_venta_final ?? v.precio_venta ?? 0);
+            const prev = getPreview(v);
+            const img = v.profile?.imagenes && v.profile.imagenes.length > 0
+              ? getImageUrl([...v.profile.imagenes].sort((a, b) => a.order - b.order)[0].url) : null;
+            return (
+              <div key={v.id} style={{ border: "1px solid #e2e8f0", borderRadius: 12, background: "#fff", overflow: "hidden" }}>
+                {/* Fila compacta */}
+                <div
+                  onClick={() => toggleExpand(v.id)}
+                  style={{ display: "grid", gridTemplateColumns: "48px 1.6fr 1.3fr 110px 130px 28px", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.9rem", cursor: "pointer" }}
+                >
+                  <div style={{ position: "relative", width: 48, height: 36, borderRadius: 6, overflow: "hidden", background: "#f1f5f9" }}>
+                    {img ? <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "0.6rem", color: "#94a3b8", display: "grid", placeItems: "center", height: "100%" }}>s/f</span>}
                   </div>
-                </td>
-                <td>{vehicle.id}</td>
-                <td>{vehicle.marca}</td>
-                <td>{vehicle.modelo}</td>
-                <td>{vehicle.año}</td>
-                <td>{vehicle.vin}</td>
-                <td>{vehicle.bodega?.nombre || "N/A"}</td>
-                <td>{vehicle.estado}</td>
-                <td>
-                  <VisibilityButtons
-                    vehicleId={vehicle.id}
-                    current={vehicle.visibilidad ?? "Visible"}
-                    clasificacion={vehicle.clasificacion_inventario ?? "En Stock"}
-                    estado={(vehicle.estado as any) ?? "Disponible"}
-                    onEstadoChanged={(val) =>
-                      setVehicles(prev =>
-                        prev.map(v => v.id === vehicle.id ? { ...v, estado: val } : v)
-                      )
-                    }
-                    onChanged={(val) =>
-                      setVehicles(prev =>
-                        prev.map(v => v.id === vehicle.id ? { ...v, visibilidad: val } : v)
-                      )
-                    }
-                    onClasificacionChanged={(val) =>
-                      setVehicles(prev =>
-                        prev.map(v => v.id === vehicle.id ? { ...v, clasificacion_inventario: val } : v)
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <button onClick={() => handleOpenEditModal(vehicle)}>
-                    Editar
-                  </button>
-                  <button onClick={() => setHistorialVehicle(vehicle)} title="Historial de estados">
-                    🕓
-                  </button>
-                  <button onClick={() => handleDelete(vehicle.id)}>
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPage={setPage}
-          totalItems={filtered.length}
-        />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span title={v.color} style={{ width: 14, height: 14, borderRadius: "50%", background: colorHex(v.color), border: "1.5px solid rgba(0,0,0,0.15)", flexShrink: 0 }} />
+                      <strong style={{ color: "#0a2540", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.marca} {v.modelo}</strong>
+                      <span style={{ color: "#64748b", fontSize: "0.82rem" }}>{v.año}</span>
+                    </div>
+                    <div style={{ fontSize: "0.78rem", color: "#94a3b8", textTransform: "capitalize" }}>{v.color || "—"} · {v.bodega?.nombre || "sin ubicación"}</div>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <button
+                      onClick={(e) => copyVin(v.vin, e)}
+                      title="Copiar VIN"
+                      style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.78rem", color: "#334155", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                    >
+                      📋 {v.vin}
+                    </button>
+                  </div>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 700, background: est.bg, color: est.fg, borderRadius: 20, padding: "2px 10px", textAlign: "center" }}>{v.estado}</span>
+                  <strong style={{ color: "#0a2540", textAlign: "right", fontSize: "0.9rem" }}>{CRC(precioFinal)}</strong>
+                  <span style={{ color: "#94a3b8", textAlign: "center", transform: abierto ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>›</span>
+                </div>
+
+                {/* Panel expandido */}
+                {abierto && (
+                  <div style={{ borderTop: "1px solid #f1f5f9", padding: "1rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.25rem", background: "#fbfcfe" }}>
+                    {/* Precios */}
+                    <div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem" }}>💵 Precio</div>
+                      <div style={{ fontSize: "0.8rem", color: "#64748b", marginBottom: "0.5rem" }}>Costo inventario: <strong style={{ color: "#334155" }}>{CRC(Number(v.precio_costo))}</strong></div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                        <label style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Precio de lista (₡)
+                          <input value={editing[v.id]?.precio_venta ?? ""} onChange={(e) => setEdit(v.id, "precio_venta", e.target.value)} style={inp} />
+                        </label>
+                        <label style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Precio USD
+                          <input value={editing[v.id]?.precio_venta_usd ?? ""} onChange={(e) => setEdit(v.id, "precio_venta_usd", e.target.value)} placeholder="opcional" style={inp} />
+                        </label>
+                        <label style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Descuento %
+                          <input value={editing[v.id]?.descuento ?? ""} onChange={(e) => setEdit(v.id, "descuento", e.target.value)} style={inp} />
+                        </label>
+                        <div style={{ alignSelf: "end", fontSize: "0.8rem" }}>
+                          {prev && <>Final: <strong>{CRC(prev.final)}</strong><br /><span style={{ color: marginColor(prev.margen) }}>Margen {prev.margen.toFixed(1)}%</span></>}
+                        </div>
+                      </div>
+                      <button onClick={() => handleSavePrecio(v)} className="btn btn-principal" style={{ marginTop: "0.6rem", fontSize: "0.82rem" }}>Guardar precio</button>
+                    </div>
+
+                    {/* Visibilidad + Uso */}
+                    <div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem" }}>👁 Visibilidad y uso</div>
+                      <VisibilityButtons
+                        vehicleId={v.id}
+                        current={v.visibilidad ?? "Visible"}
+                        clasificacion={v.clasificacion_inventario ?? "En Stock"}
+                        estado={(v.estado as any) ?? "Disponible"}
+                        onEstadoChanged={(val) => setVehicles(prev => prev.map(x => x.id === v.id ? { ...x, estado: val } : x))}
+                        onChanged={(val) => setVehicles(prev => prev.map(x => x.id === v.id ? { ...x, visibilidad: val } : x))}
+                        onClasificacionChanged={(val) => setVehicles(prev => prev.map(x => x.id === v.id ? { ...x, clasificacion_inventario: val } : x))}
+                      />
+                    </div>
+
+                    {/* Acciones */}
+                    <div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem" }}>⚙️ Acciones</div>
+                      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                        <button onClick={() => handleOpenEditModal(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem" }}>✏️ Editar ficha</button>
+                        <button onClick={() => setHistorialVehicle(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem" }}>🕓 Historial</button>
+                        <button onClick={() => handleDelete(v.id)} className="btn" style={{ border: "1px solid #fecaca", background: "#fff", color: "#dc2626", fontSize: "0.82rem" }}>🗑 Eliminar</button>
+                      </div>
+                      <div style={{ marginTop: "0.6rem", position: "relative", width: 90, height: 60, borderRadius: 6, overflow: "hidden", background: "#f1f5f9" }}>
+                        {img && <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                        <VehicleRibbon visibilidad={v.visibilidad} clasificacion={v.clasificacion_inventario} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <Pagination page={page} totalPages={totalPages} onPage={setPage} totalItems={filtered.length} />
       </Card>
 
-      {/* Este es el modal que se mostrará al hacer clic */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={editingVehicle ? "Editar Vehículo" : "Añadir Nuevo Vehículo"}
-      >
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingVehicle ? "Editar Vehículo" : "Añadir Nuevo Vehículo"}>
         <VehicleForm onSuccess={handleSuccess} initialData={editingVehicle} />
       </Modal>
 
-      <VehicleHistorialModal
-        vehicleId={historialVehicle?.id ?? null}
-        vehicleLabel={historialVehicle ? `${historialVehicle.marca} ${historialVehicle.modelo}` : undefined}
-        onClose={() => setHistorialVehicle(null)}
-      />
+      {historialVehicle && (
+        <VehicleHistorialModal
+          vehicleId={historialVehicle.id}
+          vehicleLabel={`${historialVehicle.marca} ${historialVehicle.modelo} (VIN ${historialVehicle.vin})`}
+          onClose={() => setHistorialVehicle(null)}
+        />
+      )}
     </>
   );
 };
-
-// Encabezado de columna ordenable
-const Th = ({ label, col, sortKey, sortDir, onSort }: {
-  label: string; col: string; sortKey: string; sortDir: "asc" | "desc"; onSort: (k: string) => void;
-}) => (
-  <th onClick={() => onSort(col)} style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }} title="Ordenar">
-    {label}
-    <span style={{ marginLeft: 4, opacity: sortKey === col ? 1 : 0.25 }}>
-      {sortKey === col ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
-    </span>
-  </th>
-);

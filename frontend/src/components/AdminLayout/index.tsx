@@ -317,8 +317,7 @@ export const AdminLayout = () => {
           <SectionHeader id="inventario" label="INVENTARIO" />
           {isOpen("inventario") && (
             <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/inventory" icon={<LuCar size={18} />} label="Vehículos" />
-              <SidebarLink to="/admin/pricing" icon={<LuTag size={18} />} label="Precios" />
+              <SidebarLink to="/admin/inventory" icon={<LuCar size={18} />} label="Vehículos y precios" />
               <SidebarLink to="/admin/accesorios" icon={<LuPackage size={18} />} label="Accesorios" />
               <SidebarLink to="/admin/importaciones" icon={<LuShip size={18} />} label="Importaciones" />
               <SidebarLink to="/admin/import" icon={<LuUpload size={18} />} label="Importar Excel" />

@@ -36,7 +36,6 @@ import { ReportsPage } from "./pages/admin/ReportsPage";
 import PendingBillingPage from "./pages/admin/PendingBillingPage";
 import { ImportVehiclesPage } from "./pages/admin/ImportVehiclesPage";
 import { AccesoriosPage } from "./pages/admin/AccesoriosPage";
-import { PricingPage } from "./pages/admin/PricingPage";
 import { AsistenciaPage } from "./pages/admin/AsistenciaPage";
 import { SolicitudesPage } from "./pages/admin/SolicitudesPage";
 import { ProductosPage } from "./pages/admin/ProductosPage";
@@ -179,7 +178,8 @@ function App() {
             <Route path="reports" element={<ReportsPage />} />
             <Route path="import" element={<ImportVehiclesPage />} />
             <Route path="accesorios" element={<AccesoriosPage />} />
-            <Route path="pricing" element={<PricingPage />} />
+            {/* Precios se unificó con Inventario; se mantiene la ruta por compatibilidad */}
+            <Route path="pricing" element={<InventoryPage />} />
             {/* Rutas de ventas accesibles para el admin */}
             <Route path="sales/catalog" element={<CatalogPage />} />
             <Route path="sales/catalog/:vehicleId" element={<VehicleDetailSalesPage />} />
