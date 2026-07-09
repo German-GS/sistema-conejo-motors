@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getImageUrl, formatCRC } from '@/lib/api';
+import { getImageUrl, formatCRC, formatUSD } from '@/lib/api';
 import { colorSwatch } from '@/lib/colors';
 import type { Vehicle } from '@/types';
 
@@ -242,7 +242,7 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                     )}
                     <p className="vehicle-card__price">
                       {variosPrecios && <span style={{ fontSize: '0.7em', fontWeight: 600, color: '#64748b' }}>Desde </span>}
-                      {formatCRC(grupo.precioMin)}
+                      {vehicle.precio_venta_usd ? formatUSD(Number(vehicle.precio_venta_usd)) : formatCRC(grupo.precioMin)}
                     </p>
 
                     {/* Colores disponibles como círculos */}

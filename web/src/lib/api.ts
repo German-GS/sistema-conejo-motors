@@ -33,3 +33,6 @@ export const formatCRC = (value: number) =>
     currency: 'CRC',
     maximumFractionDigits: 0,
   }).format(value);
+
+export const formatUSD = (value: number) =>
+  `$${Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD`;

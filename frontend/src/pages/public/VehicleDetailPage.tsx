@@ -205,7 +205,9 @@ export const VehicleDetailPage = () => {
             )}
           </div>
           <p className={styles.price}>
-            {new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC" }).format(vehicle.precio_venta)}
+            {vehicle.precio_venta_usd
+              ? `$${Number(vehicle.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })} USD`
+              : new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC" }).format(vehicle.precio_venta)}
           </p>
           <div className={styles.keySpecs}>
             {vehicle.autonomia_km && <div><span>{vehicle.autonomia_km} km</span><p>Autonomía</p></div>}

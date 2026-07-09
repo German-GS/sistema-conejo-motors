@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getImageUrl, formatCRC, API } from '@/lib/api';
+import { getImageUrl, formatCRC, formatUSD, API } from '@/lib/api';
 import { colorSwatch } from '@/lib/colors';
 import type { Vehicle } from '@/types';
 
@@ -254,11 +254,10 @@ export function VehicleDetailClient({ vehicle, coloresDisponibles = [], estadoIn
           {/* Precio */}
           <div style={{ marginBottom:'1.5rem' }}>
             <p style={{ fontSize:'2rem', fontWeight:900, color: BRAND.navy }}>
-              {formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
+              {vehicle.precio_venta_usd
+                ? formatUSD(Number(vehicle.precio_venta_usd))
+                : formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
             </p>
-            {vehicle.precio_venta_final && vehicle.precio_venta_final < vehicle.precio_venta && (
-              <p style={{ fontSize:'0.875rem', color:'#94a3b8', textDecoration:'line-through' }}>{formatCRC(Number(vehicle.precio_venta))}</p>
-            )}
           </div>
 
           {/* Acciones rápidas */}

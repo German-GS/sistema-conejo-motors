@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getImageUrl, formatCRC } from '@/lib/api';
+import { getImageUrl, formatCRC, formatUSD } from '@/lib/api';
 import { colorSwatch } from '@/lib/colors';
 import type { Vehicle, CarouselSlide } from '@/types';
 
@@ -380,7 +380,7 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                     </div>
                     <div className="vehicle-card__body">
                       <h3 className="vehicle-card__name">{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>
-                      <p className="vehicle-card__price">{formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}</p>
+                      <p className="vehicle-card__price">{vehicle.precio_venta_usd ? formatUSD(Number(vehicle.precio_venta_usd)) : formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}</p>
                       {colores.length > 0 && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', margin: '0.4rem 0 0.1rem' }}>
                           <div style={{ display: 'flex', gap: '0.35rem' }}>
