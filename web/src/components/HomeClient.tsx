@@ -381,11 +381,6 @@ export function HomeClient({ slides, featuredVehicles }: Props) {
                     <div className="vehicle-card__body">
                       <h3 className="vehicle-card__name">{vehicle.marca} {vehicle.modelo} ({vehicle.año})</h3>
                       <p className="vehicle-card__price">{formatCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}</p>
-                      {vehicle.precio_venta_usd && (
-                        <p className="vehicle-card__price" style={{ color: '#0891b2' }}>
-                          ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
-                        </p>
-                      )}
                       {colores.length > 0 && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', margin: '0.4rem 0 0.1rem' }}>
                           <div style={{ display: 'flex', gap: '0.35rem' }}>

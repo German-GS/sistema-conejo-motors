@@ -244,12 +244,6 @@ export function CatalogClient({ initialVehicles }: { initialVehicles: Vehicle[] 
                       {variosPrecios && <span style={{ fontSize: '0.7em', fontWeight: 600, color: '#64748b' }}>Desde </span>}
                       {formatCRC(grupo.precioMin)}
                     </p>
-                    {vehicle.precio_venta_usd && (
-                      <p className="vehicle-card__price" style={{ color: '#0891b2' }}>
-                        {variosPrecios && <span style={{ fontSize: '0.7em', fontWeight: 600 }}>Desde </span>}
-                        ${Number(vehicle.precio_venta_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
-                      </p>
-                    )}
 
                     {/* Colores disponibles como círculos */}
                     {grupo.colores.length > 0 && (
