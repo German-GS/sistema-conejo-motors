@@ -322,6 +322,8 @@ const DepreciacionConfig: React.FC = () => {
           <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "#64748b", maxWidth: 620 }}>
             Doble libro: <strong>vida financiera</strong> (NIIF, va al mayor) y <strong>vida fiscal</strong> (Anexo Nº 2 del Decreto 43198-H, solo para renta).
             La tasa anual es la del Anexo. Verificá los valores contra el reglamento vigente.
+            <br />
+            <span style={{ color: "#b45309" }}>ℹ️ La vida útil se ingresa en <strong>meses</strong>, pero la tabla de Hacienda la muestra en <strong>años</strong>: multiplicá por 12 (10 años = 120 meses). Debajo de cada valor se muestra el equivalente en años.</span>
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -347,8 +349,14 @@ const DepreciacionConfig: React.FC = () => {
             {cats.map((c) => (
               <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                 <td style={{ padding: "6px" }}><input value={c.nombre} onChange={(e) => setCampo(c.id, "nombre", e.target.value)} style={inp} /></td>
-                <td style={{ padding: "6px" }}><input type="number" value={c.vida_util_meses} onChange={(e) => setCampo(c.id, "vida_util_meses", e.target.value)} style={inp} /></td>
-                <td style={{ padding: "6px" }}><input type="number" value={c.vida_util_fiscal_meses ?? ""} onChange={(e) => setCampo(c.id, "vida_util_fiscal_meses", e.target.value)} style={inp} /></td>
+                <td style={{ padding: "6px" }}>
+                  <input type="number" value={c.vida_util_meses} onChange={(e) => setCampo(c.id, "vida_util_meses", e.target.value)} style={inp} />
+                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 }}>{(Number(c.vida_util_meses) / 12).toFixed(Number(c.vida_util_meses) % 12 === 0 ? 0 : 1)} años</div>
+                </td>
+                <td style={{ padding: "6px" }}>
+                  <input type="number" value={c.vida_util_fiscal_meses ?? ""} onChange={(e) => setCampo(c.id, "vida_util_fiscal_meses", e.target.value)} style={inp} />
+                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 }}>{c.vida_util_fiscal_meses ? `${(Number(c.vida_util_fiscal_meses) / 12).toFixed(Number(c.vida_util_fiscal_meses) % 12 === 0 ? 0 : 1)} años` : "—"}</div>
+                </td>
                 <td style={{ padding: "6px" }}>
                   <select value={c.metodo_fiscal ?? "LineaRecta"} onChange={(e) => setCampo(c.id, "metodo_fiscal", e.target.value)} style={inp}>
                     <option value="LineaRecta">Línea recta</option>
