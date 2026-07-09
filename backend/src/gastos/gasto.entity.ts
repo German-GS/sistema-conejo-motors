@@ -34,6 +34,22 @@ export class Gasto {
   @Column({ length: 30, nullable: true })
   metodo_pago?: string;
 
+  // ── IVA para crédito fiscal (D-150) ───────────────────────────────────────
+  /** Base imponible (sin IVA). Si 0, se asume que `monto` es la base sin IVA. */
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  base_imponible: number;
+
+  /** IVA soportado (crédito fiscal). Va a la cuenta 1210. */
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  iva_monto: number;
+
+  @Column({ length: 10, default: 'T13' })
+  iva_tarifa: string;
+
+  /** Clasificación del crédito: Bienes | Servicios | BienesCapital */
+  @Column({ length: 20, default: 'Bienes' })
+  tipo_credito: string;
+
   @ManyToOne(() => Proveedor, { nullable: true })
   proveedor?: Proveedor;
 

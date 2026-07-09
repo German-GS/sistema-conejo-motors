@@ -59,7 +59,7 @@ const SECTION_ROUTES: Record<string, string[]> = {
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
   compras:      ["/admin/proveedores", "/admin/gastos"],
-  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad"],
+  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad", "/admin/obligaciones"],
   postventa:    ["/admin/taller", "/admin/garantias"],
   operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
 };
@@ -363,6 +363,9 @@ export const AdminLayout = () => {
               <SidebarLink to="/admin/tesoreria" icon={<LuBanknote size={18} />} label="Tesorería" />
               {(userRole === "Administrador" || userRole === "Contador") && (
                 <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
+              )}
+              {(userRole === "Administrador" || userRole === "Contador") && (
+                <SidebarLink to="/admin/obligaciones" icon={<LuReceiptText size={18} />} label="Obligaciones (IVA)" />
               )}
             </div>
           )}

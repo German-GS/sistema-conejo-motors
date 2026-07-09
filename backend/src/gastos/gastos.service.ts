@@ -80,16 +80,26 @@ export class GastosService {
       tipo: codigoContra === '2100' ? 'Pasivo' : 'Activo',
     });
 
+    // IVA soportado (crédito fiscal) → 1210. Si hay IVA, el gasto se reconoce por la base.
+    const iva = Number(gasto.iva_monto) || 0;
+    const base = iva > 0 ? +(monto - iva).toFixed(2) : monto;
+
+    const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [
+      { cuentaId: cuentaGasto.id, debe: base, haber: 0, descripcion: gasto.descripcion },
+    ];
+    if (iva > 0) {
+      const cIva = await this.contabilidad.asegurarCuenta('1210', { nombre: 'IVA Acreditable (Crédito Fiscal)', tipo: 'Activo' });
+      lineas.push({ cuentaId: cIva.id, debe: iva, haber: 0, descripcion: `IVA acreditable — ${gasto.categoria}` });
+    }
+    lineas.push({ cuentaId: cuentaContra.id, debe: 0, haber: monto, descripcion: `${codigoContra === '2100' ? 'Por pagar' : 'Pago'} — ${gasto.categoria}` });
+
     await this.contabilidad.crearAsiento((userId ? { id: userId } : undefined) as any, {
       fecha: gasto.fecha,
       descripcion: `Gasto — ${gasto.categoria}: ${gasto.descripcion}`,
       tipo: 'Gasto',
       referencia_id: gasto.id,
       referencia_tipo: 'Gasto',
-      lineas: [
-        { cuentaId: cuentaGasto.id, debe: monto, haber: 0, descripcion: gasto.descripcion },
-        { cuentaId: cuentaContra.id, debe: 0, haber: monto, descripcion: `${codigoContra === '2100' ? 'Por pagar' : 'Pago'} — ${gasto.categoria}` },
-      ],
+      lineas,
     }, { manager });
 
     const repo = manager ? manager.getRepository(Gasto) : this.repo;

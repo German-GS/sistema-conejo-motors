@@ -40,6 +40,7 @@ import { AsistenciaPage } from "./pages/admin/AsistenciaPage";
 import { SolicitudesPage } from "./pages/admin/SolicitudesPage";
 import { ProductosPage } from "./pages/admin/ProductosPage";
 import { ContabilidadPage } from "./pages/admin/ContabilidadPage";
+import { ObligacionesPage } from "./pages/admin/ObligacionesPage";
 import AgendaPage from "./pages/admin/AgendaPage";
 import ProveedoresPage from "./pages/admin/ProveedoresPage";
 import CxCPage from "./pages/admin/CxCPage";
@@ -194,6 +195,7 @@ function App() {
             <Route path="solicitudes" element={<SolicitudesPage />} />
             <Route path="productos" element={<ProductosPage />} />
             <Route path="contabilidad" element={<ContabilidadPage />} />
+            <Route path="obligaciones" element={<ObligacionesPage />} />
             {/* Nuevos módulos */}
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="proveedores" element={<ProveedoresPage />} />

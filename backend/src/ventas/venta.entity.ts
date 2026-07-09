@@ -35,6 +35,19 @@ export class Venta {
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   total_con_iva: number;
 
+  // ── Clasificación de IVA para la D-150 (TRIBU-CR) ─────────────────────────
+  /** Tarifa: T13 | T04 | T02 | T01 | T005 | Exento | NoSujeto */
+  @Column({ length: 10, default: 'T13' })
+  iva_tarifa: string;
+
+  /** Condición: Gravado | Exonerado | Exento (Exonerado = EV Ley 9518) */
+  @Column({ length: 20, default: 'Gravado' })
+  iva_condicion: string;
+
+  /** N° de autorización de exoneración de Hacienda (EVs), si aplica. */
+  @Column({ type: 'varchar', length: 40, nullable: true })
+  numero_exoneracion: string | null;
+
   // ── Datos de facturación (puede diferir del cliente de la cotización) ──────
   @Column({ length: 200, nullable: true })
   factura_nombre: string;
