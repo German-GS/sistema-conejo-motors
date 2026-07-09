@@ -1,7 +1,8 @@
 import {
-  Controller, Get, Post, Patch, Param, Body, Query, Request,
+  Controller, Get, Post, Patch, Param, Body, Query, Request, Res,
   UseGuards, ParseIntPipe,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -28,6 +29,14 @@ export class IvaController {
   @Roles('Administrador', 'Contador')
   generar(@Body() body: { periodo: string; retenciones?: number; notas?: string }, @Request() req: any) {
     return this.svc.generar(req.user, body.periodo, Number(body.retenciones) || 0, body.notas);
+  }
+
+  @Get('xml')
+  async xml(@Query('periodo') periodo: string, @Res() res: Response) {
+    const xml = await this.svc.xmlD150(periodo);
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Content-Disposition', `attachment; filename="D150-${periodo}-borrador.xml"`);
+    res.send(xml);
   }
 
   @Patch(':id/presentada')

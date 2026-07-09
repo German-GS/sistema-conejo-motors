@@ -75,4 +75,8 @@ export class LineaOrden {
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   subtotal: number;
+
+  /** Tarifa de IVA de la línea (D-150): T13 | T04 | T02 | T01 | T005 | Exento | NoSujeto */
+  @Column({ length: 10, default: 'T13' })
+  iva_tarifa: string;
 }

@@ -6,11 +6,14 @@ import { LiquidacionIVA } from './liquidacion-iva.entity';
 import { Venta } from '../ventas/venta.entity';
 import { Gasto } from '../gastos/gasto.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { OrdenProducto } from '../productos/orden-producto.entity';
+import { NotaFiscal } from '../notas-fiscales/nota-fiscal.entity';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { User } from '../users/user.entity';
 
 const EXENTAS = ['Exento', 'Exonerado'];
+const RATE: Record<string, number> = { T13: 0.13, T04: 0.04, T02: 0.02, T01: 0.01, T005: 0.005, Exento: 0, NoSujeto: 0 };
 
 @Injectable()
 export class IvaService {
@@ -20,6 +23,8 @@ export class IvaService {
     @InjectRepository(Venta) private ventasRepo: Repository<Venta>,
     @InjectRepository(Gasto) private gastosRepo: Repository<Gasto>,
     @InjectRepository(Vehicle) private vehiclesRepo: Repository<Vehicle>,
+    @InjectRepository(OrdenProducto) private ordenesRepo: Repository<OrdenProducto>,
+    @InjectRepository(NotaFiscal) private notasRepo: Repository<NotaFiscal>,
     private readonly contabilidad: ContabilidadService,
     private readonly notifs: NotificationsService,
   ) {}
@@ -59,6 +64,25 @@ export class IvaService {
       else if (key !== 'NoSujeto') { gravadasBase += base; debito += iva; }
     }
 
+    // Ventas de repuestos/taller (órdenes de producto) por tarifa de línea
+    const ordenes = await this.ordenesRepo.find({
+      where: { fecha_creacion: Between(new Date(`${desde}T00:00:00`), new Date(`${hasta}T23:59:59`)) as any },
+      relations: ['lineas'],
+    });
+    for (const o of ordenes) {
+      for (const l of o.lineas ?? []) {
+        const baseL = Number(l.subtotal) || 0;
+        if (baseL <= 0) continue;
+        const tar = l.iva_tarifa || 'T13';
+        const rate = RATE[tar] ?? 0.13;
+        const ivaL = +(baseL * rate).toFixed(2);
+        const b = ventasPorTarifa[tar] ?? { base: 0, iva: 0 };
+        b.base += baseL; b.iva += ivaL; ventasPorTarifa[tar] = b;
+        if (['Exento', 'NoSujeto'].includes(tar)) { if (tar === 'Exento') exentasBase += baseL; }
+        else { gravadasBase += baseL; debito += ivaL; }
+      }
+    }
+
     // Crédito fiscal: gastos con IVA + IVA de importación de vehículos del mes
     const comprasPorTarifa: Record<string, { base: number; iva: number }> = {};
     let creditoBruto = 0;
@@ -79,6 +103,24 @@ export class IvaService {
       const b = comprasPorTarifa['T13'] ?? { base: 0, iva: 0 };
       b.iva += iva; comprasPorTarifa['T13'] = b;
       creditoBruto += iva;
+    }
+
+    // Notas de crédito/débito del mes: Crédito resta, Débito suma.
+    const notas = await this.notasRepo.find({ where: { fecha: Between(desde, hasta) as any } });
+    for (const n of notas) {
+      const s = (n.tipo === 'Credito' ? -1 : 1);
+      const base = (Number(n.base) || 0) * s;
+      const iva = (Number(n.iva) || 0) * s;
+      const tar = n.iva_tarifa || 'T13';
+      if (n.naturaleza === 'Venta') {
+        const b = ventasPorTarifa[tar] ?? { base: 0, iva: 0 };
+        b.base += base; b.iva += iva; ventasPorTarifa[tar] = b;
+        debito += iva; gravadasBase += base;
+      } else {
+        const b = comprasPorTarifa[tar] ?? { base: 0, iva: 0 };
+        b.base += base; b.iva += iva; comprasPorTarifa[tar] = b;
+        creditoBruto += iva;
+      }
     }
 
     // Prorrata: ventas gravadas / (gravadas + exentas). NoSujeto se excluye.
@@ -121,6 +163,36 @@ export class IvaService {
     const existente = await this.repo.findOne({ where: { periodo }, relations: ['generado_por'] });
     const calc = await this.consolidar(periodo, { retenciones });
     return { existente, calc };
+  }
+
+  /**
+   * Borrador XML del D-150 para conciliar/archivar. NO está firmado ni sigue el
+   * esquema oficial de TRIBU-CR: es un export estructurado listo para adaptar a la
+   * API cuando se tengan las llaves criptográficas.
+   */
+  async xmlD150(periodo: string): Promise<string> {
+    const c: any = await this.consolidar(periodo);
+    const esc = (s: any) => String(s ?? '').replace(/[<>&]/g, (m) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[m] as string));
+    const tarifas = (obj: Record<string, { base: number; iva: number }>) =>
+      Object.entries(obj || {}).map(([k, v]) => `    <Linea tarifa="${k}"><Base>${v.base.toFixed(2)}</Base><Impuesto>${(v.iva || 0).toFixed(2)}</Impuesto></Linea>`).join('\n');
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- BORRADOR D-150 — no firmado. Adaptar al esquema oficial de TRIBU-CR al integrar la API. -->
+<DeclaracionIVA formulario="D-150" periodo="${esc(periodo)}">
+  <Ventas>
+${tarifas(c.ventas_por_tarifa)}
+  </Ventas>
+  <Compras>
+${tarifas(c.compras_por_tarifa)}
+  </Compras>
+  <Resumen>
+    <DebitoFiscal>${Number(c.debito_fiscal).toFixed(2)}</DebitoFiscal>
+    <CreditoFiscalBruto>${Number(c.credito_fiscal_bruto).toFixed(2)}</CreditoFiscalBruto>
+    <Prorrata>${Number(c.porcentaje_prorrata).toFixed(2)}</Prorrata>
+    <CreditoFiscalAplicable>${Number(c.credito_fiscal_aplicable).toFixed(2)}</CreditoFiscalAplicable>
+    <Retenciones>${Number(c.retenciones_iva).toFixed(2)}</Retenciones>
+    <ImpuestoAPagar>${Number(c.iva_a_pagar).toFixed(2)}</ImpuestoAPagar>
+  </Resumen>
+</DeclaracionIVA>`;
   }
 
   // ── Generar liquidación (consolida + asiento + estado Generada) ─────────────

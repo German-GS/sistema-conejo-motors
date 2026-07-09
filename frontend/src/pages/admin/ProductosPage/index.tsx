@@ -66,7 +66,7 @@ export const ProductosPage = () => {
 
   // POS — Nueva venta
   const [posCliente, setPosCliente] = useState({ nombre: "", cedula: "", telefono: "" });
-  const [posLineas, setPosLineas] = useState<{ producto: Producto; cantidad: number; descuento: number }[]>([]);
+  const [posLineas, setPosLineas] = useState<{ producto: Producto; cantidad: number; descuento: number; iva_tarifa: string }[]>([]);
   const [posDescuento, setPosDescuento] = useState(0);
   const [posMetodo, setPosMetodo] = useState("Efectivo");
   const [posSearch, setPosSearch] = useState("");
@@ -136,7 +136,7 @@ export const ProductosPage = () => {
         next[idx] = { ...next[idx], cantidad: next[idx].cantidad + 1 };
         return next;
       }
-      return [...prev, { producto: p, cantidad: 1, descuento: 0 }];
+      return [...prev, { producto: p, cantidad: 1, descuento: 0, iva_tarifa: "T13" }];
     });
     setPosSearch("");
   };
@@ -155,7 +155,7 @@ export const ProductosPage = () => {
         cliente_telefono: posCliente.telefono,
         metodo_pago:      posMetodo,
         descuento:        posDescuento,
-        lineas: posLineas.map(l => ({ productoId: l.producto.id, cantidad: l.cantidad, descuento_linea: l.descuento })),
+        lineas: posLineas.map(l => ({ productoId: l.producto.id, cantidad: l.cantidad, descuento_linea: l.descuento, iva_tarifa: l.iva_tarifa })),
       });
       toast.success("✅ Venta registrada correctamente.");
       setPosLineas([]); setPosCliente({ nombre: "", cedula: "", telefono: "" });
@@ -353,6 +353,14 @@ export const ProductosPage = () => {
                     <input type="number" min={1} max={l.producto.stock} className={styles.qtyInput}
                       value={l.cantidad}
                       onChange={e => setPosLineas(prev => { const n=[...prev]; n[i]={...n[i], cantidad: Number(e.target.value)}; return n; })} />
+                    <select
+                      title="Tarifa de IVA"
+                      value={l.iva_tarifa}
+                      onChange={e => setPosLineas(prev => { const n=[...prev]; n[i]={...n[i], iva_tarifa: e.target.value}; return n; })}
+                      style={{ fontSize: "0.72rem", borderRadius: 6, border: "1px solid #e2e8f0", padding: "2px 4px" }}
+                    >
+                      <option value="T13">13%</option><option value="T04">4%</option><option value="T02">2%</option><option value="T01">1%</option><option value="T005">0,5%</option><option value="Exento">Exento</option>
+                    </select>
                     <span className={styles.carritoSubtotal}>{fmtCRC(l.producto.precio_venta * l.cantidad)}</span>
                   </div>
                 </div>

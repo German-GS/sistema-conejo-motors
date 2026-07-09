@@ -83,7 +83,7 @@ export class ProductosService {
       metodo_pago?: string;
       notas?: string;
       descuento?: number;
-      lineas: { productoId: number; cantidad: number; descuento_linea?: number }[];
+      lineas: { productoId: number; cantidad: number; descuento_linea?: number; iva_tarifa?: string }[];
     },
   ): Promise<OrdenProducto> {
     if (!body.lineas?.length) throw new BadRequestException('La orden debe tener al menos un producto.');
@@ -105,6 +105,7 @@ export class ProductosService {
         precio_unitario: producto.precio_venta,
         descuento_linea: desc,
         subtotal: lineaSubtotal,
+        iva_tarifa: l.iva_tarifa ?? 'T13',
       });
       subtotal += lineaSubtotal;
     }

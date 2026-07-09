@@ -10,6 +10,7 @@ const TARIFA_LABEL: Record<string, string> = {
 const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
 const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", color: "#64748b", textAlign: "left" };
 const td: React.CSSProperties = { padding: "6px 10px", color: "#334155", fontSize: "0.85rem" };
+const notaInp: React.CSSProperties = { display: "block", width: "100%", marginTop: 3, padding: "0.4rem 0.5rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit", boxSizing: "border-box" };
 
 export const ObligacionesPage = () => {
   const [pendiente, setPendiente] = useState<any>(null);
@@ -19,6 +20,30 @@ export const ObligacionesPage = () => {
   const [notas, setNotas] = useState("");
   const [loading, setLoading] = useState(true);
   const [generando, setGenerando] = useState(false);
+  const [nota, setNota] = useState({ tipo: "Credito", naturaleza: "Venta", base: "", iva: "", iva_tarifa: "T13", documento_ref: "", motivo: "" });
+
+  const descargarXml = async () => {
+    if (!pendiente) return;
+    try {
+      const res = await apiClient.get(`/iva/xml?periodo=${pendiente.periodo}`, { responseType: "blob" });
+      const url = URL.createObjectURL(new Blob([res.data], { type: "application/xml" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = `D150-${pendiente.periodo}-borrador.xml`; a.click();
+      URL.revokeObjectURL(url);
+    } catch { toast.error("No se pudo generar el XML."); }
+  };
+
+  const crearNota = async () => {
+    const base = Number(nota.base) || 0;
+    if (base <= 0) { toast.error("Ingresá la base de la nota."); return; }
+    const iva = nota.iva !== "" ? Number(nota.iva) : +(base * (nota.iva_tarifa === "T13" ? 0.13 : nota.iva_tarifa === "T04" ? 0.04 : nota.iva_tarifa === "T02" ? 0.02 : nota.iva_tarifa === "T01" ? 0.01 : nota.iva_tarifa === "T005" ? 0.005 : 0)).toFixed(2);
+    try {
+      await apiClient.post("/notas-fiscales", { ...nota, base, iva });
+      toast.success("Nota registrada. Ajusta el IVA del período.");
+      setNota({ tipo: "Credito", naturaleza: "Venta", base: "", iva: "", iva_tarifa: "T13", documento_ref: "", motivo: "" });
+      cargar();
+    } catch (e: any) { toast.error(e.response?.data?.message || "Error al registrar la nota."); }
+  };
 
   const cargar = useCallback(async () => {
     setLoading(true);
@@ -143,9 +168,42 @@ export const ObligacionesPage = () => {
             <button onClick={generar} disabled={generando} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.2rem", cursor: "pointer", fontWeight: 700 }}>
               {generando ? "Generando…" : "Generar liquidación"}
             </button>
+            <button onClick={descargarXml} style={{ background: "#fff", border: "1px solid #cbd5e1", color: "#334155", borderRadius: 8, padding: "0.6rem 1rem", cursor: "pointer", fontWeight: 600 }} title="Borrador XML del D-150 (sin firmar)">
+              ⬇️ XML (borrador)
+            </button>
           </div>
         </div>
       )}
+
+      {/* Notas de crédito / débito */}
+      <div style={card}>
+        <strong style={{ fontSize: "1rem", color: "#0a2540" }}>Notas de crédito / débito</strong>
+        <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "0.25rem 0 0.75rem" }}>Devoluciones, descuentos o cargos posteriores que ajustan el IVA del período (crédito resta, débito suma).</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.6rem", alignItems: "end" }}>
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569" }}>Tipo
+            <select value={nota.tipo} onChange={(e) => setNota({ ...nota, tipo: e.target.value })} style={notaInp}><option value="Credito">Crédito (resta)</option><option value="Debito">Débito (suma)</option></select>
+          </label>
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569" }}>Naturaleza
+            <select value={nota.naturaleza} onChange={(e) => setNota({ ...nota, naturaleza: e.target.value })} style={notaInp}><option value="Venta">Venta</option><option value="Compra">Compra</option></select>
+          </label>
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569" }}>Tarifa
+            <select value={nota.iva_tarifa} onChange={(e) => setNota({ ...nota, iva_tarifa: e.target.value })} style={notaInp}>{["T13", "T04", "T02", "T01", "T005", "Exento"].map((t) => <option key={t} value={t}>{TARIFA_LABEL[t] ?? t}</option>)}</select>
+          </label>
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569" }}>Base (₡)
+            <input type="number" value={nota.base} onChange={(e) => setNota({ ...nota, base: e.target.value })} style={notaInp} />
+          </label>
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569" }}>IVA (auto)
+            <input type="number" value={nota.iva} onChange={(e) => setNota({ ...nota, iva: e.target.value })} placeholder="auto" style={notaInp} />
+          </label>
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569" }}>Doc. ref
+            <input value={nota.documento_ref} onChange={(e) => setNota({ ...nota, documento_ref: e.target.value })} placeholder="Factura/OC" style={notaInp} />
+          </label>
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569", gridColumn: "span 2" }}>Motivo
+            <input value={nota.motivo} onChange={(e) => setNota({ ...nota, motivo: e.target.value })} style={notaInp} />
+          </label>
+          <button onClick={crearNota} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, height: 34 }}>Registrar nota</button>
+        </div>
+      </div>
 
       {/* Histórico */}
       <div style={card}>
