@@ -98,6 +98,8 @@ const PendingBillingPage = () => {
   });
   const [procesando, setProcesando] = useState(false);
   const [depositoConfirmado, setDepositoConfirmado] = useState(false);
+  const [exonerado, setExonerado] = useState(false);
+  const [numeroExoneracion, setNumeroExoneracion] = useState("");
   const [sugefModal, setSugefModal] = useState<{ faltantes: string[]; leadId?: number } | null>(null);
 
   // Filtro pendientes
@@ -193,13 +195,15 @@ const PendingBillingPage = () => {
     try {
       await apiClient.post("/billing/facturar", {
         cotizacionId: cotSeleccionada.id,
-        datos: { ...form, deposito_confirmado: true, sugef_omitir: omitirSugef },
+        datos: { ...form, deposito_confirmado: true, sugef_omitir: omitirSugef, exonerado, numero_exoneracion: exonerado ? numeroExoneracion : undefined },
       });
       toast.success("✅ Venta completada y factura generada exitosamente.");
       setCotSeleccionada(null);
       setResultados([]);
       setBusqueda("");
       setDepositoConfirmado(false);
+      setExonerado(false);
+      setNumeroExoneracion("");
       setSugefModal(null);
       fetchAll();
       setTab("historial");
@@ -350,6 +354,22 @@ const PendingBillingPage = () => {
                     onChange={e => setForm(f => ({ ...f, factura_notas: e.target.value }))}
                     placeholder="Observaciones para la factura..." />
                 </div>
+
+                {/* Exoneración de IVA — vehículo eléctrico (Ley 9518) */}
+                <div className={`${styles.field} ${styles.fullWidth}`}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                    <input type="checkbox" checked={exonerado} onChange={(e) => setExonerado(e.target.checked)} />
+                    ⚡ Exonerado de IVA (vehículo eléctrico — Ley 9518)
+                  </label>
+                  {exonerado && (
+                    <input
+                      style={{ marginTop: "0.4rem" }}
+                      value={numeroExoneracion}
+                      onChange={(e) => setNumeroExoneracion(e.target.value)}
+                      placeholder="N° de autorización de exoneración (Hacienda)"
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Resumen final */}
@@ -371,13 +391,13 @@ const PendingBillingPage = () => {
                   <span>{fmtCRC(cotSeleccionada.precio_final)}</span>
                 </div>
                 <div className={`${styles.facturaResumenRow} ${styles.ivaResumenRow}`}>
-                  <span>IVA ({Number(cotSeleccionada.iva_porcentaje) || 13}%):</span>
-                  <span>{fmtCRC(Number(cotSeleccionada.iva_monto) || Number(cotSeleccionada.precio_final) * 0.13)}</span>
+                  <span>IVA ({exonerado ? "exonerado" : `${Number(cotSeleccionada.iva_porcentaje) || 13}%`}):</span>
+                  <span>{exonerado ? "⚡ ₡0 (Ley 9518)" : fmtCRC(Number(cotSeleccionada.iva_monto) || Number(cotSeleccionada.precio_final) * 0.13)}</span>
                 </div>
                 <div className={`${styles.facturaResumenRow} ${styles.totalRow}`}>
                   <span>TOTAL A COBRAR:</span>
                   <strong className={styles.totalMonto}>
-                    {fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}
+                    {fmtCRC(exonerado ? Number(cotSeleccionada.precio_final) : (Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13))}
                   </strong>
                 </div>
               </div>

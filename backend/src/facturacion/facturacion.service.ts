@@ -29,6 +29,9 @@ export interface DatosFacturacion {
   deposito_confirmado?: boolean;
   /** Facturar aunque falten campos SUGEF (queda registrado) */
   sugef_omitir?: boolean;
+  /** Exoneración de IVA (vehículo eléctrico, Ley 9518) */
+  exonerado?: boolean;
+  numero_exoneracion?: string;
 }
 
 @Injectable()
@@ -188,8 +191,10 @@ export class FacturacionService {
 
     let facturaCreada: Factura | undefined;
     const venta = await this.ventasRepo.manager.transaction(async (manager) => {
-      const ivaMonto    = Number(cotizacion.iva_monto)    || +(Number(cotizacion.precio_final) * 0.13).toFixed(2);
-      const totalConIva = Number(cotizacion.total_con_iva) || +(Number(cotizacion.precio_final) * 1.13).toFixed(2);
+      const base = Number(cotizacion.precio_final) || 0;
+      // Exoneración EV (Ley 9518): sin IVA. Si no, IVA 13%.
+      const ivaMonto    = datos.exonerado ? 0 : (Number(cotizacion.iva_monto)    || +(base * 0.13).toFixed(2));
+      const totalConIva = datos.exonerado ? base : (Number(cotizacion.total_con_iva) || +(base * 1.13).toFixed(2));
 
       const nuevaVenta = manager.create(Venta, {
         cotizacion,
@@ -197,6 +202,9 @@ export class FacturacionService {
         monto_final:         cotizacion.precio_final,  // base imponible (sin IVA)
         iva_monto:           ivaMonto,
         total_con_iva:       totalConIva,
+        iva_tarifa:          datos.exonerado ? 'Exento' : 'T13',
+        iva_condicion:       datos.exonerado ? 'Exonerado' : 'Gravado',
+        numero_exoneracion:  datos.exonerado ? (datos.numero_exoneracion ?? null) : null,
         metodo_pago:         datos.metodo_pago,
         factura_nombre:      datos.factura_nombre,
         factura_tipo_cedula: datos.factura_tipo_cedula,
@@ -316,7 +324,8 @@ export class FacturacionService {
     if (!cuentaCobro || !cuentaIngreso) return;
 
     const baseImponible = Number(cotizacion.precio_final) || 0;
-    const ivaMonto      = Number(venta.iva_monto)    || +(baseImponible * 0.13).toFixed(2);
+    const exonerada     = ['Exonerado', 'Exento'].includes(venta.iva_condicion);
+    const ivaMonto      = exonerada ? 0 : (Number(venta.iva_monto) || +(baseImponible * 0.13).toFixed(2));
     const costo = Number(cotizacion.vehiculo?.precio_costo) || 0;
     const cuentaIva = porCodigo('2200'); // IVA por Pagar
     // El cobro se deriva de base + IVA efectivamente reconocidos → cuadre exacto al céntimo.
