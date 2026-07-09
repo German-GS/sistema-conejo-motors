@@ -43,6 +43,29 @@ export class ActivoFijo {
   @Column({ type: 'varchar', length: 7, nullable: true })
   ultimo_periodo_depreciado: string | null;
 
+  // ── Registro del libro de activos depreciables (Reglamento, punto 1.1) ────
+  @Column({ type: 'varchar', length: 40, nullable: true })
+  numero_inventario: string | null;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  localizacion: string | null;
+
+  @Column({ type: 'varchar', length: 20, default: 'LineaRecta' })
+  metodo_depreciacion: string; // financiero
+
+  // ── Carril FISCAL (Anexo Nº 2) — NO se contabiliza; subledger tributario ──
+  @Column({ type: 'int', default: 120 })
+  vida_util_fiscal_meses: number;
+
+  @Column({ type: 'varchar', length: 20, default: 'LineaRecta' })
+  metodo_fiscal: string; // 'LineaRecta' | 'SumaDigitos'
+
+  @Column({ type: 'decimal', precision: 14, scale: 2, default: 0 })
+  depreciacion_fiscal_acumulada: number;
+
+  @Column({ type: 'varchar', length: 7, nullable: true })
+  ultimo_periodo_fiscal: string | null;
+
   @Column({ default: true })
   activo: boolean;
 

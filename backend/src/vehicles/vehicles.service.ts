@@ -303,7 +303,7 @@ export class VehiclesService implements OnApplicationBootstrap {
   /** Edita los datos de un vehículo demo/uso interno: placa, marchamo, vida útil y valor residual. */
   async actualizarDatosDemo(
     id: number,
-    datos: { placa?: string | null; marchamo?: number; valor_residual_demo?: number; vida_util_meses_demo?: number },
+    datos: { placa?: string | null; marchamo?: number; valor_residual_demo?: number; vida_util_meses_demo?: number; vida_util_fiscal_meses_demo?: number },
   ): Promise<Vehicle> {
     const v = await this.vehiclesRepository.findOneBy({ id });
     if (!v) throw new NotFoundException(`Vehículo #${id} no encontrado.`);
@@ -311,6 +311,7 @@ export class VehiclesService implements OnApplicationBootstrap {
     if (datos.marchamo !== undefined) v.marchamo = Number(datos.marchamo) || 0;
     if (datos.valor_residual_demo !== undefined) v.valor_residual_demo = Number(datos.valor_residual_demo) || 0;
     if (datos.vida_util_meses_demo !== undefined) v.vida_util_meses_demo = Number(datos.vida_util_meses_demo) || 60;
+    if (datos.vida_util_fiscal_meses_demo !== undefined) v.vida_util_fiscal_meses_demo = Number(datos.vida_util_fiscal_meses_demo) || 120;
     await this.vehiclesRepository.save(v);
     return this.vehiclesRepository.findOneByOrFail({ id });
   }
@@ -389,6 +390,28 @@ export class VehiclesService implements OnApplicationBootstrap {
           await this.vehiclesRepository.save(v);
         })
         .catch((e) => this.logger.warn(`[Contabilidad] Depreciación demo #${v.id}: ${(e as Error).message}`));
+    }
+  }
+
+  /**
+   * Depreciación FISCAL de los vehículos demo (Anexo 2: 10 años). Carril paralelo,
+   * base = costo total (sin residual), NO genera asiento. Día 1, 06:25 UTC.
+   */
+  @Cron('0 25 1 * *')
+  async depreciarFiscalVehiculosDemo(): Promise<void> {
+    const demos = await this.vehiclesRepository.find({ where: { estado: 'Demo' } });
+    const periodo = this.hoyCR().slice(0, 7);
+    for (const v of demos) {
+      if (v.ultimo_periodo_fiscal_demo === periodo) continue;
+      const base = Number(v.precio_costo) || 0;
+      if (base <= 0) continue;
+      const vida = Number(v.vida_util_fiscal_meses_demo) || 120;
+      const acum = Number(v.depreciacion_fiscal_acumulada_demo) || 0;
+      if (acum >= base) { v.ultimo_periodo_fiscal_demo = periodo; await this.vehiclesRepository.save(v); continue; }
+      const cuota = Math.min(+(base / vida).toFixed(2), +(base - acum).toFixed(2));
+      v.depreciacion_fiscal_acumulada_demo = +(acum + cuota).toFixed(2);
+      v.ultimo_periodo_fiscal_demo = periodo;
+      await this.vehiclesRepository.save(v);
     }
   }
 

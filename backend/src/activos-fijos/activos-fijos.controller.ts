@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Patch, Param, Body, Request,
+  Controller, Get, Post, Patch, Param, Body, Request, Query,
   UseGuards, ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -15,6 +15,12 @@ export class ActivosFijosController {
 
   @Get()
   listar() { return this.svc.listar(); }
+
+  @Get('reporte-fiscal')
+  reporteFiscal(@Query('tasa') tasa?: string) {
+    const t = tasa ? Number(tasa) : undefined;
+    return this.svc.reporteFiscal(t !== undefined && !isNaN(t) ? t : undefined);
+  }
 
   @Post()
   crear(@Body() body: any, @Request() req: any) {

@@ -290,6 +290,8 @@ const DepreciacionConfig: React.FC = () => {
     try {
       await apiClient.patch(`/depreciacion/categorias/${c.id}`, {
         nombre: c.nombre, vida_util_meses: Number(c.vida_util_meses) || 0,
+        vida_util_fiscal_meses: Number(c.vida_util_fiscal_meses) || 0,
+        metodo_fiscal: c.metodo_fiscal || "LineaRecta",
         tasa_anual: Number(c.tasa_anual) || 0, cuenta_activo: c.cuenta_activo, activo: c.activo,
       });
       toast.success("Categoría guardada.");
@@ -318,8 +320,8 @@ const DepreciacionConfig: React.FC = () => {
         <div>
           <strong style={{ fontSize: "1rem", color: "#0a2540" }}>Tabla de depreciación</strong>
           <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "#64748b", maxWidth: 620 }}>
-            Vida útil por categoría de activo. La tasa anual es informativa; la depreciación usa la vida útil (meses).
-            Valores por defecto — <strong>verificá y ajustá</strong> según el Reglamento de la Ley del Impuesto sobre la Renta vigente.
+            Doble libro: <strong>vida financiera</strong> (NIIF, va al mayor) y <strong>vida fiscal</strong> (Anexo Nº 2 del Decreto 43198-H, solo para renta).
+            La tasa anual es la del Anexo. Verificá los valores contra el reglamento vigente.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -332,11 +334,13 @@ const DepreciacionConfig: React.FC = () => {
           <thead>
             <tr style={{ textAlign: "left", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>
               <th style={{ padding: "6px" }}>Categoría</th>
-              <th style={{ padding: "6px", width: 120 }}>Vida útil (meses)</th>
-              <th style={{ padding: "6px", width: 100 }}>Tasa anual %</th>
-              <th style={{ padding: "6px", width: 90 }}>Cuenta</th>
-              <th style={{ padding: "6px", width: 70 }}>Activa</th>
-              <th style={{ padding: "6px", width: 130 }}></th>
+              <th style={{ padding: "6px", width: 100 }} title="Vida útil contable (NIIF)">Vida financiera</th>
+              <th style={{ padding: "6px", width: 100 }} title="Vida útil fiscal (Anexo 2)">Vida fiscal</th>
+              <th style={{ padding: "6px", width: 120 }}>Método fiscal</th>
+              <th style={{ padding: "6px", width: 80 }}>Tasa %</th>
+              <th style={{ padding: "6px", width: 80 }}>Cuenta</th>
+              <th style={{ padding: "6px", width: 60 }}>Activa</th>
+              <th style={{ padding: "6px", width: 120 }}></th>
             </tr>
           </thead>
           <tbody>
@@ -344,6 +348,13 @@ const DepreciacionConfig: React.FC = () => {
               <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                 <td style={{ padding: "6px" }}><input value={c.nombre} onChange={(e) => setCampo(c.id, "nombre", e.target.value)} style={inp} /></td>
                 <td style={{ padding: "6px" }}><input type="number" value={c.vida_util_meses} onChange={(e) => setCampo(c.id, "vida_util_meses", e.target.value)} style={inp} /></td>
+                <td style={{ padding: "6px" }}><input type="number" value={c.vida_util_fiscal_meses ?? ""} onChange={(e) => setCampo(c.id, "vida_util_fiscal_meses", e.target.value)} style={inp} /></td>
+                <td style={{ padding: "6px" }}>
+                  <select value={c.metodo_fiscal ?? "LineaRecta"} onChange={(e) => setCampo(c.id, "metodo_fiscal", e.target.value)} style={inp}>
+                    <option value="LineaRecta">Línea recta</option>
+                    <option value="SumaDigitos">Suma de dígitos</option>
+                  </select>
+                </td>
                 <td style={{ padding: "6px" }}><input type="number" value={c.tasa_anual} onChange={(e) => setCampo(c.id, "tasa_anual", e.target.value)} style={inp} /></td>
                 <td style={{ padding: "6px" }}><input value={c.cuenta_activo} onChange={(e) => setCampo(c.id, "cuenta_activo", e.target.value)} style={inp} /></td>
                 <td style={{ padding: "6px", textAlign: "center" }}><input type="checkbox" checked={c.activo} onChange={(e) => setCampo(c.id, "activo", e.target.checked)} /></td>
@@ -353,7 +364,7 @@ const DepreciacionConfig: React.FC = () => {
                 </td>
               </tr>
             ))}
-            {cats.length === 0 && <tr><td colSpan={6} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8" }}>Sin categorías. Usá "Sembrar tabla" para los valores por defecto.</td></tr>}
+            {cats.length === 0 && <tr><td colSpan={8} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8" }}>Sin categorías. Usá "Sembrar tabla" para los valores por defecto.</td></tr>}
           </tbody>
         </table>
       </div>

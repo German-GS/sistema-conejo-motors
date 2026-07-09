@@ -84,7 +84,17 @@ export class Vehicle {
   valor_residual_demo: number;      // Valor residual: la depreciación se detiene en costo − residual
 
   @Column({ type: 'int', default: 60 })
-  vida_util_meses_demo: number;     // Vida útil para depreciación como demo (meses)
+  vida_util_meses_demo: number;     // Vida útil FINANCIERA como demo (meses)
+
+  // Carril fiscal (Anexo 2): automóvil de empresa = 10 años (120 meses). No se contabiliza.
+  @Column({ type: 'int', default: 120 })
+  vida_util_fiscal_meses_demo: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  depreciacion_fiscal_acumulada_demo: number;
+
+  @Column({ type: 'varchar', length: 7, nullable: true })
+  ultimo_periodo_fiscal_demo: string | null;
 
   @Column({ type: 'varchar', length: 20, nullable: true })
   placa: string | null;             // Placa/matrícula cuando el vehículo es demo/uso interno

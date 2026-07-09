@@ -17,9 +17,21 @@ export class CategoriaDepreciacion {
   @Column({ type: 'int', default: 120 })
   vida_util_meses: number;
 
-  /** Tasa anual de depreciación (%) — informativa; la depreciación usa vida_util_meses. */
+  /** Tasa anual FISCAL (%) del Anexo Nº 2 — informativa. */
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   tasa_anual: number;
+
+  /**
+   * Vida útil FISCAL (meses) según el Anexo Nº 2 (Decreto 43198-H). Distinta de la
+   * financiera (vida_util_meses): la fiscal se usa solo para el subledger tributario.
+   * Nullable a propósito: NULL marca una categoría aún no normalizada (para backfill).
+   */
+  @Column({ type: 'int', nullable: true })
+  vida_util_fiscal_meses: number | null;
+
+  /** Método fiscal permitido por el Anexo: 'LineaRecta' | 'SumaDigitos'. */
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  metodo_fiscal: string | null;
 
   /** Cuenta contable de activo sugerida (1510, 1520, 1500, …). */
   @Column({ length: 20, default: '1510' })

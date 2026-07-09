@@ -111,6 +111,9 @@ export const ContabilidadPage = () => {
   const [editItem, setEditItem] = useState<any | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [categoriasDep, setCategoriasDep] = useState<any[]>([]);
+  const [showFiscal, setShowFiscal] = useState(false);
+  const [fiscal, setFiscal] = useState<any | null>(null);
+  const [tasaRenta, setTasaRenta] = useState(30);
   const [cierresPeriodo, setCierresPeriodo] = useState<any[]>([]);
   const [periodoCierre, setPeriodoCierre] = useState(() => hoyEnCR().slice(0, 7));
   const [tipoCierre, setTipoCierre] = useState<"Mensual" | "Anual">("Mensual");
@@ -254,6 +257,18 @@ export const ContabilidadPage = () => {
     } catch (e: any) { toast.error(e.response?.data?.message || "Error."); }
   };
 
+  const fetchFiscal = useCallback(async (tasa: number) => {
+    try {
+      const r = await apiClient.get(`/activos-fijos/reporte-fiscal?tasa=${tasa / 100}`);
+      setFiscal(r.data);
+    } catch { toast.error("No se pudo cargar el reporte fiscal."); }
+  }, []);
+
+  const toggleFiscal = () => {
+    setShowFiscal((s) => !s);
+    if (!showFiscal) fetchFiscal(tasaRenta);
+  };
+
   // Agregación de activos por cuenta contable (para los gráficos)
   const activosPorCuenta = useMemo(() => {
     if (!activos) return [] as { cuenta: string; costo: number; dep: number; neto: number; color: string }[];
@@ -300,12 +315,17 @@ export const ContabilidadPage = () => {
           marchamo: Number(editItem.marchamo) || 0,
           valor_residual_demo: Number(editItem.valor_residual) || 0,
           vida_util_meses_demo: Number(editItem.vida_util_meses) || 60,
+          vida_util_fiscal_meses_demo: Number(editItem.vida_util_fiscal_meses) || 120,
         });
       } else {
         await apiClient.patch(`/activos-fijos/${editItem.id}`, {
           nombre: editItem.nombre,
           vida_util_meses: Number(editItem.vida_util_meses) || 60,
           valor_residual: Number(editItem.valor_residual) || 0,
+          vida_util_fiscal_meses: Number(editItem.vida_util_fiscal_meses) || 120,
+          metodo_fiscal: editItem.metodo_fiscal ?? "LineaRecta",
+          numero_inventario: editItem.numero_inventario ?? "",
+          localizacion: editItem.localizacion ?? "",
           notas: editItem.notas ?? "",
         });
       }
@@ -640,6 +660,55 @@ export const ContabilidadPage = () => {
             </div>
           )}
 
+          {/* Reporte fiscal — diferencia libro-fiscal e impuesto diferido */}
+          <div style={{ margin: "1rem 0" }}>
+            <button onClick={toggleFiscal} className={styles.seedBtn}>
+              📑 {showFiscal ? "Cerrar reporte fiscal" : "Reporte fiscal (impuesto diferido)"}
+            </button>
+            {showFiscal && fiscal && (
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                  <p style={{ fontSize: "0.82rem", color: "#64748b", margin: 0, maxWidth: 560 }}>
+                    Diferencia entre la depreciación <strong>financiera</strong> (mayor) y la <strong>fiscal</strong> (Anexo 2). La diferencia temporaria genera el impuesto diferido. El carril fiscal NO afecta la contabilidad.
+                  </p>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569", whiteSpace: "nowrap" }}>Tasa de renta %
+                    <input type="number" value={tasaRenta} onChange={(e) => setTasaRenta(Number(e.target.value))} onBlur={() => fetchFiscal(tasaRenta)} style={{ ...inputStyle, width: 80, display: "inline-block", marginLeft: 8 }} />
+                  </label>
+                </div>
+                <div className={styles.kpiRow}>
+                  <KpiCard icon="📘" label="Dep. financiera acum." value={fmtCRC(fiscal.totales.dep_financiera)} color="#0891b2" />
+                  <KpiCard icon="📕" label="Dep. fiscal acum." value={fmtCRC(fiscal.totales.dep_fiscal)} color="#d97706" />
+                  <KpiCard icon="⚖️" label="Diferencia temporaria" value={fmtCRC(fiscal.totales.diferencia_temporaria)} color="#7c3aed" />
+                  <KpiCard icon="🧾" label={`Impuesto diferido (${tasaRenta}%)`} value={fmtCRC(fiscal.totales.impuesto_diferido)} color="#15803d" />
+                </div>
+                <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", minWidth: 620 }}>
+                    <thead>
+                      <tr style={{ background: "#f8fafc", textAlign: "left", color: "#475569" }}>
+                        <th style={thStyle}>Activo</th>
+                        <th style={{ ...thStyle, textAlign: "center" }}>Vida fin/fiscal</th>
+                        <th style={{ ...thStyle, textAlign: "right" }}>Dep. financiera</th>
+                        <th style={{ ...thStyle, textAlign: "right" }}>Dep. fiscal</th>
+                        <th style={{ ...thStyle, textAlign: "right" }}>Diferencia</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fiscal.items.map((it: any) => (
+                        <tr key={`${it.tipo}-${it.id}`} style={{ borderTop: "1px solid #f1f5f9" }}>
+                          <td style={tdStyle}>{it.nombre}</td>
+                          <td style={{ ...tdStyle, textAlign: "center", color: "#64748b" }}>{it.vida_financiera}/{it.vida_fiscal} m</td>
+                          <td style={{ ...tdStyle, textAlign: "right" }}>{fmtCRC(it.dep_financiera)}</td>
+                          <td style={{ ...tdStyle, textAlign: "right" }}>{fmtCRC(it.dep_fiscal)}</td>
+                          <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700, color: it.diferencia >= 0 ? "#7c3aed" : "#dc2626" }}>{fmtCRC(it.diferencia)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Migración de vehículos de venta → uso interno */}
           <div style={{ margin: "1rem 0" }}>
             <button onClick={abrirMigrar} className={styles.seedBtn}>
@@ -793,12 +862,31 @@ export const ContabilidadPage = () => {
                       </label>
                     </>
                   )}
-                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Vida útil (meses)
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Vida financiera (meses)
                     <input type="number" value={editItem.vida_util_meses ?? 60} onChange={(e) => setEditItem({ ...editItem, vida_util_meses: e.target.value })} style={inputStyle} />
                   </label>
                   <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Valor residual (₡)
                     <input type="number" value={editItem.valor_residual ?? 0} onChange={(e) => setEditItem({ ...editItem, valor_residual: e.target.value })} style={inputStyle} />
                   </label>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }} title="Vida útil fiscal (Anexo 2) — solo renta, no afecta el mayor">Vida fiscal (meses)
+                    <input type="number" value={editItem.vida_util_fiscal_meses ?? 120} onChange={(e) => setEditItem({ ...editItem, vida_util_fiscal_meses: e.target.value })} style={inputStyle} />
+                  </label>
+                  {editItem.tipo === "Activo" && (
+                    <>
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Método fiscal
+                        <select value={editItem.metodo_fiscal ?? "LineaRecta"} onChange={(e) => setEditItem({ ...editItem, metodo_fiscal: e.target.value })} style={inputStyle}>
+                          <option value="LineaRecta">Línea recta</option>
+                          <option value="SumaDigitos">Suma de dígitos</option>
+                        </select>
+                      </label>
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>N° inventario
+                        <input value={editItem.numero_inventario ?? ""} onChange={(e) => setEditItem({ ...editItem, numero_inventario: e.target.value })} style={inputStyle} />
+                      </label>
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Localización
+                        <input value={editItem.localizacion ?? ""} onChange={(e) => setEditItem({ ...editItem, localizacion: e.target.value })} style={inputStyle} />
+                      </label>
+                    </>
+                  )}
                   {editItem.tipo === "Activo" && (
                     <label style={{ gridColumn: "1 / -1", fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Notas
                       <textarea value={editItem.notas ?? ""} onChange={(e) => setEditItem({ ...editItem, notas: e.target.value })} rows={2} style={{ ...inputStyle, resize: "vertical" }} />
