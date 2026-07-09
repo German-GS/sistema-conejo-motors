@@ -397,7 +397,7 @@ export class VehiclesService implements OnApplicationBootstrap {
    * Depreciación FISCAL de los vehículos demo (Anexo 2: 10 años). Carril paralelo,
    * base = costo total (sin residual), NO genera asiento. Día 1, 06:25 UTC.
    */
-  @Cron('0 25 1 * *')
+  @Cron('0 7 1 * *')
   async depreciarFiscalVehiculosDemo(): Promise<void> {
     const demos = await this.vehiclesRepository.find({ where: { estado: 'Demo' } });
     const periodo = this.hoyCR().slice(0, 7);
