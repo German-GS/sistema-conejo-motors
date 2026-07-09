@@ -62,6 +62,16 @@ export class Gasto {
   @Column({ default: false })
   contabilizado: boolean;
 
+  // ── Comprobante / factura de respaldo (GCS privado) ───────────────────────
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  comprobante_gcs_path: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  comprobante_nombre: string | null;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  comprobante_mime: string | null;
+
   @CreateDateColumn()
   creado_en: Date;
 }

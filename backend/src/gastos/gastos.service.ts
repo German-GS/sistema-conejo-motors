@@ -1,8 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, DataSource, EntityManager } from 'typeorm';
+import { Storage } from '@google-cloud/storage';
+import { v4 as uuidv4 } from 'uuid';
 import { Gasto } from './gasto.entity';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
+
+const GCS_BUCKET = process.env.GCS_BUCKET ?? 'conejo-motors-media';
+const bucket = new Storage().bucket(GCS_BUCKET);
+const MIME_COMPROBANTE = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+const MAX_BYTES = 15 * 1024 * 1024;
 
 // Mapa categoría de gasto → código de cuenta contable de gasto
 const CUENTA_POR_CATEGORIA: Record<string, string> = {
@@ -126,6 +133,38 @@ export class GastosService {
       .reversarAsientosPorReferencia('Gasto', id, undefined, 'Eliminación de gasto')
       .catch((e) => this.logger.warn(`Reversa gasto #${id}: ${(e as Error).message}`));
     await this.repo.delete(id);
+  }
+
+  /** Sube (o reemplaza) el comprobante/factura de respaldo del gasto a GCS privado. */
+  async subirComprobante(id: number, file: Express.Multer.File): Promise<Gasto> {
+    if (!file) throw new BadRequestException('No se recibió ningún archivo.');
+    if (file.size > MAX_BYTES) throw new BadRequestException('El archivo supera el límite de 15 MB.');
+    if (file.mimetype && !MIME_COMPROBANTE.includes(file.mimetype)) {
+      throw new BadRequestException(`Tipo no permitido: ${file.mimetype}. Use PDF o imagen.`);
+    }
+    const gasto = await this.repo.findOneBy({ id });
+    if (!gasto) throw new NotFoundException(`Gasto #${id} no encontrado.`);
+
+    // Borrar el anterior si existía
+    if (gasto.comprobante_gcs_path) {
+      await bucket.file(gasto.comprobante_gcs_path).delete().catch(() => {});
+    }
+    const ext = (file.originalname.split('.').pop() ?? 'bin').toLowerCase();
+    const gcsPath = `gastos-comprobantes/${id}/${uuidv4()}.${ext}`;
+    await bucket.file(gcsPath).save(file.buffer, { metadata: { contentType: file.mimetype }, resumable: false });
+
+    gasto.comprobante_gcs_path = gcsPath;
+    gasto.comprobante_nombre = file.originalname;
+    gasto.comprobante_mime = file.mimetype;
+    await this.repo.save(gasto);
+    return gasto;
+  }
+
+  async descargarComprobante(id: number): Promise<{ gasto: Gasto; buffer: Buffer }> {
+    const gasto = await this.repo.findOneBy({ id });
+    if (!gasto || !gasto.comprobante_gcs_path) throw new NotFoundException('El gasto no tiene comprobante.');
+    const [buffer] = await bucket.file(gasto.comprobante_gcs_path).download();
+    return { gasto, buffer };
   }
 
   async resumenPorCategoria(año: number, mes: number): Promise<any[]> {

@@ -5,7 +5,7 @@ import styles from "./GastosPage.module.css";
 import { LuPlus, LuReceipt } from "react-icons/lu";
 import { exportToExcel } from "@/utils/exportExcel";
 
-interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; }
+interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; }
 
 const CATS = ['Salarios','Servicios Publicos','Publicidad','Combustible','Alquiler','Mantenimiento','Papeleria','Alimentacion','Transporte','Seguros','Impuestos','Otro'];
 
@@ -14,7 +14,16 @@ export default function GastosPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ categoria: 'Otro', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' });
+  const [comprobante, setComprobante] = useState<File | null>(null);
   const [totalMes, setTotalMes] = useState(0);
+
+  const verComprobante = async (id: number) => {
+    try {
+      const res = await apiClient.get(`/gastos/${id}/comprobante`, { responseType: "blob" });
+      const url = URL.createObjectURL(res.data);
+      window.open(url, "_blank");
+    } catch { toast.error("No se pudo abrir el comprobante."); }
+  };
 
   const cargar = async () => {
     setLoading(true);
@@ -41,7 +50,16 @@ export default function GastosPage() {
       payload.iva_monto = 0; payload.base_imponible = monto;
     }
     delete payload.tiene_iva;
-    await apiClient.post("/gastos", payload);
+    const res = await apiClient.post("/gastos", payload);
+    const id = res.data?.id;
+    if (comprobante && id) {
+      try {
+        const fd = new FormData();
+        fd.append("file", comprobante);
+        await apiClient.post(`/gastos/${id}/comprobante`, fd);
+      } catch { toast.error("El gasto se guardó, pero falló la subida del comprobante."); }
+    }
+    setComprobante(null);
     setShowModal(false); cargar();
   };
 
@@ -78,7 +96,12 @@ export default function GastosPage() {
               <span>{g.fecha}</span>
               <span className={styles.cat}>{g.categoria}</span>
               <span>{g.descripcion}</span>
-              <span>{g.numero_factura || '-'}</span>
+              <span>
+                {g.numero_factura || '-'}
+                {g.comprobante_gcs_path && (
+                  <button onClick={() => verComprobante(g.id)} title="Ver factura adjunta" style={{ marginLeft: 6, background: "none", border: "none", cursor: "pointer", fontSize: "0.95rem" }}>📎</button>
+                )}
+              </span>
               <span>{g.proveedor?.nombre || '-'}</span>
               <span className={styles.monto}>₡{(+g.monto).toLocaleString('es-CR')}</span>
             </div>
@@ -99,6 +122,11 @@ export default function GastosPage() {
               <div className={styles.fg}><label>N° Factura</label><input value={form.numero_factura} onChange={f('numero_factura')} /></div>
               <div className={styles.fg}><label>Método de pago</label><select value={form.metodo_pago} onChange={f('metodo_pago')}><option>Efectivo</option><option>Banco</option><option>Transferencia</option><option>SINPE</option><option>Tarjeta</option><option>Cheque</option><option>Credito</option></select></div>
               <div className={styles.fg}><label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}><input type="checkbox" checked={(form as any).tiene_iva} onChange={(e) => setForm({ ...form, tiene_iva: e.target.checked } as any)} /> El monto incluye IVA 13% (crédito fiscal)</label></div>
+              <div className={`${styles.fg} ${styles.full}`}>
+                <label>📎 Factura / comprobante (foto o PDF)</label>
+                <input type="file" accept="image/*,application/pdf" capture="environment" onChange={(e) => setComprobante(e.target.files?.[0] ?? null)} />
+                {comprobante && <span style={{ fontSize: "0.78rem", color: "#15803d" }}>✓ {comprobante.name}</span>}
+              </div>
               <div className={`${styles.fg} ${styles.full}`}><label>Notas</label><textarea value={form.notas} onChange={f('notas')} rows={2} /></div>
             </div>
             <div className={styles.actions}><button className={styles.btnSecondary} onClick={() => setShowModal(false)}>Cancelar</button><button className={styles.btnPrimary} onClick={guardar}>Guardar</button></div>
