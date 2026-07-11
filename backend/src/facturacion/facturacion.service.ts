@@ -16,6 +16,13 @@ import { XmlGeneratorService } from './xml-generator.service';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SugefService } from '../sugef/sugef.service';
+import { Storage } from '@google-cloud/storage';
+import { v4 as uuidv4 } from 'uuid';
+
+const GCS_BUCKET_FACT = process.env.GCS_BUCKET ?? 'conejo-motors-media';
+const bucketFact = new Storage().bucket(GCS_BUCKET_FACT);
+const MIME_COMPROBANTE_FACT = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+const MAX_BYTES_FACT = 15 * 1024 * 1024;
 
 export interface DatosFacturacion {
   factura_nombre: string;
@@ -292,6 +299,31 @@ export class FacturacionService {
       where: { id: venta.id },
       relations: ['cotizacion', 'cotizacion.cliente', 'cotizacion.vehiculo', 'vendedor'],
     }) as Promise<Venta>;
+  }
+
+  async subirComprobanteVenta(ventaId: number, file: Express.Multer.File): Promise<Venta> {
+    if (!file) throw new BadRequestException('No se recibió ningún archivo.');
+    if (file.size > MAX_BYTES_FACT) throw new BadRequestException('El archivo supera el límite de 15 MB.');
+    if (file.mimetype && !MIME_COMPROBANTE_FACT.includes(file.mimetype)) {
+      throw new BadRequestException(`Tipo no permitido: ${file.mimetype}. Use PDF o imagen.`);
+    }
+    const venta = await this.ventasRepo.findOneBy({ id: ventaId });
+    if (!venta) throw new NotFoundException(`Venta #${ventaId} no encontrada.`);
+    if (venta.comprobante_gcs_path) await bucketFact.file(venta.comprobante_gcs_path).delete().catch(() => {});
+    const ext = (file.originalname.split('.').pop() ?? 'bin').toLowerCase();
+    const gcsPath = `ventas-comprobantes/${ventaId}/${uuidv4()}.${ext}`;
+    await bucketFact.file(gcsPath).save(file.buffer, { metadata: { contentType: file.mimetype }, resumable: false });
+    venta.comprobante_gcs_path = gcsPath;
+    venta.comprobante_nombre = file.originalname;
+    venta.comprobante_mime = file.mimetype;
+    return this.ventasRepo.save(venta);
+  }
+
+  async descargarComprobanteVenta(ventaId: number): Promise<{ venta: Venta; buffer: Buffer }> {
+    const venta = await this.ventasRepo.findOneBy({ id: ventaId });
+    if (!venta || !venta.comprobante_gcs_path) throw new NotFoundException('La venta no tiene comprobante.');
+    const [buffer] = await bucketFact.file(venta.comprobante_gcs_path).download();
+    return { venta, buffer };
   }
 
   /** Crea el asiento contable de partida doble al registrar una venta de vehículo */

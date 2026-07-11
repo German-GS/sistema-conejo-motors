@@ -71,6 +71,16 @@ export class Venta {
   @Column({ length: 30, default: 'Completada' })
   estado: string;
 
+  // ── Comprobante / documento de respaldo (GCS privado) ─────────────────────
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  comprobante_gcs_path?: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  comprobante_nombre?: string | null;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  comprobante_mime?: string | null;
+
   @OneToOne(() => Cotizacion)
   @JoinColumn()
   cotizacion: Cotizacion;

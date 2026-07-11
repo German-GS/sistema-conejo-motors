@@ -1,9 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Storage } from '@google-cloud/storage';
+import { v4 as uuidv4 } from 'uuid';
 import { OrdenCompra } from './orden-compra.entity';
 import { LineaCompra } from './linea-compra.entity';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
+
+const GCS_BUCKET = process.env.GCS_BUCKET ?? 'conejo-motors-media';
+const bucket = new Storage().bucket(GCS_BUCKET);
+const MIME_COMPROBANTE = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+const MAX_BYTES = 15 * 1024 * 1024;
 
 @Injectable()
 export class ComprasService {
@@ -80,5 +87,31 @@ export class ComprasService {
     // Al marcar la orden como Recibida, se contabiliza (idempotente).
     if (data.estado === 'Recibida') await this._registrarAsientoCompra(id, userId);
     return this.findOne(id);
+  }
+
+  async subirComprobante(id: number, file: Express.Multer.File): Promise<OrdenCompra> {
+    if (!file) throw new BadRequestException('No se recibió ningún archivo.');
+    if (file.size > MAX_BYTES) throw new BadRequestException('El archivo supera el límite de 15 MB.');
+    if (file.mimetype && !MIME_COMPROBANTE.includes(file.mimetype)) {
+      throw new BadRequestException(`Tipo no permitido: ${file.mimetype}. Use PDF o imagen.`);
+    }
+    const orden = await this.repo.findOneBy({ id });
+    if (!orden) throw new NotFoundException(`Orden #${id} no encontrada.`);
+    if (orden.comprobante_gcs_path) await bucket.file(orden.comprobante_gcs_path).delete().catch(() => {});
+    const ext = (file.originalname.split('.').pop() ?? 'bin').toLowerCase();
+    const gcsPath = `compras-comprobantes/${id}/${uuidv4()}.${ext}`;
+    await bucket.file(gcsPath).save(file.buffer, { metadata: { contentType: file.mimetype }, resumable: false });
+    orden.comprobante_gcs_path = gcsPath;
+    orden.comprobante_nombre = file.originalname;
+    orden.comprobante_mime = file.mimetype;
+    await this.repo.save(orden);
+    return this.findOne(id) as any;
+  }
+
+  async descargarComprobante(id: number): Promise<{ orden: OrdenCompra; buffer: Buffer }> {
+    const orden = await this.repo.findOneBy({ id });
+    if (!orden || !orden.comprobante_gcs_path) throw new NotFoundException('La orden no tiene comprobante.');
+    const [buffer] = await bucket.file(orden.comprobante_gcs_path).download();
+    return { orden, buffer };
   }
 }

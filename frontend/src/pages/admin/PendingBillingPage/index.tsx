@@ -42,6 +42,7 @@ interface Venta {
   estado: string;
   cotizacion: { id: number; cliente: { nombre_completo: string }; vehiculo: { marca: string; modelo: string } };
   vendedor?: { nombre_completo: string };
+  comprobante_gcs_path?: string | null;
 }
 
 /** Lee el rol del JWT sin hacer request adicional */
@@ -187,6 +188,24 @@ const PendingBillingPage = () => {
       return;
     }
     await enviarFactura(false);
+  };
+
+  const subirComprobanteVenta = async (ventaId: number, file: File | null) => {
+    if (!file) return;
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      await apiClient.post(`/billing/ventas/${ventaId}/comprobante`, fd);
+      toast.success("Comprobante adjuntado.");
+      fetchAll();
+    } catch { toast.error("No se pudo subir el comprobante."); }
+  };
+
+  const verComprobanteVenta = async (ventaId: number) => {
+    try {
+      const res = await apiClient.get(`/billing/ventas/${ventaId}/comprobante`, { responseType: "blob" });
+      window.open(URL.createObjectURL(res.data), "_blank");
+    } catch { toast.error("No se pudo abrir el comprobante."); }
   };
 
   const enviarFactura = async (omitirSugef: boolean) => {
@@ -487,12 +506,12 @@ const PendingBillingPage = () => {
                 <thead>
                   <tr>
                     <th>#</th><th>Fecha</th><th>Facturado a</th><th>Vehículo</th>
-                    <th>Vendedor</th><th>Pago</th><th>Monto</th><th>Estado</th>
+                    <th>Vendedor</th><th>Pago</th><th>Monto</th><th>Estado</th><th>Doc.</th>
                   </tr>
                 </thead>
                 <tbody>
                   {historial.length === 0 && (
-                    <tr><td colSpan={8} style={{ textAlign: "center", color: "#94a3b8", padding: "2rem" }}>Sin ventas aún.</td></tr>
+                    <tr><td colSpan={9} style={{ textAlign: "center", color: "#94a3b8", padding: "2rem" }}>Sin ventas aún.</td></tr>
                   )}
                   {historial.map(v => (
                     <tr key={v.id}>
@@ -510,6 +529,16 @@ const PendingBillingPage = () => {
                         {Number(v.iva_monto) > 0 && <div style={{ fontSize: "0.72rem", color: "#64748b" }}>IVA: {fmtCRC(v.iva_monto)}</div>}
                       </td>
                       <td><span className={styles.estadoOk}>✅ {v.estado}</span></td>
+                      <td>
+                        {v.comprobante_gcs_path ? (
+                          <button onClick={() => verComprobanteVenta(v.id)} title="Ver documento adjunto" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem" }}>📎</button>
+                        ) : (
+                          <label title="Adjuntar documento (foto o PDF)" style={{ cursor: "pointer", color: "#64748b" }}>
+                            ⬆️
+                            <input type="file" accept="image/*,application/pdf" capture="environment" style={{ display: "none" }} onChange={(e) => subirComprobanteVenta(v.id, e.target.files?.[0] ?? null)} />
+                          </label>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
