@@ -129,11 +129,11 @@ export default function GastosPage() {
   const f = (k: any) => (e: any) => setForm({...form, [k]: e.target.value});
 
   const exportar = () => exportToExcel(
-    gastos.map(g => ({
+    gastosFiltrados.map(g => ({
       Fecha: g.fecha, Categoría: g.categoria, Descripción: g.descripcion,
       "N° Factura": g.numero_factura || "", Proveedor: g.proveedor?.nombre || "", Comercio: g.nombre_comercio || "", Monto: g.monto,
     })),
-    "Gastos", "Gastos",
+    "Gastos", verTodos ? "Gastos-todos" : `Gastos-${periodo}`,
   );
 
   return (
