@@ -11,20 +11,36 @@ const bucket = new Storage().bucket(GCS_BUCKET);
 const MIME_COMPROBANTE = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'];
 const MAX_BYTES = 15 * 1024 * 1024;
 
-// Mapa categoría de gasto → código de cuenta contable de gasto
+// Mapa categoría de gasto → código de cuenta contable de gasto.
+// Incluye categorías del negocio (concesionaria EV + taller) y las históricas.
 const CUENTA_POR_CATEGORIA: Record<string, string> = {
-  Salarios: '5300',
-  Publicidad: '5500',
+  // Negocio
+  'Insumos de Taller': '5400',
+  'Herramientas y Equipo': '5400',
+  Repuestos: '5200',              // Costo de Ventas — Repuestos
+  Combustible: '5400',
+  'Mantenimiento Instalaciones': '5400',
+  Limpieza: '5400',
+  'Publicidad y Marketing': '5500',
+  'Salarios y Planilla': '5300',
   'Servicios Publicos': '5400',
   Alquiler: '5400',
-  Papeleria: '5400',
+  'Papeleria y Oficina': '5400',
+  'Software y Tecnologia': '5400',
   Alimentacion: '5400',
+  'Transporte y Logistica': '5400',
   Seguros: '5400',
+  'Impuestos y Legales': '5400',
+  'Comisiones y Bancarios': '5600', // Gastos Financieros
+  Capacitacion: '5400',
+  Otro: '5700',
+  // Compatibilidad con categorías históricas
+  Salarios: '5300',
+  Publicidad: '5500',
+  Papeleria: '5400',
   Mantenimiento: '5400',
   Impuestos: '5400',
-  Combustible: '5400',
   Transporte: '5400',
-  Otro: '5700',
 };
 
 @Injectable()

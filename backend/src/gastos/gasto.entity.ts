@@ -2,20 +2,20 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } f
 import { Proveedor } from '../proveedores/proveedor.entity';
 import { User } from '../users/user.entity';
 
-export type GastoCategoria = 'Salarios' | 'Servicios Publicos' | 'Publicidad' | 'Combustible' | 'Alquiler' | 'Mantenimiento' | 'Papeleria' | 'Alimentacion' | 'Transporte' | 'Seguros' | 'Impuestos' | 'Otro';
+export type GastoCategoria = string;
 
 @Entity({ name: 'gastos_operativos' })
 export class Gasto {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    type: 'enum',
-    enum: ['Salarios', 'Servicios Publicos', 'Publicidad', 'Combustible', 'Alquiler',
-      'Mantenimiento', 'Papeleria', 'Alimentacion', 'Transporte', 'Seguros', 'Impuestos', 'Otro'],
-    default: 'Otro',
-  })
+  // Texto libre (categorías definidas en el frontend, adaptadas al negocio).
+  @Column({ type: 'varchar', length: 60, default: 'Otro' })
   categoria: GastoCategoria;
+
+  /** Nombre del comercio/tienda donde se hizo la compra */
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  nombre_comercio: string | null;
 
   @Column({ length: 250 })
   descripcion: string;

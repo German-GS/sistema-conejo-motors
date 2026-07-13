@@ -5,27 +5,34 @@ import styles from "./GastosPage.module.css";
 import { LuPlus, LuReceipt } from "react-icons/lu";
 import { exportToExcel } from "@/utils/exportExcel";
 
-interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; metodo_pago?: string; notas?: string; iva_monto?: number; }
+interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; metodo_pago?: string; notas?: string; iva_monto?: number; nombre_comercio?: string; }
 
-const CATS = ['Salarios','Servicios Publicos','Publicidad','Combustible','Alquiler','Mantenimiento','Papeleria','Alimentacion','Transporte','Seguros','Impuestos','Otro'];
+// Categorías adaptadas al negocio (concesionaria EV + taller)
+const CATS = [
+  'Insumos de Taller', 'Herramientas y Equipo', 'Repuestos', 'Combustible',
+  'Mantenimiento Instalaciones', 'Limpieza', 'Publicidad y Marketing', 'Salarios y Planilla',
+  'Servicios Publicos', 'Alquiler', 'Papeleria y Oficina', 'Software y Tecnologia',
+  'Alimentacion', 'Transporte y Logistica', 'Seguros', 'Impuestos y Legales',
+  'Comisiones y Bancarios', 'Capacitacion', 'Otro',
+];
 
 export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ categoria: 'Otro', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' });
+  const [form, setForm] = useState({ categoria: 'Insumos de Taller', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', nombre_comercio: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' });
   const [comprobante, setComprobante] = useState<File | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [totalMes, setTotalMes] = useState(0);
 
-  const formVacio = { categoria: 'Otro', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' };
+  const formVacio = { categoria: 'Insumos de Taller', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', nombre_comercio: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' };
 
   const abrirNuevo = () => { setEditId(null); setForm(formVacio); setComprobante(null); setShowModal(true); };
   const abrirEditar = (g: Gasto) => {
     setEditId(g.id);
     setForm({
       categoria: g.categoria, descripcion: g.descripcion, monto: String(g.monto), fecha: g.fecha,
-      numero_factura: g.numero_factura || '', metodo_pago: g.metodo_pago || 'Efectivo',
+      numero_factura: g.numero_factura || '', nombre_comercio: g.nombre_comercio || '', metodo_pago: g.metodo_pago || 'Efectivo',
       tiene_iva: Number(g.iva_monto) > 0, notas: g.notas || '',
     });
     setComprobante(null);
@@ -99,7 +106,7 @@ export default function GastosPage() {
   const exportar = () => exportToExcel(
     gastos.map(g => ({
       Fecha: g.fecha, Categoría: g.categoria, Descripción: g.descripcion,
-      "N° Factura": g.numero_factura || "", Proveedor: g.proveedor?.nombre || "", Monto: g.monto,
+      "N° Factura": g.numero_factura || "", Proveedor: g.proveedor?.nombre || "", Comercio: g.nombre_comercio || "", Monto: g.monto,
     })),
     "Gastos", "Gastos",
   );
@@ -121,7 +128,7 @@ export default function GastosPage() {
 
       {loading ? <p>Cargando...</p> : (
         <div className={styles.tabla}>
-          <div className={styles.th}><span>Fecha</span><span>Categoría</span><span>Descripción</span><span>N° Factura</span><span>Proveedor</span><span>Monto</span></div>
+          <div className={styles.th}><span>Fecha</span><span>Categoría</span><span>Descripción</span><span>N° Factura</span><span>Proveedor / Comercio</span><span>Monto</span></div>
           {gastos.map(g => (
             <div key={g.id} className={styles.tr}>
               <span>{g.fecha}</span>
@@ -133,7 +140,7 @@ export default function GastosPage() {
                   <button onClick={() => verComprobante(g.id)} title="Ver factura adjunta" style={{ marginLeft: 6, background: "none", border: "none", cursor: "pointer", fontSize: "0.95rem" }}>📎</button>
                 )}
               </span>
-              <span>{g.proveedor?.nombre || '-'}</span>
+              <span>{g.proveedor?.nombre || g.nombre_comercio || '-'}</span>
               <span className={styles.monto} style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem" }}>
                 ₡{(+g.monto).toLocaleString('es-CR')}
                 <button onClick={() => abrirEditar(g)} title="Editar" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}>✏️</button>
@@ -155,6 +162,7 @@ export default function GastosPage() {
               <div className={`${styles.fg} ${styles.full}`}><label>Descripción *</label><input value={form.descripcion} onChange={f('descripcion')} /></div>
               <div className={styles.fg}><label>📅 Fecha del gasto (cambiala para cargar meses atrás)</label><input type="date" value={form.fecha} onChange={f('fecha')} /></div>
               <div className={styles.fg}><label>N° Factura</label><input value={form.numero_factura} onChange={f('numero_factura')} /></div>
+              <div className={styles.fg}><label>🏪 Comercio / tienda</label><input value={form.nombre_comercio} onChange={f('nombre_comercio')} placeholder="Ej: EPA, Ferretería…" /></div>
               <div className={styles.fg}><label>Método de pago</label><select value={form.metodo_pago} onChange={f('metodo_pago')}><option>Efectivo</option><option>Banco</option><option>Transferencia</option><option>SINPE</option><option>Tarjeta</option><option>Cheque</option><option>Credito</option></select></div>
               <div className={styles.fg}><label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}><input type="checkbox" checked={(form as any).tiene_iva} onChange={(e) => setForm({ ...form, tiene_iva: e.target.checked } as any)} /> El monto incluye IVA 13% (crédito fiscal)</label></div>
               <div className={`${styles.fg} ${styles.full}`}>
