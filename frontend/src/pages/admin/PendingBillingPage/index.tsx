@@ -101,6 +101,7 @@ const PendingBillingPage = () => {
   const [depositoConfirmado, setDepositoConfirmado] = useState(false);
   const [exonerado, setExonerado] = useState(false);
   const [numeroExoneracion, setNumeroExoneracion] = useState("");
+  const [fechaHistorica, setFechaHistorica] = useState("");
   const [sugefModal, setSugefModal] = useState<{ faltantes: string[]; leadId?: number } | null>(null);
 
   // Filtro pendientes
@@ -214,7 +215,7 @@ const PendingBillingPage = () => {
     try {
       await apiClient.post("/billing/facturar", {
         cotizacionId: cotSeleccionada.id,
-        datos: { ...form, deposito_confirmado: true, sugef_omitir: omitirSugef, exonerado, numero_exoneracion: exonerado ? numeroExoneracion : undefined },
+        datos: { ...form, deposito_confirmado: true, sugef_omitir: omitirSugef, exonerado, numero_exoneracion: exonerado ? numeroExoneracion : undefined, fecha: fechaHistorica || undefined },
       });
       toast.success("✅ Venta completada y factura generada exitosamente.");
       setCotSeleccionada(null);
@@ -223,6 +224,7 @@ const PendingBillingPage = () => {
       setDepositoConfirmado(false);
       setExonerado(false);
       setNumeroExoneracion("");
+      setFechaHistorica("");
       setSugefModal(null);
       fetchAll();
       setTab("historial");
@@ -372,6 +374,12 @@ const PendingBillingPage = () => {
                   <textarea rows={2} value={form.factura_notas}
                     onChange={e => setForm(f => ({ ...f, factura_notas: e.target.value }))}
                     placeholder="Observaciones para la factura..." />
+                </div>
+
+                {/* Fecha histórica (reconstrucción contable de meses atrás) */}
+                <div className={styles.field}>
+                  <label>📅 Fecha de la venta (dejar vacío = hoy)</label>
+                  <input type="date" value={fechaHistorica} onChange={(e) => setFechaHistorica(e.target.value)} />
                 </div>
 
                 {/* Exoneración de IVA — vehículo eléctrico (Ley 9518) */}

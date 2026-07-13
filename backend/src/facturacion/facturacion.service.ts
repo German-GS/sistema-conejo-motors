@@ -39,6 +39,8 @@ export interface DatosFacturacion {
   /** Exoneración de IVA (vehículo eléctrico, Ley 9518) */
   exonerado?: boolean;
   numero_exoneracion?: string;
+  /** Fecha histórica de la venta (YYYY-MM-DD) para reconstrucción; por defecto = hoy */
+  fecha?: string;
 }
 
 @Injectable()
@@ -206,6 +208,7 @@ export class FacturacionService {
       const nuevaVenta = manager.create(Venta, {
         cotizacion,
         vendedor:            cotizacion.vendedor ?? adminUser,
+        fecha_venta:         datos.fecha ? new Date(`${datos.fecha}T12:00:00`) : new Date(),
         monto_final:         cotizacion.precio_final,  // base imponible (sin IVA)
         iva_monto:           ivaMonto,
         total_con_iva:       totalConIva,
@@ -391,7 +394,7 @@ export class FacturacionService {
       );
     }
 
-    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+    const hoy = datos.fecha ?? new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
 
     await this.contabilidad.crearAsiento(adminUser, {
       fecha: hoy,

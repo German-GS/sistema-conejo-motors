@@ -6,7 +6,6 @@ import {
   ManyToOne,
   OneToOne,
   JoinColumn,
-  CreateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
@@ -17,7 +16,8 @@ export class Venta {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn()
+  // Settable para poder cargar ventas históricas (reconstrucción); por defecto = ahora.
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha_venta: Date;
 
   @Column({ length: 50 })

@@ -21,14 +21,16 @@ export const ObligacionesPage = () => {
   const [loading, setLoading] = useState(true);
   const [generando, setGenerando] = useState(false);
   const [nota, setNota] = useState({ tipo: "Credito", naturaleza: "Venta", base: "", iva: "", iva_tarifa: "T13", documento_ref: "", motivo: "" });
+  const [periodoSel, setPeriodoSel] = useState("");
 
   const descargarXml = async () => {
-    if (!pendiente) return;
+    const periodo = periodoSel || pendiente?.periodo;
+    if (!periodo) return;
     try {
-      const res = await apiClient.get(`/iva/xml?periodo=${pendiente.periodo}`, { responseType: "blob" });
+      const res = await apiClient.get(`/iva/xml?periodo=${periodo}`, { responseType: "blob" });
       const url = URL.createObjectURL(new Blob([res.data], { type: "application/xml" }));
       const a = document.createElement("a");
-      a.href = url; a.download = `D150-${pendiente.periodo}-borrador.xml`; a.click();
+      a.href = url; a.download = `D150-${periodo}-borrador.xml`; a.click();
       URL.revokeObjectURL(url);
     } catch { toast.error("No se pudo generar el XML."); }
   };
@@ -54,21 +56,23 @@ export const ObligacionesPage = () => {
       ]);
       setPendiente(p.data);
       setLiquidaciones(l.data ?? []);
-      const periodo = p.data.periodo;
+      const periodo = periodoSel || p.data.periodo;
+      if (!periodoSel) setPeriodoSel(p.data.periodo);
       const prev = await apiClient.get(`/iva/preview?periodo=${periodo}&retenciones=${retenciones}`);
       setCalc(prev.data.calc);
     } catch { toast.error("No se pudieron cargar las obligaciones."); }
     finally { setLoading(false); }
-  }, [retenciones]);
+  }, [retenciones, periodoSel]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
   const generar = async () => {
-    if (!pendiente) return;
+    const periodo = periodoSel || pendiente?.periodo;
+    if (!periodo) return;
     setGenerando(true);
     try {
-      await apiClient.post("/iva/generar", { periodo: pendiente.periodo, retenciones, notas });
-      toast.success(`Liquidación de ${pendiente.periodo} generada.`);
+      await apiClient.post("/iva/generar", { periodo, retenciones, notas });
+      toast.success(`Liquidación de ${periodo} generada.`);
       cargar();
     } catch (e: any) { toast.error(e.response?.data?.message || "Error al generar."); }
     finally { setGenerando(false); }
@@ -103,7 +107,11 @@ export const ObligacionesPage = () => {
       {calc && (
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
-            <strong style={{ fontSize: "1.05rem", color: "#0a2540" }}>Período {pendiente.periodo}</strong>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+              <strong style={{ fontSize: "1.05rem", color: "#0a2540" }}>Período</strong>
+              <input type="month" value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} style={{ padding: "0.35rem 0.5rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem" }} />
+              <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>(podés elegir cualquier mes para reconstruir hacia atrás)</span>
+            </div>
             <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Prorrata: <strong>{calc.porcentaje_prorrata}%</strong></span>
           </div>
 
