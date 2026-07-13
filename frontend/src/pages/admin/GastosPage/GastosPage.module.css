@@ -24,5 +24,10 @@
 .fg { display: flex; flex-direction: column; gap: 5px; justify-content: flex-end; }
 .fg label { font-size: 0.8rem; font-weight: 600; color: #475569; min-height: 2.4em; display: flex; align-items: flex-end; }
 .fg input, .fg select, .fg textarea { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.875rem; font-family: inherit; }
+
+.spinner { width: 15px; height: 15px; border: 2px solid rgba(2,79,125,0.25); border-top-color: #024f7d; border-radius: 50%; display: inline-block; animation: gspin 0.7s linear infinite; vertical-align: middle; }
+.spinnerWhite { border-color: rgba(255,255,255,0.45); border-top-color: #fff; }
+@keyframes gspin { to { transform: rotate(360deg); } }
+.subiendo { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #024f7d; margin-top: 4px; }
 .full { grid-column: 1 / -1; }
 .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }

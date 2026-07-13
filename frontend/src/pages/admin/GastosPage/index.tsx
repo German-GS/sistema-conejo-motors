@@ -23,6 +23,8 @@ export default function GastosPage() {
   const [form, setForm] = useState({ categoria: 'Insumos de Taller', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', nombre_comercio: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' });
   const [comprobante, setComprobante] = useState<File | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [totalMes, setTotalMes] = useState(0);
 
   const formVacio = { categoria: 'Insumos de Taller', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', nombre_comercio: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' };
@@ -69,6 +71,7 @@ export default function GastosPage() {
 
   const guardar = async () => {
     if (!form.descripcion || !form.monto) return toast.error("Complete los campos");
+    if (guardando) return;
     const monto = +form.monto;
     // Si el monto incluye IVA (13%), se desglosa para el crédito fiscal (cuenta 1210 / D-150).
     const payload: any = { ...form, monto };
@@ -81,24 +84,33 @@ export default function GastosPage() {
       payload.iva_monto = 0; payload.base_imponible = monto;
     }
     delete payload.tiene_iva;
-    let id: number | undefined;
-    if (editId) {
-      await apiClient.patch(`/gastos/${editId}`, payload);
-      id = editId;
-    } else {
-      const res = await apiClient.post("/gastos", payload);
-      id = res.data?.id;
+    setGuardando(true);
+    try {
+      let id: number | undefined;
+      if (editId) {
+        await apiClient.patch(`/gastos/${editId}`, payload);
+        id = editId;
+      } else {
+        const res = await apiClient.post("/gastos", payload);
+        id = res.data?.id;
+      }
+      if (comprobante && id) {
+        setSubiendoFoto(true);
+        try {
+          const fd = new FormData();
+          fd.append("file", comprobante);
+          await apiClient.post(`/gastos/${id}/comprobante`, fd);
+        } catch { toast.error("El gasto se guardó, pero falló la subida del comprobante."); }
+        finally { setSubiendoFoto(false); }
+      }
+      toast.success(editId ? "Gasto actualizado." : "Gasto registrado.");
+      setComprobante(null); setEditId(null);
+      setShowModal(false); cargar();
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Error al guardar el gasto.");
+    } finally {
+      setGuardando(false);
     }
-    if (comprobante && id) {
-      try {
-        const fd = new FormData();
-        fd.append("file", comprobante);
-        await apiClient.post(`/gastos/${id}/comprobante`, fd);
-      } catch { toast.error("El gasto se guardó, pero falló la subida del comprobante."); }
-    }
-    toast.success(editId ? "Gasto actualizado." : "Gasto registrado.");
-    setComprobante(null); setEditId(null);
-    setShowModal(false); cargar();
   };
 
   const f = (k: any) => (e: any) => setForm({...form, [k]: e.target.value});
@@ -167,12 +179,21 @@ export default function GastosPage() {
               <div className={styles.fg}><label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}><input type="checkbox" checked={(form as any).tiene_iva} onChange={(e) => setForm({ ...form, tiene_iva: e.target.checked } as any)} /> El monto incluye IVA 13% (crédito fiscal)</label></div>
               <div className={`${styles.fg} ${styles.full}`}>
                 <label>📎 Factura / comprobante (foto o PDF)</label>
-                <input type="file" accept="image/*,application/pdf" capture="environment" onChange={(e) => setComprobante(e.target.files?.[0] ?? null)} />
-                {comprobante && <span style={{ fontSize: "0.78rem", color: "#15803d" }}>✓ {comprobante.name}</span>}
+                <input type="file" accept="image/*,application/pdf" capture="environment" disabled={guardando} onChange={(e) => setComprobante(e.target.files?.[0] ?? null)} />
+                {subiendoFoto ? (
+                  <span className={styles.subiendo}><span className={styles.spinner} /> Subiendo comprobante…</span>
+                ) : comprobante ? (
+                  <span style={{ fontSize: "0.78rem", color: "#15803d" }}>✓ {comprobante.name} (se sube al guardar)</span>
+                ) : null}
               </div>
               <div className={`${styles.fg} ${styles.full}`}><label>Notas</label><textarea value={form.notas} onChange={f('notas')} rows={2} /></div>
             </div>
-            <div className={styles.actions}><button className={styles.btnSecondary} onClick={() => setShowModal(false)}>Cancelar</button><button className={styles.btnPrimary} onClick={guardar}>Guardar</button></div>
+            <div className={styles.actions}>
+              <button className={styles.btnSecondary} onClick={() => setShowModal(false)} disabled={guardando}>Cancelar</button>
+              <button className={styles.btnPrimary} onClick={guardar} disabled={guardando}>
+                {guardando ? (<span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><span className={`${styles.spinner} ${styles.spinnerWhite}`} /> {subiendoFoto ? "Subiendo foto…" : "Guardando…"}</span>) : "Guardar"}
+              </button>
+            </div>
           </div>
         </div>
       )}
