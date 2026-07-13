@@ -39,6 +39,8 @@ import {
   LuMenu,
   LuX,
   LuMegaphone,
+  LuTriangleAlert,
+  LuFileCheck,
 } from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -60,7 +62,7 @@ const SECTION_ROUTES: Record<string, string[]> = {
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
   compras:      ["/admin/proveedores", "/admin/gastos", "/admin/compras"],
-  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad", "/admin/obligaciones"],
+  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad", "/admin/obligaciones", "/admin/estados-financieros", "/admin/pendientes-contables", "/admin/facturacion-electronica"],
   postventa:    ["/admin/taller", "/admin/garantias"],
   operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
 };
@@ -369,6 +371,15 @@ export const AdminLayout = () => {
               )}
               {(userRole === "Administrador" || userRole === "Contador") && (
                 <SidebarLink to="/admin/obligaciones" icon={<LuReceiptText size={18} />} label="Obligaciones (IVA)" />
+              )}
+              {(userRole === "Administrador" || userRole === "Contador") && (
+                <SidebarLink to="/admin/estados-financieros" icon={<LuChartColumnStacked size={18} />} label="Estados Financieros" />
+              )}
+              {(userRole === "Administrador" || userRole === "Contador") && (
+                <SidebarLink to="/admin/pendientes-contables" icon={<LuTriangleAlert size={18} />} label="Pendientes Contab." />
+              )}
+              {(userRole === "Administrador" || userRole === "Contador") && (
+                <SidebarLink to="/admin/facturacion-electronica" icon={<LuFileCheck size={18} />} label="Facturación Electrónica" />
               )}
             </div>
           )}

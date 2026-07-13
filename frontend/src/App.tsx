@@ -41,6 +41,9 @@ import { SolicitudesPage } from "./pages/admin/SolicitudesPage";
 import { ProductosPage } from "./pages/admin/ProductosPage";
 import { ContabilidadPage } from "./pages/admin/ContabilidadPage";
 import { ObligacionesPage } from "./pages/admin/ObligacionesPage";
+import { EstadosFinancierosPage } from "./pages/admin/EstadosFinancierosPage";
+import { PendientesContablesPage } from "./pages/admin/PendientesContablesPage";
+import { FacturacionElectronicaPage } from "./pages/admin/FacturacionElectronicaPage";
 import { ComprasPage } from "./pages/admin/ComprasPage";
 import AgendaPage from "./pages/admin/AgendaPage";
 import ProveedoresPage from "./pages/admin/ProveedoresPage";
@@ -197,6 +200,9 @@ function App() {
             <Route path="productos" element={<ProductosPage />} />
             <Route path="contabilidad" element={<ContabilidadPage />} />
             <Route path="obligaciones" element={<ObligacionesPage />} />
+            <Route path="estados-financieros" element={<EstadosFinancierosPage />} />
+            <Route path="pendientes-contables" element={<PendientesContablesPage />} />
+            <Route path="facturacion-electronica" element={<FacturacionElectronicaPage />} />
             {/* Nuevos módulos */}
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="proveedores" element={<ProveedoresPage />} />

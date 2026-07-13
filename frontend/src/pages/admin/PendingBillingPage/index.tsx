@@ -217,7 +217,7 @@ const PendingBillingPage = () => {
         cotizacionId: cotSeleccionada.id,
         datos: { ...form, deposito_confirmado: true, sugef_omitir: omitirSugef, exonerado, numero_exoneracion: exonerado ? numeroExoneracion : undefined, fecha: fechaHistorica || undefined },
       });
-      toast.success("✅ Venta completada y factura generada exitosamente.");
+      toast.success("✅ Venta registrada. Comprobante generado como BORRADOR (no válido fiscalmente hasta firmar con Hacienda).", { duration: 6000 });
       setCotSeleccionada(null);
       setResultados([]);
       setBusqueda("");
@@ -253,6 +253,13 @@ const PendingBillingPage = () => {
             ✅ {historial.length} completadas
           </span>
         </div>
+      </div>
+
+      {/* Aviso: facturación electrónica en modo interino (sin llaves) */}
+      <div style={{ background: "#fef3c7", border: "1px solid #fde68a", color: "#92400e", borderRadius: 10, padding: "0.7rem 1rem", fontSize: "0.85rem", marginBottom: "1rem", lineHeight: 1.5 }}>
+        <strong>⚠️ Comprobantes en modo BORRADOR.</strong> Se registran las ventas y su contabilidad,
+        pero el comprobante electrónico <strong>aún no es válido fiscalmente</strong> (numeración provisional, sin firma
+        ni envío a Hacienda). Se activará al cargar el certificado <code>.p12</code>. No entregar como factura legal al cliente.
       </div>
 
       {/* Formulario de Facturación — aparece cuando se selecciona una cotización */}
