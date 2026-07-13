@@ -5,7 +5,7 @@ import styles from "./GastosPage.module.css";
 import { LuPlus, LuReceipt } from "react-icons/lu";
 import { exportToExcel } from "@/utils/exportExcel";
 
-interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; }
+interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; metodo_pago?: string; notas?: string; iva_monto?: number; }
 
 const CATS = ['Salarios','Servicios Publicos','Publicidad','Combustible','Alquiler','Mantenimiento','Papeleria','Alimentacion','Transporte','Seguros','Impuestos','Otro'];
 
@@ -15,7 +15,31 @@ export default function GastosPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ categoria: 'Otro', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' });
   const [comprobante, setComprobante] = useState<File | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [totalMes, setTotalMes] = useState(0);
+
+  const formVacio = { categoria: 'Otro', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' };
+
+  const abrirNuevo = () => { setEditId(null); setForm(formVacio); setComprobante(null); setShowModal(true); };
+  const abrirEditar = (g: Gasto) => {
+    setEditId(g.id);
+    setForm({
+      categoria: g.categoria, descripcion: g.descripcion, monto: String(g.monto), fecha: g.fecha,
+      numero_factura: g.numero_factura || '', metodo_pago: g.metodo_pago || 'Efectivo',
+      tiene_iva: Number(g.iva_monto) > 0, notas: g.notas || '',
+    });
+    setComprobante(null);
+    setShowModal(true);
+  };
+
+  const eliminar = async (g: Gasto) => {
+    if (!window.confirm(`¿Eliminar el gasto "${g.descripcion}" (${g.fecha})? Se revertirá su asiento contable.`)) return;
+    try {
+      await apiClient.delete(`/gastos/${g.id}`);
+      toast.success("Gasto eliminado (asiento revertido).");
+      cargar();
+    } catch { toast.error("Error al eliminar."); }
+  };
 
   const verComprobante = async (id: number) => {
     try {
@@ -50,8 +74,14 @@ export default function GastosPage() {
       payload.iva_monto = 0; payload.base_imponible = monto;
     }
     delete payload.tiene_iva;
-    const res = await apiClient.post("/gastos", payload);
-    const id = res.data?.id;
+    let id: number | undefined;
+    if (editId) {
+      await apiClient.patch(`/gastos/${editId}`, payload);
+      id = editId;
+    } else {
+      const res = await apiClient.post("/gastos", payload);
+      id = res.data?.id;
+    }
     if (comprobante && id) {
       try {
         const fd = new FormData();
@@ -59,7 +89,8 @@ export default function GastosPage() {
         await apiClient.post(`/gastos/${id}/comprobante`, fd);
       } catch { toast.error("El gasto se guardó, pero falló la subida del comprobante."); }
     }
-    setComprobante(null);
+    toast.success(editId ? "Gasto actualizado." : "Gasto registrado.");
+    setComprobante(null); setEditId(null);
     setShowModal(false); cargar();
   };
 
@@ -79,7 +110,7 @@ export default function GastosPage() {
         <div><h1>Gastos Operativos</h1><p>Control de gastos y costos de operación</p></div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1" }} onClick={exportar}>📊 Excel</button>
-          <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nuevo Gasto</button>
+          <button className={styles.btnPrimary} onClick={abrirNuevo}><LuPlus size={16} /> Nuevo Gasto</button>
         </div>
       </div>
 
@@ -103,7 +134,11 @@ export default function GastosPage() {
                 )}
               </span>
               <span>{g.proveedor?.nombre || '-'}</span>
-              <span className={styles.monto}>₡{(+g.monto).toLocaleString('es-CR')}</span>
+              <span className={styles.monto} style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem" }}>
+                ₡{(+g.monto).toLocaleString('es-CR')}
+                <button onClick={() => abrirEditar(g)} title="Editar" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}>✏️</button>
+                <button onClick={() => eliminar(g)} title="Eliminar" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}>🗑️</button>
+              </span>
             </div>
           ))}
           {gastos.length === 0 && <p className={styles.empty}>Sin gastos registrados</p>}
@@ -113,12 +148,12 @@ export default function GastosPage() {
       {showModal && (
         <div className={styles.overlay} onClick={() => setShowModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <h2>Nuevo Gasto</h2>
+            <h2>{editId ? "Editar Gasto" : "Nuevo Gasto"}</h2>
             <div className={styles.grid}>
               <div className={styles.fg}><label>Categoría</label><select value={form.categoria} onChange={f('categoria')}>{CATS.map(c=><option key={c}>{c}</option>)}</select></div>
               <div className={styles.fg}><label>Monto *</label><input type="number" value={form.monto} onChange={f('monto')} /></div>
               <div className={`${styles.fg} ${styles.full}`}><label>Descripción *</label><input value={form.descripcion} onChange={f('descripcion')} /></div>
-              <div className={styles.fg}><label>Fecha</label><input type="date" value={form.fecha} onChange={f('fecha')} /></div>
+              <div className={styles.fg}><label>📅 Fecha del gasto (cambiala para cargar meses atrás)</label><input type="date" value={form.fecha} onChange={f('fecha')} /></div>
               <div className={styles.fg}><label>N° Factura</label><input value={form.numero_factura} onChange={f('numero_factura')} /></div>
               <div className={styles.fg}><label>Método de pago</label><select value={form.metodo_pago} onChange={f('metodo_pago')}><option>Efectivo</option><option>Banco</option><option>Transferencia</option><option>SINPE</option><option>Tarjeta</option><option>Cheque</option><option>Credito</option></select></div>
               <div className={styles.fg}><label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}><input type="checkbox" checked={(form as any).tiene_iva} onChange={(e) => setForm({ ...form, tiene_iva: e.target.checked } as any)} /> El monto incluye IVA 13% (crédito fiscal)</label></div>
