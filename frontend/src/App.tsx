@@ -41,6 +41,7 @@ import { SolicitudesPage } from "./pages/admin/SolicitudesPage";
 import { ProductosPage } from "./pages/admin/ProductosPage";
 import { ContabilidadPage } from "./pages/admin/ContabilidadPage";
 import { ObligacionesPage } from "./pages/admin/ObligacionesPage";
+import { ComprasPage } from "./pages/admin/ComprasPage";
 import AgendaPage from "./pages/admin/AgendaPage";
 import ProveedoresPage from "./pages/admin/ProveedoresPage";
 import CxCPage from "./pages/admin/CxCPage";
@@ -199,6 +200,7 @@ function App() {
             {/* Nuevos módulos */}
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="proveedores" element={<ProveedoresPage />} />
+            <Route path="compras" element={<ComprasPage />} />
             <Route path="finanzas" element={<FinanzasPage />} />
             <Route path="cxc" element={<CxCPage />} />
             <Route path="cxp" element={<CxPPage />} />

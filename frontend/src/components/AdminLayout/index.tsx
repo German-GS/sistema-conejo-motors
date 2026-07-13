@@ -58,7 +58,7 @@ const SECTION_ROUTES: Record<string, string[]> = {
   inventario:   ["/admin/inventory", "/admin/pricing", "/admin/accesorios", "/admin/importaciones", "/admin/import"],
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
-  compras:      ["/admin/proveedores", "/admin/gastos"],
+  compras:      ["/admin/proveedores", "/admin/gastos", "/admin/compras"],
   finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad", "/admin/obligaciones"],
   postventa:    ["/admin/taller", "/admin/garantias"],
   operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
@@ -348,6 +348,7 @@ export const AdminLayout = () => {
           {isOpen("compras") && (
             <div className={styles.sectionItems}>
               <SidebarLink to="/admin/proveedores" icon={<LuBuilding2 size={18} />} label="Proveedores" />
+              <SidebarLink to="/admin/compras" icon={<LuReceiptText size={18} />} label="Órdenes de Compra" />
               <SidebarLink to="/admin/gastos" icon={<LuReceiptText size={18} />} label="Gastos" />
             </div>
           )}
