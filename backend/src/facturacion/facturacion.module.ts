@@ -9,9 +9,12 @@ import { Venta } from '../ventas/venta.entity';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 
-// --- 👇 1. Importa los nuevos servicios 👇 ---
-import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
+import { NumeracionService } from './numeracion.service';
+import { ConsecutivoContador } from './consecutivo-contador.entity';
+import { FIRMADOR, HACIENDA_CLIENT } from './firma/firma.interfaces';
+import { FirmadorNoop } from './firma/firmador.noop';
+import { HaciendaClientNoop } from './firma/hacienda-client.noop';
 import { Lead } from '../leads/lead.entity';
 import { LeadActividad } from '../leads/lead-actividad.entity';
 import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
@@ -21,13 +24,20 @@ import { SugefModule } from '../sugef/sugef.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead, LeadActividad, CuentaCobrar]),
+    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead, LeadActividad, CuentaCobrar, ConsecutivoContador]),
     HttpModule,
     ContabilidadModule,
     NotificationsModule,
     SugefModule,
   ],
-  providers: [FacturacionService, CryptoService, XmlGeneratorService],
+  providers: [
+    FacturacionService,
+    XmlGeneratorService,
+    NumeracionService,
+    // Seams de firma/envío. Reemplazar por las implementaciones reales al recibir el .p12.
+    { provide: FIRMADOR, useClass: FirmadorNoop },
+    { provide: HACIENDA_CLIENT, useClass: HaciendaClientNoop },
+  ],
   controllers: [FacturacionController],
 })
 export class FacturacionModule {}

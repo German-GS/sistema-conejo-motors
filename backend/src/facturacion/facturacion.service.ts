@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -11,8 +11,9 @@ import { VehicleEstadoHistorial } from '../vehicles/vehicle-estado-historial.ent
 import { Lead } from '../leads/lead.entity';
 import { LeadActividad } from '../leads/lead-actividad.entity';
 import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
-import { CryptoService } from './crypto.service';
 import { XmlGeneratorService } from './xml-generator.service';
+import { FIRMADOR, HACIENDA_CLIENT } from './firma/firma.interfaces';
+import type { Firmador, HaciendaClient } from './firma/firma.interfaces';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SugefService } from '../sugef/sugef.service';
@@ -63,7 +64,8 @@ export class FacturacionService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly xmlGenerator: XmlGeneratorService,
-    private readonly cryptoService: CryptoService,
+    @Inject(FIRMADOR) private readonly firmador: Firmador,
+    @Inject(HACIENDA_CLIENT) private readonly haciendaClient: HaciendaClient,
     private readonly contabilidad: ContabilidadService,
     private readonly notifications: NotificationsService,
     private readonly sugefService: SugefService,
@@ -177,26 +179,31 @@ export class FacturacionService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // FACTURA ELECTRÓNICA — MODO SIMULADO (Hacienda Costa Rica v4.4)
+    // FACTURA ELECTRÓNICA v4.4 — MODO INTERINO (sin llaves)
     //
-    // ⚠️ PENDIENTE: integración real con el Ministerio de Hacienda.
-    // Hoy el XML se "firma" y se da por aceptado de forma SIMULADA porque aún
-    // NO tenemos las LLAVES CRIPTOGRÁFICAS (llave criptográfica .p12 + PIN y el
-    // usuario/contraseña del API de Hacienda — ATV / IDP token).
+    // El pipeline es REAL salvo firma y envío, que están detrás de interfaces con
+    // implementación NoOp (FirmadorNoop / HaciendaClientNoop). El comprobante fluye:
+    //   generar XML v4.4 (clave/consecutivo reales, PROVISIONALES) → firmar (NoOp) →
+    //   enviar (NoOp) → se DETIENE en 'Borrador'.
     //
-    // Cuando lleguen las llaves, aquí va el flujo real:
-    //   1. cryptoService.signXml(): firmar el XML con la llave .p12 real (XAdES-EPES).
-    //   2. Obtener token OAuth del IDP de Hacienda (idp.comprobanteselectronicos.go.cr).
-    //   3. POST del comprobante firmado al API de recepción (api.comprobanteselectronicos.go.cr/recepcion).
-    //   4. Consultar el estado real y guardar la respuesta (Aceptado/Rechazado) en factura.xml_respuesta.
-    //   5. Enviar el XML + PDF al correo del cliente.
+    // Cuando lleguen el .p12 + credenciales, basta reemplazar las implementaciones NoOp
+    // por las reales (XAdES-BES + API de recepción) SIN tocar este servicio, y el
+    // consecutivo definitivo se consumirá al firmar+enviar de verdad.
     //
-    // Mientras tanto, el comprobante generado NO es válido fiscalmente.
+    // Mientras esté en 'Borrador', el comprobante NO es válido fiscalmente.
     // ─────────────────────────────────────────────────────────────────────────
-    const xmlSinFirma = await this.xmlGenerator.generateXml(cotizacion);
-    const xmlFirmadoBase64 = await this.cryptoService.signXml(xmlSinFirma);
-    const payload = await this.xmlGenerator.buildPayload(cotizacion);
-    const { Clave: clave_numerica, NumeroConsecutivo: consecutivo } = payload.FacturaElectronica;
+    const gen = await this.xmlGenerator.generar(cotizacion, {
+      exonerado: datos.exonerado,
+      numeroExoneracion: datos.numero_exoneracion,
+      borrador: true,
+    });
+    const firma = await this.firmador.firmar(gen.xml);
+    const envio = await this.haciendaClient.enviar(gen.clave, firma.xml);
+    // Estado según lo que devuelva el cliente (en interino: 'Borrador').
+    const estadoFactura: Factura['estado'] = envio.estado === 'Enviada' ? 'Enviada' : 'Borrador';
+    const validoFiscalmente = firma.firmado && envio.estado === 'Enviada';
+    const clave_numerica = gen.clave;
+    const consecutivo = gen.consecutivo;
 
     let facturaCreada: Factura | undefined;
     const venta = await this.ventasRepo.manager.transaction(async (manager) => {
@@ -229,9 +236,14 @@ export class FacturacionService {
       const nuevaFactura = manager.create(Factura, {
         clave_numerica,
         consecutivo,
-        xml_enviado:   xmlFirmadoBase64,
-        xml_respuesta: '<RespuestaSimulada>Aceptado</RespuestaSimulada>',
-        estado:        'Procesando',
+        codigo_seguridad:      gen.codigoSeguridad,
+        situacion:             gen.situacion,
+        numeracion_provisional: gen.provisional,
+        // En interino guardamos el XML del borrador SIN firmar; xml_respuesta vacío.
+        xml_enviado:   firma.xml,
+        xml_respuesta: null as any,
+        estado:        estadoFactura,
+        valido_fiscalmente: validoFiscalmente,
         venta:         nuevaVenta,
       });
       await manager.save(nuevaFactura);

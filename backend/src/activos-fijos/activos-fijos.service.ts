@@ -152,8 +152,13 @@ export class ActivosFijosService {
         referencia_tipo: 'ActivoFijo_Baja',
         lineas,
       });
+      a.pendiente_contabilizar = false;
+      a.error_contable = null;
     } catch (e) {
-      this.logger.error(`No se pudo postear la baja del activo #${a.id}: ${(e as Error).message}`);
+      const msg = (e as Error).message;
+      this.logger.error(`No se pudo postear la baja del activo #${a.id}: ${msg}`);
+      a.pendiente_contabilizar = true;
+      a.error_contable = `Baja: ${msg}`;
     }
 
     a.activo = false;
@@ -201,8 +206,13 @@ export class ActivosFijosService {
         referencia_tipo: 'ActivoFijo_Venta',
         lineas,
       });
+      a.pendiente_contabilizar = false;
+      a.error_contable = null;
     } catch (e) {
-      this.logger.error(`No se pudo postear la venta del activo #${a.id}: ${(e as Error).message}`);
+      const msg = (e as Error).message;
+      this.logger.error(`No se pudo postear la venta del activo #${a.id}: ${msg}`);
+      a.pendiente_contabilizar = true;
+      a.error_contable = `Venta: ${msg}`;
     }
 
     a.activo = false;
@@ -324,9 +334,15 @@ export class ActivosFijosService {
         });
         a.depreciacion_acumulada = +(acum + cuota).toFixed(2);
         a.ultimo_periodo_depreciado = periodo;
+        a.pendiente_contabilizar = false;
+        a.error_contable = null;
         await this.activosRepo.save(a);
       } catch (e) {
-        this.logger.error(`Depreciación del activo #${a.id} falló: ${(e as Error).message}`);
+        const msg = (e as Error).message;
+        this.logger.error(`Depreciación del activo #${a.id} falló: ${msg}`);
+        a.pendiente_contabilizar = true;
+        a.error_contable = `Depreciación ${periodo}: ${msg}`;
+        await this.activosRepo.save(a);
       }
     }
   }

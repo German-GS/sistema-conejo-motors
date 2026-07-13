@@ -3,111 +3,175 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { create } from 'xmlbuilder2';
-import { randomInt } from 'crypto';
+import { NumeracionService } from './numeracion.service';
+
+// Namespace oficial de la Factura Electrónica v4.4 (TRIBU-CR). Confirmar el URI exacto
+// contra el Anexo de estructuras v4.4 vigente de Hacienda antes de producción.
+const NS_FE_V44 = 'https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica';
+
+// CABYS genérico para "vehículos automotores eléctricos" — reemplazar por el CABYS real
+// del vehículo cuando el catálogo esté cargado (ver CabysService). Placeholder de 13 díg.
+const CABYS_VEHICULO_DEFAULT = '4911000000000';
+
+export interface OpcionesFactura {
+  /** Vehículo eléctrico exonerado de IVA (Ley 9518). */
+  exonerado?: boolean;
+  numeroExoneracion?: string;
+  condicionVenta?: string; // 01 contado, 02 crédito...
+  medioPago?: string; // 01 efectivo, 02 tarjeta, 04 transferencia...
+  /** Marca el XML como borrador no válido fiscalmente (modo interino). */
+  borrador?: boolean;
+}
+
+export interface ResultadoXml {
+  xml: string;
+  clave: string;
+  consecutivo: string;
+  codigoSeguridad: string;
+  situacion: string;
+  provisional: boolean;
+}
 
 @Injectable()
 export class XmlGeneratorService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private readonly numeracion: NumeracionService,
+  ) {}
 
   /**
-   * Construye el objeto de la Factura Electrónica v4.4.
-   * @param cotizacion La cotización que se va a facturar.
-   * @returns Un objeto listo para ser convertido a XML.
+   * Genera el XML v4.4 del comprobante para una cotización, con clave/consecutivo REALES
+   * en estructura. En modo interino (borrador) la numeración es PROVISIONAL: no consume
+   * el secuencial oficial (para no dejar huecos al entrar a producción).
    */
-  async buildPayload(cotizacion: Cotizacion): Promise<any> {
+  async generar(cotizacion: Cotizacion, opts: OpcionesFactura = {}): Promise<ResultadoXml> {
     const ahora = new Date();
-    // 1. Generar Clave y Consecutivo
-    const { clave, consecutivo } = this.generarClaveYConsecutivo();
-    
-    // 2. Datos del Emisor (desde variables de entorno)
+    const cedulaEmisor = this.configService.get<string>('EMISOR_CEDULA') ?? '0';
+    const provisional = opts.borrador !== false; // por defecto, borrador
+
+    // Numeración: provisional (no consume secuencia) en interino.
+    const secuencialProvisional = Number(String(Date.now()).slice(-10));
+    const consecutivo = this.numeracion.armarConsecutivo({ tipo: '01', secuencial: secuencialProvisional });
+    const { clave, codigoSeguridad, situacion } = this.numeracion.armarClave({
+      cedulaEmisor,
+      consecutivo,
+      fecha: ahora,
+    });
+
+    const base = Number(cotizacion.precio_final) || 0;
+    const tarifa = opts.exonerado ? 0 : 13;
+    const impuestoMonto = +(base * (tarifa / 100)).toFixed(2);
+    const totalLinea = +(base + impuestoMonto).toFixed(2);
+
     const emisor = {
       Nombre: this.configService.get('EMISOR_NOMBRE'),
       Identificacion: {
         Tipo: this.configService.get('EMISOR_TIPO_IDENTIFICACION'),
-        NumIdentificacion: this.configService.get('EMISOR_CEDULA'),
+        Numero: this.configService.get('EMISOR_CEDULA'),
       },
+      // v4.4: actividad económica del emisor
+      CodigoActividadEmisor: this.configService.get('EMISOR_ACTIVIDAD') ?? '451001',
       Ubicacion: {
-          Provincia: this.configService.get('EMISOR_PROVINCIA'),
-          Canton: this.configService.get('EMISOR_CANTON'),
-          Distrito: this.configService.get('EMISOR_DISTRITO'),
-          Barrio: this.configService.get('EMISOR_BARRIO'),
-          OtrasSenas: this.configService.get('EMISOR_DIRECCION'),
+        Provincia: this.configService.get('EMISOR_PROVINCIA'),
+        Canton: this.configService.get('EMISOR_CANTON'),
+        Distrito: this.configService.get('EMISOR_DISTRITO'),
+        OtrasSenas: this.configService.get('EMISOR_DIRECCION'),
       },
-      Telefono: {
-          CodigoPais: '506',
-          NumTelefono: this.configService.get('EMISOR_TELEFONO'),
-      },
+      Telefono: { CodigoPais: '506', NumTelefono: this.configService.get('EMISOR_TELEFONO') },
       CorreoElectronico: this.configService.get('EMISOR_EMAIL'),
     };
 
-
-    // 3. Datos del Receptor (desde la cotización)
     const receptor = {
-      Nombre: cotizacion.cliente.nombre_completo,
-      Identificacion: {
-        Tipo: '01', // Cédula Física
-        NumIdentificacion: cotizacion.cliente.cedula,
-      },
-      // ... otros datos del receptor
+      Nombre: cotizacion.cliente?.nombre_completo,
+      Identificacion: { Tipo: '01', Numero: cotizacion.cliente?.cedula },
+      CorreoElectronico: cotizacion.cliente?.email,
     };
 
-    // 4. Línea de Detalle (el vehículo)
+    const impuesto: any = {
+      Codigo: '01', // IVA
+      CodigoTarifaIVA: opts.exonerado ? '01' : '08', // 01 exento (0%) / 08 tarifa general 13%
+      Tarifa: tarifa.toFixed(2),
+      Monto: impuestoMonto.toFixed(2),
+    };
+    if (opts.exonerado) {
+      impuesto.Exoneracion = {
+        TipoDocumentoEX: '99',
+        NumeroDocumento: opts.numeroExoneracion ?? 'N/A',
+        NombreInstitucion: 'Ministerio de Hacienda',
+        FechaEmisionEX: ahora.toISOString().slice(0, 10),
+        TarifaExonerada: '13.00',
+        MontoExoneracion: (+(base * 0.13)).toFixed(2),
+      };
+    }
+
     const lineaDetalle = {
-        NumeroLinea: 1,
-        // 👇 El VIN es CRÍTICO para vehículos 👇
-        CodigoComercial: { Tipo: '04', Codigo: cotizacion.vehiculo.vin },
-        Cantidad: 1,
-        UnidadMedida: 'Unid',
-        Detalle: `${cotizacion.vehiculo.marca} ${cotizacion.vehiculo.modelo} ${cotizacion.vehiculo.año}`,
-        PrecioUnitario: cotizacion.precio_final,
-        MontoTotal: cotizacion.precio_final,
-        Impuesto: {
-            // IVA del 13% siempre se calcula, la exoneración es sobre otros impuestos.
-            Monto: cotizacion.precio_final * 0.13,
-            Tarifa: 13.0,
-        },
-        MontoTotalLinea: cotizacion.precio_final * 1.13,
+      NumeroLinea: 1,
+      // CABYS obligatorio en v4.4
+      CodigoCABYS: CABYS_VEHICULO_DEFAULT,
+      CodigoComercial: { Tipo: '04', Codigo: cotizacion.vehiculo?.vin }, // VIN
+      Cantidad: 1,
+      UnidadMedida: 'Unid',
+      Detalle: `${cotizacion.vehiculo?.marca ?? ''} ${cotizacion.vehiculo?.modelo ?? ''} ${cotizacion.vehiculo?.año ?? ''}`.trim(),
+      PrecioUnitario: base.toFixed(2),
+      MontoTotal: base.toFixed(2),
+      SubTotal: base.toFixed(2),
+      BaseImponible: base.toFixed(2),
+      Impuesto: impuesto,
+      ImpuestoNeto: impuestoMonto.toFixed(2),
+      MontoTotalLinea: totalLinea.toFixed(2),
     };
 
-    // 5. Ensamblar el payload completo
+    const resumen = {
+      CodigoTipoMoneda: { CodigoMoneda: 'CRC', TipoCambio: '1.00000' },
+      TotalServGravados: '0.00',
+      TotalServExentos: '0.00',
+      TotalMercanciasGravadas: opts.exonerado ? '0.00' : base.toFixed(2),
+      TotalMercanciasExentas: opts.exonerado ? base.toFixed(2) : '0.00',
+      TotalGravado: opts.exonerado ? '0.00' : base.toFixed(2),
+      TotalExento: opts.exonerado ? base.toFixed(2) : '0.00',
+      TotalVenta: base.toFixed(2),
+      TotalVentaNeta: base.toFixed(2),
+      TotalImpuesto: impuestoMonto.toFixed(2),
+      TotalComprobante: totalLinea.toFixed(2),
+    };
+
     const payload = {
       FacturaElectronica: {
-        '@xmlns': 'https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica',
+        '@xmlns': NS_FE_V44,
         Clave: clave,
+        ProveedorSistemas: this.configService.get('EMISOR_CEDULA'),
+        CodigoActividadEmisor: emisor.CodigoActividadEmisor,
         NumeroConsecutivo: consecutivo,
         FechaEmision: ahora.toISOString(),
         Emisor: emisor,
         Receptor: receptor,
-        CondicionVenta: '01', // Contado
-        MedioPago: '01', // Efectivo (o el que corresponda)
-        DetalleServicio: {
-          LineaDetalle: [lineaDetalle],
-        },
+        CondicionVenta: opts.condicionVenta ?? '01',
+        DetalleServicio: { LineaDetalle: [lineaDetalle] },
         ResumenFactura: {
-          TotalVenta: cotizacion.precio_final,
-          TotalImpuesto: lineaDetalle.Impuesto.Monto,
-          TotalComprobante: lineaDetalle.MontoTotalLinea,
+          ...resumen,
+          MedioPago: { TipoMedioPago: opts.medioPago ?? '01' },
         },
       },
     };
 
-    return payload;
-  }
-  
-  /**
-   * Genera el XML a partir del payload.
-   */
-  async generateXml(cotizacion: Cotizacion): Promise<string> {
-      const payload = await this.buildPayload(cotizacion);
-      const doc = create(payload);
-      return doc.end({ prettyPrint: true });
+    const doc = create(payload);
+    let xml = doc.end({ prettyPrint: true });
+
+    if (provisional) {
+      // Marcado legal: este comprobante NO es válido fiscalmente.
+      xml = xml.replace(
+        '<FacturaElectronica',
+        '<!-- BORRADOR — no válido para efectos tributarios. Numeración provisional; sin firma XAdES ni transmisión a Hacienda. -->\n<FacturaElectronica',
+      );
+    }
+
+    return { xml, clave, consecutivo, codigoSeguridad, situacion, provisional };
   }
 
-  private generarClaveYConsecutivo(): { clave: string, consecutivo: string } {
-    // Lógica para generar la clave de 50 dígitos y el consecutivo de 20
-    // Esto es una simulación. Debes implementarla según la estructura oficial.
-    const consecutivo = `0010000101${randomInt(1000000000).toString().padStart(10, '0')}`;
-    const clave = `506...${consecutivo}...`; // Simulación
-    return { clave, consecutivo };
+  // ── Compatibilidad con el llamador anterior ────────────────────────────────
+  /** @deprecated Usar generar(). Mantiene la firma antigua para no romper llamadores. */
+  async generateXml(cotizacion: Cotizacion): Promise<string> {
+    const { xml } = await this.generar(cotizacion, { borrador: true });
+    return xml;
   }
 }

@@ -69,6 +69,17 @@ export class ActivoFijo {
   @Column({ default: true })
   activo: boolean;
 
+  /**
+   * true = una operación (alta/baja/venta/depreciación) NO pudo postear su asiento
+   * contable y quedó pendiente de reconciliación. Se limpia al reintentar con éxito.
+   */
+  @Column({ default: false })
+  pendiente_contabilizar: boolean;
+
+  /** Detalle del último fallo contable, para diagnóstico en la reconciliación. */
+  @Column({ type: 'text', nullable: true })
+  error_contable: string | null;
+
   @Column({ type: 'text', nullable: true })
   notas: string | null;
 

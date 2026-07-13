@@ -51,6 +51,13 @@ export class LiquidacionIVA {
   @Column({ type: 'int', nullable: true })
   asiento_id: number | null;
 
+  /** true = la liquidación se generó pero su asiento contable falló y quedó pendiente. */
+  @Column({ default: false })
+  pendiente_contabilizar: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  error_contable: string | null;
+
   @Column({ type: 'date', nullable: true })
   fecha_generacion: string | null;
 

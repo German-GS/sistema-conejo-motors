@@ -217,17 +217,25 @@ ${tarifas(c.compras_por_tarifa)}
     const neto = Number(calc.iva_a_pagar) || 0; // puede ser negativo (saldo a favor)
 
     let asientoId: number | null = liq?.asiento_id ?? null;
+    let pendienteContab = false;
+    let errorContable: string | null = null;
     // Reversar asiento previo si se regenera
     if (liq?.asiento_id) {
-      await this.contabilidad.reversarAsientosPorReferencia('LiquidacionIVA', liq.id, user, 'Regeneración').catch(() => {});
+      await this.contabilidad
+        .reversarAsientosPorReferencia('LiquidacionIVA', liq.id, user, 'Regeneración')
+        .catch((e) => this.logger.error(`Reversa liquidación IVA ${periodo}: ${e.message}`));
     }
     if (debito > 0 || bruto > 0) {
       const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [];
       if (debito > 0) lineas.push({ cuentaId: c2200.id, debe: debito, haber: 0, descripcion: `Débito fiscal ${periodo}` });
       if (noAplicable > 0.01) lineas.push({ cuentaId: c5700.id, debe: noAplicable, haber: 0, descripcion: `IVA no deducible por prorrata ${periodo}` });
       if (bruto > 0) lineas.push({ cuentaId: c1210.id, debe: 0, haber: bruto, descripcion: `Crédito fiscal ${periodo}` });
-      // Plug: 2210 neto (positivo = por pagar; negativo = saldo a favor → al debe)
-      const plug = +(debito - bruto).toFixed(2); // = ivaAPagar antes de retenciones/saldo; balancea el asiento
+      // Plug: 2210 neto (positivo = por pagar; negativo = saldo a favor → al debe).
+      // Debe balancear contra el crédito EFECTIVAMENTE aplicado (1210 bruto se cancela
+      // completo, pero la parte no deducible por prorrata va a 5700). Por eso el plug
+      // es (débito − aplicable) = (débito − bruto + noAplicable), no (débito − bruto):
+      // de lo contrario el asiento queda descuadrado por `noAplicable` y no cuadra.
+      const plug = +(debito - aplicable).toFixed(2);
       if (plug > 0.01) lineas.push({ cuentaId: c2210.id, debe: 0, haber: plug, descripcion: `IVA por pagar ${periodo}` });
       else if (plug < -0.01) lineas.push({ cuentaId: c2210.id, debe: -plug, haber: 0, descripcion: `Saldo a favor IVA ${periodo}` });
 
@@ -238,8 +246,13 @@ ${tarifas(c.compras_por_tarifa)}
         referencia_tipo: 'LiquidacionIVA',
         referencia_id: liq?.id,
         lineas,
-      }, { forzar: true }).catch((e) => { this.logger.error(`Asiento liquidación IVA ${periodo}: ${e.message}`); return null; });
+      }, { forzar: true }).catch((e) => {
+        this.logger.error(`Asiento liquidación IVA ${periodo}: ${e.message}`);
+        errorContable = e.message;
+        return null;
+      });
       if (asiento) asientoId = asiento.id;
+      else { pendienteContab = true; } // se generó la liquidación pero el asiento falló
     }
 
     liq = liq ?? this.repo.create({ periodo });
@@ -250,6 +263,8 @@ ${tarifas(c.compras_por_tarifa)}
     liq.fecha_generacion = this.hoyCR();
     liq.generado_por = user;
     liq.asiento_id = asientoId;
+    liq.pendiente_contabilizar = pendienteContab;
+    liq.error_contable = errorContable;
     const saved = await this.repo.save(liq);
 
     // Vincular referencia del asiento a la liquidación ya persistida

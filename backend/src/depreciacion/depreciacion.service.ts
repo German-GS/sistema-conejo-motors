@@ -10,6 +10,11 @@ const DEFAULTS: Partial<CategoriaDepreciacion>[] = [
   { nombre: 'Equipo de cómputo', vida_util_meses: 60, vida_util_fiscal_meses: 60, tasa_anual: 20, metodo_fiscal: 'LineaRecta', cuenta_activo: '1510', orden: 2 },
   { nombre: 'Mobiliario y equipo de oficina', vida_util_meses: 120, vida_util_fiscal_meses: 120, tasa_anual: 10, metodo_fiscal: 'LineaRecta', cuenta_activo: '1510', orden: 3 },
   { nombre: 'Maquinaria y equipo', vida_util_meses: 120, vida_util_fiscal_meses: 120, tasa_anual: 10, metodo_fiscal: 'LineaRecta', cuenta_activo: '1510', orden: 4 },
+  // ⚠️ VERIFICAR CONTRA EL ANEXO Nº 2 (Decreto 43198-H) ANTES DE USAR EN LA DECLARACIÓN DE RENTA:
+  //   Algunas partidas de "Herramientas" y "Equipo de comunicación" se deprecian a 25% (4 años),
+  //   no a 10%/10 años. Confirmar con el contador la clasificación exacta de cada activo y, si
+  //   corresponde, cambiar aquí vida_util_fiscal_meses=48 y tasa_anual=25. No se ajusta a ciegas
+  //   porque afecta directamente la deducción fiscal. (Tarea 3.4 — pendiente de confirmación.)
   { nombre: 'Herramientas', vida_util_meses: 36, vida_util_fiscal_meses: 120, tasa_anual: 10, metodo_fiscal: 'LineaRecta', cuenta_activo: '1510', orden: 5 },
   { nombre: 'Equipo de comunicación', vida_util_meses: 60, vida_util_fiscal_meses: 120, tasa_anual: 10, metodo_fiscal: 'LineaRecta', cuenta_activo: '1510', orden: 6 },
   { nombre: 'Edificios e instalaciones', vida_util_meses: 600, vida_util_fiscal_meses: 600, tasa_anual: 2, metodo_fiscal: 'LineaRecta', cuenta_activo: '1500', orden: 7 },

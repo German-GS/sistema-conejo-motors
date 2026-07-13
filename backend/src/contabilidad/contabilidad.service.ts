@@ -104,12 +104,14 @@ export class ContabilidadService {
 
   /**
    * Libro diario en un rango de fechas.
-   * NOTA: si no se pasan startDate/endDate, devuelve SOLO los asientos de HOY
-   * (no todo el histórico). Para ver otro período hay que pasar el rango.
+   * NOTA: si no se pasan startDate/endDate, devuelve los asientos del MES ACTUAL
+   * (del día 1 a hoy, en zona America/Costa_Rica). Para ver otro período hay que
+   * pasar el rango.
    */
   async getAsientos(startDate?: string, endDate?: string): Promise<AsientoContable[]> {
-    const hoy = new Date().toISOString().split('T')[0];
-    const desde = startDate ?? hoy;
+    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+    const inicioMes = hoy.slice(0, 8) + '01'; // YYYY-MM-01
+    const desde = startDate ?? inicioMes;
     const hasta  = endDate   ?? hoy;
     return this.asientosRepo.find({
       where: { fecha: Between(desde as any, hasta as any) },
@@ -345,6 +347,31 @@ export class ContabilidadService {
       // Cuadre exacto en céntimos (sin tolerancia arbitraria).
       equilibrado: totalActivosC === (totalPasivosC + totalPatrimonioC + utilidadC),
     };
+  }
+
+  /**
+   * Movimientos por cuenta en un rango de fechas (para estados financieros de período).
+   * Devuelve, por cuenta, la suma de debe/haber y el saldo del PERÍODO (no acumulado):
+   * Activo/Gasto = debe − haber; resto = haber − debe. Excluye asientos de cierre.
+   */
+  async movimientosPorCuenta(startDate: string, endDate: string): Promise<any[]> {
+    const rows = await this.lineasRepo
+      .createQueryBuilder('l')
+      .innerJoin('l.asiento', 'a')
+      .innerJoin('l.cuenta', 'c')
+      .where('a.fecha BETWEEN :desde AND :hasta', { desde: startDate, hasta: endDate })
+      .andWhere("a.tipo != 'Cierre'")
+      .groupBy('c.id').addGroupBy('c.codigo').addGroupBy('c.nombre').addGroupBy('c.tipo')
+      .select('c.id', 'id').addSelect('c.codigo', 'codigo').addSelect('c.nombre', 'nombre').addSelect('c.tipo', 'tipo')
+      .addSelect('SUM(l.debe)', 'total_debe').addSelect('SUM(l.haber)', 'total_haber')
+      .getRawMany();
+
+    return rows.map((r) => {
+      const debeC = toCents(r.total_debe);
+      const haberC = toCents(r.total_haber);
+      const saldoC = ['Activo', 'Gasto'].includes(r.tipo) ? debeC - haberC : haberC - debeC;
+      return { id: r.id, codigo: r.codigo, nombre: r.nombre, tipo: r.tipo, saldo: fromCents(saldoC), _saldoC: saldoC };
+    });
   }
 
   // ── Cierre Diario ─────────────────────────────────────────────────────────
