@@ -38,8 +38,17 @@ generar XML v4.4  →  firmar (FirmadorNoop)  →  enviar (HaciendaClientNoop)  
 > ⚠️ **Empezar SIEMPRE por el ambiente de PRUEBAS (sandbox) de Hacienda** antes de producción,
 > validando aceptación de comprobantes de prueba.
 
-## Pendiente
+## CABYS (Tarea 2.4)
 
-- **CABYS por línea** (`Tarea 2.4`): hoy se usa un CABYS placeholder por línea de vehículo.
-  Falta la entidad `Cabys` + cargador del catálogo público (BCCR/Hacienda) + validación del
-  código y sugerencia de tarifa de IVA al crear la línea.
+Módulo `cabys/` con la entidad `Cabys` (código 13 díg., descripción, tarifa IVA sugerida):
+
+- **Semilla del negocio** al arrancar: vehículos eléctricos (`4911315000000`), híbridos,
+  repuestos/accesorios (`4912999009900`), servicios de mantenimiento (`8714100000200`), etc.
+  (ver `CABYS_DEFAULTS`). La factura de vehículo usa por defecto el CABYS de vehículo eléctrico.
+- **Validación / autocompletar**: `GET /cabys/buscar?q=`, `GET /cabys/:codigo`.
+- **Catálogo completo**: `POST /cabys/importar` (Admin) sube el Excel oficial de BCCR/Hacienda
+  y hace upsert de las ~20 000 filas (código en col. "Categoría 9", tarifa en "Impuesto").
+
+### Pendiente de CABYS
+- Hacer `cabys` un campo editable/obligatorio en las líneas de cotización/producto/orden con
+  UI en el frontend (hoy se resuelve por defecto según el tipo de línea).

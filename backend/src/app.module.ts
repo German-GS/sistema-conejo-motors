@@ -63,6 +63,7 @@ import { ActivosFijosModule } from './activos-fijos/activos-fijos.module';
 import { DepreciacionModule } from './depreciacion/depreciacion.module';
 import { IvaModule } from './iva/iva.module';
 import { PendientesContablesModule } from './pendientes-contables/pendientes-contables.module';
+import { CabysModule } from './cabys/cabys.module';
 import { NotasFiscalesModule } from './notas-fiscales/notas-fiscales.module';
 import { CuentaContable } from './contabilidad/cuenta.entity';
 import { AsientoContable, LineaAsiento } from './contabilidad/asiento.entity';
@@ -223,6 +224,7 @@ import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
     DepreciacionModule,
     IvaModule,
     PendientesContablesModule,
+    CabysModule,
     NotasFiscalesModule,
     // Nuevos módulos
     AgendaModule,

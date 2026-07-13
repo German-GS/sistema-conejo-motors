@@ -4,14 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { create } from 'xmlbuilder2';
 import { NumeracionService } from './numeracion.service';
+import { CABYS_DEFAULTS } from '../cabys/cabys.service';
 
 // Namespace oficial de la Factura Electrónica v4.4 (TRIBU-CR). Confirmar el URI exacto
 // contra el Anexo de estructuras v4.4 vigente de Hacienda antes de producción.
 const NS_FE_V44 = 'https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica';
 
-// CABYS genérico para "vehículos automotores eléctricos" — reemplazar por el CABYS real
-// del vehículo cuando el catálogo esté cargado (ver CabysService). Placeholder de 13 díg.
-const CABYS_VEHICULO_DEFAULT = '4911000000000';
+// CABYS por defecto para la venta de vehículos (concesionaria EV). Overridable por línea.
+const CABYS_VEHICULO_DEFAULT = CABYS_DEFAULTS.VEHICULO_ELECTRICO; // 4911315000000
 
 export interface OpcionesFactura {
   /** Vehículo eléctrico exonerado de IVA (Ley 9518). */
@@ -19,6 +19,8 @@ export interface OpcionesFactura {
   numeroExoneracion?: string;
   condicionVenta?: string; // 01 contado, 02 crédito...
   medioPago?: string; // 01 efectivo, 02 tarjeta, 04 transferencia...
+  /** CABYS (13 díg.) del vehículo; por defecto vehículo eléctrico. */
+  cabysVehiculo?: string;
   /** Marca el XML como borrador no válido fiscalmente (modo interino). */
   borrador?: boolean;
 }
@@ -107,7 +109,7 @@ export class XmlGeneratorService {
     const lineaDetalle = {
       NumeroLinea: 1,
       // CABYS obligatorio en v4.4
-      CodigoCABYS: CABYS_VEHICULO_DEFAULT,
+      CodigoCABYS: opts.cabysVehiculo ?? CABYS_VEHICULO_DEFAULT,
       CodigoComercial: { Tipo: '04', Codigo: cotizacion.vehiculo?.vin }, // VIN
       Cantidad: 1,
       UnidadMedida: 'Unid',
