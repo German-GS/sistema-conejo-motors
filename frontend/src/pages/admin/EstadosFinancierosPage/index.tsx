@@ -82,9 +82,11 @@ export const EstadosFinancierosPage = () => {
 
       {loading && <p style={{ padding: "1rem", color: "#64748b" }}>Cargando…</p>}
 
-      {!loading && data && tab === "estado-resultados" && <EstadoResultados data={data} />}
-      {!loading && data && tab === "balance-general" && <BalanceGeneral data={data} />}
-      {!loading && data && tab === "flujo-caja" && <FlujoCaja data={data} />}
+      {/* Se valida la FORMA de los datos, no solo el tab: al cambiar de pestaña, `data`
+          conserva por un instante la forma anterior hasta que llega el nuevo fetch. */}
+      {!loading && tab === "estado-resultados" && data?.actual?.ingresos && <EstadoResultados data={data} />}
+      {!loading && tab === "balance-general" && data?.actual?.totales && <BalanceGeneral data={data} />}
+      {!loading && tab === "flujo-caja" && data?.actual?.detalle && <FlujoCaja data={data} />}
 
       <div style={{ ...card, background: "#f8fafc" }}>
         <p style={{ fontSize: "0.82rem", color: "#475569", margin: 0, lineHeight: 1.6 }}>
