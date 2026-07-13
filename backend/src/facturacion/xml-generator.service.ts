@@ -65,12 +65,14 @@ export class XmlGeneratorService {
     const impuestoMonto = +(base * (tarifa / 100)).toFixed(2);
     const totalLinea = +(base + impuestoMonto).toFixed(2);
 
-    const emisor = {
+    const emisor: any = {
+      // Nombre = razón social legal; NombreComercial = nombre de fantasía (opcional en v4.4).
       Nombre: this.configService.get('EMISOR_NOMBRE'),
       Identificacion: {
         Tipo: this.configService.get('EMISOR_TIPO_IDENTIFICACION'),
         Numero: this.configService.get('EMISOR_CEDULA'),
       },
+      NombreComercial: this.configService.get('EMISOR_NOMBRE_COMERCIAL') ?? undefined,
       // v4.4: actividad económica del emisor
       CodigoActividadEmisor: this.configService.get('EMISOR_ACTIVIDAD') ?? '451001',
       Ubicacion: {
