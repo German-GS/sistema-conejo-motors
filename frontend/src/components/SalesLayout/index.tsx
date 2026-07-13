@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import styles from "../AdminLayout/AdminLayout.module.css";
 import apiClient from "@/api/apiClient";
 import { jwtDecode } from "jwt-decode";
+import { useSessionKeepAlive } from "@/hooks/useSessionKeepAlive";
 import conejoLogo from "../../img/Logos/Logo-Blanco.png";
 import {
   LuLayoutDashboard, LuCar, LuFileText, LuBell, LuContact,
@@ -26,6 +27,7 @@ const NAV = [
 ];
 
 export const SalesLayout = () => {
+  useSessionKeepAlive();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [pinned, setPinned] = useState(() => {
     try { return localStorage.getItem("sidebarPinned") === "1"; } catch { return false; }

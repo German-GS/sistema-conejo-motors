@@ -32,4 +32,11 @@ export class AuthController {
   getProfile(@Request() req) {
     return req.user;
   }
+
+  /** Renueva el token mientras la sesión está activa (evita el logout a mitad de uso). */
+  @UseGuards(AuthGuard('jwt'))
+  @Post('refresh')
+  refresh(@Request() req) {
+    return this.authService.refresh(req.user.id);
+  }
 }

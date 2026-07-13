@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useNavigate, useLocation } from "react-router-do
 import { Helmet } from "react-helmet-async";
 import styles from "./AdminLayout.module.css";
 import { jwtDecode } from "jwt-decode";
+import { useSessionKeepAlive } from "@/hooks/useSessionKeepAlive";
 import apiClient from "@/api/apiClient";
 import conejoLogo from "../../img/Logos/Logo-Blanco.png";
 import {
@@ -84,6 +85,7 @@ const getDefaultSections = (pathname: string): Set<string> => {
 };
 
 export const AdminLayout = () => {
+  useSessionKeepAlive();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [pinned, setPinned] = useState(() => {
     try { return localStorage.getItem("sidebarPinned") === "1"; } catch { return false; }

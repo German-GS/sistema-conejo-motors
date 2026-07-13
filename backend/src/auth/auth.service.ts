@@ -32,4 +32,12 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
+
+  /** Reemite un token fresco para un usuario ya autenticado (renovación de sesión activa). */
+  async refresh(userId: number) {
+    const user = await this.usersService.findOneById(userId);
+    if (!user) throw new UnauthorizedException('Usuario no encontrado.');
+    const { password_hash, ...result } = user as any;
+    return this.login(result);
+  }
 }
