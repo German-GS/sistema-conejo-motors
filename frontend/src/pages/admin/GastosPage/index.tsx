@@ -1,5 +1,5 @@
 import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./GastosPage.module.css";
 import { LuPlus, LuReceipt } from "react-icons/lu";
@@ -25,7 +25,22 @@ export default function GastosPage() {
   const [editId, setEditId] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
-  const [totalMes, setTotalMes] = useState(0);
+  const [periodo, setPeriodo] = useState(() => new Date().toISOString().slice(0, 7)); // YYYY-MM
+  const [verTodos, setVerTodos] = useState(false);
+
+  // Gastos del período seleccionado (o todos)
+  const gastosFiltrados = useMemo(() => {
+    if (verTodos) return gastos;
+    return gastos.filter((g) => (g.fecha || "").slice(0, 7) === periodo);
+  }, [gastos, periodo, verTodos]);
+
+  const totalPeriodo = useMemo(() => gastosFiltrados.reduce((a, g) => a + +g.monto, 0), [gastosFiltrados]);
+
+  const porCategoria = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const g of gastosFiltrados) m.set(g.categoria, (m.get(g.categoria) || 0) + +g.monto);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [gastosFiltrados]);
 
   const formVacio = { categoria: 'Insumos de Taller', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', nombre_comercio: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' };
 
@@ -62,9 +77,7 @@ export default function GastosPage() {
     setLoading(true);
     const r = await apiClient.get("/gastos");
     setGastos(r.data);
-    const hoy = new Date(); const mes = hoy.getMonth(); const año = hoy.getFullYear();
-    const total = r.data.filter((g: Gasto) => { const d = new Date(g.fecha + 'T00:00:00'); return d.getMonth() === mes && d.getFullYear() === año; }).reduce((a: number, g: Gasto) => a + +g.monto, 0);
-    setTotalMes(total); setLoading(false);
+    setLoading(false);
   };
 
   useEffect(() => { cargar(); }, []);
@@ -133,15 +146,41 @@ export default function GastosPage() {
         </div>
       </div>
 
-      <div className={styles.kpiCard}>
-        <LuReceipt size={24} className={styles.kpiIcon} />
-        <div><div className={styles.kpiVal}>₡{totalMes.toLocaleString('es-CR')}</div><div className={styles.kpiLabel}>Gastos del mes actual</div></div>
+      {/* Resumen del período seleccionado */}
+      <div className={styles.kpiCard} style={{ display: "block" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <LuReceipt size={24} className={styles.kpiIcon} />
+            <div>
+              <div className={styles.kpiVal}>₡{totalPeriodo.toLocaleString('es-CR')}</div>
+              <div className={styles.kpiLabel}>{verTodos ? "Total de todos los gastos" : `Gastos de ${periodo}`} · {gastosFiltrados.length} mov.</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <input type="month" value={periodo} disabled={verTodos} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem" }} />
+            <button onClick={() => setVerTodos((v) => !v)} style={{ fontSize: "0.82rem", borderRadius: 8, padding: "0.45rem 0.8rem", cursor: "pointer", fontWeight: 600, border: `1.5px solid ${verTodos ? "#024f7d" : "#e2e8f0"}`, background: verTodos ? "#024f7d" : "#fff", color: verTodos ? "#fff" : "#475569" }}>
+              {verTodos ? "Ver por mes" : "Ver todos"}
+            </button>
+          </div>
+        </div>
+        {/* Desglose por categoría */}
+        {porCategoria.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.9rem", paddingTop: "0.9rem", borderTop: "1px solid #f1f5f9" }}>
+            {porCategoria.map(([cat, monto]) => (
+              <span key={cat} style={{ display: "inline-flex", alignItems: "baseline", gap: "0.4rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "3px 12px", fontSize: "0.8rem" }}>
+                <span style={{ color: "#475569" }}>{cat}</span>
+                <strong style={{ color: "#0a2540" }}>₡{monto.toLocaleString('es-CR')}</strong>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading ? <p>Cargando...</p> : (
         <div className={styles.tabla}>
           <div className={styles.th}><span>Fecha</span><span>Categoría</span><span>Descripción</span><span>N° Factura</span><span>Proveedor / Comercio</span><span>Monto</span></div>
-          {gastos.map(g => (
+          {gastosFiltrados.length === 0 && <p className={styles.empty}>Sin gastos en este período.</p>}
+          {gastosFiltrados.map(g => (
             <div key={g.id} className={styles.tr}>
               <span>{g.fecha}</span>
               <span className={styles.cat}>{g.categoria}</span>
@@ -160,7 +199,6 @@ export default function GastosPage() {
               </span>
             </div>
           ))}
-          {gastos.length === 0 && <p className={styles.empty}>Sin gastos registrados</p>}
         </div>
       )}
 
