@@ -519,6 +519,28 @@ export class ContabilidadService implements OnApplicationBootstrap {
     };
   }
 
+  /**
+   * Líneas del mayor de una cuenta (por código) en un rango, con monto firmado
+   * (debe − haber). Para conciliación bancaria: monto>0 = entrada al banco.
+   */
+  async lineasDeCuenta(codigo: string, desde: string, hasta: string): Promise<any[]> {
+    const cuenta = await this.cuentasRepo.findOneBy({ codigo });
+    if (!cuenta) return [];
+    const rows = await this.lineasRepo
+      .createQueryBuilder('l').innerJoin('l.asiento', 'a')
+      .where('l.cuentaId = :cid', { cid: cuenta.id })
+      .andWhere('a.fecha BETWEEN :desde AND :hasta', { desde, hasta })
+      .select('l.id', 'lineaId').addSelect('a.id', 'asientoId').addSelect('a.fecha', 'fecha')
+      .addSelect('a.descripcion', 'descripcion').addSelect('l.debe', 'debe').addSelect('l.haber', 'haber')
+      .orderBy('a.fecha', 'ASC').addOrderBy('a.id', 'ASC')
+      .getRawMany();
+    return rows.map((r) => ({
+      lineaId: Number(r.lineaId), asientoId: Number(r.asientoId), fecha: r.fecha,
+      descripcion: r.descripcion, debe: Number(r.debe) || 0, haber: Number(r.haber) || 0,
+      monto: +(((Number(r.debe) || 0) - (Number(r.haber) || 0))).toFixed(2),
+    }));
+  }
+
   // ── Cierre Diario ─────────────────────────────────────────────────────────
 
   async getCierres(limit = 30): Promise<CierreDiario[]> {

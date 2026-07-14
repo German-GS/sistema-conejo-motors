@@ -28,6 +28,14 @@ export class MovimientoBancario {
   @Column({ default: false })
   conciliado: boolean;
 
+  /** 'Manual' (registrado en el sistema) o 'Importado' (del estado de cuenta del banco). */
+  @Column({ length: 12, default: 'Manual' })
+  origen: string;
+
+  /** Línea de asiento contable con la que se concilió (si aplica). */
+  @Column({ type: 'int', nullable: true })
+  asiento_linea_id: number | null;
+
   @ManyToOne(() => User, { nullable: true })
   registrado_por?: User;
 

@@ -20,6 +20,10 @@ export class CuentaBancaria {
   @Column({ enum: ['CRC', 'USD'], default: 'CRC' })
   moneda: string;
 
+  /** Código de la cuenta contable del mayor asociada (1110 corriente, 1120 ahorro, etc.). */
+  @Column({ length: 20, default: '1110' })
+  cuenta_contable: string;
+
   @Column({ type: 'decimal', precision: 14, scale: 2, default: 0 })
   saldo_inicial: number;
 
