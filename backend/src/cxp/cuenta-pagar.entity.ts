@@ -32,6 +32,13 @@ export class CuentaPagar {
   @Column({ type: 'decimal', precision: 14, scale: 2, default: 0 })
   saldo_pendiente: number;
 
+  // ── Multimoneda ────────────────────────────────────────────────────────────
+  @Column({ length: 3, default: 'CRC' })
+  moneda: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 4, default: 1 })
+  tipo_cambio: number;
+
   @Column({ type: 'date' })
   fecha_vencimiento: string;
 

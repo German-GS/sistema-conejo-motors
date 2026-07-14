@@ -25,6 +25,13 @@ export class MovimientoBancario {
   @Column({ length: 100, nullable: true })
   referencia?: string;
 
+  /** Multimoneda: moneda del movimiento y TC usado (el mayor se postea en CRC). */
+  @Column({ length: 3, default: 'CRC' })
+  moneda: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 4, default: 1 })
+  tipo_cambio: number;
+
   @Column({ default: false })
   conciliado: boolean;
 

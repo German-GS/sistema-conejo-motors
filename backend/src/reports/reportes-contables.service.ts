@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import * as XLSX from 'xlsx';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
 import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
@@ -36,8 +36,9 @@ export class ReportesContablesService {
     const fechaRef = ref || this.hoy();
     const repo: Repository<any> = tipo === 'cxc' ? this.cxcRepo : this.cxpRepo;
     const rel = tipo === 'cxc' ? 'cliente' : 'proveedor';
+    // Se filtran por saldo pendiente (>0) en el loop; solo se excluyen las anuladas.
     const filas = await repo.find({
-      where: { estado: In(['Pendiente', 'Parcial', 'Vencida']) },
+      where: { estado: Not('Anulado') as any },
       relations: [rel],
     });
 

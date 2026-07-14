@@ -38,6 +38,15 @@ export class CuentaCobrar {
   @Column({ type: 'decimal', precision: 14, scale: 2, default: 0 })
   saldo_pendiente: number;
 
+  // ── Multimoneda ────────────────────────────────────────────────────────────
+  /** Moneda del documento. El mayor siempre se postea en CRC. */
+  @Column({ length: 3, default: 'CRC' })
+  moneda: string;
+
+  /** Tipo de cambio usado (histórico o el de la última revaluación). CRC = 1. */
+  @Column({ type: 'decimal', precision: 10, scale: 4, default: 1 })
+  tipo_cambio: number;
+
   @Column({ type: 'date' })
   fecha_vencimiento: string;
 

@@ -21,7 +21,7 @@ export default function CxPPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState<number | null>(null);
-  const [form, setForm] = useState({ concepto: '', factura_proveedor: '', monto_original: '', fecha_vencimiento: '', fecha_factura: '', notas: '' });
+  const [form, setForm] = useState({ concepto: '', factura_proveedor: '', monto_original: '', fecha_vencimiento: '', fecha_factura: '', notas: '', moneda: 'CRC', tipo_cambio: '' });
   const [pagoForm, setPagoForm] = useState({ monto: '', fecha: new Date().toISOString().split('T')[0], referencia: '', metodo_pago: 'Transferencia' });
 
   const cargar = async () => {
@@ -34,7 +34,12 @@ export default function CxPPage() {
 
   const guardar = async () => {
     if (!form.concepto || !form.monto_original || !form.fecha_vencimiento) return toast.error("Complete los campos requeridos");
-    await apiClient.post("/cxp", { ...form, monto_original: +form.monto_original });
+    const esUsd = form.moneda === 'USD';
+    const tc = esUsd ? Number(form.tipo_cambio) : 1;
+    if (esUsd && (!tc || tc <= 0)) return toast.error("Ingresá el tipo de cambio para USD");
+    // El mayor se lleva en CRC: si es USD, el monto ingresado (USD) se convierte con el TC.
+    const montoCRC = esUsd ? +(Number(form.monto_original) * tc).toFixed(2) : +form.monto_original;
+    await apiClient.post("/cxp", { ...form, monto_original: montoCRC, moneda: form.moneda, tipo_cambio: tc });
     setShowModal(false); cargar();
   };
 
@@ -93,7 +98,16 @@ export default function CxPPage() {
             <h2>Nueva Cuenta por Pagar</h2>
             <div className={styles.fg}><label>Concepto *</label><input value={form.concepto} onChange={e => setForm({...form, concepto: e.target.value})} /></div>
             <div className={styles.fg}><label>N° Factura Proveedor</label><input value={form.factura_proveedor} onChange={e => setForm({...form, factura_proveedor: e.target.value})} /></div>
-            <div className={styles.fg}><label>Monto *</label><input type="number" value={form.monto_original} onChange={e => setForm({...form, monto_original: e.target.value})} /></div>
+            <div className={styles.fg}><label>Moneda</label>
+              <select value={form.moneda} onChange={e => setForm({...form, moneda: e.target.value})}>
+                <option value="CRC">Colones (CRC)</option>
+                <option value="USD">Dólares (USD)</option>
+              </select>
+            </div>
+            <div className={styles.fg}><label>Monto * {form.moneda === 'USD' ? '(en USD)' : '(en CRC)'}</label><input type="number" value={form.monto_original} onChange={e => setForm({...form, monto_original: e.target.value})} /></div>
+            {form.moneda === 'USD' && (
+              <div className={styles.fg}><label>Tipo de cambio *</label><input type="number" step="0.01" placeholder="₡ por USD" value={form.tipo_cambio} onChange={e => setForm({...form, tipo_cambio: e.target.value})} /></div>
+            )}
             <div className={styles.fg}><label>Vencimiento *</label><input type="date" value={form.fecha_vencimiento} onChange={e => setForm({...form, fecha_vencimiento: e.target.value})} /></div>
             <div className={styles.actions}><button className={styles.btnSecondary} onClick={() => setShowModal(false)}>Cancelar</button><button className={styles.btnPrimary} onClick={guardar}>Guardar</button></div>
           </div>

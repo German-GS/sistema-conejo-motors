@@ -62,7 +62,7 @@ const SECTION_ROUTES: Record<string, string[]> = {
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
   compras:      ["/admin/proveedores", "/admin/gastos", "/admin/compras"],
-  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/conciliacion", "/admin/contabilidad", "/admin/obligaciones", "/admin/estados-financieros", "/admin/reportes-contables", "/admin/pendientes-contables", "/admin/facturacion-electronica"],
+  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/conciliacion", "/admin/multimoneda", "/admin/contabilidad", "/admin/obligaciones", "/admin/estados-financieros", "/admin/reportes-contables", "/admin/pendientes-contables", "/admin/facturacion-electronica"],
   postventa:    ["/admin/taller", "/admin/garantias"],
   operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
 };
@@ -368,6 +368,9 @@ export const AdminLayout = () => {
               <SidebarLink to="/admin/tesoreria" icon={<LuBanknote size={18} />} label="Tesorería" />
               {(userRole === "Administrador" || userRole === "Contador") && (
                 <SidebarLink to="/admin/conciliacion" icon={<LuBanknote size={18} />} label="Conciliación Bancaria" />
+              )}
+              {(userRole === "Administrador" || userRole === "Contador") && (
+                <SidebarLink to="/admin/multimoneda" icon={<LuBanknote size={18} />} label="Multimoneda (USD)" />
               )}
               {(userRole === "Administrador" || userRole === "Contador") && (
                 <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
