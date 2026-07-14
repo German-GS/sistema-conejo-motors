@@ -49,26 +49,49 @@ export class EstadosFinancierosService {
     return { tipo: 'Estado de Resultados', actual, anterior };
   }
 
-  // ── Balance General ────────────────────────────────────────────────────────
+  // ── Balance General clasificado (corriente / no corriente, NIIF) ───────────
   async balanceGeneral(periodo: string, comparar = true): Promise<any> {
     this.validarPeriodo(periodo);
     const armar = async (p: string) => {
       const { hasta } = this.rango(p);
       const bal = await this.contabilidad.getBalance(undefined, hasta);
-      const map = (arr: any[]) => arr.map((c) => ({ codigo: c.codigo, nombre: c.nombre, saldo: c.saldo }));
+      const map = (arr: any[]) => arr.map((c) => ({ codigo: c.codigo, nombre: c.nombre, saldo: c.saldo, clasificacion: c.clasificacion_balance ?? null }));
+      const suma = (arr: any[]) => +arr.reduce((s, c) => s + (Number(c.saldo) || 0), 0).toFixed(2);
+
+      const activos = map(bal.cuentas.Activo);
+      const pasivos = map(bal.cuentas.Pasivo);
+      // Los contra-activos (1525, 1590) ya vienen con saldo negativo en Activo → restan
+      // dentro de No Corriente automáticamente (activo fijo neto).
+      const actCorr = activos.filter((c) => c.clasificacion === 'Corriente');
+      const actNoCorr = activos.filter((c) => c.clasificacion !== 'Corriente'); // NoCorriente o sin clasificar
+      const pasCorr = pasivos.filter((c) => c.clasificacion === 'Corriente');
+      const pasNoCorr = pasivos.filter((c) => c.clasificacion !== 'Corriente');
+
+      const totalActivos = bal.totales.totalActivos;
+      const totalPasivos = bal.totales.totalPasivos;
+      const patrimonioTotal = +(bal.totales.totalPatrimonio + bal.totales.utilidad).toFixed(2);
+
       return {
         periodo: p,
         fechaCorte: hasta,
-        activos: map(bal.cuentas.Activo),
-        pasivos: map(bal.cuentas.Pasivo),
+        activo: {
+          corriente: actCorr, noCorriente: actNoCorr,
+          totalCorriente: suma(actCorr), totalNoCorriente: suma(actNoCorr), total: totalActivos,
+        },
+        pasivo: {
+          corriente: pasCorr, noCorriente: pasNoCorr,
+          totalCorriente: suma(pasCorr), totalNoCorriente: suma(pasNoCorr), total: totalPasivos,
+        },
         patrimonio: map(bal.cuentas.Patrimonio),
         totales: {
-          activos: bal.totales.totalActivos,
-          pasivos: bal.totales.totalPasivos,
-          // El patrimonio incluye la utilidad acumulada del ejercicio.
-          patrimonio: +(bal.totales.totalPatrimonio + bal.totales.utilidad).toFixed(2),
+          activos: totalActivos,
+          pasivos: totalPasivos,
+          patrimonio: patrimonioTotal,
           utilidadEjercicio: bal.totales.utilidad,
+          pasivoMasPatrimonio: +(totalPasivos + patrimonioTotal).toFixed(2),
         },
+        // Ecuación contable explícita como verificación (Parte F).
+        ecuacion: `${totalActivos.toFixed(2)} = ${totalPasivos.toFixed(2)} + ${patrimonioTotal.toFixed(2)}`,
         equilibrado: bal.equilibrado,
       };
     };
@@ -77,17 +100,70 @@ export class EstadosFinancierosService {
     return { tipo: 'Balance General', actual, anterior };
   }
 
-  // ── Flujo de Caja ──────────────────────────────────────────────────────────
+  // ── Flujo de Caja — método indirecto (operación/inversión/financiamiento) ──
   async flujoCaja(periodo: string, comparar = true): Promise<any> {
     this.validarPeriodo(periodo);
+    const CUENTA_DEPRECIACION = '5450';
+
     const armar = async (p: string) => {
       const { desde, hasta } = this.rango(p);
       const movs = await this.contabilidad.movimientosPorCuenta(desde, hasta);
+      const round = (n: number) => +Number(n).toFixed(2);
+
+      // Utilidad neta del período (= ingresos − gastos).
+      const netIncome = round(
+        movs.filter((m) => m.tipo === 'Ingreso').reduce((s, m) => s + m.saldo, 0) -
+        movs.filter((m) => m.tipo === 'Gasto').reduce((s, m) => s + m.saldo, 0),
+      );
+      // Depreciación del período (gasto no monetario) → se suma de vuelta.
+      const depreciacion = round(movs.find((m) => m.codigo === CUENTA_DEPRECIACION)?.saldo ?? 0);
+
+      // Efecto en caja de una cuenta de capital de trabajo / balance = −(debe − haber):
+      //   ↑ activo operativo = salida; ↑ pasivo operativo = entrada.
+      const efecto = (m: any) => round(-m.deltaDebeHaber);
+
+      const wc = movs.filter((m) => m.flujo_categoria === 'Operacion');
+      const capitalTrabajo = round(wc.reduce((s, m) => s + efecto(m), 0));
+      const flujoOperacion = round(netIncome + depreciacion + capitalTrabajo);
+
+      const inv = movs.filter((m) => m.flujo_categoria === 'Inversion');
+      const flujoInversion = round(inv.reduce((s, m) => s + efecto(m), 0));
+
+      const fin = movs.filter((m) => m.flujo_categoria === 'Financiamiento');
+      const flujoFinanciamiento = round(fin.reduce((s, m) => s + efecto(m), 0));
+
+      const totalTres = round(flujoOperacion + flujoInversion + flujoFinanciamiento);
+
+      // Validación: variación DIRECTA de las cuentas de efectivo (debe − haber real).
       const cuentasCaja = movs.filter((m) => this.CUENTAS_EFECTIVO.includes(m.codigo));
-      // saldo del período para una cuenta de Activo = debe − haber = entradas netas.
-      const detalle = cuentasCaja.map((c) => ({ codigo: c.codigo, nombre: c.nombre, variacion: c.saldo }));
-      const variacionNeta = +detalle.reduce((s, c) => s + c.variacion, 0).toFixed(2);
-      return { periodo: p, detalle, variacionNeta };
+      const variacionCajaDirecta = round(cuentasCaja.reduce((s, m) => s + m.deltaDebeHaber, 0));
+      const diferencia = round(variacionCajaDirecta - totalTres);
+      const cuadra = Math.abs(diferencia) < 0.01;
+
+      return {
+        periodo: p,
+        operacion: {
+          items: [
+            { concepto: 'Utilidad neta del período', monto: netIncome },
+            { concepto: '(+) Depreciación (no monetaria)', monto: depreciacion },
+            ...wc.map((m) => ({ concepto: `Δ ${m.codigo} ${m.nombre}`, monto: efecto(m) })),
+          ],
+          total: flujoOperacion,
+        },
+        inversion: {
+          items: inv.map((m) => ({ concepto: `${m.codigo} ${m.nombre}`, monto: efecto(m) })),
+          total: flujoInversion,
+        },
+        financiamiento: {
+          items: fin.map((m) => ({ concepto: `${m.codigo} ${m.nombre}`, monto: efecto(m) })),
+          total: flujoFinanciamiento,
+        },
+        variacionNeta: totalTres,
+        variacionCajaDirecta,
+        diferencia,
+        cuadra,
+        efectivoInicial: null as number | null,
+      };
     };
     const actual = await armar(periodo);
     const anterior = comparar ? await armar(this.periodoAnterior(periodo)) : null;
@@ -123,35 +199,52 @@ export class EstadosFinancierosService {
     wsER['!cols'] = [{ wch: 40 }, { wch: 16 }, { wch: 16 }, { wch: 14 }];
     XLSX.utils.book_append_sheet(wb, wsER, 'Estado de Resultados');
 
-    // Balance General
-    const bgRows: any[] = [[`BALANCE GENERAL — corte ${bg.actual.fechaCorte}`], [], ['', 'Actual', 'Anterior']];
-    const secc = (titulo: string, arr: any[], prevArr: any[] | undefined) => {
+    // Balance General clasificado (corriente / no corriente)
+    const bgRows: any[] = [[`BALANCE GENERAL CLASIFICADO — corte ${bg.actual.fechaCorte}`], [], ['', 'Actual']];
+    const grupo = (titulo: string, arr: any[]) => {
       bgRows.push([titulo]);
-      for (const c of arr) {
-        const prev = prevArr?.find((x: any) => x.codigo === c.codigo)?.saldo;
-        bgRows.push([`  ${c.codigo} ${c.nombre}`, c.saldo, prev ?? '']);
-      }
+      for (const c of arr) bgRows.push([`    ${c.codigo} ${c.nombre}`, c.saldo]);
     };
-    secc('ACTIVOS', bg.actual.activos, bg.anterior?.activos);
-    bgRows.push(['Total Activos', bg.actual.totales.activos, bg.anterior?.totales.activos ?? '']);
-    secc('PASIVOS', bg.actual.pasivos, bg.anterior?.pasivos);
-    bgRows.push(['Total Pasivos', bg.actual.totales.pasivos, bg.anterior?.totales.pasivos ?? '']);
-    secc('PATRIMONIO', bg.actual.patrimonio, bg.anterior?.patrimonio);
-    bgRows.push(['Utilidad del ejercicio', bg.actual.totales.utilidadEjercicio, bg.anterior?.totales.utilidadEjercicio ?? '']);
-    bgRows.push(['Total Patrimonio', bg.actual.totales.patrimonio, bg.anterior?.totales.patrimonio ?? '']);
+    const a = bg.actual;
+    bgRows.push(['ACTIVOS']);
+    grupo('  Activo corriente', a.activo.corriente);
+    bgRows.push(['  Total activo corriente', a.activo.totalCorriente]);
+    grupo('  Activo no corriente', a.activo.noCorriente);
+    bgRows.push(['  Total activo no corriente', a.activo.totalNoCorriente]);
+    bgRows.push(['TOTAL ACTIVOS', a.activo.total], []);
+    bgRows.push(['PASIVOS']);
+    grupo('  Pasivo corriente', a.pasivo.corriente);
+    bgRows.push(['  Total pasivo corriente', a.pasivo.totalCorriente]);
+    grupo('  Pasivo no corriente', a.pasivo.noCorriente);
+    bgRows.push(['  Total pasivo no corriente', a.pasivo.totalNoCorriente]);
+    bgRows.push(['TOTAL PASIVOS', a.pasivo.total], []);
+    grupo('PATRIMONIO', a.patrimonio);
+    bgRows.push(['  Utilidad del ejercicio', a.totales.utilidadEjercicio]);
+    bgRows.push(['TOTAL PATRIMONIO', a.totales.patrimonio], []);
+    bgRows.push(['VERIFICACIÓN — Activo = Pasivo + Patrimonio', a.ecuacion]);
+    bgRows.push(['Pasivo + Patrimonio', a.totales.pasivoMasPatrimonio]);
+    bgRows.push(['¿Cuadra?', a.equilibrado ? 'SÍ' : 'NO']);
     const wsBG = XLSX.utils.aoa_to_sheet(bgRows);
-    wsBG['!cols'] = [{ wch: 40 }, { wch: 16 }, { wch: 16 }];
+    wsBG['!cols'] = [{ wch: 44 }, { wch: 18 }];
     XLSX.utils.book_append_sheet(wb, wsBG, 'Balance General');
 
-    // Flujo de Caja
-    const fcRows: any[] = [[`FLUJO DE CAJA — ${periodo}`], [], ['Cuenta', 'Actual', 'Anterior']];
-    for (const c of fc.actual.detalle) {
-      const prev = fc.anterior?.detalle.find((x: any) => x.codigo === c.codigo)?.variacion;
-      fcRows.push([`${c.codigo} ${c.nombre}`, c.variacion, prev ?? '']);
-    }
-    fcRows.push(['VARIACIÓN NETA DE EFECTIVO', fc.actual.variacionNeta, fc.anterior?.variacionNeta ?? '']);
+    // Flujo de Caja — método indirecto
+    const f = fc.actual;
+    const fcRows: any[] = [[`FLUJO DE EFECTIVO (MÉTODO INDIRECTO) — ${periodo}`], [], ['Concepto', 'Monto']];
+    const seccionFlujo = (titulo: string, s: any) => {
+      fcRows.push([titulo]);
+      for (const it of s.items) fcRows.push([`    ${it.concepto}`, it.monto]);
+      fcRows.push([`  Total ${titulo.toLowerCase()}`, s.total], []);
+    };
+    seccionFlujo('Actividades de OPERACIÓN', f.operacion);
+    seccionFlujo('Actividades de INVERSIÓN', f.inversion);
+    seccionFlujo('Actividades de FINANCIAMIENTO', f.financiamiento);
+    fcRows.push(['VARIACIÓN NETA DE EFECTIVO (3 secciones)', f.variacionNeta]);
+    fcRows.push(['Variación directa de caja (validación)', f.variacionCajaDirecta]);
+    fcRows.push(['Diferencia', f.diferencia]);
+    fcRows.push(['¿Cuadra?', f.cuadra ? 'SÍ' : 'NO — hay partidas sin clasificar']);
     const wsFC = XLSX.utils.aoa_to_sheet(fcRows);
-    wsFC['!cols'] = [{ wch: 40 }, { wch: 16 }, { wch: 16 }];
+    wsFC['!cols'] = [{ wch: 46 }, { wch: 18 }];
     XLSX.utils.book_append_sheet(wb, wsFC, 'Flujo de Caja');
 
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;

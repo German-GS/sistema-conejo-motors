@@ -85,8 +85,8 @@ export const EstadosFinancierosPage = () => {
       {/* Se valida la FORMA de los datos, no solo el tab: al cambiar de pestaña, `data`
           conserva por un instante la forma anterior hasta que llega el nuevo fetch. */}
       {!loading && tab === "estado-resultados" && data?.actual?.ingresos && <EstadoResultados data={data} />}
-      {!loading && tab === "balance-general" && data?.actual?.totales && <BalanceGeneral data={data} />}
-      {!loading && tab === "flujo-caja" && data?.actual?.detalle && <FlujoCaja data={data} />}
+      {!loading && tab === "balance-general" && data?.actual?.activo && <BalanceGeneral data={data} />}
+      {!loading && tab === "flujo-caja" && data?.actual?.operacion && <FlujoCaja data={data} />}
 
       <div style={{ ...card, background: "#f8fafc" }}>
         <p style={{ fontSize: "0.82rem", color: "#475569", margin: 0, lineHeight: 1.6 }}>
@@ -151,44 +151,101 @@ const EstadoResultados = ({ data }: any) => {
   );
 };
 
+// Fila simple de dos columnas (concepto / monto) para balance clasificado y flujo.
+const Fila = ({ label, monto, bold, indent, color, top }: any) => (
+  <tr style={{ borderTop: top ? top : "1px solid #f8fafc" }}>
+    <td style={{ ...td, paddingLeft: indent ?? 10, fontWeight: bold ? 800 : 400, color: color ?? (bold ? "#0a2540" : "#334155") }} colSpan={3}>{label}</td>
+    <td style={{ ...tdR, fontWeight: bold ? 800 : 400, color: color ?? "#334155" }}>{monto === undefined ? "" : CRC(monto)}</td>
+  </tr>
+);
+
+const Tabla2 = ({ children }: { children: React.ReactNode }) => (
+  <div style={card}>
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
+        <tbody>{children}</tbody>
+      </table>
+    </div>
+  </div>
+);
+
 const BalanceGeneral = ({ data }: any) => {
-  const a = data.actual, p = data.anterior;
+  const a = data.actual;
+  const cuenta = (arr: any[]) => arr.map((c: any) => <Fila key={c.codigo} label={`${c.codigo} ${c.nombre}`} monto={c.saldo} indent={30} />);
   return (
     <>
-      <p style={{ fontSize: "0.8rem", color: "#64748b", margin: 0 }}>Corte al {a.fechaCorte} · {a.equilibrado ? <span style={{ color: "#059669", fontWeight: 700 }}>✓ Cuadrado</span> : <span style={{ color: "#dc2626", fontWeight: 700 }}>⚠️ Descuadrado</span>}</p>
-      <Tabla>
-        <Seccion titulo="ACTIVOS" filas={a.activos} anterior={p?.activos} totalLabel="Total Activos" total={a.totales.activos} totalPrev={p?.totales.activos} />
-        <Seccion titulo="PASIVOS" filas={a.pasivos} anterior={p?.pasivos} totalLabel="Total Pasivos" total={a.totales.pasivos} totalPrev={p?.totales.pasivos} />
-        <Seccion titulo="PATRIMONIO" filas={a.patrimonio} anterior={p?.patrimonio} />
-        <tr style={{ borderTop: "1px solid #f8fafc" }}>
-          <td style={{ ...td, paddingLeft: 22 }}>Utilidad del ejercicio</td>
-          <td style={tdR}>{CRC(a.totales.utilidadEjercicio)}</td>
-          <td style={tdR}>{p ? CRC(p.totales.utilidadEjercicio) : "—"}</td>
-          <td style={tdR}><Delta actual={a.totales.utilidadEjercicio} anterior={p?.totales.utilidadEjercicio} /></td>
-        </tr>
-        <tr style={{ borderTop: "2px solid #e2e8f0" }}>
-          <td style={{ ...td, fontWeight: 800 }}>Total Patrimonio</td>
-          <td style={{ ...tdR, fontWeight: 800 }}>{CRC(a.totales.patrimonio)}</td>
-          <td style={tdR}>{p ? CRC(p.totales.patrimonio) : "—"}</td>
-          <td style={tdR}><Delta actual={a.totales.patrimonio} anterior={p?.totales.patrimonio} /></td>
-        </tr>
-      </Tabla>
+      <p style={{ fontSize: "0.8rem", color: "#64748b", margin: 0 }}>
+        Corte al {a.fechaCorte} · {a.equilibrado
+          ? <span style={{ color: "#059669", fontWeight: 700 }}>✓ Cuadrado</span>
+          : <span style={{ color: "#dc2626", fontWeight: 700 }}>⚠️ Descuadrado</span>}
+      </p>
+      <Tabla2>
+        <Fila label="ACTIVOS" bold color="#024f7d" />
+        <Fila label="Activo corriente" bold indent={18} />
+        {cuenta(a.activo.corriente)}
+        <Fila label="Total activo corriente" monto={a.activo.totalCorriente} bold indent={18} />
+        <Fila label="Activo no corriente" bold indent={18} />
+        {cuenta(a.activo.noCorriente)}
+        <Fila label="Total activo no corriente" monto={a.activo.totalNoCorriente} bold indent={18} />
+        <Fila label="TOTAL ACTIVOS" monto={a.activo.total} bold top="2px solid #0a2540" />
+
+        <Fila label="PASIVOS" bold color="#024f7d" top="3px solid #e2e8f0" />
+        <Fila label="Pasivo corriente" bold indent={18} />
+        {cuenta(a.pasivo.corriente)}
+        <Fila label="Total pasivo corriente" monto={a.pasivo.totalCorriente} bold indent={18} />
+        <Fila label="Pasivo no corriente" bold indent={18} />
+        {cuenta(a.pasivo.noCorriente)}
+        <Fila label="Total pasivo no corriente" monto={a.pasivo.totalNoCorriente} bold indent={18} />
+        <Fila label="TOTAL PASIVOS" monto={a.pasivo.total} bold top="2px solid #0a2540" />
+
+        <Fila label="PATRIMONIO" bold color="#024f7d" top="3px solid #e2e8f0" />
+        {a.patrimonio.map((c: any) => <Fila key={c.codigo} label={`${c.codigo} ${c.nombre}`} monto={c.saldo} indent={30} />)}
+        <Fila label="Utilidad del ejercicio" monto={a.totales.utilidadEjercicio} indent={30} />
+        <Fila label="TOTAL PATRIMONIO" monto={a.totales.patrimonio} bold top="2px solid #0a2540" />
+      </Tabla2>
+
+      {/* Verificación de la ecuación contable (Parte F) */}
+      <div style={{ ...card, background: a.equilibrado ? "#f0fdf4" : "#fef2f2", border: `1px solid ${a.equilibrado ? "#bbf7d0" : "#fecaca"}` }}>
+        <div style={{ fontWeight: 700, color: a.equilibrado ? "#15803d" : "#b91c1c", fontSize: "0.9rem" }}>
+          {a.equilibrado ? "✓" : "⚠️"} Activo = Pasivo + Patrimonio
+        </div>
+        <div style={{ fontSize: "0.95rem", marginTop: 4, color: "#334155" }}>
+          {CRC(a.totales.activos)} = {CRC(a.totales.pasivos)} + {CRC(a.totales.patrimonio)} = <strong>{CRC(a.totales.pasivoMasPatrimonio)}</strong>
+        </div>
+      </div>
     </>
   );
 };
 
 const FlujoCaja = ({ data }: any) => {
-  const a = data.actual, p = data.anterior;
+  const a = data.actual;
+  const seccion = (titulo: string, s: any) => (
+    <>
+      <Fila label={titulo} bold color="#024f7d" top="3px solid #e2e8f0" />
+      {s.items.map((it: any, i: number) => <Fila key={i} label={it.concepto} monto={it.monto} indent={26} />)}
+      <Fila label={`Total ${titulo.toLowerCase()}`} monto={s.total} bold indent={10} top="1px solid #e2e8f0" />
+    </>
+  );
   return (
-    <Tabla>
-      <Seccion titulo="CUENTAS DE EFECTIVO Y BANCO" filas={a.detalle.map((d: any) => ({ ...d, monto: d.variacion }))} anterior={p?.detalle.map((d: any) => ({ ...d, monto: d.variacion }))} />
-      <tr style={{ borderTop: "3px solid #0a2540" }}>
-        <td style={{ ...td, fontWeight: 800, color: a.variacionNeta >= 0 ? "#059669" : "#dc2626" }}>VARIACIÓN NETA DE EFECTIVO</td>
-        <td style={{ ...tdR, fontWeight: 800, color: a.variacionNeta >= 0 ? "#059669" : "#dc2626" }}>{CRC(a.variacionNeta)}</td>
-        <td style={tdR}>{p ? CRC(p.variacionNeta) : "—"}</td>
-        <td style={tdR}><Delta actual={a.variacionNeta} anterior={p?.variacionNeta} /></td>
-      </tr>
-    </Tabla>
+    <>
+      <p style={{ fontSize: "0.8rem", color: "#64748b", margin: 0 }}>Estado de Flujo de Efectivo — método indirecto.</p>
+      <Tabla2>
+        {seccion("Actividades de operación", a.operacion)}
+        {seccion("Actividades de inversión", a.inversion)}
+        {seccion("Actividades de financiamiento", a.financiamiento)}
+        <Fila label="VARIACIÓN NETA DE EFECTIVO" monto={a.variacionNeta} bold color={a.variacionNeta >= 0 ? "#059669" : "#dc2626"} top="3px solid #0a2540" />
+      </Tabla2>
+
+      {/* Cuadre contra la variación directa de caja */}
+      <div style={{ ...card, background: a.cuadra ? "#f0fdf4" : "#fef2f2", border: `1px solid ${a.cuadra ? "#bbf7d0" : "#fecaca"}` }}>
+        <div style={{ fontWeight: 700, color: a.cuadra ? "#15803d" : "#b91c1c", fontSize: "0.9rem" }}>
+          {a.cuadra ? "✓ Cuadra con la variación directa de caja" : "⚠️ No cuadra — hay partidas sin clasificar"}
+        </div>
+        <div style={{ fontSize: "0.85rem", marginTop: 4, color: "#334155" }}>
+          3 secciones: <strong>{CRC(a.variacionNeta)}</strong> · Variación directa de caja: <strong>{CRC(a.variacionCajaDirecta)}</strong> · Diferencia: <strong>{CRC(a.diferencia)}</strong>
+        </div>
+      </div>
+    </>
   );
 };
 

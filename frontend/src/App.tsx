@@ -43,6 +43,7 @@ import { ContabilidadPage } from "./pages/admin/ContabilidadPage";
 import { ObligacionesPage } from "./pages/admin/ObligacionesPage";
 import { EstadosFinancierosPage } from "./pages/admin/EstadosFinancierosPage";
 import { PendientesContablesPage } from "./pages/admin/PendientesContablesPage";
+import { ReportesContablesPage } from "./pages/admin/ReportesContablesPage";
 import { FacturacionElectronicaPage } from "./pages/admin/FacturacionElectronicaPage";
 import { ComprasPage } from "./pages/admin/ComprasPage";
 import AgendaPage from "./pages/admin/AgendaPage";
@@ -202,6 +203,7 @@ function App() {
             <Route path="obligaciones" element={<ObligacionesPage />} />
             <Route path="estados-financieros" element={<EstadosFinancierosPage />} />
             <Route path="pendientes-contables" element={<PendientesContablesPage />} />
+            <Route path="reportes-contables" element={<ReportesContablesPage />} />
             <Route path="facturacion-electronica" element={<FacturacionElectronicaPage />} />
             {/* Nuevos módulos */}
             <Route path="agenda" element={<AgendaPage />} />

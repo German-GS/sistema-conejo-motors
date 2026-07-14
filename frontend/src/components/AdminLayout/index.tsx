@@ -62,7 +62,7 @@ const SECTION_ROUTES: Record<string, string[]> = {
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
   compras:      ["/admin/proveedores", "/admin/gastos", "/admin/compras"],
-  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad", "/admin/obligaciones", "/admin/estados-financieros", "/admin/pendientes-contables", "/admin/facturacion-electronica"],
+  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/contabilidad", "/admin/obligaciones", "/admin/estados-financieros", "/admin/reportes-contables", "/admin/pendientes-contables", "/admin/facturacion-electronica"],
   postventa:    ["/admin/taller", "/admin/garantias"],
   operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
 };
@@ -374,6 +374,9 @@ export const AdminLayout = () => {
               )}
               {(userRole === "Administrador" || userRole === "Contador") && (
                 <SidebarLink to="/admin/estados-financieros" icon={<LuChartColumnStacked size={18} />} label="Estados Financieros" />
+              )}
+              {(userRole === "Administrador" || userRole === "Contador") && (
+                <SidebarLink to="/admin/reportes-contables" icon={<LuBookMarked size={18} />} label="Reportes Contables" />
               )}
               {(userRole === "Administrador" || userRole === "Contador") && (
                 <SidebarLink to="/admin/pendientes-contables" icon={<LuTriangleAlert size={18} />} label="Pendientes Contab." />

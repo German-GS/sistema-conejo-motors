@@ -12,13 +12,17 @@ import { CierreMes } from './cierre-mes.entity';
 import { ContabilidadModule } from '../contabilidad/contabilidad.module';
 import { EstadosFinancierosService } from './estados-financieros.service';
 import { EstadosFinancierosController } from './estados-financieros.controller';
+import { ReportesContablesService } from './reportes-contables.service';
+import { ReportesContablesController } from './reportes-contables.controller';
+import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
+import { CuentaPagar } from '../cxp/cuenta-pagar.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Venta, Vehicle, ReciboPago, Lead, Cotizacion, CierreMes]),
+    TypeOrmModule.forFeature([Venta, Vehicle, ReciboPago, Lead, Cotizacion, CierreMes, CuentaCobrar, CuentaPagar]),
     ContabilidadModule,
   ],
-  controllers: [ReportsController, EstadosFinancierosController],
-  providers: [ReportsService, EstadosFinancierosService],
+  controllers: [ReportsController, EstadosFinancierosController, ReportesContablesController],
+  providers: [ReportsService, EstadosFinancierosService, ReportesContablesService],
 })
 export class ReportsModule {}

@@ -1,15 +1,43 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, EntityManager } from 'typeorm';
-import { CuentaContable } from './cuenta.entity';
+import { CuentaContable, ClasificacionBalance, FlujoCategoria } from './cuenta.entity';
 import { AsientoContable, LineaAsiento, TipoAsiento } from './asiento.entity';
 import { CierreDiario } from './cierre-diario.entity';
 import { CierrePeriodo, TipoCierre } from './cierre-periodo.entity';
 import { User } from '../users/user.entity';
 import { toCents, fromCents, roundMoney } from './money.util';
 
+// ── Clasificación NIIF del Balance por código de cuenta ──────────────────────
+const CLASIF_BALANCE: Record<string, ClasificacionBalance> = {
+  // Activo corriente
+  '1100': 'Corriente', '1110': 'Corriente', '1120': 'Corriente', '1200': 'Corriente',
+  '1210': 'Corriente', '1300': 'Corriente', '1400': 'Corriente',
+  // Activo no corriente (activos fijos y sus contra-activos)
+  '1500': 'NoCorriente', '1510': 'NoCorriente', '1520': 'NoCorriente',
+  '1525': 'NoCorriente', '1590': 'NoCorriente',
+  // Pasivo corriente
+  '2100': 'Corriente', '2200': 'Corriente', '2210': 'Corriente', '2300': 'Corriente',
+  // Pasivo no corriente
+  '2400': 'NoCorriente',
+};
+
+// ── Sección del Estado de Flujo de Efectivo (método indirecto) ───────────────
+// El efectivo (1100/1110/1120) queda fuera: es el objeto del flujo.
+const FLUJO_CATEGORIA: Record<string, FlujoCategoria> = {
+  // Operación: capital de trabajo
+  '1200': 'Operacion', '1210': 'Operacion', '1300': 'Operacion', '1400': 'Operacion',
+  '2100': 'Operacion', '2200': 'Operacion', '2210': 'Operacion', '2300': 'Operacion',
+  // Inversión: activos fijos BRUTOS (los contra-activos 1525/1590 son depreciación no
+  // monetaria y se manejan con el ajuste de depreciación en Operación, para no duplicar).
+  '1500': 'Inversion', '1510': 'Inversion', '1520': 'Inversion',
+  // Financiamiento: capital, utilidades retenidas, deuda LP
+  '3100': 'Financiamiento', '3200': 'Financiamiento', '2400': 'Financiamiento',
+};
+
 @Injectable()
-export class ContabilidadService {
+export class ContabilidadService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(ContabilidadService.name);
   constructor(
     @InjectRepository(CuentaContable)
     private cuentasRepo: Repository<CuentaContable>,
@@ -67,6 +95,7 @@ export class ContabilidadService {
       { codigo: '2100', nombre: 'Cuentas por Pagar', tipo: 'Pasivo' },
       { codigo: '2200', nombre: 'Impuestos por Pagar (IVA)', tipo: 'Pasivo' },
       { codigo: '2300', nombre: 'Provisiones y Accruals', tipo: 'Pasivo' },
+      { codigo: '2400', nombre: 'Deuda a Largo Plazo', tipo: 'Pasivo', descripcion: 'Préstamos y financiamiento a más de 12 meses' },
       // PATRIMONIO
       { codigo: '3000', nombre: 'PATRIMONIO', tipo: 'Patrimonio', acepta_movimientos: false },
       { codigo: '3100', nombre: 'Capital Social', tipo: 'Patrimonio' },
@@ -94,10 +123,42 @@ export class ContabilidadService {
     let seeded = 0;
     for (const c of cuentas) {
       const cuenta = this.cuentasRepo.create(c);
+      cuenta.clasificacion_balance = CLASIF_BALANCE[c.codigo!] ?? null;
+      cuenta.flujo_categoria = FLUJO_CATEGORIA[c.codigo!] ?? null;
       await this.cuentasRepo.save(cuenta);
       seeded++;
     }
     return { seeded };
+  }
+
+  async onApplicationBootstrap() {
+    await this.backfillClasificaciones();
+  }
+
+  /**
+   * Backfill idempotente de la clasificación NIIF (balance) y la sección de flujo
+   * en cuentas ya existentes. Solo escribe cuando el valor difiere del esperado.
+   */
+  async backfillClasificaciones(): Promise<{ actualizadas: number }> {
+    try {
+      // Asegurar la cuenta de deuda a largo plazo (para el pasivo no corriente / financiamiento).
+      await this.asegurarCuenta('2400', { nombre: 'Deuda a Largo Plazo', tipo: 'Pasivo' });
+      const cuentas = await this.cuentasRepo.find();
+      let actualizadas = 0;
+      for (const c of cuentas) {
+        const cb = CLASIF_BALANCE[c.codigo] ?? null;
+        const fc = FLUJO_CATEGORIA[c.codigo] ?? null;
+        let cambio = false;
+        if (cb !== null && c.clasificacion_balance !== cb) { c.clasificacion_balance = cb; cambio = true; }
+        if (fc !== null && c.flujo_categoria !== fc) { c.flujo_categoria = fc; cambio = true; }
+        if (cambio) { await this.cuentasRepo.save(c); actualizadas++; }
+      }
+      if (actualizadas > 0) this.logger.log(`[Contabilidad] Clasificación NIIF backfill: ${actualizadas} cuentas.`);
+      return { actualizadas };
+    } catch (e) {
+      this.logger.warn(`[Contabilidad] Backfill de clasificación falló: ${(e as Error).message}`);
+      return { actualizadas: 0 };
+    }
   }
 
   // ── Asientos Contables ────────────────────────────────────────────────────
@@ -301,11 +362,13 @@ export class ContabilidadService {
       .addGroupBy('c.codigo')
       .addGroupBy('c.nombre')
       .addGroupBy('c.tipo')
+      .addGroupBy('c.clasificacion_balance')
       .addGroupBy('c.acepta_movimientos')
       .select('c.id', 'id')
       .addSelect('c.codigo', 'codigo')
       .addSelect('c.nombre', 'nombre')
       .addSelect('c.tipo', 'tipo')
+      .addSelect('c.clasificacion_balance', 'clasificacion_balance')
       .addSelect('SUM(l.debe)', 'total_debe')
       .addSelect('SUM(l.haber)', 'total_haber')
       .getRawMany();
@@ -362,7 +425,9 @@ export class ContabilidadService {
       .where('a.fecha BETWEEN :desde AND :hasta', { desde: startDate, hasta: endDate })
       .andWhere("a.tipo != 'Cierre'")
       .groupBy('c.id').addGroupBy('c.codigo').addGroupBy('c.nombre').addGroupBy('c.tipo')
+      .addGroupBy('c.clasificacion_balance').addGroupBy('c.flujo_categoria')
       .select('c.id', 'id').addSelect('c.codigo', 'codigo').addSelect('c.nombre', 'nombre').addSelect('c.tipo', 'tipo')
+      .addSelect('c.clasificacion_balance', 'clasificacion_balance').addSelect('c.flujo_categoria', 'flujo_categoria')
       .addSelect('SUM(l.debe)', 'total_debe').addSelect('SUM(l.haber)', 'total_haber')
       .getRawMany();
 
@@ -370,8 +435,88 @@ export class ContabilidadService {
       const debeC = toCents(r.total_debe);
       const haberC = toCents(r.total_haber);
       const saldoC = ['Activo', 'Gasto'].includes(r.tipo) ? debeC - haberC : haberC - debeC;
-      return { id: r.id, codigo: r.codigo, nombre: r.nombre, tipo: r.tipo, saldo: fromCents(saldoC), _saldoC: saldoC };
+      return {
+        id: r.id, codigo: r.codigo, nombre: r.nombre, tipo: r.tipo,
+        clasificacion_balance: r.clasificacion_balance ?? null,
+        flujo_categoria: r.flujo_categoria ?? null,
+        // saldo del período: para activo/gasto = debe−haber; resto = haber−debe.
+        saldo: fromCents(saldoC),
+        // deltas crudos (útiles para el flujo indirecto): debe−haber siempre.
+        deltaDebeHaber: fromCents(debeC - haberC),
+        _saldoC: saldoC,
+      };
     });
+  }
+
+  /**
+   * Balanza de comprobación a una fecha: por cuenta, total débitos/créditos y saldo
+   * deudor/acreedor. Σ saldos deudores == Σ saldos acreedores (verificación).
+   */
+  async balanzaComprobacion(hasta?: string): Promise<any> {
+    const h = hasta ?? new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+    const rows = await this.lineasRepo
+      .createQueryBuilder('l')
+      .innerJoin('l.asiento', 'a')
+      .innerJoin('l.cuenta', 'c')
+      .where('a.fecha <= :h', { h })
+      .groupBy('c.id').addGroupBy('c.codigo').addGroupBy('c.nombre').addGroupBy('c.tipo')
+      .select('c.codigo', 'codigo').addSelect('c.nombre', 'nombre').addSelect('c.tipo', 'tipo')
+      .addSelect('SUM(l.debe)', 'debe').addSelect('SUM(l.haber)', 'haber')
+      .orderBy('c.codigo', 'ASC')
+      .getRawMany();
+
+    let debeC = 0, haberC = 0, deudorC = 0, acreedorC = 0;
+    const cuentas = rows.map((r) => {
+      const dC = toCents(r.debe), hC = toCents(r.haber);
+      const saldoC = dC - hC;
+      const deudor = saldoC > 0 ? saldoC : 0;
+      const acreedor = saldoC < 0 ? -saldoC : 0;
+      debeC += dC; haberC += hC; deudorC += deudor; acreedorC += acreedor;
+      return { codigo: r.codigo, nombre: r.nombre, tipo: r.tipo, debe: fromCents(dC), haber: fromCents(hC), saldoDeudor: fromCents(deudor), saldoAcreedor: fromCents(acreedor) };
+    });
+    return {
+      hasta: h,
+      cuentas,
+      totales: { debe: fromCents(debeC), haber: fromCents(haberC), saldoDeudor: fromCents(deudorC), saldoAcreedor: fromCents(acreedorC) },
+      cuadra: debeC === haberC && deudorC === acreedorC,
+    };
+  }
+
+  /**
+   * Libro Mayor de una cuenta (por código) en un rango: saldo inicial + movimientos
+   * detallados con saldo corrido (debe − haber acumulado).
+   */
+  async libroMayor(codigo: string, desde: string, hasta: string): Promise<any> {
+    const cuenta = await this.cuentasRepo.findOneBy({ codigo });
+    if (!cuenta) throw new NotFoundException(`Cuenta ${codigo} no encontrada.`);
+
+    const prev = await this.lineasRepo
+      .createQueryBuilder('l').innerJoin('l.asiento', 'a')
+      .where('l.cuentaId = :cid', { cid: cuenta.id }).andWhere('a.fecha < :desde', { desde })
+      .select('SUM(l.debe)', 'debe').addSelect('SUM(l.haber)', 'haber').getRawOne();
+    const saldoInicialC = toCents(prev?.debe) - toCents(prev?.haber);
+
+    const lineas = await this.lineasRepo
+      .createQueryBuilder('l').innerJoin('l.asiento', 'a')
+      .where('l.cuentaId = :cid', { cid: cuenta.id })
+      .andWhere('a.fecha BETWEEN :desde AND :hasta', { desde, hasta })
+      .select('a.fecha', 'fecha').addSelect('a.id', 'asiento').addSelect('a.descripcion', 'descripcion')
+      .addSelect('l.debe', 'debe').addSelect('l.haber', 'haber').addSelect('l.descripcion', 'detalle')
+      .orderBy('a.fecha', 'ASC').addOrderBy('a.id', 'ASC')
+      .getRawMany();
+
+    let saldoC = saldoInicialC;
+    const movimientos = lineas.map((l) => {
+      saldoC += toCents(l.debe) - toCents(l.haber);
+      return { fecha: l.fecha, asiento: l.asiento, descripcion: l.descripcion, detalle: l.detalle, debe: Number(l.debe) || 0, haber: Number(l.haber) || 0, saldo: fromCents(saldoC) };
+    });
+    return {
+      cuenta: { codigo: cuenta.codigo, nombre: cuenta.nombre, tipo: cuenta.tipo },
+      desde, hasta,
+      saldoInicial: fromCents(saldoInicialC),
+      movimientos,
+      saldoFinal: fromCents(saldoC),
+    };
   }
 
   // ── Cierre Diario ─────────────────────────────────────────────────────────
