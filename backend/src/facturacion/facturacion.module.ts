@@ -12,6 +12,9 @@ import { Vehicle } from '../vehicles/vehicle.entity';
 import { XmlGeneratorService } from './xml-generator.service';
 import { NumeracionService } from './numeracion.service';
 import { ConsecutivoContador } from './consecutivo-contador.entity';
+import { EmisorConfig } from './emisor-config.entity';
+import { EmisorConfigService } from './emisor-config.service';
+import { FacturaHtmlService } from './factura-html.service';
 import { FIRMADOR, HACIENDA_CLIENT } from './firma/firma.interfaces';
 import { FirmadorNoop } from './firma/firmador.noop';
 import { HaciendaClientNoop } from './firma/hacienda-client.noop';
@@ -24,7 +27,7 @@ import { SugefModule } from '../sugef/sugef.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead, LeadActividad, CuentaCobrar, ConsecutivoContador]),
+    TypeOrmModule.forFeature([Factura, Venta, Cotizacion, Vehicle, Lead, LeadActividad, CuentaCobrar, ConsecutivoContador, EmisorConfig]),
     HttpModule,
     ContabilidadModule,
     NotificationsModule,
@@ -34,6 +37,8 @@ import { SugefModule } from '../sugef/sugef.module';
     FacturacionService,
     XmlGeneratorService,
     NumeracionService,
+    EmisorConfigService,
+    FacturaHtmlService,
     // Seams de firma/envío. Reemplazar por las implementaciones reales al recibir el .p12.
     { provide: FIRMADOR, useClass: FirmadorNoop },
     { provide: HACIENDA_CLIENT, useClass: HaciendaClientNoop },

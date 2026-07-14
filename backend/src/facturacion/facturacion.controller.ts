@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Query, Param,
+  Controller, Get, Post, Put, Body, Query, Param,
   UseGuards, Request, ParseIntPipe, UseInterceptors, UploadedFile, Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -9,11 +9,43 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { FacturacionService } from './facturacion.service';
+import { EmisorConfigService } from './emisor-config.service';
+import { FacturaHtmlService } from './factura-html.service';
 
 @Controller('billing')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class FacturacionController {
-  constructor(private readonly svc: FacturacionService) {}
+  constructor(
+    private readonly svc: FacturacionService,
+    private readonly emisorConfig: EmisorConfigService,
+    private readonly facturaHtml: FacturaHtmlService,
+  ) {}
+
+  /** GET /billing/emisor — datos del emisor para la factura electrónica */
+  @Get('emisor')
+  @Roles('Administrador', 'Contador')
+  getEmisor() {
+    return this.emisorConfig.get();
+  }
+
+  /** PUT /billing/emisor — actualizar datos del emisor */
+  @Put('emisor')
+  @Roles('Administrador')
+  updateEmisor(@Body() body: any) {
+    return this.emisorConfig.update(body);
+  }
+
+  /** GET /billing/preview-demo?tipo=factura|tiquete — representación gráfica de ejemplo (borrador) */
+  @Get('preview-demo')
+  @Roles('Administrador', 'Contador')
+  async previewDemo(@Query('tipo') tipo: string, @Res() res: Response) {
+    const cfg = await this.emisorConfig.get();
+    const t = tipo === 'tiquete' ? 'Tiquete Electrónico' : tipo === 'proforma' ? 'Proforma' : 'Factura Electrónica';
+    const doc = this.facturaHtml.demo(cfg, t as any);
+    if (t === 'Proforma') doc.borrador = false; // la proforma no es un comprobante fiscal
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(this.facturaHtml.render(doc));
+  }
 
   /** GET /billing/pending — cotizaciones listas para facturar */
   @Get('pending')

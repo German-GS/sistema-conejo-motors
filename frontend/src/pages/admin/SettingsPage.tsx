@@ -264,15 +264,108 @@ const LeadsConfigSettings: React.FC = () => {
 };
 
 // --- COMPONENTE PRINCIPAL ---
-type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion";
+type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion" | "facturacion";
 const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string }[] = [
   { id: "vehiculos",      icon: "🚗", label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones" },
   { id: "sitio",          icon: "🌐", label: "Sitio Web",     desc: "Página principal y contenido público" },
   { id: "financiamiento", icon: "🏦", label: "Financiamiento", desc: "Entidades, formularios y calculadora" },
+  { id: "facturacion",    icon: "🧾", label: "Facturación",   desc: "Datos del emisor y previsualización de comprobantes electrónicos" },
   { id: "crm",            icon: "🎯", label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads" },
   { id: "planilla",       icon: "💰", label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones" },
   { id: "depreciacion",   icon: "📉", label: "Depreciación",  desc: "Tabla de vida útil por categoría de activo" },
 ];
+
+// --- COMPONENTE DE FACTURACIÓN ELECTRÓNICA (emisor + previsualización) ---
+const FacturacionSettings: React.FC = () => {
+  const [emisor, setEmisor] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    apiClient.get("/billing/emisor").then((r) => setEmisor(r.data)).catch(() => toast.error("No se pudo cargar la configuración del emisor."));
+  }, []);
+
+  const set = (campo: string, valor: string) => setEmisor((e: any) => ({ ...e, [campo]: valor }));
+
+  const guardar = async () => {
+    setSaving(true);
+    try {
+      await apiClient.put("/billing/emisor", emisor);
+      toast.success("Datos del emisor guardados.");
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Error al guardar.");
+    } finally { setSaving(false); }
+  };
+
+  // El preview requiere el token → se descarga con apiClient y se abre como blob.
+  const verEjemplo = async (tipo: "factura" | "tiquete" | "proforma") => {
+    const tId = toast.loading("Generando ejemplo…");
+    try {
+      const res = await apiClient.get(`/billing/preview-demo?tipo=${tipo}`, { responseType: "text" });
+      const url = URL.createObjectURL(new Blob([res.data], { type: "text/html" }));
+      window.open(url, "_blank");
+      toast.dismiss(tId);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { toast.error("No se pudo generar el ejemplo.", { id: tId }); }
+  };
+
+  if (!emisor) return <p style={{ color: "#94a3b8" }}>Cargando…</p>;
+
+  const inp: React.CSSProperties = { width: "100%", padding: "0.5rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit", boxSizing: "border-box" };
+  const lbl: React.CSSProperties = { fontSize: "0.78rem", fontWeight: 700, color: "#475569", marginBottom: 4, display: "block" };
+  const Field = ({ campo, label, ph, hint }: { campo: string; label: string; ph?: string; hint?: string }) => (
+    <div>
+      <label style={lbl}>{label}</label>
+      <input style={inp} value={emisor[campo] ?? ""} placeholder={ph} onChange={(e) => set(campo, e.target.value)} />
+      {hint && <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 }}>{hint}</div>}
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div style={{ background: "#fef3c7", border: "1px solid #fde68a", color: "#92400e", borderRadius: 10, padding: "0.7rem 1rem", fontSize: "0.85rem", lineHeight: 1.5 }}>
+        <strong>Modo interino:</strong> los comprobantes salen como <strong>BORRADOR no válido fiscalmente</strong> hasta cargar el certificado <code>.p12</code>. Estos datos ya alimentan la clave numérica y el XML v4.4.
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+        <Field campo="razon_social" label="Razón social (legal)" ph="Ej: Guachiplaza S.A." hint="Va en Emisor.Nombre" />
+        <Field campo="nombre_comercial" label="Nombre comercial (fantasía)" ph="Conejo Motors" />
+        <Field campo="cedula" label="Cédula jurídica" ph="3101857775" hint="Solo dígitos" />
+        <div>
+          <label style={lbl}>Tipo de identificación</label>
+          <select style={inp} value={emisor.tipo_identificacion ?? "02"} onChange={(e) => set("tipo_identificacion", e.target.value)}>
+            <option value="01">01 — Física</option>
+            <option value="02">02 — Jurídica</option>
+            <option value="03">03 — DIMEX</option>
+            <option value="04">04 — NITE</option>
+          </select>
+        </div>
+        <Field campo="actividad_economica" label="Código de actividad económica" ph="451000" hint="TRIBU-CR (v4.4)" />
+        <Field campo="sucursal" label="Sucursal" ph="001" hint="3 dígitos" />
+        <Field campo="terminal" label="Terminal" ph="00001" hint="5 dígitos" />
+        <Field campo="provincia" label="Provincia (código)" ph="1" />
+        <Field campo="canton" label="Cantón (código)" ph="01" />
+        <Field campo="distrito" label="Distrito (código)" ph="01" />
+        <Field campo="telefono" label="Teléfono" ph="22000000" />
+        <Field campo="email" label="Correo de facturación" ph="contabilidad@conejomotors.com" />
+      </div>
+      <div>
+        <label style={lbl}>Otras señas / dirección exacta</label>
+        <input style={inp} value={emisor.otras_senas ?? ""} onChange={(e) => set("otras_senas", e.target.value)} placeholder="Ej: 200m norte del parque, edificio azul" />
+      </div>
+
+      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
+        <button onClick={guardar} disabled={saving} className="btn btn-principal">{saving ? "Guardando…" : "💾 Guardar datos del emisor"}</button>
+        <span style={{ width: 1, height: 24, background: "#e2e8f0" }} />
+        <button onClick={() => verEjemplo("factura")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }}>👁️ Factura de ejemplo</button>
+        <button onClick={() => verEjemplo("tiquete")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }}>👁️ Tiquete de ejemplo</button>
+        <button onClick={() => verEjemplo("proforma")} style={{ background: "#fff", border: "1.5px solid #64748b", color: "#475569", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }}>👁️ Proforma de ejemplo</button>
+      </div>
+      <p style={{ fontSize: "0.78rem", color: "#94a3b8", margin: 0 }}>
+        Los ejemplos usan datos ficticios con tus datos de emisor reales, para ver cómo se ve el comprobante impreso. Las cotizaciones reales generan su Proforma PDF desde el detalle de la cotización.
+      </p>
+    </div>
+  );
+};
 
 // --- Editor de la tabla de depreciación ---
 const DepreciacionConfig: React.FC = () => {
@@ -899,6 +992,12 @@ export const SettingsPage = () => {
           <CalcSettings />
         </Card>
       </>
+      )}
+
+      {seccion === "facturacion" && (
+      <Card title="🧾 Facturación Electrónica — Datos del emisor y ejemplos">
+        <FacturacionSettings />
+      </Card>
       )}
 
       {seccion === "crm" && (

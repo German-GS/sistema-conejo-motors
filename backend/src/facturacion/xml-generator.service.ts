@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cotizacion } from '../cotizaciones/cotizacion.entity';
 import { create } from 'xmlbuilder2';
 import { NumeracionService } from './numeracion.service';
+import { EmisorConfigService } from './emisor-config.service';
 import { CABYS_DEFAULTS } from '../cabys/cabys.service';
 
 // Namespace oficial de la Factura Electrónica v4.4 (TRIBU-CR). Confirmar el URI exacto
@@ -39,6 +40,7 @@ export class XmlGeneratorService {
   constructor(
     private configService: ConfigService,
     private readonly numeracion: NumeracionService,
+    private readonly emisorConfig: EmisorConfigService,
   ) {}
 
   /**
@@ -48,12 +50,13 @@ export class XmlGeneratorService {
    */
   async generar(cotizacion: Cotizacion, opts: OpcionesFactura = {}): Promise<ResultadoXml> {
     const ahora = new Date();
-    const cedulaEmisor = this.configService.get<string>('EMISOR_CEDULA') ?? '0';
+    const cfg = await this.emisorConfig.get();
+    const cedulaEmisor = cfg.cedula || (this.configService.get<string>('EMISOR_CEDULA') ?? '0');
     const provisional = opts.borrador !== false; // por defecto, borrador
 
     // Numeración: provisional (no consume secuencia) en interino.
     const secuencialProvisional = Number(String(Date.now()).slice(-10));
-    const consecutivo = this.numeracion.armarConsecutivo({ tipo: '01', secuencial: secuencialProvisional });
+    const consecutivo = this.numeracion.armarConsecutivo({ sucursal: cfg.sucursal, terminal: cfg.terminal, tipo: '01', secuencial: secuencialProvisional });
     const { clave, codigoSeguridad, situacion } = this.numeracion.armarClave({
       cedulaEmisor,
       consecutivo,
@@ -67,22 +70,22 @@ export class XmlGeneratorService {
 
     const emisor: any = {
       // Nombre = razón social legal; NombreComercial = nombre de fantasía (opcional en v4.4).
-      Nombre: this.configService.get('EMISOR_NOMBRE'),
+      Nombre: cfg.razon_social || this.configService.get('EMISOR_NOMBRE'),
       Identificacion: {
-        Tipo: this.configService.get('EMISOR_TIPO_IDENTIFICACION'),
-        Numero: this.configService.get('EMISOR_CEDULA'),
+        Tipo: cfg.tipo_identificacion || this.configService.get('EMISOR_TIPO_IDENTIFICACION'),
+        Numero: cfg.cedula || this.configService.get('EMISOR_CEDULA'),
       },
-      NombreComercial: this.configService.get('EMISOR_NOMBRE_COMERCIAL') ?? undefined,
+      NombreComercial: cfg.nombre_comercial || this.configService.get('EMISOR_NOMBRE_COMERCIAL') || undefined,
       // v4.4: actividad económica del emisor
-      CodigoActividadEmisor: this.configService.get('EMISOR_ACTIVIDAD') ?? '451001',
+      CodigoActividadEmisor: cfg.actividad_economica || this.configService.get('EMISOR_ACTIVIDAD') || '451001',
       Ubicacion: {
-        Provincia: this.configService.get('EMISOR_PROVINCIA'),
-        Canton: this.configService.get('EMISOR_CANTON'),
-        Distrito: this.configService.get('EMISOR_DISTRITO'),
-        OtrasSenas: this.configService.get('EMISOR_DIRECCION'),
+        Provincia: cfg.provincia,
+        Canton: cfg.canton,
+        Distrito: cfg.distrito,
+        OtrasSenas: cfg.otras_senas,
       },
-      Telefono: { CodigoPais: '506', NumTelefono: this.configService.get('EMISOR_TELEFONO') },
-      CorreoElectronico: this.configService.get('EMISOR_EMAIL'),
+      Telefono: { CodigoPais: '506', NumTelefono: cfg.telefono },
+      CorreoElectronico: cfg.email,
     };
 
     const receptor = {
