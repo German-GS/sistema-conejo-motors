@@ -307,8 +307,23 @@ export const QuoteDetailsPage = () => {
           {quote.lead && <span className={styles.leadLink}>🔗 Lead #{quote.lead.id}</span>}
         </div>
         <div className={styles.actions}>
+          <button
+            className="btn btn-principal"
+            onClick={async () => {
+              const tId = toast.loading("Generando proforma…");
+              try {
+                const res = await apiClient.get(`/billing/proforma/${quote.id}`, { responseType: "text" });
+                const url = URL.createObjectURL(new Blob([res.data], { type: "text/html" }));
+                window.open(url, "_blank");
+                toast.dismiss(tId);
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+              } catch { toast.error("No se pudo generar la proforma.", { id: tId }); }
+            }}
+          >
+            🧾 Ver Proforma
+          </button>
           <button className="btn btn-secondary" onClick={handleDownloadPDF}>
-            📄 Descargar Proforma PDF
+            📄 Proforma PDF (clásica)
           </button>
           {(quote.estado === "Borrador" || quote.estado === "Enviada") && (
             <button

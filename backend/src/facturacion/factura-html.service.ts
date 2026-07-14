@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EmisorConfig } from './emisor-config.entity';
 import { NumeracionService } from './numeracion.service';
+import { CABYS_DEFAULTS } from '../cabys/cabys.service';
 
 export interface LineaHtml {
   cabys?: string;
@@ -22,6 +23,8 @@ export interface DocumentoHtml {
   lineas: LineaHtml[];
   fecha: Date;
   borrador: boolean;
+  /** Solo proforma: fecha de validez. */
+  validaHasta?: string;
 }
 
 const CRC = (v: number) => '₡' + (Number(v) || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -61,6 +64,32 @@ export class FacturaHtmlService {
     };
   }
 
+  /** Proforma a partir de una cotización real (no es comprobante fiscal). */
+  proformaCotizacion(emisor: EmisorConfig, cot: any): DocumentoHtml {
+    const veh = cot.vehiculo;
+    const detalle = veh
+      ? `${veh.marca ?? ''} ${veh.modelo ?? ''} ${veh.año ?? ''}`.trim() + (veh.vin ? ` (VIN ${veh.vin})` : '')
+      : (cot.vehiculo_descripcion ?? 'Vehículo');
+    const tarifa = (Number(cot.iva_porcentaje) || 13) / 100;
+    const lineas: LineaHtml[] = [
+      { cabys: CABYS_DEFAULTS.VEHICULO_ELECTRICO, detalle, cantidad: 1, precioUnitario: Number(cot.precio_final) || 0, tarifaIva: tarifa },
+    ];
+    return {
+      tipo: 'Proforma',
+      emisor,
+      // Consecutivo propio de proforma (no es el consecutivo fiscal): PROF-<id>.
+      consecutivo: `PROF-${String(cot.id).padStart(8, '0')}`,
+      receptorNombre: cot.cliente?.nombre_completo ?? 'Cliente',
+      receptorCedula: cot.cliente?.cedula ?? undefined,
+      condicionVenta: '01',
+      medioPago: '02',
+      fecha: new Date(),
+      borrador: false,
+      validaHasta: cot.fecha_expiracion ? new Date(cot.fecha_expiracion).toLocaleDateString('es-CR') : undefined,
+      lineas,
+    };
+  }
+
   render(doc: DocumentoHtml): string {
     const filas = doc.lineas.map((l, i) => {
       const sub = l.cantidad * l.precioUnitario;
@@ -83,8 +112,11 @@ export class FacturaHtmlService {
     const condiciones: Record<string, string> = { '01': 'Contado', '02': 'Crédito', '03': 'Consignación', '04': 'Apartado' };
     const medios: Record<string, string> = { '01': 'Efectivo', '02': 'Tarjeta', '03': 'Cheque', '04': 'Transferencia' };
 
+    const esProforma = doc.tipo === 'Proforma';
     const marca = doc.borrador
       ? `<div class="watermark">BORRADOR — NO VÁLIDO FISCALMENTE</div>`
+      : esProforma
+      ? `<div class="watermark">PROFORMA</div>`
       : '';
 
     return `<!doctype html>
@@ -130,8 +162,9 @@ export class FacturaHtmlService {
       <div class="doc-tag">
         <h2>${esc(doc.tipo)}</h2>
         ${doc.borrador ? '<span class="badge">BORRADOR</span>' : ''}
-        <div class="legal" style="margin-top:6px">Consecutivo<br><b>${esc(doc.consecutivo ?? '—')}</b></div>
+        <div class="legal" style="margin-top:6px">${esProforma ? 'N° Proforma' : 'Consecutivo'}<br><b>${esc(doc.consecutivo ?? '—')}</b></div>
         <div class="legal">Fecha: ${doc.fecha.toLocaleDateString('es-CR')}</div>
+        ${doc.validaHasta ? `<div class="legal">Válida hasta: ${esc(doc.validaHasta)}</div>` : ''}
       </div>
     </div>
 
@@ -144,7 +177,7 @@ export class FacturaHtmlService {
       <div><b>Moneda:</b> CRC (colones)</div>
     </div>
 
-    ${doc.clave ? `<div class="clave"><b>Clave numérica:</b> ${esc(doc.clave)}</div>` : ''}
+    ${doc.clave && !esProforma ? `<div class="clave"><b>Clave numérica:</b> ${esc(doc.clave)}</div>` : ''}
 
     <table>
       <thead><tr><th class="c">#</th><th>CABYS</th><th>Detalle</th><th class="c">Cant.</th><th class="r">Precio unit.</th><th class="c">IVA</th><th class="r">Total línea</th></tr></thead>
@@ -158,10 +191,12 @@ export class FacturaHtmlService {
     </div>
 
     <div class="foot">
-      ${doc.borrador
+      ${esProforma
+        ? 'Este documento es una <b>PROFORMA / cotización</b>. <b>No es un comprobante electrónico</b> ni válido para efectos tributarios; es una oferta de precios sujeta a disponibilidad.'
+        : doc.borrador
         ? '⚠️ Este documento es un <b>BORRADOR</b> generado en modo interino (sin firma digital ni transmisión a Hacienda). <b>No es válido para efectos tributarios</b> y no debe entregarse como factura legal.'
         : 'Comprobante electrónico autorizado por el Ministerio de Hacienda.'}
-      <br>Representación gráfica · Factura Electrónica v4.4 (TRIBU-CR).
+      <br>Representación gráfica · ${esProforma ? 'Proforma' : 'Factura Electrónica v4.4 (TRIBU-CR)'}.
     </div>
   </div>
 </body></html>`;

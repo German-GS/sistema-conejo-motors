@@ -47,6 +47,19 @@ export class FacturacionController {
     res.send(this.facturaHtml.render(doc));
   }
 
+  /** GET /billing/proforma/:id — representación gráfica de la proforma de una cotización real */
+  @Get('proforma/:id')
+  @Roles('Administrador', 'Contador', 'Vendedor')
+  async proformaCotizacion(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    const [cfg, cot] = await Promise.all([
+      this.emisorConfig.get(),
+      this.svc.getDetalleCotizacion(id),
+    ]);
+    const doc = this.facturaHtml.proformaCotizacion(cfg, cot);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(this.facturaHtml.render(doc));
+  }
+
   /** GET /billing/pending — cotizaciones listas para facturar */
   @Get('pending')
   @Roles('Administrador', 'Contador', 'Vendedor')
