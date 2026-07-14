@@ -40,6 +40,20 @@ describe('EstadosFinancierosService — Balance clasificado (Parte A)', () => {
   });
 });
 
+describe('EstadosFinancierosService — Estado de Resultados', () => {
+  it('un mes con solo gastos da utilidad neta NEGATIVA', async () => {
+    const contab = contabilidadMock();
+    contab.movimientosPorCuenta.mockResolvedValue([
+      { codigo: '5500', nombre: 'Gastos de Ventas', tipo: 'Gasto', saldo: 29022, deltaDebeHaber: 29022 },
+    ]);
+    const svc = new EstadosFinancierosService(contab as any);
+    const res = await svc.estadoResultados('2026-07', false);
+    expect(res.actual.totalIngresos).toBe(0);
+    expect(res.actual.totalGastos).toBe(29022);
+    expect(res.actual.utilidadNeta).toBe(-29022);
+  });
+});
+
 describe('EstadosFinancierosService — Flujo indirecto (Parte B)', () => {
   it('las 3 secciones suman la variación de caja (ventas + compra de activo + depreciación)', async () => {
     const contab = contabilidadMock();

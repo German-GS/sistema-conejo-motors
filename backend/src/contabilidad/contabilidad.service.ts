@@ -295,10 +295,16 @@ export class ContabilidadService implements OnApplicationBootstrap {
       });
       if (yaReversado > 0) continue;
 
+      // La reversa se fecha en el período del asiento original para que original y reversa
+      // se cancelen en el mismo mes. Si ese período está cerrado, no se puede alterar su
+      // resultado → la reversa cae en el mes abierto actual (hoy) como ajuste.
+      const bloqueado = await this.periodoQueBloquea(a.fecha);
+      const fechaReversa = bloqueado ? hoy : a.fecha;
+
       await this.crearAsiento(
         (user ?? undefined) as any,
         {
-          fecha: hoy,
+          fecha: fechaReversa,
           descripcion: `Reversa de asiento #${a.id} — ${a.descripcion}${motivo ? ` (${motivo})` : ''}`,
           tipo: 'Ajuste',
           referencia_id: a.id,
@@ -315,6 +321,33 @@ export class ContabilidadService implements OnApplicationBootstrap {
       count++;
     }
     return count;
+  }
+
+  /**
+   * Mantenimiento (una vez): re-fecha las reversas que quedaron con fecha equivocada
+   * (posteadas con `hoy` en vez de la fecha del asiento original). Solo re-fecha si el
+   * período del original está ABIERTO; si está cerrado, la deja donde está.
+   */
+  async refecharReversasMalFechadas(): Promise<{ corregidas: number; revisadas: number; detalle: any[] }> {
+    const reversas = await this.asientosRepo.find({
+      where: { tipo: 'Ajuste', referencia_tipo: 'Reversa' },
+    });
+    let corregidas = 0;
+    const detalle: any[] = [];
+    for (const rev of reversas) {
+      if (!rev.referencia_id) continue;
+      const original = await this.asientosRepo.findOne({ where: { id: rev.referencia_id } });
+      if (!original) continue;
+      if (rev.fecha === original.fecha) continue; // ya está bien
+      const bloqueado = await this.periodoQueBloquea(original.fecha);
+      if (bloqueado) continue; // período original cerrado → no tocar
+      const antes = rev.fecha;
+      rev.fecha = original.fecha;
+      await this.asientosRepo.save(rev);
+      corregidas++;
+      detalle.push({ reversaId: rev.id, originalId: original.id, de: antes, a: original.fecha });
+    }
+    return { corregidas, revisadas: reversas.length, detalle };
   }
 
   /** @deprecated Usar reversarAsientosPorReferencia. Se mantiene por compatibilidad de llamadores. */

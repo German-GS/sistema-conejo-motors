@@ -14,12 +14,15 @@ type Tab = "estado-resultados" | "balance-general" | "flujo-caja";
 
 const mesActual = () => new Date().toISOString().slice(0, 7);
 
-const Delta = ({ actual, anterior }: { actual: number; anterior?: number }) => {
+// favorableCuandoSube: en gastos, que BAJEN es favorable (verde). La flecha refleja la
+// dirección real del cambio; solo el color depende de la favorabilidad.
+const Delta = ({ actual, anterior, favorableCuandoSube = true }: { actual: number; anterior?: number; favorableCuandoSube?: boolean }) => {
   if (anterior === undefined || anterior === null || anterior === "" as any) return <span style={{ color: "#94a3b8" }}>—</span>;
   const d = +(actual - anterior).toFixed(2);
   if (Math.abs(d) < 0.01) return <span style={{ color: "#94a3b8" }}>=</span>;
-  const pos = d > 0;
-  return <span style={{ color: pos ? "#059669" : "#dc2626", fontWeight: 600 }}>{pos ? "▲" : "▼"} {CRC(Math.abs(d))}</span>;
+  const sube = d > 0;
+  const favorable = favorableCuandoSube ? sube : !sube;
+  return <span style={{ color: favorable ? "#059669" : "#dc2626", fontWeight: 600 }}>{sube ? "▲" : "▼"} {CRC(Math.abs(d))}</span>;
 };
 
 export const EstadosFinancierosPage = () => {
@@ -98,7 +101,7 @@ export const EstadosFinancierosPage = () => {
   );
 };
 
-const Seccion = ({ titulo, filas, actual, anterior, totalLabel, total, totalPrev }: any) => (
+const Seccion = ({ titulo, filas, anterior, totalLabel, total, totalPrev, favorableCuandoSube = true }: any) => (
   <>
     <tr><td style={{ ...td, fontWeight: 800, color: "#0a2540", paddingTop: 12 }} colSpan={4}>{titulo}</td></tr>
     {filas.length === 0 && <tr><td style={{ ...td, color: "#94a3b8" }} colSpan={4}>Sin movimientos.</td></tr>}
@@ -109,7 +112,7 @@ const Seccion = ({ titulo, filas, actual, anterior, totalLabel, total, totalPrev
           <td style={{ ...td, paddingLeft: 22 }}>{f.codigo} {f.nombre}</td>
           <td style={tdR}>{CRC(f.monto ?? f.saldo)}</td>
           <td style={tdR}>{prev ? CRC(prev.monto ?? prev.saldo) : "—"}</td>
-          <td style={tdR}><Delta actual={f.monto ?? f.saldo} anterior={prev?.monto ?? prev?.saldo} /></td>
+          <td style={tdR}><Delta actual={f.monto ?? f.saldo} anterior={prev?.monto ?? prev?.saldo} favorableCuandoSube={favorableCuandoSube} /></td>
         </tr>
       );
     })}
@@ -118,7 +121,7 @@ const Seccion = ({ titulo, filas, actual, anterior, totalLabel, total, totalPrev
         <td style={{ ...td, fontWeight: 800 }}>{totalLabel}</td>
         <td style={{ ...tdR, fontWeight: 800 }}>{CRC(total)}</td>
         <td style={tdR}>{totalPrev !== undefined ? CRC(totalPrev) : "—"}</td>
-        <td style={tdR}><Delta actual={total} anterior={totalPrev} /></td>
+        <td style={tdR}><Delta actual={total} anterior={totalPrev} favorableCuandoSube={favorableCuandoSube} /></td>
       </tr>
     )}
   </>
@@ -140,7 +143,7 @@ const EstadoResultados = ({ data }: any) => {
   return (
     <Tabla>
       <Seccion titulo="INGRESOS" filas={a.ingresos} anterior={p?.ingresos} totalLabel="Total Ingresos" total={a.totalIngresos} totalPrev={p?.totalIngresos} />
-      <Seccion titulo="GASTOS" filas={a.gastos} anterior={p?.gastos} totalLabel="Total Gastos" total={a.totalGastos} totalPrev={p?.totalGastos} />
+      <Seccion titulo="GASTOS" filas={a.gastos} anterior={p?.gastos} totalLabel="Total Gastos" total={a.totalGastos} totalPrev={p?.totalGastos} favorableCuandoSube={false} />
       <tr style={{ borderTop: "3px solid #0a2540" }}>
         <td style={{ ...td, fontWeight: 800, color: a.utilidadNeta >= 0 ? "#059669" : "#dc2626" }}>UTILIDAD NETA</td>
         <td style={{ ...tdR, fontWeight: 800, color: a.utilidadNeta >= 0 ? "#059669" : "#dc2626" }}>{CRC(a.utilidadNeta)}</td>

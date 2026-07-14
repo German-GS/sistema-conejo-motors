@@ -13,6 +13,11 @@ import { ContabilidadService } from './contabilidad.service';
 export class ContabilidadController {
   constructor(private readonly svc: ContabilidadService) {}
 
+  /** Mantenimiento: re-fecha las reversas mal fechadas al período de su asiento original. */
+  @Post('mantenimiento/refechar-reversas')
+  @Roles('Administrador')
+  refecharReversas() { return this.svc.refecharReversasMalFechadas(); }
+
   // ── Plan de Cuentas ───────────────────────────────────────────────────────
 
   @Get('cuentas')
