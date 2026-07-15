@@ -10,7 +10,7 @@ const thR: React.CSSProperties = { ...th, textAlign: "right" };
 const td: React.CSSProperties = { padding: "6px 10px", color: "#334155", fontSize: "0.85rem" };
 const tdR: React.CSSProperties = { ...td, textAlign: "right" };
 
-type Tab = "estado-resultados" | "balance-general" | "flujo-caja";
+type Tab = "estado-resultados" | "balance-general" | "flujo-caja" | "salud-financiera";
 
 const mesActual = () => new Date().toISOString().slice(0, 7);
 
@@ -59,6 +59,7 @@ export const EstadosFinancierosPage = () => {
     { id: "estado-resultados", label: "Estado de Resultados" },
     { id: "balance-general", label: "Balance General" },
     { id: "flujo-caja", label: "Flujo de Caja" },
+    { id: "salud-financiera", label: "Salud Financiera" },
   ];
 
   return (
@@ -90,6 +91,7 @@ export const EstadosFinancierosPage = () => {
       {!loading && tab === "estado-resultados" && data?.actual?.ingresos && <EstadoResultados data={data} />}
       {!loading && tab === "balance-general" && data?.actual?.activo && <BalanceGeneral data={data} />}
       {!loading && tab === "flujo-caja" && data?.actual?.operacion && <FlujoCaja data={data} />}
+      {!loading && tab === "salud-financiera" && data?.indicadores && <SaludFinanciera data={data} />}
 
       <div style={{ ...card, background: "#f8fafc" }}>
         <p style={{ fontSize: "0.82rem", color: "#475569", margin: 0, lineHeight: 1.6 }}>
@@ -247,6 +249,96 @@ const FlujoCaja = ({ data }: any) => {
         <div style={{ fontSize: "0.85rem", marginTop: 4, color: "#334155" }}>
           3 secciones: <strong>{CRC(a.variacionNeta)}</strong> · Variación directa de caja: <strong>{CRC(a.variacionCajaDirecta)}</strong> · Diferencia: <strong>{CRC(a.diferencia)}</strong>
         </div>
+      </div>
+    </>
+  );
+};
+
+// ── Salud Financiera ────────────────────────────────────────────────────────
+const SEM_COLOR: Record<string, { bg: string; border: string; text: string }> = {
+  verde: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d" },
+  amarillo: { bg: "#fffbeb", border: "#fde68a", text: "#b45309" },
+  rojo: { bg: "#fef2f2", border: "#fecaca", text: "#b91c1c" },
+  na: { bg: "#f8fafc", border: "#e2e8f0", text: "#94a3b8" },
+};
+
+const fmtValor = (valor: number | null, unidad: string) => {
+  if (valor == null) return "—";
+  if (unidad === "%") return `${valor.toFixed(1)}%`;
+  if (unidad === "CRC") return CRC(valor);
+  if (unidad === "días") return `${valor.toFixed(0)} días`;
+  if (unidad === "veces") return `${valor.toFixed(2)}×`;
+  return valor.toFixed(2);
+};
+
+const TendenciaIcon = ({ t }: { t: string }) => {
+  if (t === "mejora") return <span style={{ color: "#059669", fontWeight: 700 }} title="Mejora vs. mes anterior">▲</span>;
+  if (t === "empeora") return <span style={{ color: "#dc2626", fontWeight: 700 }} title="Empeora vs. mes anterior">▼</span>;
+  return <span style={{ color: "#94a3b8" }} title="Estable">=</span>;
+};
+
+const SaludFinanciera = ({ data }: any) => {
+  const d = data.diagnostico;
+  const g = SEM_COLOR[d.semaforoGlobal] ?? SEM_COLOR.na;
+  const categorias = ["Liquidez", "Endeudamiento", "Rentabilidad", "Actividad"];
+  return (
+    <>
+      {/* Diagnóstico general */}
+      <div style={{ ...card, background: g.bg, border: `1px solid ${g.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "2rem" }}>{d.semaforoGlobal === "verde" ? "🟢" : d.semaforoGlobal === "amarillo" ? "🟡" : d.semaforoGlobal === "rojo" ? "🔴" : "⚪"}</span>
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <div style={{ fontWeight: 800, color: g.text, fontSize: "1.05rem" }}>Diagnóstico general — {d.semaforoGlobal.toUpperCase()} (puntaje {d.puntaje}/2)</div>
+            <div style={{ color: "#334155", fontSize: "0.88rem", marginTop: 2 }}>{d.resumen}</div>
+          </div>
+        </div>
+        {(d.fortalezas.length > 0 || d.riesgos.length > 0) && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
+            <div>
+              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#15803d", marginBottom: 4 }}>✓ Fortalezas ({d.fortalezas.length})</div>
+              {d.fortalezas.length === 0 ? <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>—</div> :
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.8rem", color: "#334155", lineHeight: 1.5 }}>{d.fortalezas.map((s: string, i: number) => <li key={i}>{s}</li>)}</ul>}
+            </div>
+            <div>
+              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#b91c1c", marginBottom: 4 }}>⚠ Riesgos ({d.riesgos.length})</div>
+              {d.riesgos.length === 0 ? <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>—</div> :
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.8rem", color: "#334155", lineHeight: 1.5 }}>{d.riesgos.map((s: string, i: number) => <li key={i}>{s}</li>)}</ul>}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tarjetas por categoría */}
+      {categorias.map((cat) => {
+        const items = data.indicadores.filter((i: any) => i.categoria === cat);
+        if (!items.length) return null;
+        return (
+          <div key={cat}>
+            <h3 style={{ margin: "0.5rem 0", color: "#0a2540", fontSize: "1rem" }}>{cat}</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.75rem" }}>
+              {items.map((i: any) => {
+                const c = SEM_COLOR[i.semaforo] ?? SEM_COLOR.na;
+                return (
+                  <div key={i.nombre} title={`${i.formula}\n${i.interpretacion}\nReferencia: ${i.referencia}`}
+                    style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: "0.85rem 1rem" }}>
+                    <div style={{ fontSize: "0.78rem", color: "#64748b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>{i.nombre}</span><TendenciaIcon t={i.tendencia} />
+                    </div>
+                    <div style={{ fontSize: "1.35rem", fontWeight: 800, color: c.text, marginTop: 2 }}>{fmtValor(i.valor, i.unidad)}</div>
+                    <div style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 2 }}>{i.anterior != null ? `Ant: ${fmtValor(i.anterior, i.unidad)}` : " "}</div>
+                    <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: 4, lineHeight: 1.35 }}>{i.interpretacion}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      <div style={{ ...card, background: "#f8fafc" }}>
+        <p style={{ fontSize: "0.8rem", color: "#64748b", margin: 0 }}>
+          Indicadores informativos calculados desde el Balance y el Estado de Resultados; su interpretación debe revisarse con el contador. Pasá el cursor sobre cada tarjeta para ver la fórmula y los rangos.
+        </p>
       </div>
     </>
   );
