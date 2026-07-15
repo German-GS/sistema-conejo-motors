@@ -1,5 +1,5 @@
 // backend/src/users/users.service.ts
-import { Injectable, OnApplicationBootstrap, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -82,6 +82,33 @@ export class UsersService implements OnApplicationBootstrap {
       where: { email },
       relations: ['rol'],
     });
+  }
+
+  /**
+   * Recuperación de emergencia (break-glass): resetea la contraseña de un Administrador.
+   * Solo se invoca desde AuthService.recuperarAdmin, que valida el secreto ADMIN_RESET_SECRET.
+   */
+  async resetAdminPassword(email: string, nuevaPassword: string): Promise<{ ok: true; email: string }> {
+    const user = await this.findOneByEmail(email);
+    if (!user) throw new NotFoundException('No existe un usuario con ese correo.');
+    if (user.rol?.nombre !== 'Administrador') {
+      throw new BadRequestException('Esta recuperación solo aplica a cuentas de Administrador.');
+    }
+    user.password_hash = await bcrypt.hash(nuevaPassword, await bcrypt.genSalt());
+    await this.usersRepository.save(user);
+    this.logger.warn(`[SEGURIDAD] Contraseña de Administrador ${email} restablecida vía recuperación de emergencia.`);
+    return { ok: true, email: user.email };
+  }
+
+  /** Cambio de la propia contraseña (verifica la actual). */
+  async changeOwnPassword(userId: number, actual: string, nueva: string): Promise<{ ok: true }> {
+    if (!nueva || nueva.length < 8) throw new BadRequestException('La nueva contraseña debe tener al menos 8 caracteres.');
+    const user = await this.usersRepository.findOne({ where: { id: userId }, select: ['id', 'password_hash'] });
+    if (!user) throw new NotFoundException('Usuario no encontrado.');
+    const ok = await bcrypt.compare(actual ?? '', user.password_hash);
+    if (!ok) throw new BadRequestException('La contraseña actual no es correcta.');
+    await this.usersRepository.update(userId, { password_hash: await bcrypt.hash(nueva, await bcrypt.genSalt()) });
+    return { ok: true };
   }
 
   async create(
