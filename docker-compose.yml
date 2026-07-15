@@ -6,7 +6,9 @@ services:
     environment:
       POSTGRES_DB: conejo_motors_dev
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
+      # La contraseña se toma de la variable de entorno / archivo .env de docker-compose.
+      # Falla explícitamente si no está definida (ya no hay contraseña por defecto en el repo).
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definí POSTGRES_PASSWORD en un archivo .env (ver .env.example)}
     ports:
       - "5432:5432"
     volumes:

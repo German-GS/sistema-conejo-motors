@@ -4,10 +4,19 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter'; // <-- 1. Importar el filtro
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Cabeceras de seguridad (API-only). Se desactiva CSP (rompería la representación
+  // gráfica HTML de comprobantes/proformas con estilos inline) y crossOriginResourcePolicy
+  // (para no bloquear la carga de las imágenes públicas del catálogo desde el frontend).
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: false,
+  }));
 
   // Detrás del proxy de Cloud Run: usar X-Forwarded-For para la IP real del cliente
   // (necesario para que el rate limiting sea por usuario y no global).
