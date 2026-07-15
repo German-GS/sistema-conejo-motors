@@ -35,7 +35,9 @@ export class AuthService {
 
   /** Reemite un token fresco para un usuario ya autenticado (renovación de sesión activa). */
   async refresh(userId: number) {
-    const user = await this.usersService.findOneById(userId);
+    // IMPORTANTE: cargar con la relación `rol`, si no el token renovado sale SIN rol y el
+    // guard de roles bloquea todo con 403 tras el primer refresco de sesión.
+    const user = await this.usersService.findOneByIdFull(userId);
     if (!user) throw new UnauthorizedException('Usuario no encontrado.');
     const { password_hash, ...result } = user as any;
     return this.login(result);
