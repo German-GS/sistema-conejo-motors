@@ -6,6 +6,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { GastosService } from './gastos.service';
+import { CreateGastoDto } from './dto/create-gasto.dto';
+import { UpdateGastoDto } from './dto/update-gasto.dto';
 
 @Controller('gastos')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -16,8 +18,8 @@ export class GastosController {
   @Get('resumen') resumen(@Query('año') año: string, @Query('mes') mes: string) {
     return this.service.resumenPorCategoria(+año || new Date().getFullYear(), +mes || new Date().getMonth() + 1);
   }
-  @Post() create(@Body() data: any, @Request() req) { return this.service.create(data, req.user.id); }
-  @Patch(':id') update(@Param('id') id: string, @Body() data: any) { return this.service.update(+id, data); }
+  @Post() create(@Body() data: CreateGastoDto, @Request() req) { return this.service.create(data as any, req.user.id); }
+  @Patch(':id') update(@Param('id') id: string, @Body() data: UpdateGastoDto) { return this.service.update(+id, data as any); }
   @Delete(':id') remove(@Param('id') id: string) { return this.service.remove(+id); }
 
   @Post(':id/comprobante')
