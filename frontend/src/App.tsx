@@ -80,8 +80,13 @@ const DashboardRedirect = () => {
   if (!token) return <Navigate to="/login" replace />;
   try {
     const decodedToken: { rol?: { nombre: string } } = jwtDecode(token);
+    // Token sin rol válido (p. ej. renovado mal) → sesión inválida, al login. Evita bucles.
+    if (!decodedToken.rol?.nombre) {
+      localStorage.removeItem("accessToken");
+      return <Navigate to="/login?expired=1" replace />;
+    }
     // Si es Vendedor, va a /sales. Si no, va a /admin.
-    return decodedToken.rol?.nombre === "Vendedor" ? (
+    return decodedToken.rol.nombre === "Vendedor" ? (
       <Navigate to="/sales" replace />
     ) : (
       <Navigate to="/admin" replace />
@@ -99,6 +104,11 @@ const ProtectedRouteByRole = ({ allowedRoles }: { allowedRoles: string[] }) => {
   try {
     const decodedToken: { rol?: { nombre: string } } = jwtDecode(token);
     const userRole = decodedToken.rol?.nombre || "";
+    // Sin rol válido → sesión inválida, al login (rompe el bucle admin ↔ dashboard-redirect).
+    if (!userRole) {
+      localStorage.removeItem("accessToken");
+      return <Navigate to="/login?expired=1" replace />;
+    }
     return allowedRoles.includes(userRole) ? (
       <Outlet />
     ) : (
