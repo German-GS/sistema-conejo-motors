@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/user.entity';
@@ -117,6 +119,9 @@ import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    // Rate limiting: límite global generoso (no afecta el uso normal); los endpoints
+    // sensibles (login, recuperación) llevan límites estrictos con @Throttle.
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 300 }]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.development.local', '.env.development'],
@@ -254,6 +259,10 @@ import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
     SugefModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Aplica el rate limiting globalmente (por IP).
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

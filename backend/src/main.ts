@@ -9,10 +9,22 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter'; //
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Detrás del proxy de Cloud Run: usar X-Forwarded-For para la IP real del cliente
+  // (necesario para que el rate limiting sea por usuario y no global).
+  app.set('trust proxy', 1);
+
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
-  app.useGlobalPipes(new ValidationPipe());
+  // Validación endurecida SIN romper el frontend:
+  //  - whitelist: descarta en silencio campos no declarados en el DTO.
+  //  - transform: convierte tipos (p. ej. "5" → 5) según el DTO.
+  //  - NO se usa forbidNonWhitelisted (rechazaría requests con campos extra y rompería el front).
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    transformOptions: { enableImplicitConversion: true },
+  }));
   
   // --- 👇 LÍNEA AÑADIDA 👇 ---
   app.useGlobalFilters(new AllExceptionsFilter()); // <-- 2. Registrar el filtro globalmente

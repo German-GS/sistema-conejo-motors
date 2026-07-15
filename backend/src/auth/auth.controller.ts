@@ -9,12 +9,15 @@ import {
   Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  // Estricto: máx. 10 intentos de login por minuto por IP (anti fuerza bruta).
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   async signIn(@Body() signInDto: Record<string, any>) {
     const user = await this.authService.validateUser(
@@ -44,6 +47,7 @@ export class AuthController {
    * Recuperación de emergencia de un Administrador (break-glass). Pública pero protegida por
    * el secreto ADMIN_RESET_SECRET (que solo conoce el dueño, en env var de Cloud Run).
    */
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('recuperar-admin')
   recuperarAdmin(@Body() body: { email: string; nuevaPassword: string; secret: string }) {
     return this.authService.recuperarAdmin(body?.email, body?.nuevaPassword, body?.secret);
