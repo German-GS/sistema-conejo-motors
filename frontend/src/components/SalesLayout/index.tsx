@@ -14,6 +14,7 @@ import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface Notification { id: number; message: string; link: string; }
 
@@ -199,7 +200,9 @@ export const SalesLayout = () => {
         </header>
         <main className={styles.content}>
           <Breadcrumbs />
-          <Outlet />
+          <ErrorBoundary key={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
       <ChatWidget />
