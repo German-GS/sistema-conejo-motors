@@ -133,7 +133,13 @@ import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
         password: config.get<string>('DB_PASSWORD', 'password123'),
         database: config.get<string>('DB_NAME', 'conejo_motors_dev'),
         autoLoadEntities: true,
-        synchronize: true, // auto-create tables (safe for fresh DB; disable after first deploy)
+        // Esquema ya aplicado (creado por synchronize en despliegues previos). A partir de
+        // acá los cambios de esquema van por MIGRACIONES (ver src/migrations + data-source.ts).
+        // No se auto-ejecutan en el arranque; se corren con la CLI (npm run migration:run).
+        synchronize: false,
+        migrations: [__dirname + '/migrations/*.{js,ts}'],
+        migrationsTableName: 'migrations_history',
+        migrationsRun: false,
         entities: [
         User,
         Vehicle,

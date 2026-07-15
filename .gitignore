@@ -4,3 +4,16 @@
 ._*
 .Spotlight-V8
 .Trashes
+
+# ── Secretos / variables de entorno (NUNCA versionar) ──
+.env
+.env.*
+# Se mantienen solo las plantillas de ejemplo (sin secretos):
+!.env.example
+!.env.production.example
+!.env.development.example
+
+# Certificados / llaves
+*.p12
+*.pem
+*.key
