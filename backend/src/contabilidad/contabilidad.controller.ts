@@ -6,17 +6,38 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ContabilidadService } from './contabilidad.service';
+import { SiteSettingsService } from '../site-settings/site-settings.service';
 
 @Controller('contabilidad')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles('Administrador', 'Contador')
 export class ContabilidadController {
-  constructor(private readonly svc: ContabilidadService) {}
+  constructor(
+    private readonly svc: ContabilidadService,
+    private readonly settings: SiteSettingsService,
+  ) {}
 
   /** Mantenimiento: re-fecha las reversas mal fechadas al período de su asiento original. */
   @Post('mantenimiento/refechar-reversas')
   @Roles('Administrador')
   refecharReversas() { return this.svc.refecharReversasMalFechadas(); }
+
+  /** Reclasifica los saldos negativos de Caja/Banco hacia la cuenta puente del socio. */
+  @Post('reclasificar-caja-a-socio')
+  @Roles('Administrador')
+  async reclasificarCajaSocio(@Request() req) {
+    const codigoPuente = await this.settings.getValue('cuenta_financiamiento_socio', '2900');
+    return this.svc.reclasificarCajaASocio(req.user, codigoPuente);
+  }
+
+  /** Reclasificación final (post-reunión): puente → destino (2150 préstamo o 3150 aporte). */
+  @Post('reclasificar-socio-a-destino')
+  @Roles('Administrador')
+  async reclasificarSocioDestino(@Request() req) {
+    const codigoPuente = await this.settings.getValue('cuenta_financiamiento_socio', '2900');
+    const codigoDestino = await this.settings.getValue('cuenta_destino_socio', '');
+    return this.svc.reclasificarSocioADestino(req.user, codigoPuente, codigoDestino);
+  }
 
   // ── Plan de Cuentas ───────────────────────────────────────────────────────
 

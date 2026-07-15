@@ -5,6 +5,7 @@ import { Storage } from '@google-cloud/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { Gasto } from './gasto.entity';
 import { ContabilidadService } from '../contabilidad/contabilidad.service';
+import { SiteSettingsService } from '../site-settings/site-settings.service';
 
 const GCS_BUCKET = process.env.GCS_BUCKET ?? 'conejo-motors-media';
 const bucket = new Storage().bucket(GCS_BUCKET);
@@ -50,10 +51,17 @@ export class GastosService {
   constructor(
     @InjectRepository(Gasto) private repo: Repository<Gasto>,
     private readonly contabilidad: ContabilidadService,
+    private readonly settings: SiteSettingsService,
     private readonly dataSource: DataSource,
   ) {}
 
-  /** Contrapartida contable según el método de pago del gasto. */
+  /** ¿El gasto lo pagó el dueño de su bolsillo (aporte del socio)? */
+  private esAporteSocio(metodo?: string): boolean {
+    const m = (metodo ?? '').toLowerCase();
+    return m.includes('socio') || m.includes('aporte') || m.includes('dueñ') || m.includes('duen');
+  }
+
+  /** Contrapartida contable según el método de pago del gasto (para métodos NO socio). */
   private codigoContrapartida(metodo?: string): string {
     switch ((metodo ?? 'Efectivo').toLowerCase()) {
       case 'credito':
@@ -97,11 +105,21 @@ export class GastosService {
 
     const codigoGasto = CUENTA_POR_CATEGORIA[gasto.categoria] ?? '5700';
     const cuentaGasto = await this.contabilidad.asegurarCuenta(codigoGasto, { nombre: 'Gasto', tipo: 'Gasto' });
-    const codigoContra = this.codigoContrapartida(gasto.metodo_pago);
-    const cuentaContra = await this.contabilidad.asegurarCuenta(codigoContra, {
-      nombre: codigoContra === '2100' ? 'Cuentas por Pagar' : codigoContra === '1110' ? 'Banco — Cuenta Corriente' : 'Caja',
-      tipo: codigoContra === '2100' ? 'Pasivo' : 'Activo',
-    });
+
+    // Si lo pagó el dueño (aporte del socio) → la contrapartida es la cuenta puente del
+    // setting, que el usuario crea manualmente (se valida su existencia, no se crea).
+    let cuentaContra;
+    let codigoContra: string;
+    if (this.esAporteSocio(gasto.metodo_pago)) {
+      codigoContra = await this.settings.getValue('cuenta_financiamiento_socio', '2900');
+      cuentaContra = await this.contabilidad.getCuentaRequerida(codigoContra);
+    } else {
+      codigoContra = this.codigoContrapartida(gasto.metodo_pago);
+      cuentaContra = await this.contabilidad.asegurarCuenta(codigoContra, {
+        nombre: codigoContra === '2100' ? 'Cuentas por Pagar' : codigoContra === '1110' ? 'Banco — Cuenta Corriente' : 'Caja',
+        tipo: codigoContra === '2100' ? 'Pasivo' : 'Activo',
+      });
+    }
 
     // IVA soportado (crédito fiscal) → 1210. Si hay IVA, el gasto se reconoce por la base.
     const iva = Number(gasto.iva_monto) || 0;

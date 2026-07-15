@@ -19,6 +19,9 @@ export class SiteSettingsService implements OnModuleInit {
     const defaultSettings = [
       { key: 'carousel_slides', value: '[]' },
       { key: 'featured_vehicles', value: '[]' },
+      // Financiamiento del socio: cuentas por CÓDIGO (el usuario crea las cuentas manualmente).
+      { key: 'cuenta_financiamiento_socio', value: '2900' }, // cuenta puente (por clasificar)
+      { key: 'cuenta_destino_socio', value: '' },            // destino tras la reunión (2150 o 3150)
     ];
 
     for (const setting of defaultSettings) {
@@ -29,6 +32,12 @@ export class SiteSettingsService implements OnModuleInit {
         await this.settingsRepository.save(setting);
       }
     }
+  }
+
+  /** Valor de una configuración por clave, con fallback. */
+  async getValue(key: string, fallback = ''): Promise<string> {
+    const s = await this.settingsRepository.findOneBy({ key });
+    return s?.value ?? fallback;
   }
 
   /**

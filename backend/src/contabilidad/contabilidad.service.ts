@@ -372,6 +372,115 @@ export class ContabilidadService implements OnApplicationBootstrap {
     return c;
   }
 
+  /**
+   * Devuelve la cuenta con ese código o lanza un error claro pidiendo crearla.
+   * NO crea la cuenta (a diferencia de asegurarCuenta): el usuario las crea desde la UI.
+   */
+  async getCuentaRequerida(codigo: string): Promise<CuentaContable> {
+    if (!codigo) throw new BadRequestException('No hay una cuenta configurada. Definila en Configuración.');
+    const c = await this.cuentasRepo.findOneBy({ codigo });
+    if (!c) throw new BadRequestException(`Creá primero la cuenta ${codigo} en el plan de cuentas.`);
+    return c;
+  }
+
+  private hoyCR(): string {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+  }
+
+  /**
+   * Reclasifica el saldo ACREEDOR (negativo) de Caja (1100) y Banco (1110) — gastos que
+   * pagó el dueño de su bolsillo — hacia la cuenta puente de financiamiento del socio.
+   * Deja 1100/1110 en su saldo real (0 si solo había negativos). Idempotente por día.
+   */
+  async reclasificarCajaASocio(user: User, codigoPuente: string): Promise<any> {
+    const puente = await this.getCuentaRequerida(codigoPuente);
+    const hoy = this.hoyCR();
+    const refId = Number(hoy.replace(/-/g, '')); // YYYYMMDD
+    if (await this.existeAsientoPorReferencia('ReclasificacionCajaSocio', refId)) {
+      return { yaEjecutado: true, mensaje: 'Ya se reclasificó la caja hoy.' };
+    }
+
+    const bal = await this.getBalance(undefined, hoy);
+    const activos: any[] = bal.cuentas.Activo ?? [];
+    const lineas: { cuentaId: number; debe: number; haber: number; descripcion?: string }[] = [];
+    const movido: any[] = [];
+    let totalHaber = 0;
+
+    for (const codigo of ['1100', '1110']) {
+      const cta = activos.find((c) => c.codigo === codigo);
+      const saldo = Number(cta?.saldo) || 0;
+      if (saldo >= -0.009) continue; // solo saldos acreedores (negativos)
+      const monto = +Math.abs(saldo).toFixed(2);
+      const cuenta = await this.getCuentaRequerida(codigo);
+      lineas.push({ cuentaId: cuenta.id, debe: monto, haber: 0, descripcion: `Reclasificación ${codigo} pagado por el socio` });
+      totalHaber += monto;
+      movido.push({ codigo, monto });
+    }
+
+    if (!lineas.length) {
+      return { sinNegativos: true, mensaje: 'Caja y Banco no tienen saldo negativo que reclasificar.' };
+    }
+    lineas.push({ cuentaId: puente.id, debe: 0, haber: +totalHaber.toFixed(2), descripcion: 'Financiamiento del socio (gastos pagados por el dueño)' });
+
+    const asiento = await this.crearAsiento(user, {
+      fecha: hoy,
+      descripcion: 'Reclasificación de gastos pagados por el socio (Caja/Banco → puente)',
+      tipo: 'Ajuste',
+      referencia_tipo: 'ReclasificacionCajaSocio',
+      referencia_id: refId,
+      lineas,
+    }, { forzar: true });
+
+    return { asientoId: asiento.id, cuentaPuente: codigoPuente, total: +totalHaber.toFixed(2), movido };
+  }
+
+  /**
+   * Reclasificación final (post-reunión): vacía la cuenta puente hacia el destino
+   * (2150 CxP Socios si es préstamo, o 3150 Aportes por capitalizar si es patrimonio).
+   * Idempotente por día.
+   */
+  async reclasificarSocioADestino(user: User, codigoPuente: string, codigoDestino: string): Promise<any> {
+    const puente = await this.getCuentaRequerida(codigoPuente);
+    const destino = await this.getCuentaRequerida(codigoDestino);
+    const hoy = this.hoyCR();
+    const refId = Number(hoy.replace(/-/g, ''));
+    if (await this.existeAsientoPorReferencia('ReclasificacionSocioDestino', refId)) {
+      return { yaEjecutado: true, mensaje: 'Ya se reclasificó el financiamiento del socio hoy.' };
+    }
+
+    const bal = await this.getBalance(undefined, hoy);
+    // El puente es un pasivo → saldo acreedor positivo = lo que financió el socio.
+    const ctaPuente = (bal.cuentas.Pasivo ?? []).find((c: any) => c.codigo === codigoPuente)
+      ?? (bal.cuentas.Patrimonio ?? []).find((c: any) => c.codigo === codigoPuente)
+      ?? (bal.cuentas.Activo ?? []).find((c: any) => c.codigo === codigoPuente);
+    const saldo = +(Number(ctaPuente?.saldo) || 0).toFixed(2);
+    if (Math.abs(saldo) < 0.01) {
+      return { sinSaldo: true, mensaje: 'La cuenta puente no tiene saldo por reclasificar.' };
+    }
+
+    // Vaciar el puente contra el destino, preservando el signo del saldo.
+    const monto = Math.abs(saldo);
+    const puenteHaber = saldo > 0; // saldo acreedor → para saldarlo va al debe
+    const asiento = await this.crearAsiento(user, {
+      fecha: hoy,
+      descripcion: `Reclasificación financiamiento del socio → ${codigoDestino}`,
+      tipo: 'Ajuste',
+      referencia_tipo: 'ReclasificacionSocioDestino',
+      referencia_id: refId,
+      lineas: puenteHaber
+        ? [
+            { cuentaId: puente.id, debe: monto, haber: 0, descripcion: 'Saldo financiamiento del socio' },
+            { cuentaId: destino.id, debe: 0, haber: monto, descripcion: `Traslado a ${codigoDestino}` },
+          ]
+        : [
+            { cuentaId: destino.id, debe: monto, haber: 0, descripcion: `Traslado a ${codigoDestino}` },
+            { cuentaId: puente.id, debe: 0, haber: monto, descripcion: 'Saldo financiamiento del socio' },
+          ],
+    }, { forzar: true });
+
+    return { asientoId: asiento.id, cuentaPuente: codigoPuente, cuentaDestino: codigoDestino, monto };
+  }
+
   /** ¿Existe ya al menos un asiento para esta referencia? (idempotencia) */
   async existeAsientoPorReferencia(
     referencia_tipo: string,

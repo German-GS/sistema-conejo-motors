@@ -8,5 +8,6 @@ import { SiteSettingsController } from './site-settings.controller';
   imports: [TypeOrmModule.forFeature([SiteSetting])],
   providers: [SiteSettingsService],
   controllers: [SiteSettingsController],
+  exports: [SiteSettingsService],
 })
 export class SiteSettingsModule {}
