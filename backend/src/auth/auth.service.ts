@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -47,10 +48,20 @@ export class AuthService {
    * Recuperación de emergencia de un Administrador (break-glass): protegida por el secreto
    * ADMIN_RESET_SECRET (env var que solo conoce el dueño). Sin ese secreto configurado, no opera.
    */
+  /**
+   * Compara dos secretos en tiempo constante (anti timing-attack). Se hashean con SHA-256
+   * primero para que ambos búferes tengan la misma longitud (evita la fuga por longitud).
+   */
+  private secretosCoinciden(a: string, b: string): boolean {
+    const ha = crypto.createHash('sha256').update(String(a)).digest();
+    const hb = crypto.createHash('sha256').update(String(b)).digest();
+    return crypto.timingSafeEqual(ha, hb);
+  }
+
   async recuperarAdmin(email: string, nuevaPassword: string, secret: string) {
     const expected = process.env.ADMIN_RESET_SECRET;
     if (!expected) throw new UnauthorizedException('La recuperación de administrador no está configurada.');
-    if (!secret || secret !== expected) throw new UnauthorizedException('Secreto de recuperación inválido.');
+    if (!secret || !this.secretosCoinciden(secret, expected)) throw new UnauthorizedException('Secreto de recuperación inválido.');
     if (!nuevaPassword || nuevaPassword.length < 8) throw new BadRequestException('La nueva contraseña debe tener al menos 8 caracteres.');
     return this.usersService.resetAdminPassword(email, nuevaPassword);
   }

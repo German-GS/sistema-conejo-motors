@@ -7,6 +7,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ContabilidadService } from './contabilidad.service';
 import { SiteSettingsService } from '../site-settings/site-settings.service';
+import { CrearAsientoDto } from './dto/crear-asiento.dto';
+import { CuentaDto, UpdateCuentaDto } from './dto/cuenta.dto';
 
 @Controller('contabilidad')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -46,12 +48,12 @@ export class ContabilidadController {
 
   @Post('cuentas')
   @Roles('Administrador')
-  createCuenta(@Body() body: any) { return this.svc.createCuenta(body); }
+  createCuenta(@Body() body: CuentaDto) { return this.svc.createCuenta(body as any); }
 
   @Patch('cuentas/:id')
   @Roles('Administrador')
-  updateCuenta(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
-    return this.svc.updateCuenta(id, body);
+  updateCuenta(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateCuentaDto) {
+    return this.svc.updateCuenta(id, body as any);
   }
 
   @Post('cuentas/seed')
@@ -70,11 +72,11 @@ export class ContabilidadController {
   getAsiento(@Param('id', ParseIntPipe) id: number) { return this.svc.getAsiento(id); }
 
   @Post('asientos')
-  crearAsiento(@Body() body: any, @Request() req) {
+  crearAsiento(@Body() body: CrearAsientoDto, @Request() req) {
     // Solo un Administrador puede forzar un asiento dentro de un período cerrado.
     const esAdmin = req.user?.rol?.nombre === 'Administrador';
     const forzar = body?.forzar === true && esAdmin;
-    return this.svc.crearAsiento(req.user, body, { forzar });
+    return this.svc.crearAsiento(req.user, body as any, { forzar });
   }
 
   // ── Balance ───────────────────────────────────────────────────────────────

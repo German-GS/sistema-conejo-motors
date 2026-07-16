@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Salario } from '../salarios/salario.entity';
 import { Role } from '../roles/role.entity';
+import { AuditLog } from '../audit-logs/audit-log.entity';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -21,6 +22,8 @@ export class UsersService implements OnApplicationBootstrap {
     private salariosRepository: Repository<Salario>,
     @InjectRepository(Role)
     private rolesRepository: Repository<Role>,
+    @InjectRepository(AuditLog)
+    private auditRepository: Repository<AuditLog>,
     private configService: ConfigService,
   ) {}
 
@@ -97,6 +100,12 @@ export class UsersService implements OnApplicationBootstrap {
     user.password_hash = await bcrypt.hash(nuevaPassword, await bcrypt.genSalt());
     await this.usersRepository.save(user);
     this.logger.warn(`[SEGURIDAD] Contraseña de Administrador ${email} restablecida vía recuperación de emergencia.`);
+    // Rastro auditable del uso del break-glass (sin usuario, es acceso de emergencia).
+    await this.auditRepository.save(this.auditRepository.create({
+      accion: 'RECUPERACION_ADMIN',
+      detalles: `Break-glass: contraseña del Administrador ${user.email} restablecida.`,
+      usuario: null as any,
+    })).catch((e) => this.logger.error(`No se pudo auditar RECUPERACION_ADMIN: ${e.message}`));
     return { ok: true, email: user.email };
   }
 

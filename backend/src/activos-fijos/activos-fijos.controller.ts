@@ -6,6 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ActivosFijosService } from './activos-fijos.service';
+import { CrearActivoDto, ActualizarActivoDto } from './dto/activo.dto';
 
 @Controller('activos-fijos')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -23,13 +24,13 @@ export class ActivosFijosController {
   }
 
   @Post()
-  crear(@Body() body: any, @Request() req: any) {
-    return this.svc.crear(body, req.user?.id);
+  crear(@Body() body: CrearActivoDto, @Request() req: any) {
+    return this.svc.crear(body as any, req.user?.id);
   }
 
   @Patch(':id')
-  actualizar(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
-    return this.svc.actualizar(id, body);
+  actualizar(@Param('id', ParseIntPipe) id: number, @Body() body: ActualizarActivoDto) {
+    return this.svc.actualizar(id, body as any);
   }
 
   @Patch(':id/baja')

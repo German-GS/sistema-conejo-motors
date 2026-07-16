@@ -12,6 +12,7 @@ import { FacturacionService } from './facturacion.service';
 import { EmisorConfigService } from './emisor-config.service';
 import { FacturaHtmlService } from './factura-html.service';
 import { FacturarDto } from './dto/facturar.dto';
+import { EmisorConfigDto } from './dto/emisor-config.dto';
 
 @Controller('billing')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -32,8 +33,8 @@ export class FacturacionController {
   /** PUT /billing/emisor — actualizar datos del emisor */
   @Put('emisor')
   @Roles('Administrador')
-  updateEmisor(@Body() body: any) {
-    return this.emisorConfig.update(body);
+  updateEmisor(@Body() body: EmisorConfigDto) {
+    return this.emisorConfig.update(body as any);
   }
 
   /** GET /billing/preview-demo?tipo=factura|tiquete — representación gráfica de ejemplo (borrador) */
