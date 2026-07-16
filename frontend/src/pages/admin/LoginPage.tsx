@@ -12,7 +12,10 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState("");
+  // Recuerda el último correo usado → queda pre-llenado (login directo a la biometría).
+  const [email, setEmail] = useState(() => {
+    try { return localStorage.getItem("ultimoEmail") ?? ""; } catch { return ""; }
+  });
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -48,7 +51,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const asseResp = await startAuthentication({ optionsJSON: options });
       const { data } = await apiClient.post("/auth/passkey/login/verify", { email, response: asseResp });
       localStorage.setItem("accessToken", data.access_token);
-      try { localStorage.setItem("loginPreferido", "biometria"); } catch { /* */ }
+      try { localStorage.setItem("loginPreferido", "biometria"); localStorage.setItem("ultimoEmail", email); } catch { /* */ }
       onLoginSuccess();
       navigate("/dashboard-redirect");
     } catch (err: any) {
@@ -89,6 +92,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     try {
       const response = await apiClient.post("/auth/login", { email, contrasena });
       localStorage.setItem("accessToken", response.data.access_token);
+      try { localStorage.setItem("ultimoEmail", email); } catch { /* */ }
       onLoginSuccess();
       navigate("/dashboard-redirect");
       return;
