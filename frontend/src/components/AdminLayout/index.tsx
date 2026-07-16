@@ -414,13 +414,16 @@ export const AdminLayout = () => {
           )}
         </nav>
 
-        {/* ── SISTEMA — fijo al fondo (solo admin) ── */}
-        {userRole === "Administrador" && (
+        {/* ── SISTEMA — fijo al fondo ── */}
+        {(userRole === "Administrador" || userRole === "Contador") && (
           <div className={styles.sidebarBottom}>
             <div className={styles.sectionLabelStatic}>
               {showLabels && <span>SISTEMA</span>}
             </div>
-            <SidebarLink to="/admin/reports" icon={<LuChartColumnStacked size={18} />} label="Informes" />
+            {userRole === "Administrador" && (
+              <SidebarLink to="/admin/reports" icon={<LuChartColumnStacked size={18} />} label="Informes" />
+            )}
+            {/* Configuración: Admin ve todo; Contador ve solo la sección de Seguridad (passkeys). */}
             <SidebarLink to="/admin/settings" icon={<LuSettings size={18} />} label="Configuración" />
           </div>
         )}

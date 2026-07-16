@@ -8,6 +8,8 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { SiteHomepageSettings } from "../../components/SiteHomepageSettings";
 import { EntidadesFinancierasSettings } from "../../components/EntidadesFinancierasSettings";
 import { EditProfileModal } from "./EditProfileModal";
+import { jwtDecode } from "jwt-decode";
+import { startRegistration } from "@simplewebauthn/browser";
 
 // --- INTERFACES ---
 interface Parametro {
@@ -341,17 +343,92 @@ const FinanciamientoSocioSettings: React.FC = () => {
   );
 };
 
+// --- COMPONENTE DE SEGURIDAD (passkeys) ---
+const PasskeySettings: React.FC = () => {
+  const [passkeys, setPasskeys] = useState<{ id: number; device_name: string | null; creado_en: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [registrando, setRegistrando] = useState(false);
+
+  const cargar = async () => {
+    setLoading(true);
+    try { setPasskeys((await apiClient.get("/auth/passkey")).data ?? []); } catch { /* */ } finally { setLoading(false); }
+  };
+  useEffect(() => { cargar(); }, []);
+
+  const registrar = async () => {
+    if (typeof window === "undefined" || !window.PublicKeyCredential) { toast.error("Este navegador/dispositivo no soporta passkeys."); return; }
+    const deviceName = window.prompt("Nombre para este dispositivo (ej: iPhone de German, MacBook oficina):", "") ?? "";
+    setRegistrando(true);
+    const tId = toast.loading("Seguí las instrucciones de tu dispositivo…");
+    try {
+      const { data: options } = await apiClient.post("/auth/passkey/register/options", {});
+      const attResp = await startRegistration({ optionsJSON: options });
+      await apiClient.post("/auth/passkey/register/verify", { response: attResp, deviceName });
+      toast.success("Passkey registrada. Ya podés entrar con Face ID / huella.", { id: tId });
+      cargar();
+    } catch (err: any) {
+      if (err?.name === "NotAllowedError" || err?.name === "AbortError") toast.error("Registro cancelado.", { id: tId });
+      else toast.error(err.response?.data?.message || "No se pudo registrar la passkey.", { id: tId });
+    } finally { setRegistrando(false); }
+  };
+
+  const eliminar = async (id: number) => {
+    if (!window.confirm("¿Eliminar esta passkey? El dispositivo dejará de poder entrar con biometría.")) return;
+    try { await apiClient.delete(`/auth/passkey/${id}`); toast.success("Passkey eliminada."); cargar(); }
+    catch (e: any) { toast.error(e.response?.data?.message || "No se pudo eliminar."); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 10, padding: "0.9rem 1.1rem", fontSize: "0.88rem", lineHeight: 1.55 }}>
+        Una <strong>passkey</strong> te deja entrar con <strong>Face ID, huella o el PIN de tu dispositivo</strong>, sin escribir la contraseña.
+        Es más segura (resistente a phishing) y la llave privada nunca sale de tu dispositivo. Tu contraseña sigue como respaldo.
+        <br /><strong>Registrá cada dispositivo</strong> desde el que quieras entrar así (usá el dominio <code>sistema.conejomotors.com</code>).
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
+        <strong style={{ color: "#0a2540" }}>Tus passkeys</strong>
+        <button onClick={registrar} disabled={registrando} className="btn btn-principal">
+          {registrando ? "Registrando…" : "➕ Registrar este dispositivo"}
+        </button>
+      </div>
+      {loading ? <p style={{ color: "#94a3b8" }}>Cargando…</p>
+        : passkeys.length === 0 ? <p style={{ color: "#94a3b8" }}>No tenés passkeys registradas. Registrá este dispositivo para entrar con biometría.</p>
+        : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead><tr>
+              <th style={{ textAlign: "left", padding: "6px 8px", fontSize: "0.72rem", color: "#64748b", textTransform: "uppercase" }}>Dispositivo</th>
+              <th style={{ textAlign: "left", padding: "6px 8px", fontSize: "0.72rem", color: "#64748b", textTransform: "uppercase" }}>Registrada</th>
+              <th></th>
+            </tr></thead>
+            <tbody>
+              {passkeys.map((p) => (
+                <tr key={p.id} style={{ borderTop: "1px solid #f1f5f9" }}>
+                  <td style={{ padding: "8px", fontSize: "0.88rem", color: "#334155" }}>🔑 {p.device_name || "Dispositivo sin nombre"}</td>
+                  <td style={{ padding: "8px", fontSize: "0.85rem", color: "#64748b" }}>{new Date(p.creado_en).toLocaleDateString("es-CR")}</td>
+                  <td style={{ padding: "8px", textAlign: "right" }}>
+                    <button onClick={() => eliminar(p.id)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.78rem" }}>Eliminar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+    </div>
+  );
+};
+
 // --- COMPONENTE PRINCIPAL ---
-type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion" | "facturacion" | "contabilidad";
-const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string }[] = [
-  { id: "vehiculos",      icon: "🚗", label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones" },
-  { id: "sitio",          icon: "🌐", label: "Sitio Web",     desc: "Página principal y contenido público" },
-  { id: "financiamiento", icon: "🏦", label: "Financiamiento", desc: "Entidades, formularios y calculadora" },
-  { id: "facturacion",    icon: "🧾", label: "Facturación",   desc: "Datos del emisor y previsualización de comprobantes electrónicos" },
-  { id: "contabilidad",   icon: "🧮", label: "Contabilidad",  desc: "Financiamiento del socio y reclasificación de cuentas" },
-  { id: "crm",            icon: "🎯", label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads" },
-  { id: "planilla",       icon: "💰", label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones" },
-  { id: "depreciacion",   icon: "📉", label: "Depreciación",  desc: "Tabla de vida útil por categoría de activo" },
+type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion" | "facturacion" | "contabilidad" | "seguridad";
+const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string; roles?: string[] }[] = [
+  { id: "vehiculos",      icon: "🚗", label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones", roles: ["Administrador"] },
+  { id: "sitio",          icon: "🌐", label: "Sitio Web",     desc: "Página principal y contenido público", roles: ["Administrador"] },
+  { id: "financiamiento", icon: "🏦", label: "Financiamiento", desc: "Entidades, formularios y calculadora", roles: ["Administrador"] },
+  { id: "facturacion",    icon: "🧾", label: "Facturación",   desc: "Datos del emisor y previsualización de comprobantes electrónicos", roles: ["Administrador"] },
+  { id: "contabilidad",   icon: "🧮", label: "Contabilidad",  desc: "Financiamiento del socio y reclasificación de cuentas", roles: ["Administrador"] },
+  { id: "crm",            icon: "🎯", label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads", roles: ["Administrador"] },
+  { id: "planilla",       icon: "💰", label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones", roles: ["Administrador"] },
+  { id: "depreciacion",   icon: "📉", label: "Depreciación",  desc: "Tabla de vida útil por categoría de activo", roles: ["Administrador"] },
+  { id: "seguridad",      icon: "🔐", label: "Seguridad",     desc: "Passkeys (Face ID / huella) de tu cuenta" }, // sin roles = todos (admin y contador)
 ];
 
 // --- COMPONENTE DE FACTURACIÓN ELECTRÓNICA (emisor + previsualización) ---
@@ -554,8 +631,16 @@ const DepreciacionConfig: React.FC = () => {
 };
 
 export const SettingsPage = () => {
+  // Rol del usuario para filtrar qué secciones ve (un Contador solo ve Seguridad).
+  const userRole = (() => {
+    try {
+      const t = localStorage.getItem("accessToken");
+      return t ? (jwtDecode(t) as { rol?: { nombre: string } }).rol?.nombre ?? "" : "";
+    } catch { return ""; }
+  })();
+  const seccionesVisibles = SECCIONES.filter((s) => !s.roles || s.roles.includes(userRole));
   const confirm = useConfirm();
-  const [seccion, setSeccion] = useState<SeccionConfig>("vehiculos");
+  const [seccion, setSeccion] = useState<SeccionConfig>(userRole === "Administrador" ? "vehiculos" : "seguridad");
   // --- ESTADOS DEL COMPONENTE ---
   const [cargasPatronales, setCargasPatronales] = useState<Parametro[]>([]);
   const [deduccionesEmpleado, setDeduccionesEmpleado] = useState<Parametro[]>(
@@ -722,7 +807,7 @@ export const SettingsPage = () => {
       </div>
 
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.75rem", borderBottom: "2px solid #f1f5f9", paddingBottom: "0.75rem" }}>
-        {SECCIONES.map((s) => {
+        {seccionesVisibles.map((s) => {
           const activa = s.id === seccion;
           return (
             <button
@@ -1082,6 +1167,12 @@ export const SettingsPage = () => {
       {seccion === "contabilidad" && (
       <Card title="🧮 Financiamiento del socio (gastos pagados por el dueño)">
         <FinanciamientoSocioSettings />
+      </Card>
+      )}
+
+      {seccion === "seguridad" && (
+      <Card title="🔐 Seguridad — Passkeys (Face ID / huella)">
+        <PasskeySettings />
       </Card>
       )}
 

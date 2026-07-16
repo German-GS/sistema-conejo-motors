@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import { useNavigate } from "react-router-dom";
+import { startAuthentication } from "@simplewebauthn/browser";
 import styles from "./LoginPage.module.css";
 import logoConejo from "../../img/Logos/Logo-Conejo-Motors.png";
 
@@ -25,6 +26,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const limpiarTimers = () => {
     timersRef.current.forEach((t) => clearTimeout(t));
     timersRef.current = [];
+  };
+
+  // Login con passkey (Face ID / huella / dispositivo). Solo Admin y Contador.
+  const handlePasskeyLogin = async () => {
+    if (!email) { setError("Ingresá tu correo para usar la passkey."); return; }
+    setError("");
+    setCargando(true);
+    setMensajeCarga("Esperando tu passkey (Face ID / huella)…");
+    try {
+      const { data: options } = await apiClient.post("/auth/passkey/login/options", { email });
+      const asseResp = await startAuthentication({ optionsJSON: options });
+      const { data } = await apiClient.post("/auth/passkey/login/verify", { email, response: asseResp });
+      localStorage.setItem("accessToken", data.access_token);
+      onLoginSuccess();
+      navigate("/dashboard-redirect");
+    } catch (err: any) {
+      if (err?.name === "NotAllowedError" || err?.name === "AbortError") setError("Autenticación con passkey cancelada.");
+      else setError(err.response?.data?.message || "No se pudo iniciar con passkey. Podés usar tu contraseña.");
+    } finally {
+      limpiarTimers();
+      setCargando(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,6 +136,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           )}
           {error && !cargando && <p className={styles.error}>{error}</p>}
         </form>
+
+        {/* Passkey / biometría — método adicional para Admin y Contador */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: "0.9rem 0 0.6rem", color: "#94a3b8", fontSize: "0.8rem" }}>
+          <span style={{ flex: 1, height: 1, background: "#e2e8f0" }} /> o <span style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+        </div>
+        <button
+          type="button"
+          onClick={handlePasskeyLogin}
+          disabled={cargando}
+          style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+            background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8,
+            padding: "0.65rem 1rem", cursor: cargando ? "not-allowed" : "pointer", fontWeight: 700, fontSize: "0.9rem" }}
+        >
+          🔐 Entrar con passkey (Face ID / huella)
+        </button>
+        <p style={{ fontSize: "0.72rem", color: "#94a3b8", textAlign: "center", marginTop: "0.5rem" }}>
+          Ingresá tu correo arriba y tocá el botón. Disponible para Admin y Contador que registraron su dispositivo.
+        </p>
       </div>
     </div>
   );
