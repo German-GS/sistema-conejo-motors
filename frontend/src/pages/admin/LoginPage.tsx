@@ -29,6 +29,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     catch { return "biometria"; }
   });
   const [passkeyFallos, setPasskeyFallos] = useState(0);
+  const [cambiarUsuario, setCambiarUsuario] = useState(false);
   const navigate = useNavigate();
   const timersRef = useRef<number[]>([]);
 
@@ -124,81 +125,121 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
+  // Tarjeta "Continuar como …": modo biometría, con soporte, correo recordado y sin pedir otra cuenta.
+  const mostrarTarjeta = modo === "biometria" && soportaPasskey && !!email && !cambiarUsuario;
+
   return (
     <div className={styles.loginContainer}>
       <div className={styles.loginCard}>
         <img src={logoConejo} alt="Logo Conejo Motors" className={styles.logo} />
         <h1>Bienvenido</h1>
-        <p>{modo === "biometria" ? "Ingresá tu correo y entrá con tu biometría." : "Introduce tus credenciales para acceder al panel de control."}</p>
-        <form
-          onSubmit={(e) => { e.preventDefault(); if (modo === "biometria") handlePasskeyLogin(); else handleSubmit(e); }}
-          className={styles.loginForm}
-        >
-          <input
-            type="email"
-            placeholder="Correo Electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={cargando}
-            required
-            autoComplete="username"
-          />
 
-          {modo === "password" && (
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
-              disabled={cargando}
-              required
-              autoComplete="current-password"
-            />
-          )}
-
-          <button type="submit" disabled={cargando}>
-            {cargando ? (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
-                <span className={styles.spinner} />
-                Ingresando…
-              </span>
-            ) : modo === "biometria" ? (
-              "🔐 Entrar con biometría (Face ID / huella)"
-            ) : (
-              "Iniciar Sesión"
-            )}
-          </button>
-
-          {cargando && (
-            <p style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", margin: "0.25rem 0 0" }}>
-              {mensajeCarga}
-            </p>
-          )}
-          {error && !cargando && <p className={styles.error}>{error}</p>}
-        </form>
-
-        {/* Alternar entre biometría y contraseña */}
-        {!cargando && (
-          <div style={{ textAlign: "center", marginTop: "0.9rem" }}>
-            {modo === "biometria" ? (
-              <button type="button" onClick={() => cambiarModo("password")}
-                style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
-                Prefiero usar mi contraseña
-              </button>
-            ) : (
-              soportaPasskey && (
-                <button type="button" onClick={() => cambiarModo("biometria")}
-                  style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
-                  🔐 Entrar con biometría (Face ID / huella)
+        {mostrarTarjeta ? (
+          /* ── Tarjeta "Continuar como …" (correo recordado + biometría en un toque) ── */
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.85rem" }}>
+            <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#024f7d", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem", fontWeight: 800 }}>
+              {email.charAt(0).toUpperCase()}
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.8rem", color: "#64748b" }}>Continuar como</div>
+              <div style={{ fontWeight: 700, color: "#0a2540", wordBreak: "break-all" }}>{email}</div>
+            </div>
+            <button type="button" onClick={handlePasskeyLogin} disabled={cargando}
+              style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.75rem 1rem",
+                cursor: cargando ? "not-allowed" : "pointer", fontWeight: 700, fontSize: "0.95rem" }}>
+              {cargando ? (<><span className={styles.spinner} /> Ingresando…</>) : "🔐 Entrar con biometría (Face ID / huella)"}
+            </button>
+            {cargando && <p style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", margin: 0 }}>{mensajeCarga}</p>}
+            {error && !cargando && <p className={styles.error}>{error}</p>}
+            {!cargando && (
+              <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.82rem", flexWrap: "wrap", justifyContent: "center" }}>
+                <button type="button" onClick={() => cambiarModo("password")}
+                  style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, textDecoration: "underline" }}>
+                  Usar contraseña
                 </button>
-              )
+                <span style={{ color: "#cbd5e1" }}>·</span>
+                <button type="button" onClick={() => { setEmail(""); setContrasena(""); setError(""); setCambiarUsuario(true); }}
+                  style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontWeight: 600, textDecoration: "underline" }}>
+                  Usar otra cuenta
+                </button>
+              </div>
             )}
           </div>
-        )}
-        {modo === "biometria" && !cargando && (
-          <p style={{ fontSize: "0.72rem", color: "#94a3b8", textAlign: "center", marginTop: "0.5rem" }}>
-            Disponible para Admin y Contador que registraron su dispositivo en Configuración → Seguridad.
-          </p>
+        ) : (
+          <>
+            <p>{modo === "biometria" ? "Ingresá tu correo y entrá con tu biometría." : "Introduce tus credenciales para acceder al panel de control."}</p>
+            <form
+              onSubmit={(e) => { e.preventDefault(); if (modo === "biometria") handlePasskeyLogin(); else handleSubmit(e); }}
+              className={styles.loginForm}
+            >
+              <input
+                type="email"
+                placeholder="Correo Electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={cargando}
+                required
+                autoComplete="username"
+              />
+
+              {modo === "password" && (
+                <input
+                  type="password"
+                  placeholder="Contraseña"
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
+                  disabled={cargando}
+                  required
+                  autoComplete="current-password"
+                />
+              )}
+
+              <button type="submit" disabled={cargando}>
+                {cargando ? (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
+                    <span className={styles.spinner} />
+                    Ingresando…
+                  </span>
+                ) : modo === "biometria" ? (
+                  "🔐 Entrar con biometría (Face ID / huella)"
+                ) : (
+                  "Iniciar Sesión"
+                )}
+              </button>
+
+              {cargando && (
+                <p style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", margin: "0.25rem 0 0" }}>
+                  {mensajeCarga}
+                </p>
+              )}
+              {error && !cargando && <p className={styles.error}>{error}</p>}
+            </form>
+
+            {/* Alternar entre biometría y contraseña */}
+            {!cargando && (
+              <div style={{ textAlign: "center", marginTop: "0.9rem" }}>
+                {modo === "biometria" ? (
+                  <button type="button" onClick={() => cambiarModo("password")}
+                    style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
+                    Prefiero usar mi contraseña
+                  </button>
+                ) : (
+                  soportaPasskey && (
+                    <button type="button" onClick={() => cambiarModo("biometria")}
+                      style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
+                      🔐 Entrar con biometría (Face ID / huella)
+                    </button>
+                  )
+                )}
+              </div>
+            )}
+            {modo === "biometria" && !cargando && (
+              <p style={{ fontSize: "0.72rem", color: "#94a3b8", textAlign: "center", marginTop: "0.5rem" }}>
+                Disponible para Admin y Contador que registraron su dispositivo en Configuración → Seguridad.
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
