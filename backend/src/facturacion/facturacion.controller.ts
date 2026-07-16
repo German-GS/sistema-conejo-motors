@@ -11,6 +11,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { FacturacionService } from './facturacion.service';
 import { EmisorConfigService } from './emisor-config.service';
 import { FacturaHtmlService } from './factura-html.service';
+import { FacturarDto } from './dto/facturar.dto';
 
 @Controller('billing')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -104,8 +105,8 @@ export class FacturacionController {
   /** POST /billing/facturar — procesar factura con datos de facturación */
   @Post('facturar')
   @Roles('Administrador', 'Contador')
-  facturar(@Body() body: { cotizacionId: number; datos: any }, @Request() req) {
-    return this.svc.facturar(body.cotizacionId, body.datos, req.user);
+  facturar(@Body() body: FacturarDto, @Request() req) {
+    return this.svc.facturar(body.cotizacionId, body.datos as any, req.user);
   }
 
   /** POST /billing/ventas/:id/comprobante — adjuntar documento de respaldo a la venta */
