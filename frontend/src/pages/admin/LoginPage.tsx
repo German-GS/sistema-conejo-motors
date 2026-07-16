@@ -17,6 +17,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [mensajeCarga, setMensajeCarga] = useState("Verificando credenciales…");
+  // Modo de login: 'biometria' (solo correo + passkey) o 'password' (con campo de contraseña).
+  // Por defecto biometría; recuerda la última preferencia. El navegador debe soportar WebAuthn.
+  const soportaPasskey = typeof window !== "undefined" && !!window.PublicKeyCredential;
+  const [modo, setModo] = useState<"biometria" | "password">(() => {
+    if (!soportaPasskey) return "password";
+    try { return (localStorage.getItem("loginPreferido") as any) === "password" ? "password" : "biometria"; }
+    catch { return "biometria"; }
+  });
+  const [passkeyFallos, setPasskeyFallos] = useState(0);
   const navigate = useNavigate();
   const timersRef = useRef<number[]>([]);
 
@@ -30,7 +39,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   // Login con passkey (Face ID / huella / dispositivo). Solo Admin y Contador.
   const handlePasskeyLogin = async () => {
-    if (!email) { setError("Ingresá tu correo para usar la passkey."); return; }
+    if (!email) { setError("Ingresá tu correo para usar la biometría."); return; }
     setError("");
     setCargando(true);
     setMensajeCarga("Esperando tu passkey (Face ID / huella)…");
@@ -39,15 +48,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const asseResp = await startAuthentication({ optionsJSON: options });
       const { data } = await apiClient.post("/auth/passkey/login/verify", { email, response: asseResp });
       localStorage.setItem("accessToken", data.access_token);
+      try { localStorage.setItem("loginPreferido", "biometria"); } catch { /* */ }
       onLoginSuccess();
       navigate("/dashboard-redirect");
     } catch (err: any) {
-      if (err?.name === "NotAllowedError" || err?.name === "AbortError") setError("Autenticación con passkey cancelada.");
-      else setError(err.response?.data?.message || "No se pudo iniciar con passkey. Podés usar tu contraseña.");
+      const fallos = passkeyFallos + 1;
+      setPasskeyFallos(fallos);
+      const cancelado = err?.name === "NotAllowedError" || err?.name === "AbortError";
+      // A los 2 intentos fallidos, se muestra el campo de contraseña como respaldo.
+      if (fallos >= 2) {
+        setModo("password");
+        setError("La biometría no funcionó. Iniciá con tu contraseña.");
+      } else {
+        setError(cancelado ? "Autenticación cancelada. Probá de nuevo o usá tu contraseña." : (err.response?.data?.message || "No se pudo iniciar con biometría. Probá de nuevo."));
+      }
     } finally {
       limpiarTimers();
       setCargando(false);
     }
+  };
+
+  const cambiarModo = (m: "biometria" | "password") => {
+    setError("");
+    setModo(m);
+    try { localStorage.setItem("loginPreferido", m); } catch { /* */ }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,6 +91,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       localStorage.setItem("accessToken", response.data.access_token);
       onLoginSuccess();
       navigate("/dashboard-redirect");
+      return;
     } catch (err: any) {
       const status = err.response?.status;
       let msg: string;
@@ -100,8 +125,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       <div className={styles.loginCard}>
         <img src={logoConejo} alt="Logo Conejo Motors" className={styles.logo} />
         <h1>Bienvenido</h1>
-        <p>Introduce tus credenciales para acceder al panel de control.</p>
-        <form onSubmit={handleSubmit} className={styles.loginForm}>
+        <p>{modo === "biometria" ? "Ingresá tu correo y entrá con tu biometría." : "Introduce tus credenciales para acceder al panel de control."}</p>
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (modo === "biometria") handlePasskeyLogin(); else handleSubmit(e); }}
+          className={styles.loginForm}
+        >
           <input
             type="email"
             placeholder="Correo Electrónico"
@@ -109,21 +137,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             onChange={(e) => setEmail(e.target.value)}
             disabled={cargando}
             required
+            autoComplete="username"
           />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={contrasena}
-            onChange={(e) => setContrasena(e.target.value)}
-            disabled={cargando}
-            required
-          />
+
+          {modo === "password" && (
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+              disabled={cargando}
+              required
+              autoComplete="current-password"
+            />
+          )}
+
           <button type="submit" disabled={cargando}>
             {cargando ? (
               <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
                 <span className={styles.spinner} />
                 Ingresando…
               </span>
+            ) : modo === "biometria" ? (
+              "🔐 Entrar con biometría (Face ID / huella)"
             ) : (
               "Iniciar Sesión"
             )}
@@ -137,23 +173,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           {error && !cargando && <p className={styles.error}>{error}</p>}
         </form>
 
-        {/* Passkey / biometría — método adicional para Admin y Contador */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: "0.9rem 0 0.6rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-          <span style={{ flex: 1, height: 1, background: "#e2e8f0" }} /> o <span style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-        </div>
-        <button
-          type="button"
-          onClick={handlePasskeyLogin}
-          disabled={cargando}
-          style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-            background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8,
-            padding: "0.65rem 1rem", cursor: cargando ? "not-allowed" : "pointer", fontWeight: 700, fontSize: "0.9rem" }}
-        >
-          🔐 Entrar con passkey (Face ID / huella)
-        </button>
-        <p style={{ fontSize: "0.72rem", color: "#94a3b8", textAlign: "center", marginTop: "0.5rem" }}>
-          Ingresá tu correo arriba y tocá el botón. Disponible para Admin y Contador que registraron su dispositivo.
-        </p>
+        {/* Alternar entre biometría y contraseña */}
+        {!cargando && (
+          <div style={{ textAlign: "center", marginTop: "0.9rem" }}>
+            {modo === "biometria" ? (
+              <button type="button" onClick={() => cambiarModo("password")}
+                style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
+                Prefiero usar mi contraseña
+              </button>
+            ) : (
+              soportaPasskey && (
+                <button type="button" onClick={() => cambiarModo("biometria")}
+                  style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
+                  🔐 Entrar con biometría (Face ID / huella)
+                </button>
+              )
+            )}
+          </div>
+        )}
+        {modo === "biometria" && !cargando && (
+          <p style={{ fontSize: "0.72rem", color: "#94a3b8", textAlign: "center", marginTop: "0.5rem" }}>
+            Disponible para Admin y Contador que registraron su dispositivo en Configuración → Seguridad.
+          </p>
+        )}
       </div>
     </div>
   );
