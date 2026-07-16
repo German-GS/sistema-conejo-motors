@@ -23,6 +23,10 @@ export class User {
   @Column()
   password_hash: string;
 
+  /** Challenge WebAuthn en curso (registro o login de passkey). Efímero. */
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  webauthn_challenge: string | null;
+
   @Column({ default: true })
   activo: boolean;
 

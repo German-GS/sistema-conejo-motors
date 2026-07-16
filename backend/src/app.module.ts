@@ -6,6 +6,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/user.entity';
+import { PasskeyCredential } from './auth/passkey-credential.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
@@ -144,9 +145,10 @@ import { LeadSugefRetencion } from './sugef/lead-sugef-retencion.entity';
         synchronize: false,
         migrations: [__dirname + '/migrations/*.{js,ts}'],
         migrationsTableName: 'migrations_history',
-        migrationsRun: false,
+        migrationsRun: true, // corre migraciones pendientes al arrancar (son idempotentes)
         entities: [
         User,
+        PasskeyCredential,
         Vehicle,
         Role,
         Salario,
