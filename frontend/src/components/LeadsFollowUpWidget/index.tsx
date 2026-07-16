@@ -45,8 +45,10 @@ export const LeadsFollowUpWidget = ({ basePath = "/admin", showVendedor = false 
     apiClient.get("/leads?limit=50")
       .then(r => {
         const todos = r.data.leads || r.data || [];
+        // Estados terminales que NO son "activos" (alineado con el backend):
+        // Cerrado (ganado), Perdido y Descartado quedan fuera.
         const activos = todos.filter(
-          (l: Lead) => !["Cerrado", "Perdido"].includes(l.estado)
+          (l: Lead) => !["Cerrado", "Perdido", "Descartado"].includes(l.estado)
         );
         activos.sort((a: Lead, b: Lead) => {
           const da = a.fecha_followup ? new Date(a.fecha_followup).getTime() : Infinity;
