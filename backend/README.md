@@ -1,98 +1,57 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend — Conejo Motors
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS + TypeORM (PostgreSQL / Cloud SQL). Desplegado en Google Cloud Run.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🔐 Secretos y variables de entorno
 
-## Description
+**Los secretos viven SOLO en variables de entorno de Cloud Run.** Nunca en el repositorio.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Los archivos `.env*` están en `.gitignore` (solo se versionan las plantillas `*.example`, sin secretos).
+- En **producción**, la configuración real (BD, JWT, emisor, etc.) proviene de las env vars de
+  Cloud Run; `process.env` tiene prioridad sobre cualquier `.env`.
+- Para **desarrollo local**, copiá `.env.example` → `.env.development` y completá tus valores.
 
-## Project setup
+### Variables sensibles (solo en Cloud Run)
+| Variable | Qué es |
+|---|---|
+| `JWT_SECRET` | Firma de los tokens de sesión. Rotarla invalida todas las sesiones (re-login). |
+| `DB_PASSWORD` | Contraseña del usuario de Cloud SQL (`conejo_app`). |
+| `ADMIN_RESET_SECRET` | Llave maestra del break-glass de recuperación de admin. |
+| `GCS_BUCKET` | Bucket privado de comprobantes/documentos. |
 
+### Rotación de secretos (obligatoria si se filtraron)
+Purgar el historial de git **no basta**: si alguien clonó con los valores viejos, siguen siendo
+válidos hasta rotarlos. Por eso, ante cualquier filtración:
+
+1. **JWT_SECRET** — generar y setear uno nuevo (invalida sesiones; todos re-loguean):
+   ```bash
+   NEW=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+   gcloud run services update conejo-motors-backend --region us-central1 --update-env-vars JWT_SECRET="$NEW"
+   ```
+2. **Contraseña de Cloud SQL** — cambiar en la base y en la env var (breve ventana de reconexión):
+   ```bash
+   gcloud sql users set-password conejo_app --instance=conejo-motors-db --password='NUEVA'
+   gcloud run services update conejo-motors-backend --region us-central1 --update-env-vars DB_PASSWORD='NUEVA'
+   ```
+3. Verificar que los valores viejos ya no funcionen en ningún entorno.
+
+## Migraciones
+`synchronize: false`. El esquema se cambia por migraciones (`src/migrations`, `data-source.ts`):
 ```bash
-$ npm install
+npm run migration:generate -- src/migrations/NombreDelCambio
+npm run migration:run
 ```
 
-## Compile and run the project
+## Archivos subidos
+- **Documentos sensibles** (comprobantes, documentos de leads): bucket **privado de GCS**, se
+  descargan por endpoints **autenticados**. No se sirven desde `/uploads`.
+- **Imágenes públicas** (catálogo, logos): `/uploads` (solo imágenes; los tipos documento están
+  bloqueados por un filtro en `main.ts`).
 
+## Deploy
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+gcloud builds submit --tag gcr.io/conejo-motors/conejo-motors-backend .
+gcloud run deploy conejo-motors-backend --image gcr.io/conejo-motors/conejo-motors-backend \
+  --platform managed --region us-central1 --add-cloudsql-instances conejo-motors:us-east1:conejo-motors-db
 ```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+> No usar `--set-env-vars` (borra el resto); usar `--update-env-vars` para cambios puntuales.
