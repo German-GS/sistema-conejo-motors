@@ -31,8 +31,12 @@ const FLUJO_CATEGORIA: Record<string, FlujoCategoria> = {
   // Inversión: activos fijos BRUTOS (los contra-activos 1525/1590 son depreciación no
   // monetaria y se manejan con el ajuste de depreciación en Operación, para no duplicar).
   '1500': 'Inversion', '1510': 'Inversion', '1520': 'Inversion',
-  // Financiamiento: capital, utilidades retenidas, deuda LP
+  // Financiamiento: capital, utilidades retenidas, deuda LP, apertura y financiamiento del socio
   '3100': 'Financiamiento', '3200': 'Financiamiento', '2400': 'Financiamiento',
+  '3900': 'Financiamiento', // Balance de Apertura (red de seguridad; el flujo ya excluye estos asientos)
+  '2900': 'Financiamiento', // Financiamiento del socio (gastos pagados por el dueño)
+  '2150': 'Financiamiento', // CxP Socios (aporte reclasificado como préstamo)
+  '3150': 'Financiamiento', // Aportes por capitalizar (aporte reclasificado a patrimonio)
 };
 
 @Injectable()
@@ -558,14 +562,34 @@ export class ContabilidadService implements OnApplicationBootstrap {
    * Movimientos por cuenta en un rango de fechas (para estados financieros de período).
    * Devuelve, por cuenta, la suma de debe/haber y el saldo del PERÍODO (no acumulado):
    * Activo/Gasto = debe − haber; resto = haber − debe. Excluye asientos de cierre.
+   *
+   * `opts.excluirApertura`: excluye los asientos de carga inicial (los que tocan la cuenta
+   * 3900 Balance de Apertura). Los saldos iniciales son la posición de arranque, NO flujo de
+   * efectivo del período → el Flujo de Caja los omite. (No afecta P&L ni Balance, que no pasan
+   * esta opción.)
    */
-  async movimientosPorCuenta(startDate: string, endDate: string): Promise<any[]> {
-    const rows = await this.lineasRepo
+  async movimientosPorCuenta(startDate: string, endDate: string, opts?: { excluirApertura?: boolean }): Promise<any[]> {
+    const qb = this.lineasRepo
       .createQueryBuilder('l')
       .innerJoin('l.asiento', 'a')
       .innerJoin('l.cuenta', 'c')
       .where('a.fecha BETWEEN :desde AND :hasta', { desde: startDate, hasta: endDate })
-      .andWhere("a.tipo != 'Cierre'")
+      .andWhere("a.tipo != 'Cierre'");
+
+    if (opts?.excluirApertura) {
+      // Excluir cualquier asiento que tenga una línea sobre la cuenta 3900 (apertura).
+      qb.andWhere((sub) => {
+        const q = sub.subQuery()
+          .select('la.asientoId')
+          .from(LineaAsiento, 'la')
+          .innerJoin('la.cuenta', 'ca')
+          .where("ca.codigo = '3900'")
+          .getQuery();
+        return `a.id NOT IN ${q}`;
+      });
+    }
+
+    const rows = await qb
       .groupBy('c.id').addGroupBy('c.codigo').addGroupBy('c.nombre').addGroupBy('c.tipo')
       .addGroupBy('c.clasificacion_balance').addGroupBy('c.flujo_categoria')
       .select('c.id', 'id').addSelect('c.codigo', 'codigo').addSelect('c.nombre', 'nombre').addSelect('c.tipo', 'tipo')

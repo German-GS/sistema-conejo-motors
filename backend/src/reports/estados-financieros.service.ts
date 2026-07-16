@@ -107,7 +107,9 @@ export class EstadosFinancierosService {
 
     const armar = async (p: string) => {
       const { desde, hasta } = this.rango(p);
-      const movs = await this.contabilidad.movimientosPorCuenta(desde, hasta);
+      // Se excluyen los asientos de apertura (cuenta 3900): la carga inicial es la posición
+      // de arranque, no flujo de efectivo del período.
+      const movs = await this.contabilidad.movimientosPorCuenta(desde, hasta, { excluirApertura: true });
       const round = (n: number) => +Number(n).toFixed(2);
 
       // Utilidad neta del período (= ingresos − gastos).

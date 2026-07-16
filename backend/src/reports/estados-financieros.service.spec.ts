@@ -54,6 +54,40 @@ describe('EstadosFinancierosService — Estado de Resultados', () => {
   });
 });
 
+describe('EstadosFinancierosService — Flujo: apertura excluida', () => {
+  it('un mes cuyo único evento es la carga de apertura da flujo ~0 y cuadra', async () => {
+    const contab = contabilidadMock();
+    // Con excluirApertura, la BD ya descartó el asiento de apertura → no llegan movimientos.
+    contab.movimientosPorCuenta.mockResolvedValue([]);
+    const svc = new EstadosFinancierosService(contab as any);
+    const res = await svc.flujoCaja('2026-07', false);
+
+    // Se pidió excluir la apertura.
+    expect(contab.movimientosPorCuenta).toHaveBeenCalledWith('2026-07-01', expect.any(String), { excluirApertura: true });
+    const f = res.actual;
+    expect(f.operacion.total).toBe(0);
+    expect(f.inversion.total).toBe(0);
+    expect(f.variacionNeta).toBe(0);
+    expect(f.variacionCajaDirecta).toBe(0);
+    expect(f.cuadra).toBe(true);
+  });
+
+  it('una compra real de activo fijo pagada por banco sí aparece como salida de inversión', async () => {
+    const contab = contabilidadMock();
+    // Debe 1510 600 / Haber 1110 600.
+    contab.movimientosPorCuenta.mockResolvedValue([
+      { codigo: '1110', nombre: 'Banco', tipo: 'Activo', flujo_categoria: null, saldo: -600, deltaDebeHaber: -600 },
+      { codigo: '1510', nombre: 'Mobiliario', tipo: 'Activo', flujo_categoria: 'Inversion', saldo: 600, deltaDebeHaber: 600 },
+    ]);
+    const svc = new EstadosFinancierosService(contab as any);
+    const f = (await svc.flujoCaja('2026-07', false)).actual;
+    expect(f.inversion.total).toBe(-600);     // salida por la compra
+    expect(f.variacionNeta).toBe(-600);
+    expect(f.variacionCajaDirecta).toBe(-600);
+    expect(f.cuadra).toBe(true);
+  });
+});
+
 describe('EstadosFinancierosService — Flujo indirecto (Parte B)', () => {
   it('las 3 secciones suman la variación de caja (ventas + compra de activo + depreciación)', async () => {
     const contab = contabilidadMock();
