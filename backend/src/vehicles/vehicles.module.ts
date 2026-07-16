@@ -34,7 +34,9 @@ import { ContabilidadModule } from '../contabilidad/contabilidad.module';
       AccesorioVehiculo,
       OrdenProducto,
     ]),
-    MulterModule.register({ dest: './uploads' }),
+    // Archivos temporales de import (CSV/Excel) fuera de la carpeta pública /uploads,
+    // para que no queden descargables por URL.
+    MulterModule.register({ dest: './tmp-imports' }),
   ],
   controllers: [VehiclesController],
   providers: [VehiclesService, VehiclesImportService],

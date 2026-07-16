@@ -22,8 +22,20 @@ async function bootstrap() {
   // (necesario para que el rate limiting sea por usuario y no global).
   app.set('trust proxy', 1);
 
+  // /uploads solo aloja imágenes públicas legadas (fotos de catálogo/logos; muchas SIN
+  // extensión). Los documentos sensibles (comprobantes, docs de leads) NO viven acá: se
+  // sirven por endpoints autenticados desde el bucket privado de GCS, y los archivos
+  // temporales de import van a ./tmp-imports (no servido). Como defensa en profundidad se
+  // bloquea la descarga de tipos de documento/secreto por si alguno cayera en la carpeta.
+  const BLOCKED_EXT = /\.(csv|xlsx?|pdf|docx?|pptx?|json|env|txt|zip|rar|7z|p12|pem|key|sql|db)$/i;
+  app.use('/uploads', (req: any, res: any, next: any) => {
+    if (BLOCKED_EXT.test(req.path)) return res.status(404).end();
+    next();
+  });
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
+    index: false,
+    dotfiles: 'deny',
   });
   // Validación endurecida SIN romper el frontend:
   //  - whitelist: descarta en silencio campos no declarados en el DTO.
