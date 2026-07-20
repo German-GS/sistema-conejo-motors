@@ -5,7 +5,41 @@ import styles from "./GastosPage.module.css";
 import { LuPlus, LuReceipt } from "react-icons/lu";
 import { exportToExcel } from "@/utils/exportExcel";
 
-interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; metodo_pago?: string; notas?: string; iva_monto?: number; nombre_comercio?: string; }
+interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; comprobante_mime?: string | null; metodo_pago?: string; notas?: string; iva_monto?: number; nombre_comercio?: string; }
+
+/**
+ * Miniatura del comprobante del gasto. Si es imagen, descarga el blob (endpoint autenticado)
+ * y muestra un cuadro pequeño; al hacer click, lo abre en grande (lightbox). Si es PDF u otro,
+ * muestra un ícono que lo abre en una pestaña nueva.
+ */
+function ComprobanteThumb({ id, mime, onOpenImagen, onOpenOtro }: { id: number; mime?: string | null; onOpenImagen: (url: string) => void; onOpenOtro: (id: number) => void; }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const esImagen = (mime || "").startsWith("image/");
+
+  useEffect(() => {
+    if (!esImagen) return;
+    let objUrl: string | undefined;
+    let vivo = true;
+    apiClient.get(`/gastos/${id}/comprobante`, { responseType: "blob" })
+      .then((res) => { if (!vivo) return; objUrl = URL.createObjectURL(res.data); setUrl(objUrl); })
+      .catch(() => { /* silencioso */ });
+    return () => { vivo = false; if (objUrl) URL.revokeObjectURL(objUrl); };
+  }, [id, esImagen]);
+
+  if (!esImagen) {
+    return (
+      <button onClick={() => onOpenOtro(id)} title="Ver comprobante (PDF)"
+        style={{ marginLeft: 6, background: "none", border: "none", cursor: "pointer", fontSize: "1.1rem" }}>📄</button>
+    );
+  }
+  if (!url) {
+    return <span title="Cargando…" style={{ display: "inline-block", width: 38, height: 38, marginLeft: 6, borderRadius: 6, background: "#f1f5f9", border: "1px solid #e2e8f0", verticalAlign: "middle" }} />;
+  }
+  return (
+    <img src={url} alt="Factura" title="Click para ver en grande" onClick={() => onOpenImagen(url)}
+      style={{ width: 38, height: 38, objectFit: "cover", borderRadius: 6, border: "1px solid #e2e8f0", cursor: "zoom-in", marginLeft: 6, verticalAlign: "middle" }} />
+  );
+}
 
 // Categorías adaptadas al negocio (concesionaria EV + taller)
 const CATS = [
@@ -19,6 +53,7 @@ const CATS = [
 export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState<string | null>(null); // URL de la factura en grande
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ categoria: 'Insumos de Taller', descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0], numero_factura: '', nombre_comercio: '', metodo_pago: 'Efectivo', tiene_iva: false, notas: '' });
   const [comprobante, setComprobante] = useState<File | null>(null);
@@ -188,7 +223,7 @@ export default function GastosPage() {
               <span>
                 {g.numero_factura || '-'}
                 {g.comprobante_gcs_path && (
-                  <button onClick={() => verComprobante(g.id)} title="Ver factura adjunta" style={{ marginLeft: 6, background: "none", border: "none", cursor: "pointer", fontSize: "0.95rem" }}>📎</button>
+                  <ComprobanteThumb id={g.id} mime={g.comprobante_mime} onOpenImagen={setLightbox} onOpenOtro={verComprobante} />
                 )}
               </span>
               <span>{g.proveedor?.nombre || g.nombre_comercio || '-'}</span>
@@ -233,6 +268,17 @@ export default function GastosPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Lightbox: factura en grande. Click en cualquier lado para cerrar. */}
+      {lightbox && (
+        <div onClick={() => setLightbox(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, cursor: "zoom-out", padding: "2rem" }}>
+          <img src={lightbox} alt="Factura" onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "94vw", maxHeight: "92vh", borderRadius: 8, boxShadow: "0 10px 50px rgba(0,0,0,0.5)", cursor: "default" }} />
+          <button onClick={() => setLightbox(null)} title="Cerrar"
+            style={{ position: "fixed", top: 18, right: 22, background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", fontSize: "1.6rem", width: 42, height: 42, borderRadius: "50%", cursor: "pointer", lineHeight: 1 }}>×</button>
         </div>
       )}
     </div>
