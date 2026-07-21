@@ -96,6 +96,10 @@ export class Vehicle {
   @Column({ type: 'varchar', length: 7, nullable: true })
   ultimo_periodo_fiscal_demo: string | null;
 
+  /** Último período (YYYY-MM) en que se posteó la depreciación FINANCIERA del demo (idempotencia). */
+  @Column({ type: 'varchar', length: 7, nullable: true })
+  ultimo_periodo_depreciado_demo: string | null;
+
   @Column({ type: 'varchar', length: 20, nullable: true })
   placa: string | null;             // Placa/matrícula cuando el vehículo es demo/uso interno
 

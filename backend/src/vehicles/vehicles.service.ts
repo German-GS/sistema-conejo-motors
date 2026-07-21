@@ -269,7 +269,12 @@ export class VehiclesService implements OnApplicationBootstrap {
 
     v.estado = 'Disponible';
     v.fecha_demo_desde = null;
+    // IMPORTANTE: el reingreso a inventario (1300) es por el valor NETO. Se baja precio_costo
+    // al neto para que, si luego se vende, el costo de ventas coincida con lo que quedó en 1300
+    // (si no, se contaría la depreciación dos veces e inventario quedaría negativo).
+    v.precio_costo = neto;
     v.depreciacion_acumulada = 0;
+    v.ultimo_periodo_depreciado_demo = null; // reinicia el carril financiero
     v.visibilidad = 'Visible';
     v.clasificacion_inventario = 'En Stock';
     await this.vehiclesRepository.save(v);
@@ -356,11 +361,15 @@ export class VehiclesService implements OnApplicationBootstrap {
   async depreciarVehiculosDemo(): Promise<void> {
     const demos = await this.vehiclesRepository.find({ where: { estado: 'Demo' } });
     if (!demos.length) return;
+    const periodo = this.hoyCR().slice(0, 7);
 
     const gasto = await this.contabilidad.asegurarCuenta('5450', { nombre: 'Gasto por Depreciación', tipo: 'Gasto' });
     const depAcum = await this.contabilidad.asegurarCuenta('1525', { nombre: 'Depreciación Acumulada — Vehículos Demo', tipo: 'Activo' });
 
     for (const v of demos) {
+      // Guarda mensual: no duplicar si el cron corre dos veces en el mismo mes.
+      if (v.ultimo_periodo_depreciado_demo === periodo) continue;
+
       const costo = Number(v.precio_costo) || 0;
       if (costo <= 0) continue;
       // Base depreciable = costo − valor residual (misma fórmula que activos-fijos genéricos).
@@ -369,12 +378,16 @@ export class VehiclesService implements OnApplicationBootstrap {
       if (base <= 0) continue;
       const vidaUtil = Number(v.vida_util_meses_demo) || VehiclesService.VIDA_UTIL_MESES_DEMO;
       const acum = Number(v.depreciacion_acumulada) || 0;
-      if (acum >= base) continue; // totalmente depreciado hasta el valor residual
+      if (acum >= base) { // totalmente depreciado: marcar el período para no reprocesar
+        v.ultimo_periodo_depreciado_demo = periodo;
+        await this.vehiclesRepository.save(v);
+        continue;
+      }
       const cuota = Math.min(+(base / vidaUtil).toFixed(2), +(base - acum).toFixed(2));
       if (cuota <= 0) continue;
 
-      await this.contabilidad
-        .crearAsiento(undefined as any, {
+      try {
+        await this.contabilidad.crearAsiento(undefined as any, {
           fecha: this.hoyCR(),
           descripcion: `Depreciación mensual — ${v.marca} ${v.modelo} (VIN ${v.vin})`,
           tipo: 'Ajuste',
@@ -384,12 +397,14 @@ export class VehiclesService implements OnApplicationBootstrap {
             { cuentaId: gasto.id, debe: cuota, haber: 0, descripcion: `Depreciación VIN ${v.vin}` },
             { cuentaId: depAcum.id, debe: 0, haber: cuota, descripcion: `Dep. acumulada VIN ${v.vin}` },
           ],
-        })
-        .then(async () => {
-          v.depreciacion_acumulada = +(acum + cuota).toFixed(2);
-          await this.vehiclesRepository.save(v);
-        })
-        .catch((e) => this.logger.warn(`[Contabilidad] Depreciación demo #${v.id}: ${(e as Error).message}`));
+        });
+        v.depreciacion_acumulada = +(acum + cuota).toFixed(2);
+        v.ultimo_periodo_depreciado_demo = periodo; // solo se marca si el asiento se posteó
+        await this.vehiclesRepository.save(v);
+      } catch (e) {
+        // No se marca el período → se reintenta en la próxima corrida.
+        this.logger.error(`[Contabilidad] Depreciación demo #${v.id} falló: ${(e as Error).message}`);
+      }
     }
   }
 

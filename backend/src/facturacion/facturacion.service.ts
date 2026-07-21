@@ -148,6 +148,14 @@ export class FacturacionService {
     if (cotizacion.estado === 'Facturada') {
       throw new BadRequestException('Esta cotización ya fue facturada.');
     }
+    // Un demo vive en el activo fijo (1520/1525), no en inventario (1300). Venderlo directo
+    // dejaría 1520/1525 colgando y acreditaría un 1300 que no lo tiene. Hay que sacarlo de Demo
+    // primero (regresa a inventario por su valor neto) y recién ahí facturarlo.
+    if (cotizacion.vehiculo?.estado === 'Demo') {
+      throw new BadRequestException(
+        'Este vehículo está en Demo / uso interno. Sacálo de Demo (vuelve a inventario por su valor neto) antes de facturarlo.',
+      );
+    }
 
     // ── CUMPLIMIENTO SUGEF / depósito (validado en backend) ────────────────────
     // Confirmación de depósito/financiamiento listo para firmar con el banco
