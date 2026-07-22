@@ -17,10 +17,14 @@ interface VehicleDetails {
   descuento_porcentaje: number | null;
   marchamo?: number;
   inscripcion_traspaso?: number;
+  /** Valor FINAL del vehículo en dólares (IVA incluido). Habilita la vista en USD. */
+  precio_venta_usd?: number;
 }
 
 const fmtCRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
+const fmtUSD = (v: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(v);
 
 export const CreateQuotePage = () => {
   const { vehicleId } = useParams();
@@ -94,6 +98,7 @@ export const CreateQuotePage = () => {
   }, [vehicleId]);
 
   const [leadNombre, setLeadNombre] = useState("");
+  const [verEnUsd, setVerEnUsd] = useState(false); // toggle ₡/$ del resumen
 
   // Pre-llenar datos del cliente desde el lead
   useEffect(() => {
@@ -117,6 +122,14 @@ export const CreateQuotePage = () => {
   const precioFinal    = Math.round(precioConIva / divisor);    // base imponible (sin IVA) → va a BD
   const ivaMonto       = precioConIva - precioFinal;            // IVA desglosado
   const totalConIva    = precioConIva;                          // total = lo que ingresó el usuario
+
+  // Vista en dólares: valor FIJO del vehículo (IVA incluido). Base e IVA se derivan.
+  const precioUsdTotal = Number(vehicle?.precio_venta_usd) || 0;
+  const hayUsd         = precioUsdTotal > 0;
+  const baseUsd        = hayUsd ? precioUsdTotal / divisor : 0;
+  const ivaUsd         = precioUsdTotal - baseUsd;
+  // Formatea un valor mostrando ₡ o $ según la moneda elegida en el resumen.
+  const fmtMon = (crc: number, usd: number) => (verEnUsd ? fmtUSD(usd) : fmtCRC(crc));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,7 +365,15 @@ export const CreateQuotePage = () => {
 
       {/* Resumen */}
       <div className={styles.summary}>
-        <h3>Resumen de la Proforma (vista cliente)</h3>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+          <h3 style={{ margin: 0 }}>Resumen de la Proforma (vista cliente)</h3>
+          {hayUsd && (
+            <button type="button" onClick={() => setVerEnUsd(v => !v)}
+              style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 8, padding: "6px 12px", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>
+              {verEnUsd ? "💱 Ver en colones (₡)" : "💵 Ver en dólares ($)"}
+            </button>
+          )}
+        </div>
         {descuentoMonto > 0 && (
           <>
             <div className={styles.summaryRow}>
@@ -368,7 +389,7 @@ export const CreateQuotePage = () => {
 
         <div className={styles.summaryRow}>
           <span>Precio con IVA ingresado:</span>
-          <span>{fmtCRC(precioLista)}</span>
+          <span>{fmtMon(precioLista, precioUsdTotal)}</span>
         </div>
         {descuentoMonto > 0 && (
           <div className={`${styles.summaryRow} ${styles.discountRow}`}>
@@ -378,18 +399,20 @@ export const CreateQuotePage = () => {
         )}
         <div className={`${styles.summaryRow} ${styles.subtotalRow}`}>
           <span>Base imponible (sin IVA {ivaPorcentaje}%):</span>
-          <span>{fmtCRC(precioFinal)}</span>
+          <span>{fmtMon(precioFinal, baseUsd)}</span>
         </div>
         <div className={`${styles.summaryRow} ${styles.ivaRow}`}>
           <span>IVA ({ivaPorcentaje}%) desglosado:</span>
-          <span>{fmtCRC(ivaMonto)}</span>
+          <span>{fmtMon(ivaMonto, ivaUsd)}</span>
         </div>
         <div className={`${styles.summaryRow} ${styles.total}`}>
           <span>💰 Total al cliente:</span>
-          <span>{fmtCRC(totalConIva)}</span>
+          <span>{fmtMon(totalConIva, precioUsdTotal)}</span>
         </div>
         <p className={styles.summaryNote}>
-          ✅ El precio ingresado ya incluye IVA — el sistema lo desglosa automáticamente
+          {verEnUsd
+            ? "💵 Valor fijo del vehículo en dólares (IVA incluido). El botón lo vuelve a colones."
+            : "✅ El precio ingresado ya incluye IVA — el sistema lo desglosa automáticamente"}
         </p>
       </div>
 
