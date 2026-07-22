@@ -263,6 +263,24 @@ export class LeadsService {
       relations: ['vendedor_asignado', 'vehiculo_interes', 'actividades', 'actividades.usuario'],
     });
     if (!lead) throw new NotFoundException(`Lead #${id} no encontrado.`);
+
+    // Enriquecer los datos del cliente (cédula, email, teléfono, nombre) desde su cotización
+    // más reciente cuando el lead los tiene vacíos → así al crear una nueva cotización se
+    // autorrellenan desde el cliente del lead.
+    if (!lead.cedula_cliente || !lead.email_cliente || !lead.telefono_cliente) {
+      const cot = await this.cotizacionesRepository.findOne({
+        where: { lead: { id } } as any,
+        relations: ['cliente'],
+        order: { fecha_creacion: 'DESC' },
+      });
+      const cli: any = cot?.cliente;
+      if (cli) {
+        lead.cedula_cliente = lead.cedula_cliente || cli.cedula || null;
+        lead.email_cliente = lead.email_cliente || cli.email || lead.email_cliente;
+        lead.telefono_cliente = lead.telefono_cliente || cli.telefono || null;
+        lead.nombre_cliente = lead.nombre_cliente || cli.nombre_completo || lead.nombre_cliente;
+      }
+    }
     return lead;
   }
 

@@ -25,6 +25,8 @@ export interface DocumentoHtml {
   borrador: boolean;
   /** Solo proforma: fecha de validez. */
   validaHasta?: string;
+  /** Tipo de cambio del dólar; si >0, la proforma muestra los totales también en USD. */
+  tipoCambio?: number;
 }
 
 const CRC = (v: number) => '₡' + (Number(v) || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -65,7 +67,7 @@ export class FacturaHtmlService {
   }
 
   /** Proforma a partir de una cotización real (no es comprobante fiscal). */
-  proformaCotizacion(emisor: EmisorConfig, cot: any): DocumentoHtml {
+  proformaCotizacion(emisor: EmisorConfig, cot: any, tipoCambio?: number): DocumentoHtml {
     const veh = cot.vehiculo;
     const detalle = veh
       ? `${veh.marca ?? ''} ${veh.modelo ?? ''} ${veh.año ?? ''}`.trim() + (veh.vin ? ` (VIN ${veh.vin})` : '')
@@ -86,6 +88,7 @@ export class FacturaHtmlService {
       fecha: new Date(),
       borrador: false,
       validaHasta: cot.fecha_expiracion ? new Date(cot.fecha_expiracion).toLocaleDateString('es-CR') : undefined,
+      tipoCambio: tipoCambio && tipoCambio > 0 ? tipoCambio : undefined,
       lineas,
     };
   }
@@ -188,6 +191,9 @@ export class FacturaHtmlService {
       <div class="row"><span>Subtotal</span><span>${CRC(subtotal)}</span></div>
       <div class="row"><span>IVA</span><span>${CRC(totalIva)}</span></div>
       <div class="row grand"><span>TOTAL</span><span>${CRC(total)}</span></div>
+      ${doc.tipoCambio && doc.tipoCambio > 0 ? `
+      <div class="row" style="margin-top:8px;border-top:1px dashed #cbd5e1;padding-top:8px;color:#64748b;font-size:0.8rem"><span>Tipo de cambio</span><span>₡${doc.tipoCambio.toLocaleString('es-CR', { minimumFractionDigits: 2 })} / USD</span></div>
+      <div class="row grand" style="color:#024f7d"><span>TOTAL USD</span><span>$${(total / doc.tipoCambio).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>` : ''}
     </div>
 
     <div class="foot">

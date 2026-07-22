@@ -24,6 +24,7 @@ import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
 import { ContabilidadModule } from '../contabilidad/contabilidad.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SugefModule } from '../sugef/sugef.module';
+import { TipoCambioModule } from '../tipo-cambio/tipo-cambio.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { SugefModule } from '../sugef/sugef.module';
     ContabilidadModule,
     NotificationsModule,
     SugefModule,
+    TipoCambioModule,
   ],
   providers: [
     FacturacionService,

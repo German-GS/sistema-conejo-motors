@@ -1,6 +1,21 @@
 import { useState, useEffect, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import { fmtFechaLocal } from "@/utils/dateUtils";
+import toast from "react-hot-toast";
+
+const CRC = (v: number) => "₡" + (Number(v) || 0).toLocaleString("es-CR");
+
+/** Abre la proforma imprimible de una cotización (endpoint autenticado → blob). */
+async function verProforma(id: number) {
+  const tId = toast.loading("Generando proforma…");
+  try {
+    const res = await apiClient.get(`/billing/proforma/${id}`, { responseType: "text" });
+    const url = URL.createObjectURL(new Blob([res.data], { type: "text/html" }));
+    window.open(url, "_blank");
+    toast.dismiss(tId);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch { toast.error("No se pudo generar la proforma.", { id: tId }); }
+}
 
 interface ClienteLista {
   id: number;
@@ -123,6 +138,29 @@ export const ClientesPage = () => {
                           <span style={{ fontSize: "0.78rem", color: "#64748b" }}>{v.fecha_venta ? fmtFechaLocal(v.fecha_venta) : ""}</span>
                         </div>
                         {v.vin && <div style={{ fontSize: "0.76rem", color: "#94a3b8" }}>VIN: {v.vin}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Cotizaciones / Proformas */}
+              <div>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.5rem" }}>🧾 Cotizaciones / Proformas</div>
+                {(!perfil.cotizaciones || perfil.cotizaciones.length === 0) ? (
+                  <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: 0 }}>Sin cotizaciones. Creá una desde el lead.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    {perfil.cotizaciones.map((c: any) => (
+                      <div key={c.id} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.6rem 0.8rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+                        <div>
+                          <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0a2540" }}>#{c.id} · {c.vehiculo}</div>
+                          <div style={{ fontSize: "0.76rem", color: "#94a3b8" }}>{c.fecha ? fmtFechaLocal(c.fecha) : ""} · {c.estado} · {CRC(c.total)}</div>
+                        </div>
+                        <button onClick={() => verProforma(c.id)}
+                          style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, whiteSpace: "nowrap" }}>
+                          🧾 Ver Proforma
+                        </button>
                       </div>
                     ))}
                   </div>

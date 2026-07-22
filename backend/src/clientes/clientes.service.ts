@@ -86,9 +86,19 @@ export class ClientesService {
       vin: (v.cotizacion?.vehiculo as any)?.vin,
     }));
 
-    const cotizaciones = await this.cotizacionesRepository.count({
+    // Lista de cotizaciones (proformas) del cliente, para verlas/abrirlas desde su perfil.
+    const cots = await this.cotizacionesRepository.find({
       where: { lead: { id: leadId } } as any,
+      relations: ['vehiculo'],
+      order: { fecha_creacion: 'DESC' },
     });
+    const cotizaciones = cots.map((c: any) => ({
+      id: c.id,
+      fecha: c.fecha_creacion,
+      estado: c.estado,
+      vehiculo: c.vehiculo ? `${c.vehiculo.marca ?? ''} ${c.vehiculo.modelo ?? ''} ${c.vehiculo.año ?? ''}`.trim() : (c.vehiculo_descripcion ?? '—'),
+      total: Number(c.total_con_iva) || Number(c.precio_final) || 0,
+    }));
 
     // Expediente SUGEF (directo del lead)
     const retencion = await this.sugefService.getRetencion(leadId);

@@ -11,6 +11,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { FacturacionService } from './facturacion.service';
 import { EmisorConfigService } from './emisor-config.service';
 import { FacturaHtmlService } from './factura-html.service';
+import { TipoCambioService } from '../tipo-cambio/tipo-cambio.service';
 import { FacturarDto } from './dto/facturar.dto';
 import { EmisorConfigDto } from './dto/emisor-config.dto';
 
@@ -21,6 +22,7 @@ export class FacturacionController {
     private readonly svc: FacturacionService,
     private readonly emisorConfig: EmisorConfigService,
     private readonly facturaHtml: FacturaHtmlService,
+    private readonly tipoCambio: TipoCambioService,
   ) {}
 
   /** GET /billing/emisor — datos del emisor para la factura electrónica */
@@ -53,11 +55,12 @@ export class FacturacionController {
   @Get('proforma/:id')
   @Roles('Administrador', 'Contador', 'Vendedor')
   async proformaCotizacion(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    const [cfg, cot] = await Promise.all([
+    const [cfg, cot, tc] = await Promise.all([
       this.emisorConfig.get(),
       this.svc.getDetalleCotizacion(id),
+      this.tipoCambio.getVenta(), // TC del dólar vigente → totales en USD en la proforma
     ]);
-    const doc = this.facturaHtml.proformaCotizacion(cfg, cot);
+    const doc = this.facturaHtml.proformaCotizacion(cfg, cot, tc);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(this.facturaHtml.render(doc));
   }
