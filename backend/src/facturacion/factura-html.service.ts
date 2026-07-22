@@ -9,6 +9,8 @@ export interface LineaHtml {
   cantidad: number;
   precioUnitario: number;
   tarifaIva: number; // fracción (0.13, 0)
+  /** Precio unitario en USD (valor fijo del vehículo); habilita la vista en dólares. */
+  precioUnitarioUsd?: number;
 }
 
 export interface DocumentoHtml {
@@ -73,8 +75,13 @@ export class FacturaHtmlService {
       ? `${veh.marca ?? ''} ${veh.modelo ?? ''} ${veh.año ?? ''}`.trim() + (veh.vin ? ` (VIN ${veh.vin})` : '')
       : (cot.vehiculo_descripcion ?? 'Vehículo');
     const tarifa = (Number(cot.iva_porcentaje) || 13) / 100;
+    const precioCrc = Number(cot.precio_final) || 0;
+    // Valor en dólares del vehículo (fijo). Si no está cargado, se estima con el TC vigente.
+    const precioUsd = Number(veh?.precio_venta_usd) > 0
+      ? Number(veh.precio_venta_usd)
+      : (tipoCambio && tipoCambio > 0 ? +(precioCrc / tipoCambio).toFixed(2) : 0);
     const lineas: LineaHtml[] = [
-      { cabys: CABYS_DEFAULTS.VEHICULO_ELECTRICO, detalle, cantidad: 1, precioUnitario: Number(cot.precio_final) || 0, tarifaIva: tarifa },
+      { cabys: CABYS_DEFAULTS.VEHICULO_ELECTRICO, detalle, cantidad: 1, precioUnitario: precioCrc, tarifaIva: tarifa, precioUnitarioUsd: precioUsd },
     ];
     return {
       tipo: 'Proforma',
@@ -94,28 +101,42 @@ export class FacturaHtmlService {
   }
 
   render(doc: DocumentoHtml): string {
+    const esProforma = doc.tipo === 'Proforma';
+    // La proforma refleja el valor FIJO en dólares del vehículo; el botón alterna la vista CRC↔USD.
+    const hayUsd = esProforma && doc.lineas.some((l) => (l.precioUnitarioUsd ?? 0) > 0);
+    const USD = (v: number) => '$' + (Number(v) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // Celda monetaria: si hay USD, incluye ambos valores y JS alterna cuál se ve.
+    const money = (crcVal: number, usdVal: number) =>
+      hayUsd
+        ? `<span class="m m-crc" style="display:none">${CRC(crcVal)}</span><span class="m m-usd">${USD(usdVal)}</span>`
+        : CRC(crcVal);
+
     const filas = doc.lineas.map((l, i) => {
       const sub = l.cantidad * l.precioUnitario;
       const iva = +(sub * l.tarifaIva).toFixed(2);
+      const usdUnit = l.precioUnitarioUsd ?? 0;
+      const usdTotal = +(usdUnit * l.cantidad * (1 + l.tarifaIva)).toFixed(2);
       return `<tr>
         <td class="c">${i + 1}</td>
         <td class="mono">${esc(l.cabys ?? '')}</td>
         <td>${esc(l.detalle)}</td>
         <td class="c">${l.cantidad}</td>
-        <td class="r">${CRC(l.precioUnitario)}</td>
+        <td class="r">${money(l.precioUnitario, usdUnit)}</td>
         <td class="c">${(l.tarifaIva * 100).toFixed(0)}%</td>
-        <td class="r">${CRC(sub + iva)}</td>
+        <td class="r">${money(sub + iva, usdTotal)}</td>
       </tr>`;
     }).join('');
 
     const subtotal = doc.lineas.reduce((s, l) => s + l.cantidad * l.precioUnitario, 0);
     const totalIva = doc.lineas.reduce((s, l) => s + +(l.cantidad * l.precioUnitario * l.tarifaIva).toFixed(2), 0);
     const total = subtotal + totalIva;
+    const subtotalUsd = doc.lineas.reduce((s, l) => s + (l.precioUnitarioUsd ?? 0) * l.cantidad, 0);
+    const totalIvaUsd = doc.lineas.reduce((s, l) => s + +((l.precioUnitarioUsd ?? 0) * l.cantidad * l.tarifaIva).toFixed(2), 0);
+    const totalUsd = +(subtotalUsd + totalIvaUsd).toFixed(2);
     const e = doc.emisor;
     const condiciones: Record<string, string> = { '01': 'Contado', '02': 'Crédito', '03': 'Consignación', '04': 'Apartado' };
     const medios: Record<string, string> = { '01': 'Efectivo', '02': 'Tarjeta', '03': 'Cheque', '04': 'Transferencia' };
 
-    const esProforma = doc.tipo === 'Proforma';
     const marca = doc.borrador
       ? `<div class="watermark">BORRADOR — NO VÁLIDO FISCALMENTE</div>`
       : esProforma
@@ -146,6 +167,10 @@ export class FacturaHtmlService {
   .totals { margin-top: 14px; margin-left: auto; width: 300px; font-size: 0.88rem; }
   .totals .row { display: flex; justify-content: space-between; padding: 4px 0; }
   .totals .grand { border-top: 2px solid #0a2540; margin-top: 6px; padding-top: 8px; font-weight: 800; font-size: 1.05rem; color: #0a2540; }
+  .cur-bar { margin-top: 14px; text-align: right; }
+  .cur-bar button { background: #eef6fb; color: #024f7d; border: 1.5px solid #cfe3f0; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 0.82rem; cursor: pointer; font-family: inherit; }
+  .cur-bar button:hover { background: #dceaf4; }
+  .nota-form { margin-top: 14px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 8px; padding: 9px 12px; font-size: 0.82rem; }
   .foot { margin-top: 26px; font-size: 0.72rem; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 12px; line-height: 1.5; }
   .print-bar { max-width: 820px; margin: 12px auto; text-align: right; }
   .print-bar button { background: #024f7d; color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-weight: 700; cursor: pointer; }
@@ -177,7 +202,7 @@ export class FacturaHtmlService {
       <div><b>Condición de venta:</b> ${condiciones[doc.condicionVenta] ?? doc.condicionVenta}</div>
       <div><b>Medio de pago:</b> ${medios[doc.medioPago] ?? doc.medioPago}</div>
       <div><b>Actividad económica:</b> ${esc(e.actividad_economica || '—')}</div>
-      <div><b>Moneda:</b> CRC (colones)</div>
+      <div><b>Moneda:</b> ${hayUsd ? 'USD (dólares) · convertible a ₡' : 'CRC (colones)'}</div>
     </div>
 
     ${doc.clave && !esProforma ? `<div class="clave"><b>Clave numérica:</b> ${esc(doc.clave)}</div>` : ''}
@@ -187,14 +212,15 @@ export class FacturaHtmlService {
       <tbody>${filas}</tbody>
     </table>
 
+    ${hayUsd ? `<div class="cur-bar"><button type="button" id="curToggle" onclick="toggleMoneda()">💱 Ver en colones (₡)</button></div>` : ''}
+
     <div class="totals">
-      <div class="row"><span>Subtotal</span><span>${CRC(subtotal)}</span></div>
-      <div class="row"><span>IVA</span><span>${CRC(totalIva)}</span></div>
-      <div class="row grand"><span>TOTAL</span><span>${CRC(total)}</span></div>
-      ${doc.tipoCambio && doc.tipoCambio > 0 ? `
-      <div class="row" style="margin-top:8px;border-top:1px dashed #cbd5e1;padding-top:8px;color:#64748b;font-size:0.8rem"><span>Tipo de cambio</span><span>₡${doc.tipoCambio.toLocaleString('es-CR', { minimumFractionDigits: 2 })} / USD</span></div>
-      <div class="row grand" style="color:#024f7d"><span>TOTAL USD</span><span>$${(total / doc.tipoCambio).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>` : ''}
+      <div class="row"><span>Subtotal</span><span>${money(subtotal, subtotalUsd)}</span></div>
+      <div class="row"><span>IVA</span><span>${money(totalIva, totalIvaUsd)}</span></div>
+      <div class="row grand"><span>TOTAL</span><span>${money(total, totalUsd)}</span></div>
     </div>
+
+    ${esProforma ? `<div class="nota-form">✅ <b>Gastos de formalización incluidos</b> (traspaso e inscripción registral).</div>` : ''}
 
     <div class="foot">
       ${esProforma
@@ -205,6 +231,17 @@ export class FacturaHtmlService {
       <br>Representación gráfica · ${esProforma ? 'Proforma' : 'Factura Electrónica v4.4 (TRIBU-CR)'}.
     </div>
   </div>
+  ${hayUsd ? `<script>
+    function toggleMoneda() {
+      var enColones = document.body.getAttribute('data-moneda') === 'crc';
+      var verColones = !enColones;
+      document.querySelectorAll('.m-crc').forEach(function (el) { el.style.display = verColones ? '' : 'none'; });
+      document.querySelectorAll('.m-usd').forEach(function (el) { el.style.display = verColones ? 'none' : ''; });
+      document.body.setAttribute('data-moneda', verColones ? 'crc' : 'usd');
+      var btn = document.getElementById('curToggle');
+      if (btn) btn.textContent = verColones ? '💵 Ver en dólares ($)' : '💱 Ver en colones (₡)';
+    }
+  </script>` : ''}
 </body></html>`;
   }
 }
