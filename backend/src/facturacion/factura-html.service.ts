@@ -76,7 +76,7 @@ export class FacturaHtmlService {
       : (cot.vehiculo_descripcion ?? 'Vehículo');
     const tarifa = (Number(cot.iva_porcentaje) || 13) / 100;
     const precioCrc = Number(cot.precio_final) || 0;
-    // Valor en dólares del vehículo (fijo). Si no está cargado, se estima con el TC vigente.
+    // Valor FINAL en dólares del vehículo (IVA incluido). Si no está cargado, se estima con el TC vigente.
     const precioUsd = Number(veh?.precio_venta_usd) > 0
       ? Number(veh.precio_venta_usd)
       : (tipoCambio && tipoCambio > 0 ? +(precioCrc / tipoCambio).toFixed(2) : 0);
@@ -114,14 +114,15 @@ export class FacturaHtmlService {
     const filas = doc.lineas.map((l, i) => {
       const sub = l.cantidad * l.precioUnitario;
       const iva = +(sub * l.tarifaIva).toFixed(2);
-      const usdUnit = l.precioUnitarioUsd ?? 0;
-      const usdTotal = +(usdUnit * l.cantidad * (1 + l.tarifaIva)).toFixed(2);
+      // precioUnitarioUsd es el valor FINAL en dólares (IVA incluido). Se saca la base.
+      const usdTotal = +((l.precioUnitarioUsd ?? 0) * l.cantidad).toFixed(2);
+      const usdBase = +((l.precioUnitarioUsd ?? 0) / (1 + l.tarifaIva)).toFixed(2);
       return `<tr>
         <td class="c">${i + 1}</td>
         <td class="mono">${esc(l.cabys ?? '')}</td>
         <td>${esc(l.detalle)}</td>
         <td class="c">${l.cantidad}</td>
-        <td class="r">${money(l.precioUnitario, usdUnit)}</td>
+        <td class="r">${money(l.precioUnitario, usdBase)}</td>
         <td class="c">${(l.tarifaIva * 100).toFixed(0)}%</td>
         <td class="r">${money(sub + iva, usdTotal)}</td>
       </tr>`;
@@ -130,9 +131,10 @@ export class FacturaHtmlService {
     const subtotal = doc.lineas.reduce((s, l) => s + l.cantidad * l.precioUnitario, 0);
     const totalIva = doc.lineas.reduce((s, l) => s + +(l.cantidad * l.precioUnitario * l.tarifaIva).toFixed(2), 0);
     const total = subtotal + totalIva;
-    const subtotalUsd = doc.lineas.reduce((s, l) => s + (l.precioUnitarioUsd ?? 0) * l.cantidad, 0);
-    const totalIvaUsd = doc.lineas.reduce((s, l) => s + +((l.precioUnitarioUsd ?? 0) * l.cantidad * l.tarifaIva).toFixed(2), 0);
-    const totalUsd = +(subtotalUsd + totalIvaUsd).toFixed(2);
+    // USD: el precio_venta_usd es el TOTAL final (IVA incluido); la base y el IVA se derivan.
+    const totalUsd = +doc.lineas.reduce((s, l) => s + (l.precioUnitarioUsd ?? 0) * l.cantidad, 0).toFixed(2);
+    const subtotalUsd = +doc.lineas.reduce((s, l) => s + (l.precioUnitarioUsd ?? 0) * l.cantidad / (1 + l.tarifaIva), 0).toFixed(2);
+    const totalIvaUsd = +(totalUsd - subtotalUsd).toFixed(2);
     const e = doc.emisor;
     const condiciones: Record<string, string> = { '01': 'Contado', '02': 'Crédito', '03': 'Consignación', '04': 'Apartado' };
     const medios: Record<string, string> = { '01': 'Efectivo', '02': 'Tarjeta', '03': 'Cheque', '04': 'Transferencia' };
