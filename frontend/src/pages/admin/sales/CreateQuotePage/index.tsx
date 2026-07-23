@@ -201,7 +201,23 @@ export const CreateQuotePage = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h1>Cotización — {vehicle.marca} {vehicle.modelo} ({vehicle.año})</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
+        <h1 style={{ margin: 0 }}>Cotización — {vehicle.marca} {vehicle.modelo} ({vehicle.año})</h1>
+        {(hayUsd || monedaVenta === "USD") && (
+          <button
+            type="button"
+            onClick={() => setMonedaVenta(m => (m === "USD" ? "CRC" : "USD"))}
+            style={{
+              background: monedaVenta === "USD" ? "#024f7d" : "#fff",
+              color: monedaVenta === "USD" ? "#fff" : "#024f7d",
+              border: "2px solid #024f7d", borderRadius: 10, padding: "0.5rem 1.1rem",
+              fontWeight: 800, fontSize: "0.95rem", cursor: "pointer",
+            }}
+          >
+            {monedaVenta === "USD" ? "$ Mostrando en dólares — cambiar a ₡" : "₡ Mostrando en colones — cambiar a $"}
+          </button>
+        )}
+      </div>
       {/* Badge lead existente */}
       {leadId ? (
         <div className={styles.leadBadge}>
@@ -285,23 +301,12 @@ export const CreateQuotePage = () => {
           </div>
 
           {monedaVenta === "USD" ? (
-            <>
-              <div className={styles.field}>
-                <label>Precio de Venta — incluye IVA ($)</label>
-                <input type="number" min={0} value={precioUsd}
-                  onChange={(e) => setPrecioUsd(Number(e.target.value))} />
-                <span className={styles.fieldHint}>Valor fijo del vehículo en dólares (no cambia con el TC)</span>
-              </div>
-              <div className={styles.field}>
-                <label>Precio con IVA (₡) — vista previa</label>
-                <input type="text" value={fmtCRC(precioLista)} readOnly />
-                <span className={styles.fieldHint}>
-                  {tcVigente > 0
-                    ? `Al TC ₡${tcVigente.toLocaleString("es-CR")}/USD · se congela al guardar`
-                    : "⚠️ Sin TC del día — cargalo en Multimoneda para congelar el precio"}
-                </span>
-              </div>
-            </>
+            <div className={styles.field}>
+              <label>Precio de Venta — incluye IVA ($)</label>
+              <input type="number" min={0} value={precioUsd}
+                onChange={(e) => setPrecioUsd(Number(e.target.value))} />
+              <span className={styles.fieldHint}>Valor fijo del vehículo en dólares (no cambia con el TC)</span>
+            </div>
           ) : (
             <div className={styles.field}>
               <label>Precio de Venta — incluye IVA (₡)</label>
@@ -315,9 +320,6 @@ export const CreateQuotePage = () => {
               <label>Descuento ($)</label>
               <input type="number" min={0} value={descuentoUsd}
                 onChange={(e) => setDescuentoUsd(Number(e.target.value))} />
-              <span className={styles.fieldHint}>
-                {tcVigente > 0 ? `≈ ${fmtCRC(descuentoMonto)} al TC de hoy` : "Descuento en dólares"}
-              </span>
             </div>
           ) : (
             <div className={styles.field}>
@@ -328,7 +330,7 @@ export const CreateQuotePage = () => {
           )}
           <div className={`${styles.field} ${styles.highlight}`}>
             <label>Base Imponible (sin IVA) — calculada</label>
-            <input type="text" value={fmtCRC(precioFinal)} readOnly />
+            <input type="text" value={fmtMon(precioFinal, baseUsd)} readOnly />
             <span className={styles.fieldHint}>Se calcula automáticamente: Precio ÷ {(1 + ivaPorcentaje/100).toFixed(2)}</span>
           </div>
           <div className={styles.field}>
@@ -368,11 +370,18 @@ export const CreateQuotePage = () => {
           </div>
           <div className={`${styles.field} ${styles.ivaField}`}>
             <label>IVA ({ivaPorcentaje}%)</label>
-            <input type="text" value={fmtCRC(ivaMonto)} readOnly />
+            <input type="text" value={fmtMon(ivaMonto, ivaUsd)} readOnly />
           </div>
           <div className={`${styles.field} ${styles.totalIvaField}`}>
             <label>💰 Total al cliente con IVA</label>
-            <input type="text" value={fmtCRC(totalConIva)} readOnly />
+            <input type="text" value={fmtMon(totalConIva, precioUsdTotal)} readOnly />
+            {monedaVenta === "USD" && (
+              <span className={styles.fieldHint}>
+                {tcVigente > 0
+                  ? `≈ ${fmtCRC(precioLista - descuentoMonto)} al TC de hoy (₡${tcVigente.toLocaleString("es-CR")}/USD) · se congela al guardar`
+                  : "⚠️ Sin TC del día — cargalo en Multimoneda para congelar el precio"}
+              </span>
+            )}
           </div>
           <div className={`${styles.field} ${styles.fullWidth}`}>
             <div className={styles.reservaBanner}>
