@@ -146,6 +146,36 @@
   /* sin animación extra — show/hide via JSX condicional */
 }
 
+/* ── Sub-hub anidado (p. ej. "Contabilidad" dentro de Finanzas) ── */
+.subGroupToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.72);
+  padding: 0.52rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+.subGroupToggle:hover { background: rgba(255, 255, 255, 0.12); color: white; }
+.subGroupToggle .chevron { margin-left: auto; }
+.sidebar.collapsed .subGroupToggle { justify-content: center; padding: 0.52rem 0; }
+.sidebar.collapsed .subGroupToggle span,
+.sidebar.collapsed .subGroupToggle .chevron { display: none; }
+
+.subGroupItems {
+  padding-left: 1.1rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0 0 0 1.2rem;
+}
+.sidebar.collapsed .subGroupItems { display: none; }
+
 /* ── Sección SISTEMA — fija al fondo ── */
 .sidebarBottom {
   flex-shrink: 0;
@@ -245,9 +275,10 @@
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* ═══════════════════════════════════════════════════════
-   TABLET  (≤ 1024px)
+   TABLET  (≤ 1280px, o cualquier ancho en pantallas táctiles —
+   ver el matchMedia de "isTablet" en AdminLayout/index.tsx)
    ═══════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1280px) {
   /* Hamburger visible */
   .hamburger { display: flex; align-items: center; justify-content: center; }
 

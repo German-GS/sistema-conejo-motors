@@ -63,12 +63,40 @@ const SECTION_ROUTES: Record<string, string[]> = {
   rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
   repuestos:    ["/admin/productos"],
   compras:      ["/admin/proveedores", "/admin/gastos", "/admin/compras"],
-  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria", "/admin/conciliacion", "/admin/multimoneda", "/admin/contabilidad", "/admin/obligaciones", "/admin/estados-financieros", "/admin/reportes-contables", "/admin/pendientes-contables", "/admin/facturacion-electronica"],
+  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria"],
   postventa:    ["/admin/taller", "/admin/garantias"],
   operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
 };
 
+/** Rutas del sub-hub "Contabilidad" anidado dentro de Finanzas. Al entrar por una de
+ *  estas rutas se abre tanto "finanzas" (padre) como "finanzas-contab" (el sub-hub). */
+const CONTAB_SUBHUB_ROUTES = [
+  "/admin/conciliacion", "/admin/multimoneda", "/admin/contabilidad", "/admin/obligaciones",
+  "/admin/estados-financieros", "/admin/reportes-contables", "/admin/pendientes-contables",
+  "/admin/facturacion-electronica",
+];
+
 const STORAGE_KEY = "adminSidebarSections";
+
+/**
+ * Roles que ven cada sección del menú. Es solo filtrado de UI — la protección real
+ * de cada endpoint ya existe en el backend (RolesGuard); esto evita mostrar enlaces
+ * que el rol no puede usar, para que el menú sea corto y relevante por rol.
+ */
+const SECTION_ROLES: Record<string, string[]> = {
+  ventas:      ["Administrador", "Vendedor"],
+  inventario:  ["Administrador", "Vendedor"],
+  rrhh:        ["Administrador"],
+  repuestos:   ["Administrador", "Vendedor"],
+  compras:     ["Administrador", "Contador"],
+  finanzas:    ["Administrador", "Contador"],
+  postventa:   ["Administrador", "Vendedor"],
+  operaciones: ["Administrador", "Vendedor", "Contador"],
+};
+// Si el rol aún no cargó (fracción de segundo tras montar), no ocultar nada — evita el
+// parpadeo de "menú vacío" mientras se decodifica el token.
+const puedeVerSeccion = (id: string, rol: string) =>
+  !rol || !SECTION_ROLES[id] || SECTION_ROLES[id].includes(rol);
 
 const getDefaultSections = (pathname: string): Set<string> => {
   // Si hay estado guardado, usarlo
@@ -76,6 +104,11 @@ const getDefaultSections = (pathname: string): Set<string> => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return new Set(JSON.parse(saved));
   } catch { /* ignorar */ }
+
+  // Sub-hub de Contabilidad: abre "finanzas" (padre) + "finanzas-contab" (el sub-hub)
+  if (CONTAB_SUBHUB_ROUTES.some(r => pathname.startsWith(r))) {
+    return new Set(["finanzas", "finanzas-contab"]);
+  }
 
   // Si no, abrir la sección que contiene la ruta actual
   for (const [section, routes] of Object.entries(SECTION_ROUTES)) {
@@ -106,13 +139,22 @@ export const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Detectar tablet/móvil
+  // Detectar tablet/táctil: por ancho (≤1280px, sube desde 1024 para cubrir tablets
+  // grandes/iPad horizontal) O por tipo de puntero (pointer: coarse). La causa raíz del
+  // bug era que un iPad horizontal (~1024–1194px de ancho) caía en modo "escritorio" y
+  // el menú solo se expandía con hover — que un dedo no dispara. Con pointer:coarse
+  // detectamos cualquier pantalla táctil sin importar el ancho, y se usa tap en vez de hover.
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1024px)");
-    setIsTablet(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsTablet(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    const mqWidth = window.matchMedia("(max-width: 1280px)");
+    const mqTouch = window.matchMedia("(pointer: coarse)");
+    const update = () => setIsTablet(mqWidth.matches || mqTouch.matches);
+    update();
+    mqWidth.addEventListener("change", update);
+    mqTouch.addEventListener("change", update);
+    return () => {
+      mqWidth.removeEventListener("change", update);
+      mqTouch.removeEventListener("change", update);
+    };
   }, []);
 
   // Cerrar sidebar al navegar en tablet
@@ -131,20 +173,28 @@ export const AdminLayout = () => {
     });
   }, []);
 
-  // Al cambiar de ruta, asegurar que la sección activa esté abierta
+  // Al cambiar de ruta, asegurar que la sección activa (y el sub-hub de Contabilidad,
+  // si aplica) esté abierta.
   useEffect(() => {
-    for (const [section, routes] of Object.entries(SECTION_ROUTES)) {
-      if (routes.some(r => location.pathname.startsWith(r))) {
-        setOpenSections(prev => {
-          if (prev.has(section)) return prev;
-          const next = new Set(prev);
-          next.add(section);
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch { /* ignorar */ }
-          return next;
-        });
-        break;
+    const abrir: string[] = [];
+    if (CONTAB_SUBHUB_ROUTES.some(r => location.pathname.startsWith(r))) {
+      abrir.push("finanzas", "finanzas-contab");
+    } else {
+      for (const [section, routes] of Object.entries(SECTION_ROUTES)) {
+        if (routes.some(r => location.pathname.startsWith(r))) {
+          abrir.push(section);
+          break;
+        }
       }
     }
+    if (!abrir.length) return;
+    setOpenSections(prev => {
+      if (abrir.every(s => prev.has(s))) return prev;
+      const next = new Set(prev);
+      abrir.forEach(s => next.add(s));
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch { /* ignorar */ }
+      return next;
+    });
   }, [location.pathname]);
 
   const togglePin = () => {
@@ -277,8 +327,12 @@ export const AdminLayout = () => {
         onMouseEnter={() => { if (!isTablet && !pinned) setIsCollapsed(false); }}
         onMouseLeave={() => { if (!isTablet && !pinned) setIsCollapsed(true); }}
       >
-        {/* Logo */}
-        <div className={styles.logoContainer}>
+        {/* Logo — en táctil, tocarlo también abre/cierra el drawer */}
+        <div
+          className={styles.logoContainer}
+          onClick={isTablet ? () => setMobileOpen(v => !v) : undefined}
+          style={isTablet ? { cursor: "pointer" } : undefined}
+        >
           <img src={conejoLogo} alt="Logo" className={styles.logoImage} />
           {showLabels && <span className={styles.logoText}>CONEJO MOTORS</span>}
           {showLabels && !isTablet && (
@@ -306,111 +360,149 @@ export const AdminLayout = () => {
           <SidebarLink to="/admin" icon={<LuLayoutDashboard size={18} />} label="Dashboard" />
 
           {/* ── VENTAS ── */}
-          <SectionHeader id="ventas" label="VENTAS" />
-          {isOpen("ventas") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/sales/catalog" icon={<LuBookMarked size={18} />} label="Catálogo" />
-              <SidebarLink to="/admin/sales/quotes" icon={<LuFileText size={18} />} label="Cotizaciones" />
-              <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" />
-              <SidebarLink to="/admin/clientes" icon={<LuUsers size={18} />} label="Clientes" />
-              <SidebarLink to="/admin/campanas" icon={<LuMegaphone size={18} />} label="Campañas" />
-              <SidebarLink to="/admin/agenda" icon={<LuCalendarDays size={18} />} label="Agenda" />
-            </div>
+          {puedeVerSeccion("ventas", userRole) && (
+            <>
+              <SectionHeader id="ventas" label="VENTAS" />
+              {isOpen("ventas") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/sales/catalog" icon={<LuBookMarked size={18} />} label="Catálogo" />
+                  <SidebarLink to="/admin/sales/quotes" icon={<LuFileText size={18} />} label="Cotizaciones" />
+                  <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" />
+                  <SidebarLink to="/admin/clientes" icon={<LuUsers size={18} />} label="Clientes" />
+                  <SidebarLink to="/admin/campanas" icon={<LuMegaphone size={18} />} label="Campañas" />
+                  <SidebarLink to="/admin/agenda" icon={<LuCalendarDays size={18} />} label="Agenda" />
+                </div>
+              )}
+            </>
           )}
 
           {/* ── INVENTARIO ── */}
-          <SectionHeader id="inventario" label="INVENTARIO" />
-          {isOpen("inventario") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/inventory" icon={<LuCar size={18} />} label="Vehículos y precios" />
-              <SidebarLink to="/admin/accesorios" icon={<LuPackage size={18} />} label="Accesorios" />
-              <SidebarLink to="/admin/importaciones" icon={<LuShip size={18} />} label="Importaciones" />
-              <SidebarLink to="/admin/import" icon={<LuUpload size={18} />} label="Importar Excel" />
-            </div>
+          {puedeVerSeccion("inventario", userRole) && (
+            <>
+              <SectionHeader id="inventario" label="INVENTARIO" />
+              {isOpen("inventario") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/inventory" icon={<LuCar size={18} />} label="Vehículos y precios" />
+                  <SidebarLink to="/admin/accesorios" icon={<LuPackage size={18} />} label="Accesorios" />
+                  <SidebarLink to="/admin/importaciones" icon={<LuShip size={18} />} label="Importaciones" />
+                  <SidebarLink to="/admin/import" icon={<LuUpload size={18} />} label="Importar Excel" />
+                </div>
+              )}
+            </>
           )}
 
           {/* ── RRHH ── */}
-          <SectionHeader id="rrhh" label="RRHH" />
-          {isOpen("rrhh") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/users" icon={<LuUsers size={18} />} label="Colaboradores" />
-              <SidebarLink to="/admin/planilla" icon={<LuFileText size={18} />} label="Planilla" />
-              <SidebarLink to="/admin/asistencia" icon={<LuCalendarClock size={18} />} label="Asistencia" />
-              <SidebarLink to="/admin/solicitudes" icon={<LuFileText size={18} />} label="Solicitudes" />
-            </div>
+          {puedeVerSeccion("rrhh", userRole) && (
+            <>
+              <SectionHeader id="rrhh" label="RRHH" />
+              {isOpen("rrhh") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/users" icon={<LuUsers size={18} />} label="Colaboradores" />
+                  <SidebarLink to="/admin/planilla" icon={<LuFileText size={18} />} label="Planilla" />
+                  <SidebarLink to="/admin/asistencia" icon={<LuCalendarClock size={18} />} label="Asistencia" />
+                  <SidebarLink to="/admin/solicitudes" icon={<LuFileText size={18} />} label="Solicitudes" />
+                </div>
+              )}
+            </>
           )}
 
           {/* ── REPUESTOS ── */}
-          <SectionHeader id="repuestos" label="REPUESTOS" />
-          {isOpen("repuestos") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/productos" icon={<LuShoppingCart size={18} />} label="Repuestos & Accesorios" />
-            </div>
+          {puedeVerSeccion("repuestos", userRole) && (
+            <>
+              <SectionHeader id="repuestos" label="REPUESTOS" />
+              {isOpen("repuestos") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/productos" icon={<LuShoppingCart size={18} />} label="Repuestos & Accesorios" />
+                </div>
+              )}
+            </>
           )}
 
           {/* ── COMPRAS ── */}
-          <SectionHeader id="compras" label="COMPRAS" />
-          {isOpen("compras") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/proveedores" icon={<LuBuilding2 size={18} />} label="Proveedores" />
-              <SidebarLink to="/admin/compras" icon={<LuReceiptText size={18} />} label="Órdenes de Compra" />
-              <SidebarLink to="/admin/gastos" icon={<LuReceiptText size={18} />} label="Gastos" />
-            </div>
+          {puedeVerSeccion("compras", userRole) && (
+            <>
+              <SectionHeader id="compras" label="COMPRAS" />
+              {isOpen("compras") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/proveedores" icon={<LuBuilding2 size={18} />} label="Proveedores" />
+                  <SidebarLink to="/admin/compras" icon={<LuReceiptText size={18} />} label="Órdenes de Compra" />
+                  <SidebarLink to="/admin/gastos" icon={<LuReceiptText size={18} />} label="Gastos" />
+                </div>
+              )}
+            </>
           )}
 
-          {/* ── FINANZAS Y CONTABILIDAD ── */}
-          <SectionHeader id="finanzas" label="FINANZAS Y CONTABILIDAD" />
-          {isOpen("finanzas") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/finanzas" icon={<LuWallet size={18} />} label="Resumen Financiero" />
-              <SidebarLink to="/admin/cxc" icon={<LuTrendingUp size={18} />} label="Cuentas x Cobrar" />
-              <SidebarLink to="/admin/cxp" icon={<LuTrendingDown size={18} />} label="Cuentas x Pagar" />
-              <SidebarLink to="/admin/caja-chica" icon={<LuWallet size={18} />} label="Caja Chica" />
-              <SidebarLink to="/admin/tesoreria" icon={<LuBanknote size={18} />} label="Tesorería" />
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/conciliacion" icon={<LuBanknote size={18} />} label="Conciliación Bancaria" />
+          {/* ── FINANZAS Y CONTABILIDAD ──
+              Sub-hub: los enlaces puramente contables quedan anidados bajo "Contabilidad"
+              (mismo componente, mismas rutas — solo se agrupan visualmente). */}
+          {puedeVerSeccion("finanzas", userRole) && (
+            <>
+              <SectionHeader id="finanzas" label="FINANZAS Y CONTABILIDAD" />
+              {isOpen("finanzas") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/finanzas" icon={<LuWallet size={18} />} label="Resumen Financiero" />
+                  <SidebarLink to="/admin/cxc" icon={<LuTrendingUp size={18} />} label="Cuentas x Cobrar" />
+                  <SidebarLink to="/admin/cxp" icon={<LuTrendingDown size={18} />} label="Cuentas x Pagar" />
+                  <SidebarLink to="/admin/caja-chica" icon={<LuWallet size={18} />} label="Caja Chica" />
+                  <SidebarLink to="/admin/tesoreria" icon={<LuBanknote size={18} />} label="Tesorería" />
+
+                  <button
+                    type="button"
+                    className={styles.subGroupToggle}
+                    onClick={() => toggleSection("finanzas-contab")}
+                    title={!showLabels ? "Contabilidad" : undefined}
+                  >
+                    <LuCalculator size={18} />
+                    {showLabels && <span>Contabilidad</span>}
+                    {showLabels && (
+                      <LuChevronDown
+                        size={12}
+                        className={`${styles.chevron} ${openSections.has("finanzas-contab") ? styles.chevronOpen : ""}`}
+                      />
+                    )}
+                  </button>
+                  {(colapsadoReal || openSections.has("finanzas-contab")) && (
+                    <div className={styles.subGroupItems}>
+                      <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={16} />} label="Libro / Asientos" />
+                      <SidebarLink to="/admin/conciliacion" icon={<LuBanknote size={16} />} label="Conciliación Bancaria" />
+                      <SidebarLink to="/admin/multimoneda" icon={<LuBanknote size={16} />} label="Multimoneda (USD)" />
+                      <SidebarLink to="/admin/obligaciones" icon={<LuReceiptText size={16} />} label="Obligaciones (IVA)" />
+                      <SidebarLink to="/admin/estados-financieros" icon={<LuChartColumnStacked size={16} />} label="Estados Financieros" />
+                      <SidebarLink to="/admin/reportes-contables" icon={<LuBookMarked size={16} />} label="Reportes Contables" />
+                      <SidebarLink to="/admin/pendientes-contables" icon={<LuTriangleAlert size={16} />} label="Pendientes Contab." />
+                      <SidebarLink to="/admin/facturacion-electronica" icon={<LuFileCheck size={16} />} label="Facturación Electrónica" />
+                    </div>
+                  )}
+                </div>
               )}
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/multimoneda" icon={<LuBanknote size={18} />} label="Multimoneda (USD)" />
-              )}
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={18} />} label="Contabilidad" />
-              )}
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/obligaciones" icon={<LuReceiptText size={18} />} label="Obligaciones (IVA)" />
-              )}
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/estados-financieros" icon={<LuChartColumnStacked size={18} />} label="Estados Financieros" />
-              )}
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/reportes-contables" icon={<LuBookMarked size={18} />} label="Reportes Contables" />
-              )}
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/pendientes-contables" icon={<LuTriangleAlert size={18} />} label="Pendientes Contab." />
-              )}
-              {(userRole === "Administrador" || userRole === "Contador") && (
-                <SidebarLink to="/admin/facturacion-electronica" icon={<LuFileCheck size={18} />} label="Facturación Electrónica" />
-              )}
-            </div>
+            </>
           )}
 
           {/* ── POSTVENTA ── */}
-          <SectionHeader id="postventa" label="POSTVENTA" />
-          {isOpen("postventa") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/taller" icon={<LuWrench size={18} />} label="Taller" />
-              <SidebarLink to="/admin/garantias" icon={<LuShield size={18} />} label="Garantías" />
-            </div>
+          {puedeVerSeccion("postventa", userRole) && (
+            <>
+              <SectionHeader id="postventa" label="POSTVENTA" />
+              {isOpen("postventa") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/taller" icon={<LuWrench size={18} />} label="Taller" />
+                  <SidebarLink to="/admin/garantias" icon={<LuShield size={18} />} label="Garantías" />
+                </div>
+              )}
+            </>
           )}
 
           {/* ── OPERACIONES ── */}
-          <SectionHeader id="operaciones" label="OPERACIONES" />
-          {isOpen("operaciones") && (
-            <div className={styles.sectionItems}>
-              <SidebarLink to="/admin/bodegas" icon={<LuWarehouse size={18} />} label="Bodegas" />
-              <SidebarLink to="/admin/billing" icon={<LuReceipt size={18} />} label="Facturación" />
-              <SidebarLink to="/admin/tracking" icon={<LuMapPin size={18} />} label="Rastreo" />
-            </div>
+          {puedeVerSeccion("operaciones", userRole) && (
+            <>
+              <SectionHeader id="operaciones" label="OPERACIONES" />
+              {isOpen("operaciones") && (
+                <div className={styles.sectionItems}>
+                  <SidebarLink to="/admin/bodegas" icon={<LuWarehouse size={18} />} label="Bodegas" />
+                  <SidebarLink to="/admin/billing" icon={<LuReceipt size={18} />} label="Facturación" />
+                  <SidebarLink to="/admin/tracking" icon={<LuMapPin size={18} />} label="Rastreo" />
+                </div>
+              )}
+            </>
           )}
         </nav>
 
