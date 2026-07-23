@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import styles from "./QuotesExpiringWidget.module.css";
+import { LuTriangleAlert, LuClock, LuCalendarDays, LuFileText, LuUser } from "react-icons/lu";
 
 interface AlertaVencimiento {
   id: number;
@@ -36,12 +37,14 @@ const urgencyClass = (horas: number, moduleStyles: CSSModuleClasses) => {
   return moduleStyles.badgeProxima;
 };
 
+const iconWrap = { display: "inline-flex", alignItems: "center", gap: "0.3rem" } as const;
+
 const urgencyLabel = (horas: number) => {
-  if (horas <= 0)  return "⚠️ Vencida";
-  if (horas <= 24) return `⏰ Vence hoy (${horas}h)`;
-  if (horas <= 48) return `🕐 Vence mañana`;
+  if (horas <= 0)  return <span style={iconWrap}><LuTriangleAlert size={13} /> Vencida</span>;
+  if (horas <= 24) return <span style={iconWrap}><LuClock size={13} /> Vence hoy ({horas}h)</span>;
+  if (horas <= 48) return <span style={iconWrap}><LuClock size={13} /> Vence mañana</span>;
   const dias = Math.ceil(horas / 24);
-  return `📅 ${dias} día${dias !== 1 ? "s" : ""} restantes`;
+  return <span style={iconWrap}><LuCalendarDays size={13} /> {dias} día{dias !== 1 ? "s" : ""} restantes</span>;
 };
 
 // Helper para CSSModuleClasses type
@@ -83,7 +86,7 @@ export const QuotesExpiringWidget = ({ basePath = "/admin", data: externalData }
       {/* ── Cabecera ── */}
       <div className={styles.header} onClick={() => setExpanded(v => !v)}>
         <div className={styles.headerLeft}>
-          <span className={styles.headerIcon}>📄</span>
+          <span className={styles.headerIcon}><LuFileText /></span>
           <div>
             <span className={styles.headerTitle}>Cotizaciones Activas</span>
             <span className={styles.headerSub}>
@@ -128,7 +131,7 @@ export const QuotesExpiringWidget = ({ basePath = "/admin", data: externalData }
             </div>
           ) : lista.length === 0 ? (
             <div className={styles.emptyState}>
-              <span className={styles.emptyIcon}>📄</span>
+              <span className={styles.emptyIcon}><LuFileText /></span>
               <p>No hay cotizaciones activas en este momento.</p>
             </div>
           ) : (
@@ -148,7 +151,7 @@ export const QuotesExpiringWidget = ({ basePath = "/admin", data: externalData }
 
                   {/* Cliente */}
                   <div className={styles.cellCliente}>
-                    <span className={styles.clienteLabel}>👤</span>
+                    <span className={styles.clienteLabel}><LuUser size={13} /></span>
                     <span className={styles.clienteNombre}>{a.cliente}</span>
                   </div>
 

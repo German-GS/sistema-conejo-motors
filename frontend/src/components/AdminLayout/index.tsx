@@ -41,6 +41,8 @@ import {
   LuMegaphone,
   LuTriangleAlert,
   LuFileCheck,
+  LuPin,
+  LuEye,
 } from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -344,7 +346,7 @@ export const AdminLayout = () => {
                 color: pinned ? "#fff" : "rgba(255,255,255,0.5)", fontSize: "1rem", padding: 2,
               }}
             >
-              {pinned ? "📌" : "📍"}
+              {pinned ? <LuPin size={16} /> : <LuPin size={16} style={{ opacity: 0.6 }} />}
             </button>
           )}
         </div>
@@ -593,7 +595,7 @@ export const AdminLayout = () => {
                   fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap",
                 }}
               >
-                👁️ Ver como Vendedor
+                <LuEye size={16} /> Ver como Vendedor
               </button>
             )}
             <button onClick={handleLogout} className={styles.logoutButton}>

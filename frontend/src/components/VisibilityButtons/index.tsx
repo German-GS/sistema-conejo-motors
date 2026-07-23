@@ -6,6 +6,16 @@ import { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./VisibilityButtons.module.css";
+import {
+  LuEye,
+  LuBan,
+  LuCircleCheck,
+  LuPackage,
+  LuRefreshCw,
+  LuCircleSlash,
+  LuCar,
+} from "react-icons/lu";
+import type { IconType } from "react-icons";
 
 type Visibilidad = "Visible" | "Oculto";
 type Clasificacion = "En Stock" | "Agotado" | "Contrapedido" | "No Comercial";
@@ -20,16 +30,16 @@ interface Props {
   onEstadoChanged?: (newValue: "Disponible" | "Demo") => void;
 }
 
-const VIS_OPTIONS: { value: Visibilidad; label: string; emoji: string }[] = [
-  { value: "Visible", label: "Visible", emoji: "👁" },
-  { value: "Oculto",  label: "Ocultar", emoji: "🚫" },
+const VIS_OPTIONS: { value: Visibilidad; label: string; Icon: IconType }[] = [
+  { value: "Visible", label: "Visible", Icon: LuEye },
+  { value: "Oculto",  label: "Ocultar", Icon: LuBan },
 ];
 
-const CLAS_OPTIONS: { value: Clasificacion; label: string; emoji: string }[] = [
-  { value: "En Stock",     label: "En stock",     emoji: "✅" },
-  { value: "Agotado",      label: "Agotado",      emoji: "📦" },
-  { value: "Contrapedido", label: "Bajo Pedido",  emoji: "🔄" },
-  { value: "No Comercial", label: "No Comercial", emoji: "⛔" },
+const CLAS_OPTIONS: { value: Clasificacion; label: string; Icon: IconType }[] = [
+  { value: "En Stock",     label: "En stock",     Icon: LuCircleCheck },
+  { value: "Agotado",      label: "Agotado",      Icon: LuPackage },
+  { value: "Contrapedido", label: "Bajo Pedido",  Icon: LuRefreshCw },
+  { value: "No Comercial", label: "No Comercial", Icon: LuCircleSlash },
 ];
 
 const clasKey: Record<Clasificacion, string> = {
@@ -137,7 +147,7 @@ export const VisibilityButtons = ({
             disabled={loading}
             title={opt.label}
           >
-            <span className={styles.emoji}>{opt.emoji}</span>
+            <span className={styles.emoji}><opt.Icon size={16} /></span>
             <span className={styles.label}>{opt.label}</span>
           </button>
         ))}
@@ -153,7 +163,7 @@ export const VisibilityButtons = ({
             disabled={loading}
             title={opt.label}
           >
-            <span className={styles.emoji}>{opt.emoji}</span>
+            <span className={styles.emoji}><opt.Icon size={16} /></span>
             <span className={styles.label}>{opt.label}</span>
           </button>
         ))}
@@ -167,7 +177,7 @@ export const VisibilityButtons = ({
           disabled={loading || vendido}
           title={esDemo ? "Regresar a inventario de venta" : "Marcar como Demo / Test drive (Activo Fijo, no para venta)"}
         >
-          <span className={styles.emoji}>🚗</span>
+          <span className={styles.emoji}><LuCar size={16} /></span>
           <span className={styles.label}>{esDemo ? "Demo / Test drive" : "Marcar Demo"}</span>
         </button>
       </div>

@@ -8,7 +8,7 @@ import { useSessionKeepAlive } from "@/hooks/useSessionKeepAlive";
 import conejoLogo from "../../img/Logos/Logo-Blanco.png";
 import {
   LuLayoutDashboard, LuCar, LuFileText, LuBell, LuContact,
-  LuCalendarClock, LuSearch, LuMenu, LuX,
+  LuCalendarClock, LuSearch, LuMenu, LuX, LuPin, LuPinOff,
 } from "react-icons/lu";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -120,7 +120,7 @@ export const SalesLayout = () => {
               title={pinned ? "Desfijar menú" : "Fijar menú abierto"}
               style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: pinned ? "#fff" : "rgba(255,255,255,0.5)", fontSize: "1rem", padding: 2 }}
             >
-              {pinned ? "📌" : "📍"}
+              {pinned ? <LuPin size={16} /> : <LuPinOff size={16} />}
             </button>
           )}
         </div>

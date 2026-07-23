@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import styles from "./LeadsFollowUpWidget.module.css";
+import { LuClipboardList, LuTriangleAlert } from "react-icons/lu";
 
 interface Lead {
   id: number;
@@ -24,9 +25,9 @@ function semaforo(fechaFollowup: string | null): SemaforoInfo {
   const fecha = new Date(fechaFollowup + "T00:00:00");
   const dias = Math.round((fecha.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
   if (dias < 0)  return { color: "rojo",     label: `Venció hace ${Math.abs(dias)} día(s)`, dias };
-  if (dias === 0) return { color: "rojo",     label: "Vence HOY ⚠️",                         dias };
-  if (dias === 1) return { color: "rojo",     label: "Vence MAÑANA 🔴",                      dias };
-  if (dias === 2) return { color: "amarillo", label: "Vence en 2 días 🟡",                   dias };
+  if (dias === 0) return { color: "rojo",     label: "Vence HOY",                            dias };
+  if (dias === 1) return { color: "rojo",     label: "Vence MAÑANA",                         dias };
+  if (dias === 2) return { color: "amarillo", label: "Vence en 2 días",                      dias };
   if (dias <= 5)  return { color: "amarillo", label: `Vence en ${dias} días`,                dias };
   return               { color: "verde",      label: `En ${dias} días`,                      dias };
 }
@@ -67,9 +68,9 @@ export const LeadsFollowUpWidget = ({ basePath = "/admin", showVendedor = false 
     <div className={styles.widget}>
       <div className={styles.widgetHeader}>
         <div className={styles.titleRow}>
-          <span className={styles.title}>📋 Leads activos</span>
+          <span className={styles.title} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuClipboardList size={18} /> Leads activos</span>
           {urgentes > 0 && (
-            <span className={styles.alertBadge}>⚠️ {urgentes} urgente{urgentes > 1 ? "s" : ""}</span>
+            <span className={styles.alertBadge} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> {urgentes} urgente{urgentes > 1 ? "s" : ""}</span>
           )}
         </div>
         <button className={styles.verTodos} onClick={() => navigate(`${basePath}/leads`)}>

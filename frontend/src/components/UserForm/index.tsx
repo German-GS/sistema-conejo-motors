@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import styles from "./UserForm.module.css";
 import toast from "react-hot-toast";
-import { LuEye, LuEyeOff } from "react-icons/lu";
+import { LuEye, LuEyeOff, LuCalculator } from "react-icons/lu";
 
 interface Role {
   id: number;
@@ -236,7 +236,7 @@ export const UserForm: React.FC<UserFormProps> = ({
       {/* Calculadora de salario bruto/neto */}
       <div style={{ gridColumn: "1 / -1", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "0.85rem 1rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#334155" }}>🧮 Calculadora de salario</span>
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#334155", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuCalculator size={16} /> Calculadora de salario</span>
           <span style={{ fontSize: "0.82rem", color: "#64748b" }}>El monto que escribí arriba es:</span>
           <div style={{ display: "inline-flex", border: "1px solid #cbd5e1", borderRadius: 8, overflow: "hidden" }}>
             {(["bruto", "neto"] as const).map((m) => (

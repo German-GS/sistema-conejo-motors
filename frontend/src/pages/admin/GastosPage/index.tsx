@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./GastosPage.module.css";
-import { LuPlus, LuReceipt } from "react-icons/lu";
+import { LuPlus, LuReceipt, LuFileText, LuChartColumnStacked, LuPencil, LuTrash2, LuCalendarDays, LuStore, LuPaperclip, LuCircleCheck } from "react-icons/lu";
 import { exportToExcel } from "@/utils/exportExcel";
 
 interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; comprobante_mime?: string | null; metodo_pago?: string; notas?: string; iva_monto?: number; nombre_comercio?: string; }
@@ -29,7 +29,7 @@ function ComprobanteThumb({ id, mime, onOpenImagen, onOpenOtro }: { id: number; 
   if (!esImagen) {
     return (
       <button onClick={() => onOpenOtro(id)} title="Ver comprobante (PDF)"
-        style={{ marginLeft: 6, background: "none", border: "none", cursor: "pointer", fontSize: "1.1rem" }}>📄</button>
+        style={{ marginLeft: 6, background: "none", border: "none", cursor: "pointer", fontSize: "1.1rem", display: "inline-flex", alignItems: "center" }}><LuFileText size={18} /></button>
     );
   }
   if (!url) {
@@ -176,7 +176,7 @@ export default function GastosPage() {
       <div className={styles.header}>
         <div><h1>Gastos Operativos</h1><p>Control de gastos y costos de operación</p></div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1" }} onClick={exportar}>📊 Excel</button>
+          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={exportar}><LuChartColumnStacked size={16} /> Excel</button>
           <button className={styles.btnPrimary} onClick={abrirNuevo}><LuPlus size={16} /> Nuevo Gasto</button>
         </div>
       </div>
@@ -229,8 +229,8 @@ export default function GastosPage() {
               <span>{g.proveedor?.nombre || g.nombre_comercio || '-'}</span>
               <span className={styles.monto} style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem" }}>
                 ₡{(+g.monto).toLocaleString('es-CR')}
-                <button onClick={() => abrirEditar(g)} title="Editar" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}>✏️</button>
-                <button onClick={() => eliminar(g)} title="Eliminar" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}>🗑️</button>
+                <button onClick={() => abrirEditar(g)} title="Editar" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem", display: "inline-flex", alignItems: "center" }}><LuPencil size={15} /></button>
+                <button onClick={() => eliminar(g)} title="Eliminar" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem", display: "inline-flex", alignItems: "center" }}><LuTrash2 size={15} /></button>
               </span>
             </div>
           ))}
@@ -245,18 +245,18 @@ export default function GastosPage() {
               <div className={styles.fg}><label>Categoría</label><select value={form.categoria} onChange={f('categoria')}>{CATS.map(c=><option key={c}>{c}</option>)}</select></div>
               <div className={styles.fg}><label>Monto *</label><input type="number" value={form.monto} onChange={f('monto')} /></div>
               <div className={`${styles.fg} ${styles.full}`}><label>Descripción *</label><input value={form.descripcion} onChange={f('descripcion')} /></div>
-              <div className={styles.fg}><label>📅 Fecha del gasto (cambiala para cargar meses atrás)</label><input type="date" value={form.fecha} onChange={f('fecha')} /></div>
+              <div className={styles.fg}><label style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuCalendarDays size={14} /> Fecha del gasto (cambiala para cargar meses atrás)</label><input type="date" value={form.fecha} onChange={f('fecha')} /></div>
               <div className={styles.fg}><label>N° Factura</label><input value={form.numero_factura} onChange={f('numero_factura')} /></div>
-              <div className={styles.fg}><label>🏪 Comercio / tienda</label><input value={form.nombre_comercio} onChange={f('nombre_comercio')} placeholder="Ej: EPA, Ferretería…" /></div>
+              <div className={styles.fg}><label style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuStore size={14} /> Comercio / tienda</label><input value={form.nombre_comercio} onChange={f('nombre_comercio')} placeholder="Ej: EPA, Ferretería…" /></div>
               <div className={styles.fg}><label>Método de pago</label><select value={form.metodo_pago} onChange={f('metodo_pago')}><option>Efectivo</option><option>Banco</option><option>Transferencia</option><option>SINPE</option><option>Tarjeta</option><option>Cheque</option><option>Credito</option><option value="Aporte del socio">Aporte del socio (pagado por el dueño)</option></select></div>
               <div className={styles.fg}><label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}><input type="checkbox" checked={(form as any).tiene_iva} onChange={(e) => setForm({ ...form, tiene_iva: e.target.checked } as any)} /> El monto incluye IVA 13% (crédito fiscal)</label></div>
               <div className={`${styles.fg} ${styles.full}`}>
-                <label>📎 Factura / comprobante (foto o PDF)</label>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuPaperclip size={14} /> Factura / comprobante (foto o PDF)</label>
                 <input type="file" accept="image/*,application/pdf" capture="environment" disabled={guardando} onChange={(e) => setComprobante(e.target.files?.[0] ?? null)} />
                 {subiendoFoto ? (
                   <span className={styles.subiendo}><span className={styles.spinner} /> Subiendo comprobante…</span>
                 ) : comprobante ? (
-                  <span style={{ fontSize: "0.78rem", color: "#15803d" }}>✓ {comprobante.name} (se sube al guardar)</span>
+                  <span style={{ fontSize: "0.78rem", color: "#15803d", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuCircleCheck size={14} /> {comprobante.name} (se sube al guardar)</span>
                 ) : null}
               </div>
               <div className={`${styles.fg} ${styles.full}`}><label>Notas</label><textarea value={form.notas} onChange={f('notas')} rows={2} /></div>

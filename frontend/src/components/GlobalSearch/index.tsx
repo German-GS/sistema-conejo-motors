@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import styles from "./GlobalSearch.module.css";
+import { LuSearch } from "react-icons/lu";
 
 interface SearchResult {
   tipo: "vehiculo" | "cliente" | "cotizacion" | "factura";
@@ -113,7 +114,7 @@ export const GlobalSearch = () => {
     <div className={styles.overlay} onClick={() => setOpen(false)}>
       <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
         <div className={styles.searchRow}>
-          <span className={styles.searchIcon}>🔍</span>
+          <span className={styles.searchIcon}><LuSearch size={18} /></span>
           <input
             ref={inputRef}
             className={styles.input}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuWallet, LuRefreshCw } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 2 }).format(Number(v) || 0);
 const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
@@ -62,12 +63,12 @@ export const MultimonedaPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540" }}>💵 Multimoneda — Tipo de Cambio y Diferencial</h1>
+      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuWallet size={22} /> Multimoneda — Tipo de Cambio y Diferencial</h1>
 
       <div style={card}>
         <strong style={{ color: "#0a2540" }}>Tipo de cambio del dólar</strong>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap", marginTop: "0.75rem" }}>
-          <button disabled={busy} onClick={sincronizar} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700 }}>🔄 Sincronizar hoy (Hacienda)</button>
+          <button disabled={busy} onClick={sincronizar} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}><LuRefreshCw size={15} /> Sincronizar hoy (Hacienda)</button>
           <span style={{ width: 1, height: 24, background: "#e2e8f0" }} />
           <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#475569" }}>Carga manual:</label>
           <input type="date" style={inp} value={fecha} onChange={(e) => setFecha(e.target.value)} />

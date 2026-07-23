@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuTriangleAlert, LuRefreshCw, LuCircleCheck } from "react-icons/lu";
 
 const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
 const th: React.CSSProperties = { padding: "8px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", color: "#64748b", textAlign: "left" };
@@ -30,8 +31,8 @@ export const PendientesContablesPage = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-        <h1 style={{ margin: 0, color: "#0a2540" }}>⚠️ Pendientes de Contabilizar</h1>
-        <button onClick={cargar} style={{ background: "#fff", border: "1.5px solid #e2e8f0", color: "#475569", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 600 }}>↻ Actualizar</button>
+        <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuTriangleAlert size={22} /> Pendientes de Contabilizar</h1>
+        <button onClick={cargar} style={{ background: "#fff", border: "1.5px solid #e2e8f0", color: "#475569", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}><LuRefreshCw size={15} /> Actualizar</button>
       </div>
 
       <p style={{ fontSize: "0.85rem", color: "#64748b", margin: 0 }}>
@@ -43,7 +44,7 @@ export const PendientesContablesPage = () => {
 
       {!loading && data && data.total === 0 && (
         <div style={{ ...card, background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#15803d", display: "flex", alignItems: "center", gap: "0.6rem" }}>
-          <span style={{ fontSize: "1.4rem" }}>✅</span>
+          <LuCircleCheck size={24} />
           <strong>Todo al día — no hay documentos pendientes de contabilizar.</strong>
         </div>
       )}

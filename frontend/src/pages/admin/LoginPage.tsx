@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { startAuthentication } from "@simplewebauthn/browser";
 import styles from "./LoginPage.module.css";
 import logoConejo from "../../img/Logos/Logo-Conejo-Motors.png";
+import { LuFingerprint } from "react-icons/lu";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -148,7 +149,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
                 background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.75rem 1rem",
                 cursor: cargando ? "not-allowed" : "pointer", fontWeight: 700, fontSize: "0.95rem" }}>
-              {cargando ? (<><span className={styles.spinner} /> Ingresando…</>) : "🔐 Entrar con biometría (Face ID / huella)"}
+              {cargando ? (<><span className={styles.spinner} /> Ingresando…</>) : (<><LuFingerprint size={17} /> Entrar con biometría (Face ID / huella)</>)}
             </button>
             {cargando && <p style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", margin: 0 }}>{mensajeCarga}</p>}
             {error && !cargando && <p className={styles.error}>{error}</p>}
@@ -202,7 +203,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     Ingresando…
                   </span>
                 ) : modo === "biometria" ? (
-                  "🔐 Entrar con biometría (Face ID / huella)"
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}><LuFingerprint size={17} /> Entrar con biometría (Face ID / huella)</span>
                 ) : (
                   "Iniciar Sesión"
                 )}
@@ -227,8 +228,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 ) : (
                   soportaPasskey && (
                     <button type="button" onClick={() => cambiarModo("biometria")}
-                      style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
-                      🔐 Entrar con biometría (Face ID / huella)
+                      style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                      <LuFingerprint size={15} /> Entrar con biometría (Face ID / huella)
                     </button>
                   )
                 )}

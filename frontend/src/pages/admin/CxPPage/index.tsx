@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./CxPPage.module.css";
-import { LuPlus, LuDollarSign, LuTriangleAlert } from "react-icons/lu";
+import { LuPlus, LuDollarSign, LuTriangleAlert, LuChartColumnStacked } from "react-icons/lu";
 import { exportToExcel } from "@/utils/exportExcel";
 
 interface CxP {
@@ -63,7 +63,7 @@ export default function CxPPage() {
       <div className={styles.header}>
         <div><h1>Cuentas por Pagar</h1><p>Control de pagos a proveedores</p></div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1" }} onClick={exportar}>📊 Excel</button>
+          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={exportar}><LuChartColumnStacked size={16} /> Excel</button>
           <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nueva CxP</button>
         </div>
       </div>

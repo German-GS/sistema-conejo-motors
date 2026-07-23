@@ -1,6 +1,21 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./LeadsKanban.module.css";
+import {
+  LuGlobe,
+  LuCamera,
+  LuThumbsUp,
+  LuMessageCircle,
+  LuMusic,
+  LuHandshake,
+  LuBuilding2,
+  LuPhone,
+  LuClipboardList,
+  LuCar,
+  LuUser,
+  LuTriangleAlert,
+  LuCalendarDays,
+} from "react-icons/lu";
 
 interface LeadCard {
   id: number;
@@ -31,9 +46,9 @@ const COLOR: Record<string, string> = {
   Negociacion: "#d97706", Cerrado: "#10b981", Perdido: "#ef4444",
 };
 
-const FUENTE_ICONS: Record<string, string> = {
-  Web: "🌐", Instagram: "📸", Facebook: "👍", WhatsApp: "💬",
-  TikTok: "🎵", Referido: "🤝", Presencial: "🏢", Llamada: "📞", Otro: "📋",
+const FUENTE_ICONS: Record<string, React.ReactNode> = {
+  Web: <LuGlobe />, Instagram: <LuCamera />, Facebook: <LuThumbsUp />, WhatsApp: <LuMessageCircle />,
+  TikTok: <LuMusic />, Referido: <LuHandshake />, Presencial: <LuBuilding2 />, Llamada: <LuPhone />, Otro: <LuClipboardList />,
 };
 
 export const LeadsKanban = ({ leads, basePath, isAdmin, onMove }: Props) => {
@@ -85,16 +100,16 @@ export const LeadsKanban = ({ leads, basePath, isAdmin, onMove }: Props) => {
                     >
                       <div className={styles.name}>{lead.nombre_cliente}</div>
                       <div className={styles.meta}>
-                        <span>{FUENTE_ICONS[lead.fuente] ?? "📋"} {lead.fuente}</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>{FUENTE_ICONS[lead.fuente] ?? <LuClipboardList />} {lead.fuente}</span>
                         {lead.vehiculo_interes && (
-                          <span>🚗 {lead.vehiculo_interes.marca} {lead.vehiculo_interes.modelo}</span>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCar size={14} /> {lead.vehiculo_interes.marca} {lead.vehiculo_interes.modelo}</span>
                         )}
                         {isAdmin && (
-                          <span>👤 {lead.vendedor_asignado?.nombre_completo ?? "Sin asignar"}</span>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuUser size={14} /> {lead.vendedor_asignado?.nombre_completo ?? "Sin asignar"}</span>
                         )}
                         {followup && (
-                          <span className={vencido ? styles.followAlert : ""}>
-                            {vencido ? "⚠️" : "📅"} {followup.toLocaleDateString("es-CR")}
+                          <span className={vencido ? styles.followAlert : ""} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                            {vencido ? <LuTriangleAlert size={14} /> : <LuCalendarDays size={14} />} {followup.toLocaleDateString("es-CR")}
                           </span>
                         )}
                       </div>

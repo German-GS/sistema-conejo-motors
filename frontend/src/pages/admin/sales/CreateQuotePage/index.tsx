@@ -6,7 +6,7 @@ import { Card } from "@/components/Card";
 import styles from "./CreateQuotePage.module.css";
 import toast from "react-hot-toast";
 import { PageLoader } from "@/components/PageLoader";
-import { LuLink, LuPhone, LuHome, LuMessageCircle, LuCamera, LuUsers, LuMusic, LuHandshake, LuGlobe, LuPin, LuLock, LuWallet, LuTriangleAlert, LuCircleCheck } from "react-icons/lu";
+import { LuLink, LuPhone, LuHouse, LuMessageCircle, LuCamera, LuUsers, LuMusic, LuHandshake, LuGlobe, LuPin, LuLock, LuWallet, LuTriangleAlert, LuCircleCheck } from "react-icons/lu";
 
 interface VehicleDetails {
   id: number;
@@ -235,7 +235,7 @@ export const CreateQuotePage = () => {
           </p>
           <div className={styles.fuenteGrid}>
             {[
-              { value: "Presencial",  icon: <LuHome size={16} />, label: "Presencial" },
+              { value: "Presencial",  icon: <LuHouse size={16} />, label: "Presencial" },
               { value: "Llamada",     icon: <LuPhone size={16} />, label: "Llamada" },
               { value: "WhatsApp",    icon: <LuMessageCircle size={16} />, label: "WhatsApp" },
               { value: "Instagram",   icon: <LuCamera size={16} />, label: "Instagram" },

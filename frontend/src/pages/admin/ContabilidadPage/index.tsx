@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./ContabilidadPage.module.css";
 import { fmtFecha, hoyEnCR } from "@/utils/dateUtils";
+import {
+  LuCar, LuPackage, LuShoppingCart, LuBanknote, LuWallet, LuScale,
+  LuLock, LuLockOpen, LuPencil, LuCircleCheck, LuCircleX, LuTriangleAlert,
+  LuChartColumnStacked, LuSettings, LuNotebookPen, LuBuilding2, LuClipboardList,
+  LuTrendingUp, LuTrendingDown, LuGem, LuFileStack, LuBookOpen, LuBookMarked,
+  LuReceiptText, LuRefreshCw, LuPlus, LuInfo, LuHourglass,
+} from "react-icons/lu";
+import type { IconType } from "react-icons";
 
 interface Cuenta { id: number; codigo: string; nombre: string; tipo: string; acepta_movimientos: boolean; activa: boolean; }
 interface LineaAsiento { id: number; cuenta: Cuenta; debe: number; haber: number; descripcion?: string; }
@@ -13,9 +21,9 @@ interface Balance { cuentas: Record<string, { id: number; codigo: string; nombre
 
 const fmtCRC = (v: number) => (v < 0 ? "−" : "") + "₡ " + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(Math.abs(v));
 
-const TIPO_ICONS: Record<string, string> = {
-  Venta_Vehiculo: "🚗", Venta_Producto: "📦", Compra: "🛒",
-  Gasto: "💸", Ingreso: "💰", Ajuste: "⚖️", Cierre: "🔒", Manual: "✏️",
+const TIPO_ICONS: Record<string, IconType> = {
+  Venta_Vehiculo: LuCar, Venta_Producto: LuPackage, Compra: LuShoppingCart,
+  Gasto: LuBanknote, Ingreso: LuWallet, Ajuste: LuScale, Cierre: LuLock, Manual: LuPencil,
 };
 
 const TIPO_CUENTA_COLORS: Record<string, string> = {
@@ -401,16 +409,16 @@ export const ContabilidadPage = () => {
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
-        <h1>📊 Contabilidad</h1>
+        <h1 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuChartColumnStacked size={22} /> Contabilidad</h1>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           {cuentas.length === 0 && (
-            <button className={styles.seedBtn} onClick={seedCuentas}>
-              ⚙️ Inicializar Plan de Cuentas Estándar
+            <button className={styles.seedBtn} onClick={seedCuentas} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuSettings size={16} /> Inicializar Plan de Cuentas Estándar
             </button>
           )}
           {cuentas.length > 0 && (
-            <button className={styles.seedBtn} onClick={cargarInventarioInicial} title="Genera el asiento de apertura del inventario de vehículos en stock">
-              🚗 Cargar inventario inicial
+            <button className={styles.seedBtn} onClick={cargarInventarioInicial} title="Genera el asiento de apertura del inventario de vehículos en stock" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuCar size={16} /> Cargar inventario inicial
             </button>
           )}
         </div>
@@ -419,16 +427,17 @@ export const ContabilidadPage = () => {
       {/* Tabs */}
       <div className={styles.tabBar}>
         {[
-          { key: "dashboard", label: "📊 Resumen" },
-          { key: "asientos",  label: "📝 Asientos" },
-          { key: "balance",   label: "⚖️ Balance" },
-          { key: "activos",   label: "🏢 Activos Fijos" },
-          { key: "cierres",   label: "🔒 Cierres" },
-          { key: "cuentas",   label: "📋 Plan de Cuentas" },
+          { key: "dashboard", label: "Resumen", Icon: LuChartColumnStacked },
+          { key: "asientos",  label: "Asientos", Icon: LuNotebookPen },
+          { key: "balance",   label: "Balance", Icon: LuScale },
+          { key: "activos",   label: "Activos Fijos", Icon: LuBuilding2 },
+          { key: "cierres",   label: "Cierres", Icon: LuLock },
+          { key: "cuentas",   label: "Plan de Cuentas", Icon: LuClipboardList },
         ].map(t => (
           <button key={t.key} className={`${styles.tab} ${tab === t.key ? styles.tabActive : ""}`}
-            onClick={() => setTab(t.key as any)}>
-            {t.label}
+            onClick={() => setTab(t.key as any)}
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+            <t.Icon size={16} /> {t.label}
           </button>
         ))}
       </div>
@@ -439,27 +448,27 @@ export const ContabilidadPage = () => {
           {/* ── Resumen del día ── */}
           <div className={styles.sectionTitle}>Resumen del Día — {fmtFecha(preview.fecha)}</div>
           <div className={styles.kpiRow}>
-            <KpiCard icon="💰" label="Ingresos Hoy" value={fmtCRC(preview.ingresos)} color="#059669" />
-            <KpiCard icon="💸" label="Gastos Hoy" value={fmtCRC(preview.gastos)} color="#dc2626" />
-            <KpiCard icon="📈" label="Utilidad Hoy" value={fmtCRC(preview.utilidad)} color={preview.utilidad >= 0 ? "#0891b2" : "#dc2626"} />
-            <KpiCard icon="📝" label="Asientos" value={String(preview.num_asientos)} color="#7c3aed" />
+            <KpiCard icon={<LuWallet size={20} />} label="Ingresos Hoy" value={fmtCRC(preview.ingresos)} color="#059669" />
+            <KpiCard icon={<LuBanknote size={20} />} label="Gastos Hoy" value={fmtCRC(preview.gastos)} color="#dc2626" />
+            <KpiCard icon={<LuTrendingUp size={20} />} label="Utilidad Hoy" value={fmtCRC(preview.utilidad)} color={preview.utilidad >= 0 ? "#0891b2" : "#dc2626"} />
+            <KpiCard icon={<LuNotebookPen size={20} />} label="Asientos" value={String(preview.num_asientos)} color="#7c3aed" />
           </div>
 
           {(preview.ventas_vehiculos > 0 || preview.ventas_productos > 0) && (
             <div className={styles.ventasRow}>
-              {preview.ventas_vehiculos > 0 && <div className={styles.ventaCard}><span>🚗 Ventas Vehículos</span><strong>{fmtCRC(preview.ventas_vehiculos)}</strong></div>}
-              {preview.ventas_productos > 0 && <div className={styles.ventaCard}><span>📦 Ventas Repuestos</span><strong>{fmtCRC(preview.ventas_productos)}</strong></div>}
+              {preview.ventas_vehiculos > 0 && <div className={styles.ventaCard}><span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuCar size={14} /> Ventas Vehículos</span><strong>{fmtCRC(preview.ventas_vehiculos)}</strong></div>}
+              {preview.ventas_productos > 0 && <div className={styles.ventaCard}><span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuPackage size={14} /> Ventas Repuestos</span><strong>{fmtCRC(preview.ventas_productos)}</strong></div>}
             </div>
           )}
 
           {/* Cierre del día */}
           <div className={styles.cierreBox}>
             {preview.ya_cerrado ? (
-              <div className={styles.cierreOk}>🔒 El día de hoy ya fue cerrado.</div>
+              <div className={styles.cierreOk} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuLock size={16} /> El día de hoy ya fue cerrado.</div>
             ) : (
               <>
                 <p className={styles.cierreHint}>El día aún no ha sido cerrado. Al cerrar, se consolida el balance del día.</p>
-                <button className={styles.cierreBtn} onClick={handleCierre}>🔒 Realizar Cierre del Día</button>
+                <button className={styles.cierreBtn} onClick={handleCierre} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLock size={16} /> Realizar Cierre del Día</button>
               </>
             )}
           </div>
@@ -471,17 +480,17 @@ export const ContabilidadPage = () => {
                 Mes en Curso — {new Date().toLocaleDateString("es-CR", { month: "long", year: "numeric" })}
               </div>
               <div className={styles.kpiRow}>
-                <KpiCard icon="💰" label="Ingresos MTD" value={fmtCRC(resumenMes.ingresos)} color="#059669" />
-                <KpiCard icon="💸" label="Gastos MTD" value={fmtCRC(resumenMes.gastos)} color="#dc2626" />
-                <KpiCard icon="📈" label="Utilidad MTD" value={fmtCRC(resumenMes.utilidad)} color={resumenMes.utilidad >= 0 ? "#0891b2" : "#dc2626"} />
-                <KpiCard icon="📝" label="Asientos MTD" value={String(resumenMes.num_asientos)} color="#7c3aed" />
+                <KpiCard icon={<LuWallet size={20} />} label="Ingresos MTD" value={fmtCRC(resumenMes.ingresos)} color="#059669" />
+                <KpiCard icon={<LuBanknote size={20} />} label="Gastos MTD" value={fmtCRC(resumenMes.gastos)} color="#dc2626" />
+                <KpiCard icon={<LuTrendingUp size={20} />} label="Utilidad MTD" value={fmtCRC(resumenMes.utilidad)} color={resumenMes.utilidad >= 0 ? "#0891b2" : "#dc2626"} />
+                <KpiCard icon={<LuNotebookPen size={20} />} label="Asientos MTD" value={String(resumenMes.num_asientos)} color="#7c3aed" />
               </div>
 
               {/* Desglose de gastos del mes */}
               {resumenMes.gastos_por_tipo && Object.keys(resumenMes.gastos_por_tipo).length > 0 && (
                 <div style={{ background: "var(--bg-card, #fff)", border: "1px solid var(--border, #e2e8f0)", borderRadius: 12, padding: "1rem 1.25rem", marginTop: "1rem" }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-secondary, #64748b)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
-                    💸 Desglose de Gastos del Mes
+                  <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-secondary, #64748b)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <LuBanknote size={15} /> Desglose de Gastos del Mes
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                     {Object.entries(resumenMes.gastos_por_tipo as Record<string, number>)
@@ -565,7 +574,7 @@ export const ContabilidadPage = () => {
                   <button type="button" className={styles.addLineaBtn} onClick={agregarLinea}>+ Agregar línea</button>
                   <div className={`${styles.cuadre} ${cuadrado ? styles.cuadreOk : styles.cuadreMal}`}>
                     Debe: {fmtCRC(sumaDebe)} | Haber: {fmtCRC(sumaHaber)}
-                    {cuadrado ? " ✅ Cuadrado" : " ❌ No cuadra"}
+                    {" "}{cuadrado ? <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuCircleCheck size={14} /> Cuadrado</span> : <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuCircleX size={14} /> No cuadra</span>}
                   </div>
                 </div>
               </div>
@@ -627,8 +636,8 @@ export const ContabilidadPage = () => {
                 {fmtCRC(balance.totales.utilidad)}
               </strong>
             </div>
-            <div className={styles.equilibrioChip}>
-              {balance.equilibrado ? "✅ Balance en equilibrio" : "⚠️ Balance desbalanceado — revisar asientos"}
+            <div className={styles.equilibrioChip} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              {balance.equilibrado ? <><LuCircleCheck size={15} /> Balance en equilibrio</> : <><LuTriangleAlert size={15} /> Balance desbalanceado — revisar asientos</>}
             </div>
           </div>
         </>
@@ -640,9 +649,9 @@ export const ContabilidadPage = () => {
           <div className={styles.sectionTitle}>Activos Fijos</div>
           {activos && (
             <div className={styles.kpiRow}>
-              <KpiCard icon="🏢" label="Costo total" value={fmtCRC(activos.totales.costo)} color="#0891b2" />
-              <KpiCard icon="📉" label="Depreciación acumulada" value={fmtCRC(activos.totales.depreciacion_acumulada)} color="#dc2626" />
-              <KpiCard icon="💎" label="Valor neto en libros" value={fmtCRC(activos.totales.valor_neto)} color="#059669" />
+              <KpiCard icon={<LuBuilding2 size={20} />} label="Costo total" value={fmtCRC(activos.totales.costo)} color="#0891b2" />
+              <KpiCard icon={<LuTrendingDown size={20} />} label="Depreciación acumulada" value={fmtCRC(activos.totales.depreciacion_acumulada)} color="#dc2626" />
+              <KpiCard icon={<LuGem size={20} />} label="Valor neto en libros" value={fmtCRC(activos.totales.valor_neto)} color="#059669" />
             </div>
           )}
 
@@ -662,8 +671,8 @@ export const ContabilidadPage = () => {
 
           {/* Reporte fiscal — diferencia libro-fiscal e impuesto diferido */}
           <div style={{ margin: "1rem 0" }}>
-            <button onClick={toggleFiscal} className={styles.seedBtn}>
-              📑 {showFiscal ? "Cerrar reporte fiscal" : "Reporte fiscal (impuesto diferido)"}
+            <button onClick={toggleFiscal} className={styles.seedBtn} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuFileStack size={16} /> {showFiscal ? "Cerrar reporte fiscal" : "Reporte fiscal (impuesto diferido)"}
             </button>
             {showFiscal && fiscal && (
               <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
@@ -676,10 +685,10 @@ export const ContabilidadPage = () => {
                   </label>
                 </div>
                 <div className={styles.kpiRow}>
-                  <KpiCard icon="📘" label="Dep. financiera acum." value={fmtCRC(fiscal.totales.dep_financiera)} color="#0891b2" />
-                  <KpiCard icon="📕" label="Dep. fiscal acum." value={fmtCRC(fiscal.totales.dep_fiscal)} color="#d97706" />
-                  <KpiCard icon="⚖️" label="Diferencia temporaria" value={fmtCRC(fiscal.totales.diferencia_temporaria)} color="#7c3aed" />
-                  <KpiCard icon="🧾" label={`Impuesto diferido (${tasaRenta}%)`} value={fmtCRC(fiscal.totales.impuesto_diferido)} color="#15803d" />
+                  <KpiCard icon={<LuBookOpen size={20} />} label="Dep. financiera acum." value={fmtCRC(fiscal.totales.dep_financiera)} color="#0891b2" />
+                  <KpiCard icon={<LuBookMarked size={20} />} label="Dep. fiscal acum." value={fmtCRC(fiscal.totales.dep_fiscal)} color="#d97706" />
+                  <KpiCard icon={<LuScale size={20} />} label="Diferencia temporaria" value={fmtCRC(fiscal.totales.diferencia_temporaria)} color="#7c3aed" />
+                  <KpiCard icon={<LuReceiptText size={20} />} label={`Impuesto diferido (${tasaRenta}%)`} value={fmtCRC(fiscal.totales.impuesto_diferido)} color="#15803d" />
                 </div>
                 <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", minWidth: 620 }}>
@@ -711,8 +720,8 @@ export const ContabilidadPage = () => {
 
           {/* Migración de vehículos de venta → uso interno */}
           <div style={{ margin: "1rem 0" }}>
-            <button onClick={abrirMigrar} className={styles.seedBtn}>
-              🔄 {showMigrar ? "Cerrar migración" : "Migrar vehículo a uso interno"}
+            <button onClick={abrirMigrar} className={styles.seedBtn} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuRefreshCw size={16} /> {showMigrar ? "Cerrar migración" : "Migrar vehículo a uso interno"}
             </button>
             {showMigrar && (
               <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
@@ -790,8 +799,8 @@ export const ContabilidadPage = () => {
                 <option value="1100">Caja</option>
               </select>
             </label>
-            <button onClick={crearActivo} disabled={savingActivo} className={styles.seedBtn} style={{ height: 38 }}>
-              {savingActivo ? "Guardando…" : "➕ Registrar activo"}
+            <button onClick={crearActivo} disabled={savingActivo} className={styles.seedBtn} style={{ height: 38, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              {savingActivo ? "Guardando…" : <><LuPlus size={16} /> Registrar activo</>}
             </button>
           </div>
 
@@ -909,7 +918,7 @@ export const ContabilidadPage = () => {
         {/* Cierre de período con bloqueo */}
         <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
-            <strong style={{ fontSize: "1rem" }}>🔒 Cierre de período</strong>
+            <strong style={{ fontSize: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLock size={16} /> Cierre de período</strong>
             <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Salda ingresos/gastos a resultados y bloquea la fecha</span>
           </div>
           <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "end" }}>
@@ -922,13 +931,13 @@ export const ContabilidadPage = () => {
             <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Período
               <input type="month" value={periodoCierre} onChange={(e) => setPeriodoCierre(e.target.value)} style={{ ...inputStyle, width: "auto" }} />
             </label>
-            <button onClick={cerrarPeriodo} className={styles.seedBtn} style={{ height: 38 }}>🔒 Cerrar {tipoCierre === "Anual" ? periodoCierre.slice(0, 4) : periodoCierre}</button>
+            <button onClick={cerrarPeriodo} className={styles.seedBtn} style={{ height: 38, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLock size={16} /> Cerrar {tipoCierre === "Anual" ? periodoCierre.slice(0, 4) : periodoCierre}</button>
           </div>
           {cierresPeriodo.length > 0 && (
             <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
               {cierresPeriodo.map((c) => (
                 <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", fontSize: "0.85rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.4rem" }}>
-                  <span><strong>{c.periodo}</strong> <span style={{ fontSize: "0.72rem", background: "#e0e7ff", color: "#3730a3", borderRadius: 20, padding: "1px 8px" }}>{c.tipo}</span> {c.cerrado ? "🔒" : "🔓"}</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><strong>{c.periodo}</strong> <span style={{ fontSize: "0.72rem", background: "#e0e7ff", color: "#3730a3", borderRadius: 20, padding: "1px 8px" }}>{c.tipo}</span> {c.cerrado ? <LuLock size={14} /> : <LuLockOpen size={14} />}</span>
                   <span style={{ color: "#64748b" }}>Utilidad: {fmtCRC(c.utilidad_neta)}</span>
                   {c.cerrado && <button onClick={() => reabrirPeriodo(c.periodo)} style={{ background: "none", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem", color: "#64748b" }}>Reabrir</button>}
                 </div>
@@ -941,19 +950,20 @@ export const ContabilidadPage = () => {
         {checklist && (
           <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
-              <strong style={{ fontSize: "1rem" }}>📋 Checklist de Cierre</strong>
+              <strong style={{ fontSize: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuClipboardList size={16} /> Checklist de Cierre</strong>
               <span style={{
                 fontSize: "0.78rem", fontWeight: 700, borderRadius: 8, padding: "2px 10px",
                 background: checklist.listoParaCerrar ? "#dcfce7" : "#fef3c7",
                 color: checklist.listoParaCerrar ? "#15803d" : "#92400e",
+                display: "inline-flex", alignItems: "center", gap: "0.3rem",
               }}>
-                {checklist.listoParaCerrar ? "✅ Listo para cerrar" : `⚠️ ${checklist.alertas} pendiente(s)`}
+                {checklist.listoParaCerrar ? <><LuCircleCheck size={14} /> Listo para cerrar</> : <><LuTriangleAlert size={14} /> {checklist.alertas} pendiente(s)</>}
               </span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               {checklist.items.map((it: any) => (
                 <div key={it.clave} style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", fontSize: "0.88rem" }}>
-                  <span>{it.estado === "ok" ? "✅" : it.estado === "alerta" ? "⚠️" : "ℹ️"}</span>
+                  <span>{it.estado === "ok" ? <LuCircleCheck size={16} /> : it.estado === "alerta" ? <LuTriangleAlert size={16} /> : <LuInfo size={16} />}</span>
                   <div>
                     <strong style={{ color: it.estado === "alerta" ? "#b45309" : "#334155" }}>{it.titulo}</strong>
                     <div style={{ color: "#64748b", fontSize: "0.82rem" }}>{it.detalle}</div>
@@ -969,17 +979,17 @@ export const ContabilidadPage = () => {
             <div key={c.id} className={styles.cierreCard}>
               <div className={styles.cierreCardHeader}>
                 <strong>{fmtFecha(c.fecha)}</strong>
-                <span className={`${styles.estadoBadge} ${c.cerrado ? styles.estadoOk : styles.estadoPend}`}>
-                  {c.cerrado ? "🔒 Cerrado" : "⏳ Abierto"}
+                <span className={`${styles.estadoBadge} ${c.cerrado ? styles.estadoOk : styles.estadoPend}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                  {c.cerrado ? <><LuLock size={13} /> Cerrado</> : <><LuHourglass size={13} /> Abierto</>}
                 </span>
               </div>
               <div className={styles.cierreStats}>
-                <div><span>💰 Ingresos</span><strong className={styles.positive}>{fmtCRC(c.total_ingresos)}</strong></div>
-                <div><span>💸 Gastos</span><strong className={styles.negative}>{fmtCRC(c.total_gastos)}</strong></div>
-                <div><span>📈 Utilidad</span><strong className={c.utilidad_neta >= 0 ? styles.positive : styles.negative}>{fmtCRC(c.utilidad_neta)}</strong></div>
-                {c.ventas_vehiculos > 0 && <div><span>🚗 Vehículos</span><strong>{fmtCRC(c.ventas_vehiculos)}</strong></div>}
-                {c.ventas_productos > 0 && <div><span>📦 Repuestos</span><strong>{fmtCRC(c.ventas_productos)}</strong></div>}
-                <div><span>📝 Asientos</span><strong>{c.num_transacciones}</strong></div>
+                <div><span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuWallet size={13} /> Ingresos</span><strong className={styles.positive}>{fmtCRC(c.total_ingresos)}</strong></div>
+                <div><span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBanknote size={13} /> Gastos</span><strong className={styles.negative}>{fmtCRC(c.total_gastos)}</strong></div>
+                <div><span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTrendingUp size={13} /> Utilidad</span><strong className={c.utilidad_neta >= 0 ? styles.positive : styles.negative}>{fmtCRC(c.utilidad_neta)}</strong></div>
+                {c.ventas_vehiculos > 0 && <div><span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCar size={13} /> Vehículos</span><strong>{fmtCRC(c.ventas_vehiculos)}</strong></div>}
+                {c.ventas_productos > 0 && <div><span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuPackage size={13} /> Repuestos</span><strong>{fmtCRC(c.ventas_productos)}</strong></div>}
+                <div><span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuNotebookPen size={13} /> Asientos</span><strong>{c.num_transacciones}</strong></div>
               </div>
             </div>
           ))}
@@ -992,7 +1002,7 @@ export const ContabilidadPage = () => {
         <>
           <div className={styles.topBar}>
             {cuentas.length === 0
-              ? <button className={styles.seedBtn} onClick={seedCuentas}>⚙️ Inicializar Plan de Cuentas</button>
+              ? <button className={styles.seedBtn} onClick={seedCuentas} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuSettings size={16} /> Inicializar Plan de Cuentas</button>
               : <button className={styles.newBtn} onClick={() => setShowCuentaForm(!showCuentaForm)}>+ Nueva Cuenta</button>
             }
           </div>
@@ -1045,7 +1055,7 @@ export const ContabilidadPage = () => {
 };
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
-const KpiCard = ({ icon, label, value, color }: { icon: string; label: string; value: string; color: string }) => (
+const KpiCard = ({ icon, label, value, color }: { icon: ReactNode; label: string; value: string; color: string }) => (
   <div className={styles.kpiCard} style={{ "--c": color } as any}>
     <span className={styles.kpiIcon}>{icon}</span>
     <div><span className={styles.kpiVal}>{value}</span><span className={styles.kpiLbl}>{label}</span></div>
@@ -1060,7 +1070,7 @@ const AsientosTable = ({ asientos }: { asientos: Asiento[] }) => (
     {asientos.map(a => (
       <details key={a.id} className={styles.asientoCard}>
         <summary className={styles.asientoSummary}>
-          <span className={styles.asientoTipo}>{TIPO_ICONS[a.tipo] ?? "📝"} {a.tipo.replace("_", " ")}</span>
+          <span className={styles.asientoTipo} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>{(() => { const Icon = TIPO_ICONS[a.tipo] ?? LuNotebookPen; return <Icon size={14} />; })()} {a.tipo.replace("_", " ")}</span>
           <span className={styles.asientoDesc}>{a.descripcion}</span>
           <span className={styles.asientoFecha}>{fmtFecha(a.fecha)}</span>
           <span className={styles.asientoMonto}>

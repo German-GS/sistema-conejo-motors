@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuReceiptText, LuUpload } from "react-icons/lu";
 
 const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
 const th: React.CSSProperties = { padding: "8px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "#64748b", textAlign: "left" };
@@ -56,7 +57,7 @@ export const FacturacionElectronicaPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540" }}>🧾 Facturación Electrónica — Catálogo CABYS</h1>
+      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Facturación Electrónica — Catálogo CABYS</h1>
 
       {/* Aviso modo interino */}
       <div style={{ background: "#fef3c7", border: "1px solid #fde68a", color: "#92400e", borderRadius: 12, padding: "0.9rem 1.1rem" }}>
@@ -79,8 +80,8 @@ export const FacturacionElectronicaPage = () => {
             <input ref={fileRef} type="file" accept=".xlsx" style={{ display: "none" }}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) importar(f); }} />
             <button onClick={() => fileRef.current?.click()} disabled={importando}
-              style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: importando ? "wait" : "pointer", fontWeight: 700 }}>
-              {importando ? "Importando…" : "📤 Importar catálogo (Excel)"}
+              style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: importando ? "wait" : "pointer", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              {importando ? "Importando…" : (<><LuUpload size={16} /> Importar catálogo (Excel)</>)}
             </button>
           </div>
         </div>

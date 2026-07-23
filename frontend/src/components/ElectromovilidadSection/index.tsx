@@ -4,6 +4,18 @@ import {
   ResponsiveContainer, LineChart, Line, Legend, PieChart, Pie, Cell
 } from "recharts";
 import styles from "./ElectromovilidadSection.module.css";
+import {
+  LuZap,
+  LuCalendarDays,
+  LuFuel,
+  LuBatteryCharging,
+  LuChartColumnStacked,
+  LuWallet,
+  LuWrench,
+  LuTrendingUp,
+  LuBan,
+  LuClipboardList,
+} from "react-icons/lu";
 
 // ── Datos basados en el estudio real de Conejo Motors ──────────────────
 
@@ -38,10 +50,10 @@ const costoPorKm = [
 ];
 
 const STATS = [
-  { icon: "⚡", label: "Ahorro en 3 años", value: "₡1,064,000", sub: "≈ $1,900 USD", color: "#024f7d" },
-  { icon: "📅", label: "Ahorro mensual", value: "₡29,556", sub: "≈ $53 USD / mes", color: "#024f7d" },
-  { icon: "🛢️", label: "Costo/km gasolina", value: "₡78.9", sub: "ciudad 12 km/L", color: "#f97316" },
-  { icon: "🔋", label: "Costo/km eléctrico", value: "₡11.7", sub: "6.7× más barato", color: "#00c7b1" },
+  { icon: <LuZap />, label: "Ahorro en 3 años", value: "₡1,064,000", sub: "≈ $1,900 USD", color: "#024f7d" },
+  { icon: <LuCalendarDays />, label: "Ahorro mensual", value: "₡29,556", sub: "≈ $53 USD / mes", color: "#024f7d" },
+  { icon: <LuFuel />, label: "Costo/km gasolina", value: "₡78.9", sub: "ciudad 12 km/L", color: "#f97316" },
+  { icon: <LuBatteryCharging />, label: "Costo/km eléctrico", value: "₡11.7", sub: "6.7× más barato", color: "#00c7b1" },
 ];
 
 const CRC = (v: number) =>
@@ -70,7 +82,7 @@ export const ElectromovilidadSection = () => {
 
         {/* Header */}
         <div className={styles.header}>
-          <span className={styles.pill}>📊 Electromovilidad en Costa Rica</span>
+          <span className={styles.pill} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={16} /> Electromovilidad en Costa Rica</span>
           <h2>¿Cuánto ahorras con un eléctrico?</h2>
           <p className={styles.lead}>
             Basado en un uso real de <strong>15 km/día en ciudad</strong> + 3 viajes largos al año.
@@ -98,9 +110,9 @@ export const ElectromovilidadSection = () => {
               className={activeTab === tab ? styles.tabActive : styles.tab}
               onClick={() => setActiveTab(tab)}
             >
-              {tab === "costos" && "💰 Costo anual"}
-              {tab === "mantenimiento" && "🔧 Mantenimiento"}
-              {tab === "acumulado" && "📈 Ahorro acumulado"}
+              {tab === "costos" && <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuWallet size={16} /> Costo anual</span>}
+              {tab === "mantenimiento" && <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuWrench size={16} /> Mantenimiento</span>}
+              {tab === "acumulado" && <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuTrendingUp size={16} /> Ahorro acumulado</span>}
             </button>
           ))}
         </div>
@@ -154,7 +166,7 @@ export const ElectromovilidadSection = () => {
                 </BarChart>
               </ResponsiveContainer>
               <div className={styles.maintNote}>
-                <strong>🚫 El eléctrico NO necesita:</strong> cambios de aceite · bujías · correa de distribución · filtro de aceite
+                <strong style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuBan size={14} /> El eléctrico NO necesita:</strong> cambios de aceite · bujías · correa de distribución · filtro de aceite
               </div>
             </>
           )}
@@ -184,7 +196,7 @@ export const ElectromovilidadSection = () => {
 
         {/* Supuestos */}
         <div className={styles.assumptions}>
-          <p><strong>📋 Supuestos del cálculo:</strong></p>
+          <p><strong style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuClipboardList size={14} /> Supuestos del cálculo:</strong></p>
           <ul>
             <li>Gasolina regular ₡748/L · ciudad 12 km/L · carretera 15 km/L</li>
             <li>Electricidad ₡65.07/kWh nocturno (ciudad) · ₡89.19/kWh valle (viajes)</li>

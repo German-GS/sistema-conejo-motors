@@ -6,6 +6,7 @@ import styles from "./PricingPage.module.css";
 import { VisibilityButtons } from "@/components/VisibilityButtons";
 import { VehicleRibbon } from "@/components/VehicleRibbon";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { LuTriangleAlert } from "react-icons/lu";
 
 interface Vehicle {
   id: number;
@@ -224,14 +225,14 @@ export const PricingPage = () => {
                   {/* Precio final (preview en edición) */}
                   <td>
                     {isEditing && preview ? (
-                      <span className={preview.bajoCosto ? styles.alertPrice : styles.finalPrice}>
+                      <span className={preview.bajoCosto ? styles.alertPrice : styles.finalPrice} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
                         {CRC(preview.final)}
-                        {preview.bajoCosto && " ⚠️"}
+                        {preview.bajoCosto && <LuTriangleAlert size={13} />}
                       </span>
                     ) : (
-                      <span className={precioFinal < costo ? styles.alertPrice : styles.finalPrice}>
+                      <span className={precioFinal < costo ? styles.alertPrice : styles.finalPrice} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
                         {CRC(precioFinal)}
-                        {precioFinal < costo && " ⚠️"}
+                        {precioFinal < costo && <LuTriangleAlert size={13} />}
                       </span>
                     )}
                   </td>

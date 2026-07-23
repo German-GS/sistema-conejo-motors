@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
 import styles from "./ChatWidget.module.css";
+import { LuMessageCircle, LuSend } from "react-icons/lu";
 
 interface Mensaje {
   id: number;
@@ -154,7 +155,7 @@ export const ChatWidget: React.FC = () => {
         onClick={() => setOpen((o) => !o)}
         title="Chat del equipo"
       >
-        <span className={styles.fabIcon}>💬</span>
+        <span className={styles.fabIcon}><LuMessageCircle size={22} /></span>
         {unread > 0 && (
           <span className={styles.fabBadge}>{unread > 9 ? "9+" : unread}</span>
         )}
@@ -165,7 +166,7 @@ export const ChatWidget: React.FC = () => {
         <div className={styles.panel}>
           <div className={styles.header}>
             <div className={styles.headerLeft}>
-              <span className={styles.headerTitle}>💬 Chat del Equipo</span>
+              <span className={styles.headerTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuMessageCircle size={18} /> Chat del Equipo</span>
               <span className={styles.onlineDot} />
             </div>
             <button className={styles.closeBtn} onClick={() => setOpen(false)}>✕</button>
@@ -234,7 +235,7 @@ export const ChatWidget: React.FC = () => {
               onClick={enviar}
               disabled={!texto.trim() || sending}
             >
-              ➤
+              <LuSend size={16} />
             </button>
           </div>
         </div>

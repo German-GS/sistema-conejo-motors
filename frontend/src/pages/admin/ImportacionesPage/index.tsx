@@ -190,10 +190,10 @@ export default function ImportacionesPage() {
                               {!v.vehiculo && (
                                 <button
                                   className={styles.btnPrimary}
-                                  style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+                                  style={{ padding: '4px 10px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                                   onClick={() => promover(v)}
                                 >
-                                  ➕ Crear en inventario
+                                  <LuPlus size={14} /> Crear en inventario
                                 </button>
                               )}
                               <button

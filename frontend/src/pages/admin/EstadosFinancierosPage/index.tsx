@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuChartColumnStacked, LuDownload, LuTriangleAlert, LuCircleCheck, LuCircle } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 
@@ -65,10 +66,10 @@ export const EstadosFinancierosPage = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-        <h1 style={{ margin: 0, color: "#0a2540" }}>📊 Estados Financieros</h1>
+        <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuChartColumnStacked size={22} /> Estados Financieros</h1>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
           <input type="month" value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem" }} />
-          <button onClick={descargarExcel} style={{ background: "#059669", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }}>📥 Excel (3 estados)</button>
+          <button onClick={descargarExcel} style={{ background: "#059669", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}><LuDownload size={16} /> Excel (3 estados)</button>
         </div>
       </div>
 
@@ -181,8 +182,8 @@ const BalanceGeneral = ({ data }: any) => {
     <>
       <p style={{ fontSize: "0.8rem", color: "#64748b", margin: 0 }}>
         Corte al {a.fechaCorte} · {a.equilibrado
-          ? <span style={{ color: "#059669", fontWeight: 700 }}>✓ Cuadrado</span>
-          : <span style={{ color: "#dc2626", fontWeight: 700 }}>⚠️ Descuadrado</span>}
+          ? <span style={{ color: "#059669", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCircleCheck size={14} /> Cuadrado</span>
+          : <span style={{ color: "#dc2626", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Descuadrado</span>}
       </p>
       <Tabla2>
         <Fila label="ACTIVOS" bold color="#024f7d" />
@@ -211,8 +212,8 @@ const BalanceGeneral = ({ data }: any) => {
 
       {/* Verificación de la ecuación contable (Parte F) */}
       <div style={{ ...card, background: a.equilibrado ? "#f0fdf4" : "#fef2f2", border: `1px solid ${a.equilibrado ? "#bbf7d0" : "#fecaca"}` }}>
-        <div style={{ fontWeight: 700, color: a.equilibrado ? "#15803d" : "#b91c1c", fontSize: "0.9rem" }}>
-          {a.equilibrado ? "✓" : "⚠️"} Activo = Pasivo + Patrimonio
+        <div style={{ fontWeight: 700, color: a.equilibrado ? "#15803d" : "#b91c1c", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+          {a.equilibrado ? <LuCircleCheck size={16} /> : <LuTriangleAlert size={16} />} Activo = Pasivo + Patrimonio
         </div>
         <div style={{ fontSize: "0.95rem", marginTop: 4, color: "#334155" }}>
           {CRC(a.totales.activos)} = {CRC(a.totales.pasivos)} + {CRC(a.totales.patrimonio)} = <strong>{CRC(a.totales.pasivoMasPatrimonio)}</strong>
@@ -243,8 +244,8 @@ const FlujoCaja = ({ data }: any) => {
 
       {/* Cuadre contra la variación directa de caja */}
       <div style={{ ...card, background: a.cuadra ? "#f0fdf4" : "#fef2f2", border: `1px solid ${a.cuadra ? "#bbf7d0" : "#fecaca"}` }}>
-        <div style={{ fontWeight: 700, color: a.cuadra ? "#15803d" : "#b91c1c", fontSize: "0.9rem" }}>
-          {a.cuadra ? "✓ Cuadra con la variación directa de caja" : "⚠️ No cuadra — hay partidas sin clasificar"}
+        <div style={{ fontWeight: 700, color: a.cuadra ? "#15803d" : "#b91c1c", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+          {a.cuadra ? <><LuCircleCheck size={16} /> Cuadra con la variación directa de caja</> : <><LuTriangleAlert size={16} /> No cuadra — hay partidas sin clasificar</>}
         </div>
         <div style={{ fontSize: "0.85rem", marginTop: 4, color: "#334155" }}>
           3 secciones: <strong>{CRC(a.variacionNeta)}</strong> · Variación directa de caja: <strong>{CRC(a.variacionCajaDirecta)}</strong> · Diferencia: <strong>{CRC(a.diferencia)}</strong>
@@ -286,7 +287,7 @@ const SaludFinanciera = ({ data }: any) => {
       {/* Diagnóstico general */}
       <div style={{ ...card, background: g.bg, border: `1px solid ${g.border}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "2rem" }}>{d.semaforoGlobal === "verde" ? "🟢" : d.semaforoGlobal === "amarillo" ? "🟡" : d.semaforoGlobal === "rojo" ? "🔴" : "⚪"}</span>
+          <LuCircle size={28} fill={d.semaforoGlobal === "verde" ? "#22c55e" : d.semaforoGlobal === "amarillo" ? "#eab308" : d.semaforoGlobal === "rojo" ? "#ef4444" : "#cbd5e1"} color={d.semaforoGlobal === "verde" ? "#22c55e" : d.semaforoGlobal === "amarillo" ? "#eab308" : d.semaforoGlobal === "rojo" ? "#ef4444" : "#cbd5e1"} />
           <div style={{ flex: 1, minWidth: 240 }}>
             <div style={{ fontWeight: 800, color: g.text, fontSize: "1.05rem" }}>Diagnóstico general — {d.semaforoGlobal.toUpperCase()} (puntaje {d.puntaje}/2)</div>
             <div style={{ color: "#334155", fontSize: "0.88rem", marginTop: 2 }}>{d.resumen}</div>
@@ -295,12 +296,12 @@ const SaludFinanciera = ({ data }: any) => {
         {(d.fortalezas.length > 0 || d.riesgos.length > 0) && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
             <div>
-              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#15803d", marginBottom: 4 }}>✓ Fortalezas ({d.fortalezas.length})</div>
+              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#15803d", marginBottom: 4, display: "flex", alignItems: "center", gap: "0.3rem" }}><LuCircleCheck size={14} /> Fortalezas ({d.fortalezas.length})</div>
               {d.fortalezas.length === 0 ? <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>—</div> :
                 <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.8rem", color: "#334155", lineHeight: 1.5 }}>{d.fortalezas.map((s: string, i: number) => <li key={i}>{s}</li>)}</ul>}
             </div>
             <div>
-              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#b91c1c", marginBottom: 4 }}>⚠ Riesgos ({d.riesgos.length})</div>
+              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#b91c1c", marginBottom: 4, display: "flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Riesgos ({d.riesgos.length})</div>
               {d.riesgos.length === 0 ? <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>—</div> :
                 <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.8rem", color: "#334155", lineHeight: 1.5 }}>{d.riesgos.map((s: string, i: number) => <li key={i}>{s}</li>)}</ul>}
             </div>

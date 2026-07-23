@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuSettings, LuLandmark, LuFileText, LuX, LuUpload } from "react-icons/lu";
 
 interface DocEntidad {
   id: number;
@@ -108,7 +109,7 @@ export const EntidadesFinancierasSettings = () => {
           + Agregar entidad
         </button>
         {entidades.length === 0 && (
-          <button className="btn btn-secondary" onClick={seed}>⚙️ Cargar entidades base</button>
+          <button className="btn btn-secondary" onClick={seed} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuSettings size={16} /> Cargar entidades base</button>
         )}
       </div>
 
@@ -116,7 +117,7 @@ export const EntidadesFinancierasSettings = () => {
         {entidades.map((e) => (
           <div key={e.id} style={{ border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.15rem", background: e.activa ? "#fff" : "#f8fafc", opacity: e.activa ? 1 : 0.7 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
-              <strong style={{ fontSize: "1rem", color: "#0a2540" }}>🏛 {e.nombre}</strong>
+              <strong style={{ fontSize: "1rem", color: "#0a2540", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLandmark size={16} /> {e.nombre}</strong>
               <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: e.activa ? "#dcfce7" : "#e2e8f0", color: e.activa ? "#15803d" : "#64748b" }}>
                 {e.activa ? "Activa" : "Inactiva"}
               </span>
@@ -135,9 +136,9 @@ export const EntidadesFinancierasSettings = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginBottom: "0.75rem" }}>
                 {e.documentos.map((d) => (
                   <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.4rem 0.7rem" }}>
-                    <span style={{ flex: 1, fontSize: "0.85rem" }}>📄 {d.nombre}</span>
+                    <span style={{ flex: 1, fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuFileText size={14} /> {d.nombre}</span>
                     <a href={d.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "#024f7d", fontWeight: 600 }}>Ver</a>
-                    <button onClick={() => eliminarDoc(d.id)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#dc2626", fontSize: "0.85rem" }}>✕</button>
+                    <button onClick={() => eliminarDoc(d.id)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#dc2626", fontSize: "0.85rem", display: "inline-flex", alignItems: "center" }}><LuX size={14} /></button>
                   </div>
                 ))}
               </div>
@@ -152,7 +153,7 @@ export const EntidadesFinancierasSettings = () => {
                 style={{ flex: 1, minWidth: 160, padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit" }}
               />
               <label style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", border: "1.5px dashed #94a3b8", borderRadius: 8, padding: "0.4rem 0.8rem", cursor: subiendo === e.id ? "wait" : "pointer", fontSize: "0.82rem", fontWeight: 600, color: "#475569", background: "#fff" }}>
-                {subiendo === e.id ? "Subiendo…" : "⬆️ Subir formulario"}
+                {subiendo === e.id ? "Subiendo…" : <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuUpload size={14} /> Subir formulario</span>}
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"

@@ -11,7 +11,7 @@ import {
   LuGlobe, LuHandshake, LuBuilding2, LuClipboardList,
   LuCircleCheck, LuTriangleAlert, LuBriefcase, LuBanknote, LuWallet, LuCar,
   LuTarget, LuCalendarDays, LuPencil, LuMessageCircle, LuMail, LuPhone, LuLock,
-  LuHome, LuSquarePen, LuThermometer, LuInfo, LuUpload, LuFileText, LuImage,
+  LuHouse, LuSquarePen, LuThermometer, LuInfo, LuUpload, LuFileText, LuImage,
   LuPaperclip, LuHourglass, LuDownload, LuChartColumnStacked, LuX, LuPlus,
   LuCamera, LuThumbsUp, LuMusic, LuFlame, LuCloudSun, LuSnowflake,
   LuIdCard, LuSignature, LuMegaphone, LuNotebookPen, LuCreditCard, LuUser,
@@ -774,7 +774,7 @@ export const LeadDetailsPage = () => {
                   {Campo("fecha_nacimiento", "Fecha de nacimiento", "date")}
                   {Campo("lugar_nacimiento", "Lugar de nacimiento")}
 
-                  {grupoTitulo(<><LuHome size={13} /> Domicilio</>)}
+                  {grupoTitulo(<><LuHouse size={13} /> Domicilio</>)}
                   {Campo("direccion", "Dirección exacta")}
                   {Campo("pais_residencia", "País de residencia")}
 

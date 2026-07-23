@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuReceiptText, LuPaperclip, LuUpload } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 
@@ -108,7 +109,7 @@ export const ComprasPage = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-        <h1 style={{ margin: 0, color: "#0a2540" }}>🧾 Órdenes de Compra</h1>
+        <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Órdenes de Compra</h1>
         <button onClick={() => setShowForm((s) => !s)} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700 }}>
           {showForm ? "Cerrar" : "+ Nueva orden"}
         </button>
@@ -196,9 +197,9 @@ export const ComprasPage = () => {
                     <td style={{ ...td, textAlign: "right", fontWeight: 700 }}>{CRC(o.total)}</td>
                     <td style={td}>
                       {o.comprobante_gcs_path ? (
-                        <button onClick={() => verComprobante(o.id)} title="Ver factura" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem" }}>📎</button>
+                        <button onClick={() => verComprobante(o.id)} title="Ver factura" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem", display: "inline-flex", alignItems: "center" }}><LuPaperclip size={16} /></button>
                       ) : (
-                        <label title="Adjuntar factura (foto o PDF)" style={{ cursor: "pointer", color: "#64748b" }}>⬆️
+                        <label title="Adjuntar factura (foto o PDF)" style={{ cursor: "pointer", color: "#64748b", display: "inline-flex", alignItems: "center" }}><LuUpload size={16} />
                           <input type="file" accept="image/*,application/pdf" capture="environment" style={{ display: "none" }} onChange={(e) => subirComprobante(o.id, e.target.files?.[0] ?? null)} />
                         </label>
                       )}

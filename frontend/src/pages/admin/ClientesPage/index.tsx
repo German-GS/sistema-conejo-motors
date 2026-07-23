@@ -2,6 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import { fmtFechaLocal } from "@/utils/dateUtils";
 import toast from "react-hot-toast";
+import {
+  LuUsers, LuCar, LuFileText, LuReceiptText, LuClipboardList,
+  LuLock, LuCircleCheck, LuCircleAlert,
+} from "react-icons/lu";
 
 const CRC = (v: number) => "₡" + (Number(v) || 0).toLocaleString("es-CR");
 
@@ -63,7 +67,7 @@ export const ClientesPage = () => {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.25rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540", margin: 0 }}>👥 Clientes</h1>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><LuUsers size={22} /> Clientes</h1>
         <input
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
@@ -94,8 +98,8 @@ export const ClientesPage = () => {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
                     <strong style={{ color: "#0a2540" }}>{c.nombre_completo}</strong>
                     <span style={{ display: "flex", gap: "0.4rem" }}>
-                      {c.vehiculos > 0 && <span title="Vehículos comprados" style={{ fontSize: "0.72rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "1px 8px", fontWeight: 700 }}>🚗 {c.vehiculos}</span>}
-                      <span title="Cotizaciones" style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#475569", borderRadius: 20, padding: "1px 8px", fontWeight: 700 }}>📄 {c.cotizaciones}</span>
+                      {c.vehiculos > 0 && <span title="Vehículos comprados" style={{ fontSize: "0.72rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "1px 8px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuCar size={12} /> {c.vehiculos}</span>}
+                      <span title="Cotizaciones" style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#475569", borderRadius: 20, padding: "1px 8px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuFileText size={12} /> {c.cotizaciones}</span>
                     </span>
                   </div>
                   <div style={{ fontSize: "0.8rem", color: "#64748b" }}>{c.cedula} · {c.telefono || "sin tel."}</div>
@@ -126,7 +130,7 @@ export const ClientesPage = () => {
 
               {/* Vehículos comprados */}
               <div>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.5rem" }}>🚗 Vehículos comprados</div>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuCar size={14} /> Vehículos comprados</div>
                 {perfil.vehiculos.length === 0 ? (
                   <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: 0 }}>Aún no ha comprado vehículos.</p>
                 ) : (
@@ -146,7 +150,7 @@ export const ClientesPage = () => {
 
               {/* Cotizaciones / Proformas */}
               <div>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.5rem" }}>🧾 Cotizaciones / Proformas</div>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuReceiptText size={14} /> Cotizaciones / Proformas</div>
                 {(!perfil.cotizaciones || perfil.cotizaciones.length === 0) ? (
                   <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: 0 }}>Sin cotizaciones. Creá una desde el lead.</p>
                 ) : (
@@ -158,8 +162,8 @@ export const ClientesPage = () => {
                           <div style={{ fontSize: "0.76rem", color: "#94a3b8" }}>{c.fecha ? fmtFechaLocal(c.fecha) : ""} · {c.estado} · {CRC(c.total)}</div>
                         </div>
                         <button onClick={() => verProforma(c.id)}
-                          style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, whiteSpace: "nowrap" }}>
-                          🧾 Ver Proforma
+                          style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                          <LuReceiptText size={14} /> Ver Proforma
                         </button>
                       </div>
                     ))}
@@ -169,13 +173,13 @@ export const ClientesPage = () => {
 
               {/* Expediente SUGEF */}
               <div>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.5rem" }}>📋 Expediente SUGEF</div>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuClipboardList size={14} /> Expediente SUGEF</div>
                 {(() => {
                   const e = perfil.expediente;
                   return (
                     <div style={{ background: e.bajoRetencion ? "#f0fdf4" : "#fff", border: `1px solid ${e.bajoRetencion ? "#16a34a" : "#e2e8f0"}`, borderRadius: 8, padding: "0.6rem 0.8rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
-                      <span style={{ fontSize: "0.85rem" }}>
-                        {e.bajoRetencion ? "🔒" : e.kycCompleto ? "🟢" : "🟡"}{" "}
+                      <span style={{ fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        {e.bajoRetencion ? <LuLock size={14} /> : e.kycCompleto ? <LuCircleCheck size={14} color="#16a34a" /> : <LuCircleAlert size={14} color="#eab308" />}
                         {e.bajoRetencion
                           ? `Bajo retención hasta ${fmtFechaLocal(e.retencion?.retener_hasta)}`
                           : e.kycCompleto ? "Expediente completo" : "Expediente incompleto"}

@@ -6,6 +6,17 @@ import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./CierreMesWidget.module.css";
+import {
+  LuCircleCheck,
+  LuTriangleAlert,
+  LuCalendarDays,
+  LuClipboardList,
+  LuCar,
+  LuWallet,
+  LuUsers,
+  LuTrendingDown,
+  LuFileText,
+} from "react-icons/lu";
 
 const MESES = [
   "", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
@@ -78,7 +89,7 @@ export const CierreMesWidget = () => {
     <>
       <div className={`${styles.widget} ${showReminder ? styles.widgetUrgente : ""}`}>
         <div className={styles.left}>
-          <span className={styles.icon}>{cerrado ? "✅" : showReminder ? "⚠️" : "📅"}</span>
+          <span className={styles.icon}>{cerrado ? <LuCircleCheck /> : showReminder ? <LuTriangleAlert /> : <LuCalendarDays />}</span>
           <div>
             <div className={styles.titulo}>
               Cierre de Mes — {nombreMes} {anio}
@@ -87,7 +98,7 @@ export const CierreMesWidget = () => {
               {cerrado
                 ? `Mes cerrado · informe guardado en Informes`
                 : showReminder
-                ? `⚠️ Quedan ${diasEnMes - dia} días para fin de mes — recuerde hacer el cierre`
+                ? `Quedan ${diasEnMes - dia} días para fin de mes — recuerde hacer el cierre`
                 : `Día ${dia} de ${diasEnMes} · ${diasEnMes - dia} días restantes`}
             </div>
           </div>
@@ -106,16 +117,16 @@ export const CierreMesWidget = () => {
       {showModal && preview && (
         <div className={styles.overlay} onClick={() => !loading && setShowModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <h2 className={styles.modalTitle}>📋 Cierre de {nombreMes} {anio}</h2>
+            <h2 className={styles.modalTitle} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuClipboardList size={22} /> Cierre de {nombreMes} {anio}</h2>
             <p className={styles.modalSub}>Resumen del mes que se va a archivar:</p>
 
             <div className={styles.statsGrid}>
-              <StatBox icon="🚗" label="Ventas" value={String(preview.ventas.cantidad)} sub={fmtCRC(preview.ventas.ingresos)} />
-              <StatBox icon="💰" label="Ganancia" value={fmtCRC(preview.ventas.ganancia)} sub="bruta estimada" />
-              <StatBox icon="👥" label="Leads nuevos" value={String(preview.leads.nuevos)} sub={`${preview.leads.cerrados} cerrados`} />
-              <StatBox icon="📉" label="Leads perdidos" value={String(preview.leads.perdidos)} sub="este mes" />
-              <StatBox icon="📄" label="Cotizaciones" value={String(preview.cotizaciones.emitidas)} sub={`${preview.cotizaciones.aceptadas} aceptadas`} />
-              <StatBox icon="🚙" label="Inventario" value={String(preview.inventario.disponibles)} sub="disponibles al cierre" />
+              <StatBox icon={<LuCar />} label="Ventas" value={String(preview.ventas.cantidad)} sub={fmtCRC(preview.ventas.ingresos)} />
+              <StatBox icon={<LuWallet />} label="Ganancia" value={fmtCRC(preview.ventas.ganancia)} sub="bruta estimada" />
+              <StatBox icon={<LuUsers />} label="Leads nuevos" value={String(preview.leads.nuevos)} sub={`${preview.leads.cerrados} cerrados`} />
+              <StatBox icon={<LuTrendingDown />} label="Leads perdidos" value={String(preview.leads.perdidos)} sub="este mes" />
+              <StatBox icon={<LuFileText />} label="Cotizaciones" value={String(preview.cotizaciones.emitidas)} sub={`${preview.cotizaciones.aceptadas} aceptadas`} />
+              <StatBox icon={<LuCar />} label="Inventario" value={String(preview.inventario.disponibles)} sub="disponibles al cierre" />
             </div>
 
             <label className={styles.checkLabel}>
@@ -134,7 +145,11 @@ export const CierreMesWidget = () => {
                 Cancelar
               </button>
               <button className={styles.btnConfirm} onClick={handleCerrar} disabled={loading}>
-                {loading ? "Guardando..." : `✅ Confirmar Cierre de ${nombreMes}`}
+                {loading ? "Guardando..." : (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                    <LuCircleCheck size={16} /> Confirmar Cierre de {nombreMes}
+                  </span>
+                )}
               </button>
             </div>
           </div>
@@ -144,7 +159,7 @@ export const CierreMesWidget = () => {
   );
 };
 
-const StatBox = ({ icon, label, value, sub }: { icon: string; label: string; value: string; sub: string }) => (
+const StatBox = ({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub: string }) => (
   <div className={styles.statBox}>
     <span className={styles.statIcon}>{icon}</span>
     <div className={styles.statLabel}>{label}</div>

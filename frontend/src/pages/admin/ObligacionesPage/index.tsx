@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuReceiptText, LuTriangleAlert, LuDownload, LuInfo } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 const TARIFA_LABEL: Record<string, string> = {
@@ -90,12 +91,12 @@ export const ObligacionesPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540" }}>🧾 Obligaciones Tributarias — IVA (D-150)</h1>
+      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Obligaciones Tributarias — IVA (D-150)</h1>
 
       {/* Banner de pendiente */}
       {pendiente?.pendiente && (
         <div style={{ background: "#fef3c7", border: "1px solid #fde68a", color: "#92400e", borderRadius: 12, padding: "0.9rem 1.1rem", display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "1.3rem" }}>⚠️</span>
+          <LuTriangleAlert size={24} />
           <div style={{ flex: 1, minWidth: 240 }}>
             <strong>Declaración de IVA de {pendiente.periodo} pendiente.</strong>{" "}
             Se declara en TRIBU-CR dentro de los primeros 15 días naturales del mes. Declarar aunque sea en cero (omitirla = multa de ½ salario base).
@@ -176,8 +177,8 @@ export const ObligacionesPage = () => {
             <button onClick={generar} disabled={generando} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.2rem", cursor: "pointer", fontWeight: 700 }}>
               {generando ? "Generando…" : "Generar liquidación"}
             </button>
-            <button onClick={descargarXml} style={{ background: "#fff", border: "1px solid #cbd5e1", color: "#334155", borderRadius: 8, padding: "0.6rem 1rem", cursor: "pointer", fontWeight: 600 }} title="Borrador XML del D-150 (sin firmar)">
-              ⬇️ XML (borrador)
+            <button onClick={descargarXml} style={{ background: "#fff", border: "1px solid #cbd5e1", color: "#334155", borderRadius: 8, padding: "0.6rem 1rem", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }} title="Borrador XML del D-150 (sin firmar)">
+              <LuDownload size={15} /> XML (borrador)
             </button>
           </div>
         </div>
@@ -252,7 +253,7 @@ export const ObligacionesPage = () => {
 
       {/* Información de soporte */}
       <div style={{ ...card, background: "#f8fafc" }}>
-        <strong style={{ fontSize: "0.95rem", color: "#0a2540" }}>ℹ️ Información de soporte</strong>
+        <strong style={{ fontSize: "0.95rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuInfo size={16} /> Información de soporte</strong>
         <ul style={{ fontSize: "0.84rem", color: "#475569", lineHeight: 1.7, marginTop: "0.5rem" }}>
           <li><strong>Formulario:</strong> D-150 en TRIBU-CR (reemplazó al ATV/D-104 desde el 6 oct 2025). Se declara <strong>por tarifa</strong>, no por actividad.</li>
           <li><strong>Plazo:</strong> primeros 15 días naturales del mes siguiente. Declarar aunque sea en cero.</li>

@@ -3,6 +3,11 @@ import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./CampanasPage.module.css";
 import { fmtFechaLocal } from "@/utils/dateUtils";
+import {
+  LuThumbsUp, LuCamera, LuMusic, LuMegaphone, LuCalendarDays,
+  LuWallet, LuBookOpenCheck, LuPencil, LuCircleCheck,
+} from "react-icons/lu";
+import type { IconType } from "react-icons";
 
 const fmtCRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
@@ -30,8 +35,8 @@ interface Metricas {
   costoPorCierre: number;
 }
 
-const PLATAFORMA_ICONS: Record<string, string> = {
-  Facebook: "👍", Instagram: "📸", TikTok: "🎵", Otro: "📣",
+const PLATAFORMA_ICONS: Record<string, IconType> = {
+  Facebook: LuThumbsUp, Instagram: LuCamera, TikTok: LuMusic, Otro: LuMegaphone,
 };
 const PLATAFORMA_COLORS: Record<string, string> = {
   Facebook: "#1877f2", Instagram: "#c13584", TikTok: "#010101", Otro: "#64748b",
@@ -132,7 +137,7 @@ export const CampanasPage = () => {
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1>📣 Gestión de Campañas</h1>
+          <h1 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuMegaphone size={22} /> Gestión de Campañas</h1>
           <p className={styles.subtitle}>Marketing en redes sociales · Seguimiento de efectividad</p>
         </div>
         <button className="btn btn-principal" onClick={() => { setShowForm(true); setEditId(null); setForm({ ...EMPTY_FORM }); }}>
@@ -161,7 +166,7 @@ export const CampanasPage = () => {
         <p className={styles.loading}>Cargando campañas...</p>
       ) : campanas.length === 0 ? (
         <div className={styles.empty}>
-          <span>📣</span>
+          <span><LuMegaphone size={28} /></span>
           <p>No hay campañas registradas todavía.</p>
           <button className="btn btn-principal" onClick={() => setShowForm(true)}>Crear primera campaña</button>
         </div>
@@ -174,7 +179,7 @@ export const CampanasPage = () => {
                   className={styles.plataformaBadge}
                   style={{ background: PLATAFORMA_COLORS[c.plataforma] }}
                 >
-                  {PLATAFORMA_ICONS[c.plataforma]} {c.plataforma}
+                  {(() => { const Icon = PLATAFORMA_ICONS[c.plataforma]; return <Icon size={14} />; })()} {c.plataforma}
                 </span>
                 <span
                   className={styles.estadoBadge}
@@ -188,11 +193,11 @@ export const CampanasPage = () => {
               {c.objetivo && <p className={styles.objetivo}>{c.objetivo}</p>}
 
               <div className={styles.cardMeta}>
-                <span>📅 {fmtFechaLocal(c.fecha_inicio)}{c.fecha_fin ? ` → ${fmtFechaLocal(c.fecha_fin)}` : ""}</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCalendarDays size={14} /> {fmtFechaLocal(c.fecha_inicio)}{c.fecha_fin ? ` → ${fmtFechaLocal(c.fecha_fin)}` : ""}</span>
                 {Number(c.presupuesto_crc) > 0 && (
-                  <span>
-                    💰 {fmtCRC(Number(c.presupuesto_crc))}
-                    {c.gasto_id && <span className={styles.gastoTag}>📒 Contabilizado</span>}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <LuWallet size={14} /> {fmtCRC(Number(c.presupuesto_crc))}
+                    {c.gasto_id && <span className={styles.gastoTag} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBookOpenCheck size={13} /> Contabilizado</span>}
                   </span>
                 )}
               </div>
@@ -231,8 +236,8 @@ export const CampanasPage = () => {
               )}
 
               <div className={styles.cardActions}>
-                <button className={styles.btnEdit} onClick={(e) => { e.stopPropagation(); handleEditar(c); }}>
-                  ✏️ Editar
+                <button className={styles.btnEdit} onClick={(e) => { e.stopPropagation(); handleEditar(c); }} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                  <LuPencil size={14} /> Editar
                 </button>
                 {c.estado === "Activa" && (
                   <button className={styles.btnPausar} onClick={(e) => { e.stopPropagation(); handleEstado(c.id, "Pausada"); }}>
@@ -245,8 +250,8 @@ export const CampanasPage = () => {
                   </button>
                 )}
                 {c.estado !== "Finalizada" && (
-                  <button className={styles.btnFinalizar} onClick={(e) => { e.stopPropagation(); handleEstado(c.id, "Finalizada"); }}>
-                    ✅ Finalizar
+                  <button className={styles.btnFinalizar} onClick={(e) => { e.stopPropagation(); handleEstado(c.id, "Finalizada"); }} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <LuCircleCheck size={14} /> Finalizar
                   </button>
                 )}
               </div>
@@ -271,7 +276,7 @@ export const CampanasPage = () => {
             <label>Plataforma</label>
             <select value={form.plataforma} onChange={(e) => setForm({ ...form, plataforma: e.target.value })}>
               {["Facebook", "Instagram", "TikTok", "Otro"].map((p) => (
-                <option key={p} value={p}>{PLATAFORMA_ICONS[p]} {p}</option>
+                <option key={p} value={p}>{p}</option>
               ))}
             </select>
 

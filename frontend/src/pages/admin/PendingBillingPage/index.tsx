@@ -5,6 +5,11 @@ import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./PendingBillingPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
+import {
+  LuBriefcase, LuClipboardList, LuCircleCheck, LuTriangleAlert, LuX, LuFileText, LuGift,
+  LuBuilding2, LuUser, LuGlobe, LuCalendarDays, LuZap, LuLock, LuSearch, LuInbox,
+  LuPaperclip, LuUpload, LuLink, LuCar, LuHourglass, LuUserCog,
+} from "react-icons/lu";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 interface Cotizacion {
@@ -244,20 +249,20 @@ const PendingBillingPage = () => {
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
-        <h1>💼 Facturación</h1>
+        <h1 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBriefcase size={22} /> Facturación</h1>
         <div className={styles.kpis}>
-          <span className={styles.kpiChip} style={{ background: "#e0f2fe", color: "#0891b2" }}>
-            📋 {pendientes.length} pendientes
+          <span className={styles.kpiChip} style={{ background: "#e0f2fe", color: "#0891b2", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <LuClipboardList size={14} /> {pendientes.length} pendientes
           </span>
-          <span className={styles.kpiChip} style={{ background: "#dcfce7", color: "#166534" }}>
-            ✅ {historial.length} completadas
+          <span className={styles.kpiChip} style={{ background: "#dcfce7", color: "#166534", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <LuCircleCheck size={14} /> {historial.length} completadas
           </span>
         </div>
       </div>
 
       {/* Aviso: facturación electrónica en modo interino (sin llaves) */}
       <div style={{ background: "#fef3c7", border: "1px solid #fde68a", color: "#92400e", borderRadius: 10, padding: "0.7rem 1rem", fontSize: "0.85rem", marginBottom: "1rem", lineHeight: 1.5 }}>
-        <strong>⚠️ Comprobantes en modo BORRADOR.</strong> Se registran las ventas y su contabilidad,
+        <strong style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Comprobantes en modo BORRADOR.</strong> Se registran las ventas y su contabilidad,
         pero el comprobante electrónico <strong>aún no es válido fiscalmente</strong> (numeración provisional, sin firma
         ni envío a Hacienda). Se activará al cargar el certificado <code>.p12</code>. No entregar como factura legal al cliente.
       </div>
@@ -267,13 +272,13 @@ const PendingBillingPage = () => {
         <div className={styles.facturaPanel}>
           <div className={styles.facturaPanelHeader}>
             <h2>Facturar Cotización #{cotSeleccionada.id}</h2>
-            <button className={styles.closeFactura} onClick={() => setCotSeleccionada(null)}>✕ Cancelar</button>
+            <button className={styles.closeFactura} onClick={() => setCotSeleccionada(null)} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuX size={15} /> Cancelar</button>
           </div>
 
           <div className={styles.facturaBody}>
             {/* ── Detalle de la cotización ── */}
             <div className={styles.cotResumen}>
-              <div className={styles.cotResumenHeader}>📄 Detalle de la Cotización</div>
+              <div className={styles.cotResumenHeader} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuFileText size={16} /> Detalle de la Cotización</div>
               <div className={styles.cotResumenGrid}>
                 <div>
                   <div className={styles.label}>Vehículo</div>
@@ -321,14 +326,14 @@ const PendingBillingPage = () => {
               </div>
 
               {cotSeleccionada.regalias && (
-                <div className={styles.regalias}>🎁 <strong>Regalías:</strong> {cotSeleccionada.regalias}</div>
+                <div className={styles.regalias} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuGift size={15} /> <strong>Regalías:</strong> {cotSeleccionada.regalias}</div>
               )}
             </div>
 
             {/* ── Formulario de datos de facturación ── */}
             <form onSubmit={handleFacturar} className={styles.facturaForm}>
-              <div className={styles.facturaFormHeader}>
-                🏢 Datos para la Factura
+              <div className={styles.facturaFormHeader} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <LuBuilding2 size={16} /> Datos para la Factura
                 <span className={styles.facturaHint}>
                   Puede ser diferente al cliente de la cotización (ej: empresa que paga)
                 </span>
@@ -337,14 +342,15 @@ const PendingBillingPage = () => {
               {/* Tipo de entidad */}
               <div className={styles.tipoRow}>
                 {([
-                  { val: "fisica",    label: "👤 Persona Física" },
-                  { val: "juridica",  label: "🏢 Persona Jurídica" },
-                  { val: "extranjero", label: "🌎 Extranjero" },
-                ] as { val: TipoCedula; label: string }[]).map(t => (
+                  { val: "fisica",    label: "Persona Física", icon: <LuUser size={15} /> },
+                  { val: "juridica",  label: "Persona Jurídica", icon: <LuBuilding2 size={15} /> },
+                  { val: "extranjero", label: "Extranjero", icon: <LuGlobe size={15} /> },
+                ] as { val: TipoCedula; label: string; icon: React.ReactNode }[]).map(t => (
                   <button key={t.val} type="button"
                     className={`${styles.tipoBtn} ${form.factura_tipo_cedula === t.val ? styles.tipoBtnActive : ""}`}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
                     onClick={() => setForm(f => ({ ...f, factura_tipo_cedula: t.val }))}>
-                    {t.label}
+                    {t.icon} {t.label}
                   </button>
                 ))}
               </div>
@@ -385,7 +391,7 @@ const PendingBillingPage = () => {
 
                 {/* Fecha histórica (reconstrucción contable de meses atrás) */}
                 <div className={styles.field}>
-                  <label>📅 Fecha de la venta (dejar vacío = hoy)</label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuCalendarDays size={14} /> Fecha de la venta (dejar vacío = hoy)</label>
                   <input type="date" value={fechaHistorica} onChange={(e) => setFechaHistorica(e.target.value)} />
                 </div>
 
@@ -393,7 +399,7 @@ const PendingBillingPage = () => {
                 <div className={`${styles.field} ${styles.fullWidth}`}>
                   <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
                     <input type="checkbox" checked={exonerado} onChange={(e) => setExonerado(e.target.checked)} />
-                    ⚡ Exonerado de IVA (vehículo eléctrico — Ley 9518)
+                    <LuZap size={14} /> Exonerado de IVA (vehículo eléctrico — Ley 9518)
                   </label>
                   {exonerado && (
                     <input
@@ -426,7 +432,7 @@ const PendingBillingPage = () => {
                 </div>
                 <div className={`${styles.facturaResumenRow} ${styles.ivaResumenRow}`}>
                   <span>IVA ({exonerado ? "exonerado" : `${Number(cotSeleccionada.iva_porcentaje) || 13}%`}):</span>
-                  <span>{exonerado ? "⚡ ₡0 (Ley 9518)" : fmtCRC(Number(cotSeleccionada.iva_monto) || Number(cotSeleccionada.precio_final) * 0.13)}</span>
+                  <span>{exonerado ? (<span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuZap size={13} /> ₡0 (Ley 9518)</span>) : fmtCRC(Number(cotSeleccionada.iva_monto) || Number(cotSeleccionada.precio_final) * 0.13)}</span>
                 </div>
                 <div className={`${styles.facturaResumenRow} ${styles.totalRow}`}>
                   <span>TOTAL A COBRAR:</span>
@@ -438,8 +444,8 @@ const PendingBillingPage = () => {
 
               {/* Bloquear si el usuario es Vendedor */}
               {!puedeFacturar ? (
-                <div className={styles.rolBloqueado}>
-                  🔒 Solo un <strong>Administrador</strong> o <strong>Contador</strong> puede completar la venta.
+                <div className={styles.rolBloqueado} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <LuLock size={15} /> Solo un <strong>Administrador</strong> o <strong>Contador</strong> puede completar la venta.
                   Solicite la aprobación a su supervisor.
                 </div>
               ) : (
@@ -448,8 +454,8 @@ const PendingBillingPage = () => {
                     <input type="checkbox" checked={depositoConfirmado} onChange={(e) => setDepositoConfirmado(e.target.checked)} style={{ marginTop: 3 }} />
                     <span>Confirmo que el <strong>depósito / financiamiento está listo</strong> y validado con el banco para firmar.</span>
                   </label>
-                  <button type="submit" className={styles.facturarBtn} disabled={procesando || !depositoConfirmado}>
-                    {procesando ? "Procesando..." : `💼 Completar Venta · ${fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}`}
+                  <button type="submit" className={styles.facturarBtn} disabled={procesando || !depositoConfirmado} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
+                    {procesando ? "Procesando..." : (<><LuBriefcase size={15} /> Completar Venta · {fmtCRC(Number(cotSeleccionada.total_con_iva) || Number(cotSeleccionada.precio_final) * 1.13)}</>)}
                   </button>
                 </>
               )}
@@ -462,14 +468,14 @@ const PendingBillingPage = () => {
       {!cotSeleccionada && (
         <>
           <div className={styles.tabBar}>
-            <button className={`${styles.tab} ${tab === "pendientes" ? styles.tabActive : ""}`} onClick={() => setTab("pendientes")}>
-              📋 Pendientes ({pendientes.length})
+            <button className={`${styles.tab} ${tab === "pendientes" ? styles.tabActive : ""}`} onClick={() => setTab("pendientes")} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <LuClipboardList size={15} /> Pendientes ({pendientes.length})
             </button>
-            <button className={`${styles.tab} ${tab === "buscar" ? styles.tabActive : ""}`} onClick={() => setTab("buscar")}>
-              🔍 Buscar Cliente
+            <button className={`${styles.tab} ${tab === "buscar" ? styles.tabActive : ""}`} onClick={() => setTab("buscar")} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <LuSearch size={15} /> Buscar Cliente
             </button>
-            <button className={`${styles.tab} ${tab === "historial" ? styles.tabActive : ""}`} onClick={() => setTab("historial")}>
-              ✅ Historial ({historial.length})
+            <button className={`${styles.tab} ${tab === "historial" ? styles.tabActive : ""}`} onClick={() => setTab("historial")} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <LuCircleCheck size={15} /> Historial ({historial.length})
             </button>
           </div>
 
@@ -480,7 +486,7 @@ const PendingBillingPage = () => {
                 value={filtroPend} onChange={e => setFiltroPend(e.target.value)} />
               {pendientesFiltrados.length === 0 && (
                 <div className={styles.empty}>
-                  <span>📭</span>
+                  <LuInbox size={22} />
                   <p>No hay cotizaciones pendientes de facturación.</p>
                 </div>
               )}
@@ -504,7 +510,7 @@ const PendingBillingPage = () => {
                 </button>
               </div>
               {resultados.length === 0 && busqueda && !buscando && (
-                <div className={styles.empty}><span>🔍</span><p>No se encontraron cotizaciones activas para esa búsqueda.</p></div>
+                <div className={styles.empty}><LuSearch size={22} /><p>No se encontraron cotizaciones activas para esa búsqueda.</p></div>
               )}
               <div className={styles.cotGrid}>
                 {resultados.map(c => (
@@ -543,13 +549,13 @@ const PendingBillingPage = () => {
                         <strong style={{ color: "#059669" }}>{fmtCRC(Number(v.total_con_iva) || Number(v.monto_final))}</strong>
                         {Number(v.iva_monto) > 0 && <div style={{ fontSize: "0.72rem", color: "#64748b" }}>IVA: {fmtCRC(v.iva_monto)}</div>}
                       </td>
-                      <td><span className={styles.estadoOk}>✅ {v.estado}</span></td>
+                      <td><span className={styles.estadoOk} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCircleCheck size={13} /> {v.estado}</span></td>
                       <td>
                         {v.comprobante_gcs_path ? (
-                          <button onClick={() => verComprobanteVenta(v.id)} title="Ver documento adjunto" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem" }}>📎</button>
+                          <button onClick={() => verComprobanteVenta(v.id)} title="Ver documento adjunto" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem", display: "inline-flex", alignItems: "center" }}><LuPaperclip size={16} /></button>
                         ) : (
-                          <label title="Adjuntar documento (foto o PDF)" style={{ cursor: "pointer", color: "#64748b" }}>
-                            ⬆️
+                          <label title="Adjuntar documento (foto o PDF)" style={{ cursor: "pointer", color: "#64748b", display: "inline-flex", alignItems: "center" }}>
+                            <LuUpload size={16} />
                             <input type="file" accept="image/*,application/pdf" capture="environment" style={{ display: "none" }} onChange={(e) => subirComprobanteVenta(v.id, e.target.files?.[0] ?? null)} />
                           </label>
                         )}
@@ -567,7 +573,7 @@ const PendingBillingPage = () => {
       {sugefModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div style={{ background: "#fff", borderRadius: 12, padding: 26, width: "min(480px, 100%)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
-            <h3 style={{ margin: "0 0 8px", color: "#92400e" }}>⚠️ Cumplimiento SUGEF incompleto</h3>
+            <h3 style={{ margin: "0 0 8px", color: "#92400e", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTriangleAlert size={17} /> Cumplimiento SUGEF incompleto</h3>
             <p style={{ fontSize: "0.9rem", color: "#475569", margin: "0 0 12px" }}>
               El expediente de este cliente tiene <strong>{sugefModal.faltantes.length}</strong> campo(s) pendiente(s) para cumplir con SUGEF:
             </p>
@@ -616,7 +622,7 @@ const CotizacionCard = ({ cot, onSelect }: { cot: Cotizacion; onSelect: (c: Coti
         <span className={styles.cotEstado} style={{ background: ESTADO_COLORS[cot.estado] ?? "#64748b" }}>
           {cot.estado}
         </span>
-        {cot.lead && <span className={styles.leadBadge} title={`Lead #${cot.lead.id}`}>🔗 Lead</span>}
+        {cot.lead && <span className={styles.leadBadge} title={`Lead #${cot.lead.id}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuLink size={12} /> Lead</span>}
       </div>
 
       <div className={styles.cotCardBody}>
@@ -624,15 +630,15 @@ const CotizacionCard = ({ cot, onSelect }: { cot: Cotizacion; onSelect: (c: Coti
           <strong>{cot.cliente.nombre_completo}</strong>
           <span>{cot.cliente.cedula}</span>
         </div>
-        <div className={styles.cotVehiculo}>
-          🚗 {cot.vehiculo.marca} {cot.vehiculo.modelo} ({cot.vehiculo.año}) — {cot.vehiculo.color}
+        <div className={styles.cotVehiculo} style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+          <LuCar size={15} /> {cot.vehiculo.marca} {cot.vehiculo.modelo} ({cot.vehiculo.año}) — {cot.vehiculo.color}
         </div>
         <div className={styles.cotMeta}>
-          <span>📅 {fmtFecha(cot.fecha_creacion)}</span>
-          <span className={expirado ? styles.expiradoText : ""}>
-            {expirado ? "⚠️ Venció" : "⏳ Vence"}: {fmtFechaLocal(cot.fecha_expiracion as unknown as string)}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCalendarDays size={13} /> {fmtFecha(cot.fecha_creacion)}</span>
+          <span className={expirado ? styles.expiradoText : ""} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+            {expirado ? (<><LuTriangleAlert size={13} /> Venció</>) : (<><LuHourglass size={13} /> Vence</>)}: {fmtFechaLocal(cot.fecha_expiracion as unknown as string)}
           </span>
-          {cot.vendedor && <span>🧑‍💼 {cot.vendedor.nombre_completo}</span>}
+          {cot.vendedor && <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuUserCog size={13} /> {cot.vendedor.nombre_completo}</span>}
         </div>
         <div className={styles.cotTotal}>
           <span>Total al cliente:</span>
@@ -641,8 +647,8 @@ const CotizacionCard = ({ cot, onSelect }: { cot: Cotizacion; onSelect: (c: Coti
         </div>
       </div>
 
-      <button className={styles.facturarCardBtn} onClick={() => onSelect(cot)}>
-        💼 Iniciar Facturación →
+      <button className={styles.facturarCardBtn} onClick={() => onSelect(cot)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
+        <LuBriefcase size={15} /> Iniciar Facturación →
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import { Card } from "@/components/Card";
+import { LuWallet, LuDownload, LuUpload, LuChartColumnStacked, LuCalendarDays, LuTriangleAlert } from "react-icons/lu";
 
 interface Resumen {
   saldoCajaBancos: number;
@@ -21,9 +22,9 @@ interface Resumen {
 const CRC = (v: number) =>
   "₡" + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(v || 0);
 
-const Kpi = ({ label, value, color, sub }: { label: string; value: string; color: string; sub?: string }) => (
+const Kpi = ({ label, value, color, sub }: { label: React.ReactNode; value: string; color: string; sub?: string }) => (
   <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderLeft: `4px solid ${color}`, borderRadius: 12, padding: "1rem 1.25rem", flex: "1 1 200px" }}>
-    <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600 }}>{label}</div>
+    <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem" }}>{label}</div>
     <div style={{ fontSize: "1.5rem", fontWeight: 800, color, marginTop: 4 }}>{value}</div>
     {sub && <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 2 }}>{sub}</div>}
   </div>
@@ -52,19 +53,19 @@ export default function FinanzasPage() {
 
       {/* KPIs principales */}
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
-        <Kpi label="💵 Caja y Bancos" value={CRC(r.saldoCajaBancos)} color="#024f7d" />
-        <Kpi label="📥 Por Cobrar (CxC)" value={CRC(r.porCobrar)} color="#059669"
+        <Kpi label={<><LuWallet size={14} /> Caja y Bancos</>} value={CRC(r.saldoCajaBancos)} color="#024f7d" />
+        <Kpi label={<><LuDownload size={14} /> Por Cobrar (CxC)</>} value={CRC(r.porCobrar)} color="#059669"
           sub={`${r.cuentas.cxcAbiertas} cuenta(s)${r.cuentas.cxcVencidas > 0 ? ` · ⚠️ ${r.cuentas.cxcVencidas} vencidas` : ""}`} />
-        <Kpi label="📤 Por Pagar (CxP)" value={CRC(r.porPagar)} color="#dc2626"
+        <Kpi label={<><LuUpload size={14} /> Por Pagar (CxP)</>} value={CRC(r.porPagar)} color="#dc2626"
           sub={`${r.cuentas.cxpAbiertas} cuenta(s)${r.cuentas.cxpVencidas > 0 ? ` · ⚠️ ${r.cuentas.cxpVencidas} vencidas` : ""}`} />
-        <Kpi label="📊 Flujo Proyectado" value={CRC(r.flujoProyectado)}
+        <Kpi label={<><LuChartColumnStacked size={14} /> Flujo Proyectado</>} value={CRC(r.flujoProyectado)}
           color={r.flujoProyectado >= 0 ? "#059669" : "#dc2626"}
           sub="Caja + por cobrar − por pagar" />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
         {/* Proyección de flujo */}
-        <Card title="📅 Flujo de caja proyectado">
+        <Card title={<><LuCalendarDays size={16} /> Flujo de caja proyectado</>}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
             <thead>
               <tr style={{ textAlign: "left", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>
@@ -92,16 +93,16 @@ export default function FinanzasPage() {
         </Card>
 
         {/* Vencidos */}
-        <Card title="⚠️ Vencimientos">
+        <Card title={<><LuTriangleAlert size={16} /> Vencimientos</>}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", fontSize: "0.9rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f1f5f9" }}>
-              <span>📥 CxC vencidas</span>
+              <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuDownload size={14} /> CxC vencidas</span>
               <strong style={{ color: r.cuentas.cxcVencidas > 0 ? "#dc2626" : "#059669" }}>
                 {r.cuentas.cxcVencidas} · {CRC(r.cuentas.montoCxcVencidas)}
               </strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0" }}>
-              <span>📤 CxP vencidas</span>
+              <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuUpload size={14} /> CxP vencidas</span>
               <strong style={{ color: r.cuentas.cxpVencidas > 0 ? "#dc2626" : "#059669" }}>
                 {r.cuentas.cxpVencidas} · {CRC(r.cuentas.montoCxpVencidas)}
               </strong>

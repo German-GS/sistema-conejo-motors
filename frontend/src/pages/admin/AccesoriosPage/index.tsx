@@ -2,6 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./AccesoriosPage.module.css";
+import {
+  LuPlug, LuCable, LuTriangleAlert, LuBookOpen, LuKeyRound, LuWind,
+  LuDisc, LuWrench, LuSparkles, LuFan, LuClipboardList,
+  LuPalette, LuNotebookPen, LuPencil,
+} from "react-icons/lu";
+import type { IconType } from "react-icons";
 
 interface Accesorio {
   id: number;
@@ -21,17 +27,17 @@ interface Accesorio {
   entregado_al_cliente: boolean;
 }
 
-const CAMPOS: { key: keyof Accesorio; label: string; icon: string }[] = [
-  { key: "cargador_pared", label: "Cargador de pared", icon: "🔌" },
-  { key: "extension_cargador", label: "Extensión cargador", icon: "🧵" },
-  { key: "triangulos_seguridad", label: "Triángulos seguridad", icon: "🔺" },
-  { key: "manuales", label: "Manuales", icon: "📖" },
-  { key: "llave_control", label: "Llave y control", icon: "🔑" },
-  { key: "gas_inflar_llantas", label: "Gas inflar llantas", icon: "💨" },
-  { key: "compresor_llantas", label: "Compresor llantas", icon: "🌀" },
-  { key: "llave_ruedas", label: "Llave de ruedas", icon: "🔧" },
-  { key: "set_escobillas", label: "Set escobillas", icon: "🧼" },
-  { key: "filtro_polen", label: "Filtro de polen", icon: "🌬️" },
+const CAMPOS: { key: keyof Accesorio; label: string; Icon: IconType }[] = [
+  { key: "cargador_pared", label: "Cargador de pared", Icon: LuPlug },
+  { key: "extension_cargador", label: "Extensión cargador", Icon: LuCable },
+  { key: "triangulos_seguridad", label: "Triángulos seguridad", Icon: LuTriangleAlert },
+  { key: "manuales", label: "Manuales", Icon: LuBookOpen },
+  { key: "llave_control", label: "Llave y control", Icon: LuKeyRound },
+  { key: "gas_inflar_llantas", label: "Gas inflar llantas", Icon: LuWind },
+  { key: "compresor_llantas", label: "Compresor llantas", Icon: LuDisc },
+  { key: "llave_ruedas", label: "Llave de ruedas", Icon: LuWrench },
+  { key: "set_escobillas", label: "Set escobillas", Icon: LuSparkles },
+  { key: "filtro_polen", label: "Filtro de polen", Icon: LuFan },
 ];
 
 const COLOR_HEX: Record<string, string> = {
@@ -166,7 +172,7 @@ export const AccesoriosPage = () => {
                       <strong style={{ color: "#0a2540" }}>{acc.vehiculo.marca} {acc.vehiculo.modelo}</strong>
                       <span style={{ color: "#94a3b8", fontSize: "0.82rem" }}>{acc.vehiculo.año}</span>
                     </div>
-                    <button onClick={() => copyVin(acc.vehiculo.vin)} title="Copiar VIN" style={{ marginTop: 4, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "1px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.74rem", color: "#334155" }}>📋 {acc.vehiculo.vin}</button>
+                    <button onClick={() => copyVin(acc.vehiculo.vin)} title="Copiar VIN" style={{ marginTop: 4, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "1px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.74rem", color: "#334155", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuClipboardList size={13} /> {acc.vehiculo.vin}</button>
                   </div>
                   {acc.entregado_al_cliente && !isEditing && (
                     <span style={{ fontSize: "0.7rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "2px 8px", fontWeight: 700, whiteSpace: "nowrap" }}>✅ Entregado</span>
@@ -201,7 +207,7 @@ export const AccesoriosPage = () => {
                         }}
                       >
                         <span>{val}</span>
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campo.icon} {campo.label}</span>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><campo.Icon size={13} /> {campo.label}</span>
                       </button>
                     );
                   })}
@@ -223,10 +229,10 @@ export const AccesoriosPage = () => {
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", fontSize: "0.8rem", color: "#64748b", borderTop: "1px solid #f1f5f9", paddingTop: "0.6rem" }}>
-                    <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      🎨 {acc.color_interior || "—"}{acc.observaciones ? ` · 📝 ${acc.observaciones}` : ""}
+                    <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                      <LuPalette size={13} /> {acc.color_interior || "—"}{acc.observaciones ? <> · <LuNotebookPen size={13} /> {acc.observaciones}</> : ""}
                     </span>
-                    <button onClick={() => startEdit(acc)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.8rem", whiteSpace: "nowrap" }}>✏️ Editar</button>
+                    <button onClick={() => startEdit(acc)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.8rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={13} /> Editar</button>
                   </div>
                 )}
               </div>

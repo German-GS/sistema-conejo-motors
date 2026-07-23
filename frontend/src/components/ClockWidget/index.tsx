@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./ClockWidget.module.css";
+import { LuUtensils, LuCircle } from "react-icons/lu";
 
 interface EstadoHoy {
   ultimo: { tipo: string; fecha_hora: string } | null;
@@ -59,9 +60,13 @@ export const ClockWidget: React.FC = () => {
     ? new Date(estado.ultimo.fecha_hora).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" })
     : null;
 
-  const estadoLabel =
-    enAlmuerzo ? "🍽️ Almuerzo" :
-    dentroDelTrabajo ? "🟢 Dentro" : "🔴 Fuera";
+  const estadoLabel = enAlmuerzo ? (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuUtensils size={14} /> Almuerzo</span>
+  ) : dentroDelTrabajo ? (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuCircle size={10} fill="currentColor" /> Dentro</span>
+  ) : (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuCircle size={10} fill="currentColor" /> Fuera</span>
+  );
 
   const estadoClass =
     enAlmuerzo ? styles.lunch :
@@ -102,7 +107,7 @@ export const ClockWidget: React.FC = () => {
           <>
             <button className={`${styles.btn} ${styles.btnAlmuerzo}`}
               onClick={() => marcar("almuerzo_inicio")} disabled={loading}>
-              🍽️ Almuerzo
+              <LuUtensils size={14} /> Almuerzo
             </button>
             <button className={`${styles.btn} ${styles.btnSalida}`}
               onClick={() => marcar("salida")} disabled={loading}>

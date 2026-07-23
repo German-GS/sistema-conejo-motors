@@ -13,6 +13,7 @@ import { VehicleRibbon } from "@/components/VehicleRibbon";
 import { VehicleHistorialModal } from "@/components/VehicleHistorialModal";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { exportToExcel } from "@/utils/exportExcel";
+import { LuChartColumnStacked, LuWallet, LuEye, LuSettings, LuPencil, LuClock, LuTrash2 } from "react-icons/lu";
 
 const CRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
@@ -190,8 +191,8 @@ export const DashboardPage = () => {
       <div className={styles.header}>
         <h1>Inventario de Vehículos</h1>
         <div style={{ display: "flex", gap: "0.6rem" }}>
-          <button className="btn" onClick={exportar} style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155" }} title="Exportar a Excel">
-            📊 Exportar Excel
+          <button className="btn" onClick={exportar} style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", display: "flex", alignItems: "center", gap: "0.4rem" }} title="Exportar a Excel">
+            <LuChartColumnStacked size={16} /> Exportar Excel
           </button>
           <button className="btn btn-principal" onClick={handleOpenCreateModal}>Añadir Vehículo</button>
         </div>
@@ -278,7 +279,7 @@ export const DashboardPage = () => {
                   <div style={{ borderTop: "1px solid #f1f5f9", padding: "1rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.25rem", background: "#fbfcfe" }}>
                     {/* Precios */}
                     <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem" }}>💵 Precio</div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuWallet size={14} /> Precio</div>
                       <div style={{ fontSize: "0.8rem", color: "#64748b", marginBottom: "0.5rem" }}>Costo inventario: <strong style={{ color: "#334155" }}>{CRC(Number(v.precio_costo))}</strong></div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                         <label style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Precio de lista (₡)
@@ -299,7 +300,7 @@ export const DashboardPage = () => {
 
                     {/* Visibilidad + Uso */}
                     <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem" }}>👁 Visibilidad y uso</div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuEye size={14} /> Visibilidad y uso</div>
                       <VisibilityButtons
                         vehicleId={v.id}
                         current={v.visibilidad ?? "Visible"}
@@ -313,11 +314,11 @@ export const DashboardPage = () => {
 
                     {/* Acciones */}
                     <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem" }}>⚙️ Acciones</div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuSettings size={14} /> Acciones</div>
                       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                        <button onClick={() => handleOpenEditModal(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem" }}>✏️ Editar ficha</button>
-                        <button onClick={() => setHistorialVehicle(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem" }}>🕓 Historial</button>
-                        <button onClick={() => handleDelete(v.id)} className="btn" style={{ border: "1px solid #fecaca", background: "#fff", color: "#dc2626", fontSize: "0.82rem" }}>🗑 Eliminar</button>
+                        <button onClick={() => handleOpenEditModal(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={14} /> Editar ficha</button>
+                        <button onClick={() => setHistorialVehicle(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuClock size={14} /> Historial</button>
+                        <button onClick={() => handleDelete(v.id)} className="btn" style={{ border: "1px solid #fecaca", background: "#fff", color: "#dc2626", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuTrash2 size={14} /> Eliminar</button>
                       </div>
                       <div style={{ marginTop: "0.6rem", position: "relative", width: 90, height: 60, borderRadius: 6, overflow: "hidden", background: "#f1f5f9" }}>
                         {img && <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}

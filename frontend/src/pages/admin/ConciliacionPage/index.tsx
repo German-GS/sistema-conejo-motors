@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuBanknote, LuUpload, LuLink } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
@@ -74,7 +75,7 @@ export const ConciliacionPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540" }}>🏦 Conciliación Bancaria</h1>
+      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBanknote size={22} /> Conciliación Bancaria</h1>
 
       <div style={card}>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
@@ -84,8 +85,8 @@ export const ConciliacionPage = () => {
           <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
           <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) importar(f); }} />
-          <button disabled={busy} onClick={() => fileRef.current?.click()} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700 }}>📤 Importar extracto (CSV)</button>
-          <button disabled={busy} onClick={conciliar} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700 }}>🔗 Conciliar automáticamente</button>
+          <button disabled={busy} onClick={() => fileRef.current?.click()} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUpload size={16} /> Importar extracto (CSV)</button>
+          <button disabled={busy} onClick={conciliar} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLink size={16} /> Conciliar automáticamente</button>
         </div>
         <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: "0.6rem 0 0" }}>
           CSV: <code>fecha,descripcion,monto,referencia</code> — monto firmado (+ entrada / − salida). Ej: <code>2026-05-10,Depósito cliente,150000,REF123</code>

@@ -5,6 +5,7 @@ import { getImageUrl } from "@/utils/imageUrl";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/components/ConfirmDialog";
 import styles from "./EditProfileModal.module.css";
+import { LuX, LuZap, LuRuler, LuShield, LuImage, LuStar, LuUpload, LuSave } from "react-icons/lu";
 
 interface ProfileImage { id: number; url: string; order?: number; }
 
@@ -179,7 +180,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
       <div className={styles.modal}>
         <div className={styles.modalHeader}>
           <h2>Editar Perfil — {data.marca} {data.modelo}</h2>
-          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+          <button className={styles.closeBtn} onClick={onClose}><LuX size={16} /></button>
         </div>
 
         <div className={styles.modalBody}>
@@ -221,7 +222,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
 
           {/* ── Rendimiento ── */}
           <section>
-            <h3 className={styles.sectionTitle}>⚡ Rendimiento</h3>
+            <h3 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuZap size={16} /> Rendimiento</h3>
             <div className={styles.grid3}>
               {[
                 { name: "potencia_hp",          label: "Potencia (HP)" },
@@ -245,7 +246,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
 
           {/* ── Dimensiones ── */}
           <section>
-            <h3 className={styles.sectionTitle}>📐 Dimensiones</h3>
+            <h3 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuRuler size={16} /> Dimensiones</h3>
             <div className={styles.grid3}>
               {[
                 { name: "largo_mm",            label: "Largo (mm)" },
@@ -269,7 +270,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
 
           {/* ── Equipamiento ── */}
           <section>
-            <h3 className={styles.sectionTitle}>🛡️ Equipamiento (separar por comas)</h3>
+            <h3 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuShield size={16} /> Equipamiento (separar por comas)</h3>
             <div className={styles.grid2}>
               {[
                 { name: "colores_disponibles", label: "Colores disponibles" },
@@ -293,7 +294,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
 
           {/* ── Imágenes ── */}
           <section>
-            <h3 className={styles.sectionTitle}>🖼️ Imágenes del Modelo</h3>
+            <h3 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuImage size={16} /> Imágenes del Modelo</h3>
             <p className={styles.imgHint}>
               La primera imagen es la miniatura principal. Usa ← → para reordenar. El orden se guarda al hacer clic en "Guardar cambios".
             </p>
@@ -301,7 +302,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
             <div className={styles.imageGrid}>
               {(data.imagenes ?? []).map((img, idx, arr) => (
                 <div key={img.id} className={`${styles.imgCard} ${idx === 0 ? styles.imgCardFirst : ""}`}>
-                  {idx === 0 && <span className={styles.imgBadge}>★ Principal</span>}
+                  {idx === 0 && <span className={styles.imgBadge} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuStar size={12} /> Principal</span>}
                   <img src={getImageUrl(img.url)} alt={`Imagen ${idx + 1}`} className={styles.imgThumb} />
 
                   {/* Controles de reorden y borrado */}
@@ -359,7 +360,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
                       Subiendo {newFiles.length} imagen{newFiles.length > 1 ? "es" : ""}...
                     </>
                   ) : (
-                    <>⬆️ Subir {newFiles.length} imagen{newFiles.length > 1 ? "es" : ""}</>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUpload size={15} /> Subir {newFiles.length} imagen{newFiles.length > 1 ? "es" : ""}</span>
                   )}
                 </button>
                 {!uploading && (
@@ -379,7 +380,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
         <div className={styles.modalFooter}>
           <button className={styles.cancelBtn} onClick={onClose}>Cancelar</button>
           <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
-            {saving ? "Guardando..." : "💾 Guardar cambios"}
+            {saving ? "Guardando..." : (<span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuSave size={15} /> Guardar cambios</span>)}
           </button>
         </div>
       </div>

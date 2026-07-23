@@ -2,6 +2,7 @@ import { useState } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./ImportVehiclesPage.module.css";
+import { LuClipboardList, LuCircleCheck, LuPackage, LuTriangleAlert, LuFileText, LuFolderOpen, LuX } from "react-icons/lu";
 
 interface PreviewRow {
   rowIndex: number;
@@ -110,12 +111,12 @@ export const ImportVehiclesPage = () => {
       {/* Leyenda del formato requerido */}
       <div className={styles.formatGuide}>
         <div className={styles.formatGuideHeader}>
-          <span>📋</span>
+          <LuClipboardList size={18} />
           <strong>Formato requerido del archivo Excel</strong>
         </div>
         <div className={styles.formatGuideBody}>
           <div className={styles.formatSection}>
-            <p className={styles.formatSectionTitle}>✅ Hoja 1 — <code>"1030 Inventario vehiculos"</code> <span className={styles.required}>(obligatoria)</span></p>
+            <p className={styles.formatSectionTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuCircleCheck size={15} /> Hoja 1 — <code>"1030 Inventario vehiculos"</code> <span className={styles.required}>(obligatoria)</span></p>
             <p>Debe tener exactamente este nombre. Los datos comienzan en la fila 7 con las siguientes columnas en orden:</p>
             <div className={styles.columnList}>
               {["N°", "Cuenta", "Marca", "Modelo", "VIN", "Año", "Color", "Incoterm",
@@ -127,19 +128,19 @@ export const ImportVehiclesPage = () => {
             </div>
           </div>
           <div className={styles.formatSection}>
-            <p className={styles.formatSectionTitle}>📦 Hoja 2 — <code>"Accesorios por Vehiculo"</code> <span className={styles.optional}>(opcional)</span></p>
+            <p className={styles.formatSectionTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuPackage size={15} /> Hoja 2 — <code>"Accesorios por Vehiculo"</code> <span className={styles.optional}>(opcional)</span></p>
             <p>Si existe, se importan automáticamente los accesorios por VIN. Los datos comienzan en la fila 7.</p>
           </div>
-          <div className={styles.formatNote}>
-            ⚠️ <strong>El nombre de las hojas debe ser exacto</strong>, incluyendo mayúsculas y espacios.
-            El archivo puede tener más hojas — solo se leen estas dos.
+          <div className={styles.formatNote} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem" }}>
+            <LuTriangleAlert size={15} style={{ flexShrink: 0, marginTop: 2 }} /> <span><strong>El nombre de las hojas debe ser exacto</strong>, incluyendo mayúsculas y espacios.
+            El archivo puede tener más hojas — solo se leen estas dos.</span>
           </div>
         </div>
       </div>
 
       <div className={styles.uploadSection}>
-        <label className={styles.fileLabel}>
-          {file ? `📄 ${file.name}` : "📂 Seleccionar archivo .xlsx"}
+        <label className={styles.fileLabel} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          {file ? <><LuFileText size={16} /> {file.name}</> : <><LuFolderOpen size={16} /> Seleccionar archivo .xlsx</>}
           <input type="file" accept=".xlsx,.xls" onChange={handleFileChange} hidden />
         </label>
         <button className="btn btn-principal" onClick={handlePreview} disabled={!file || loading}>
@@ -148,8 +149,8 @@ export const ImportVehiclesPage = () => {
       </div>
 
       {imported && (
-        <div className={styles.resultBanner}>
-          ✅ Importación completada: <strong>{imported.imported}</strong> vehículos importados,{" "}
+        <div className={styles.resultBanner} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          <LuCircleCheck size={16} /> Importación completada: <strong>{imported.imported}</strong> vehículos importados,{" "}
           <strong>{imported.skipped}</strong> omitidos (VIN duplicado o inválido).
         </div>
       )}
@@ -157,9 +158,9 @@ export const ImportVehiclesPage = () => {
       {preview.length > 0 && (
         <>
           <div className={styles.summary}>
-            <span className={styles.valid}>✅ {validRows.length} listos para importar</span>
+            <span className={styles.valid} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuCircleCheck size={14} /> {validRows.length} listos para importar</span>
             {errorRows.length > 0 && (
-              <span className={styles.errors}>⚠️ {errorRows.length} con problemas (se omitirán)</span>
+              <span className={styles.errors} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuTriangleAlert size={14} /> {errorRows.length} con problemas (se omitirán)</span>
             )}
           </div>
 
@@ -201,7 +202,7 @@ export const ImportVehiclesPage = () => {
                     <td>{formatCRC(row.costo_total_crc)}</td>
                     <td>
                       {row.error ? (
-                        <span className={styles.errorBadge}>⚠️ {row.error}</span>
+                        <span className={styles.errorBadge} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={13} /> {row.error}</span>
                       ) : (
                         <select
                           value={row.profileId ?? ""}
@@ -218,8 +219,8 @@ export const ImportVehiclesPage = () => {
                       )}
                     </td>
                     <td>
-                      <span className={row.error ? styles.errorBadge : styles.okBadge}>
-                        {row.error ? "Omitir" : "✓ Listo"}
+                      <span className={row.error ? styles.errorBadge : styles.okBadge} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                        {row.error ? "Omitir" : (<><LuCircleCheck size={13} /> Listo</>)}
                       </span>
                     </td>
                     <td>
@@ -227,7 +228,7 @@ export const ImportVehiclesPage = () => {
                         className={styles.removeRowBtn}
                         onClick={() => setPreview(prev => prev.filter(r => r.rowIndex !== row.rowIndex))}
                         title="Excluir de la importación"
-                      >✕</button>
+                      ><LuX size={14} /></button>
                     </td>
                   </tr>
                 ))}

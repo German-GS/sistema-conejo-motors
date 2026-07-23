@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./LoanCalculator.module.css";
+import { LuCalculator } from "react-icons/lu";
 
 interface LoanCalculatorProps {
   precioBase?: number;
@@ -55,7 +56,7 @@ export const LoanCalculator = ({ precioBase = 0 }: LoanCalculatorProps) => {
   return (
     <div className={styles.calculator}>
       <div className={styles.header}>
-        <span className={styles.icon}>🧮</span>
+        <span className={styles.icon}><LuCalculator size={22} /></span>
         <div>
           <h3>Calculadora de Financiamiento</h3>
           <p>Estimación mensual de cuota</p>

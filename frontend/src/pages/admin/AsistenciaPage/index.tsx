@@ -4,6 +4,10 @@ import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./AsistenciaPage.module.css";
 import { Pagination } from "@/components/Pagination";
+import {
+  LuCalendarDays, LuChartColumnStacked, LuTriangleAlert, LuClock,
+  LuCircleCheck, LuPlus, LuPencil, LuTrash2,
+} from "react-icons/lu";
 
 interface Marcaje {
   id: number;
@@ -48,7 +52,7 @@ const fmtHora = (iso: string) => {
 const TIPO_LABEL: Record<string, { label: string; cls: string }> = {
   entrada:         { label: "▶ Entrada",         cls: "entrada"  },
   salida:          { label: "⏹ Salida",           cls: "salida"   },
-  almuerzo_inicio: { label: "🍽️ Inicio almuerzo", cls: "almuerzo" },
+  almuerzo_inicio: { label: "Inicio almuerzo", cls: "almuerzo" },
   almuerzo_fin:    { label: "▶ Regreso almuerzo", cls: "almuerzo" },
 };
 
@@ -214,19 +218,19 @@ export const AsistenciaPage = () => {
         {isAdmin && (
           <>
             <button className={`${styles.tab} ${tab === "dia" ? styles.tabActive : ""}`}
-              onClick={() => setTab("dia")}>📅 Registro del Día</button>
+              onClick={() => setTab("dia")} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuCalendarDays size={16} /> Registro del Día</button>
             <button className={`${styles.tab} ${tab === "rango" ? styles.tabActive : ""}`}
-              onClick={() => setTab("rango")}>📊 Resumen por Período</button>
+              onClick={() => setTab("rango")} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={16} /> Resumen por Período</button>
             <button className={`${styles.tab} ${tab === "pendientes" ? styles.tabActive : ""}`}
               onClick={() => setTab("pendientes")}
-              style={{ color: tab === "pendientes" ? undefined : "#f59e0b" }}>
-              ⚠️ Pendientes
+              style={{ color: tab === "pendientes" ? undefined : "#f59e0b", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuTriangleAlert size={16} /> Pendientes
             </button>
           </>
         )}
         <button className={`${styles.tab} ${tab === "personal" ? styles.tabActive : ""}`}
-          onClick={() => setTab("personal")}>
-          🕐 {isAdmin ? "Mi Historial" : "Mis Marcajes"}
+          onClick={() => setTab("personal")} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          <LuClock size={16} /> {isAdmin ? "Mi Historial" : "Mis Marcajes"}
         </button>
       </div>
 
@@ -279,8 +283,8 @@ export const AsistenciaPage = () => {
         <p className={styles.empty}>Cargando...</p>
       ) : tab === "pendientes" ? (
         data.length === 0 ? (
-          <div className={styles.empty} style={{ color: "#10b981" }}>
-            ✅ No hay cierres automáticos pendientes de revisión.
+          <div className={styles.empty} style={{ color: "#10b981", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <LuCircleCheck size={18} /> No hay cierres automáticos pendientes de revisión.
           </div>
         ) : (
           <>
@@ -382,20 +386,20 @@ export const AsistenciaPage = () => {
                         <td>
                           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                             {faltaSalida && (
-                              <button className="btn btn-principal" style={{ padding: "4px 12px", fontSize: "0.8rem", whiteSpace: "nowrap" }}
+                              <button className="btn btn-principal" style={{ padding: "4px 12px", fontSize: "0.8rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                                 onClick={() => abrirAgregarSalida(m)}>
-                                ➕ Registrar salida
+                                <LuPlus size={14} /> Registrar salida
                               </button>
                             )}
                             <button
-                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 6, cursor: "pointer", color: "#475569" }}
+                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 6, cursor: "pointer", color: "#475569", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                               onClick={() => { setCorrigiendo(m); setNuevaHora(""); setNotaAdmin(""); }}>
-                              ✏️ Corregir
+                              <LuPencil size={14} /> Corregir
                             </button>
                             <button
-                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #fecaca", borderRadius: 6, cursor: "pointer", color: "#dc2626" }}
+                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #fecaca", borderRadius: 6, cursor: "pointer", color: "#dc2626", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                               onClick={() => handleEliminarMarcaje(m)}>
-                              🗑️ Eliminar
+                              <LuTrash2 size={14} /> Eliminar
                             </button>
                           </div>
                         </td>

@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
+import {
+  LuCar, LuUsers, LuPackage, LuReceiptText, LuBanknote,
+  LuChartColumnStacked, LuBookmark, LuCircleCheck, LuWallet, LuFileText,
+  LuTriangleAlert, LuWrench, LuUtensils, LuCircle, LuMoon, LuTrophy,
+  LuMedal, LuAward, LuTrendingUp, LuUser, LuTarget, LuRefreshCw,
+} from "react-icons/lu";
 import {
   BarChart, Bar, CartesianGrid, ResponsiveContainer,
   Tooltip, XAxis, YAxis, Legend,
@@ -132,18 +139,18 @@ export const DashboardHomePage = () => {
             Actualizado {lastUpdate.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" })}
           </span>
           <button className={styles.refreshBtn} onClick={fetchAll} title="Actualizar ahora">
-            ↻
+            <LuRefreshCw size={16} />
           </button>
         </div>
       </div>
 
       {/* ── Accesos rápidos ──────────────────────────────────────────────── */}
       <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
-        <QuickAction emoji="🚗" label="Nueva cotización" onClick={() => navigate("/admin/sales/catalog")} primary />
-        <QuickAction emoji="👥" label="Leads / CRM" onClick={() => navigate("/admin/leads")} />
-        <QuickAction emoji="📦" label="Inventario" onClick={() => navigate("/admin/inventory")} />
-        <QuickAction emoji="🧾" label="Facturación" onClick={() => navigate("/admin/billing")} />
-        <QuickAction emoji="💵" label="Finanzas" onClick={() => navigate("/admin/finanzas")} />
+        <QuickAction icon={<LuCar size={18} />} label="Nueva cotización" onClick={() => navigate("/admin/sales/catalog")} primary />
+        <QuickAction icon={<LuUsers size={18} />} label="Leads / CRM" onClick={() => navigate("/admin/leads")} />
+        <QuickAction icon={<LuPackage size={18} />} label="Inventario" onClick={() => navigate("/admin/inventory")} />
+        <QuickAction icon={<LuReceiptText size={18} />} label="Facturación" onClick={() => navigate("/admin/billing")} />
+        <QuickAction icon={<LuBanknote size={18} />} label="Finanzas" onClick={() => navigate("/admin/finanzas")} />
       </div>
 
       {/* ── Layout principal: KPIs izquierda + Panels derecha ───────────── */}
@@ -155,24 +162,25 @@ export const DashboardHomePage = () => {
           {/* KPIs compactos */}
           <div className={styles.panel}>
             <div className={styles.panelHeader}>
-              <span className={styles.panelTitle}>📊 Indicadores del Mes</span>
+              <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={16} /> Indicadores del Mes</span>
             </div>
             <div className={styles.miniKpiGrid}>
-              <MiniKpi icon="🚗" label="Disponibles"   value={String(extended?.inventario.disponibles ?? basic?.totalVehicles ?? 0)} color="#024f7d" onClick={() => navigate("/admin/inventory")} />
-              <MiniKpi icon="🔖" label="Reservados"    value={String(extended?.inventario.reservados ?? 0)} color="#7c3aed" onClick={() => navigate("/admin/inventory")} />
-              <MiniKpi icon="✅" label="Vendidos"      value={String(extended?.inventario.vendidosMes ?? basic?.monthlySales ?? 0)} color="#059669" onClick={() => navigate("/admin/billing")} />
-              <MiniKpi icon="💰" label="Ingresos"      value={fmtCRC(basic?.monthlyRevenue ?? 0)} sub={`Ganancia ${fmtCRC(basic?.monthlyGrossProfit ?? 0)}`} color="#0891b2" />
-              <MiniKpi icon="👥" label="Leads activos" value={String(extended?.leads.activos ?? 0)} sub={`+${extended?.leads.hoy ?? 0} hoy`} color="#d97706" onClick={() => navigate("/admin/leads")} />
+              <MiniKpi icon={<LuCar size={18} />} label="Disponibles"   value={String(extended?.inventario.disponibles ?? basic?.totalVehicles ?? 0)} color="#024f7d" onClick={() => navigate("/admin/inventory")} />
+              <MiniKpi icon={<LuBookmark size={18} />} label="Reservados"    value={String(extended?.inventario.reservados ?? 0)} color="#7c3aed" onClick={() => navigate("/admin/inventory")} />
+              <MiniKpi icon={<LuCircleCheck size={18} />} label="Vendidos"      value={String(extended?.inventario.vendidosMes ?? basic?.monthlySales ?? 0)} color="#059669" onClick={() => navigate("/admin/billing")} />
+              <MiniKpi icon={<LuWallet size={18} />} label="Ingresos"      value={fmtCRC(basic?.monthlyRevenue ?? 0)} sub={`Ganancia ${fmtCRC(basic?.monthlyGrossProfit ?? 0)}`} color="#0891b2" />
+              <MiniKpi icon={<LuUsers size={18} />} label="Leads activos" value={String(extended?.leads.activos ?? 0)} sub={`+${extended?.leads.hoy ?? 0} hoy`} color="#d97706" onClick={() => navigate("/admin/leads")} />
               <MiniKpi
-                icon="📄" label="Cotizaciones"
+                icon={<LuFileText size={18} />} label="Cotizaciones"
                 value={String(extended?.cotizaciones.activas ?? 0)}
-                sub={(extended?.cotizaciones.vencidas ?? 0) > 0 ? `⚠️ ${extended!.cotizaciones.vencidas} vencidas` : `${extended?.cotizaciones.mes ?? 0} este mes`}
+                sub={(extended?.cotizaciones.vencidas ?? 0) > 0 ? `${extended!.cotizaciones.vencidas} vencidas` : `${extended?.cotizaciones.mes ?? 0} este mes`}
+                subIcon={(extended?.cotizaciones.vencidas ?? 0) > 0 ? <LuTriangleAlert size={13} /> : undefined}
                 color={(extended?.cotizaciones.vencidas ?? 0) > 0 ? "#dc2626" : "#024f7d"}
                 onClick={() => navigate("/admin/sales/quotes")}
               />
-              <MiniKpi icon="🔧" label="Repuestos"     value={String(extended?.repuestos.ventasMes ?? 0)} sub={fmtCRC(extended?.repuestos.ingresosMes ?? 0)} color="#0891b2" onClick={() => navigate("/admin/productos")} />
+              <MiniKpi icon={<LuWrench size={18} />} label="Repuestos"     value={String(extended?.repuestos.ventasMes ?? 0)} sub={fmtCRC(extended?.repuestos.ingresosMes ?? 0)} color="#0891b2" onClick={() => navigate("/admin/productos")} />
               <MiniKpi
-                icon={conectadosAlmuerzo.length > 0 ? "🍽️" : "🟢"}
+                icon={conectadosAlmuerzo.length > 0 ? <LuUtensils size={18} /> : <LuCircle size={18} fill="currentColor" />}
                 label="Equipo activo"
                 value={String(conectados.length)}
                 sub={conectadosAlmuerzo.length > 0 ? `${conectadosTrabajando.length} trab · ${conectadosAlmuerzo.length} alm` : "trabajando ahora"}
@@ -184,7 +192,7 @@ export const DashboardHomePage = () => {
           {/* Equipo en Línea */}
           <div className={styles.panel} style={{ marginTop: "1rem" }}>
             <div className={styles.panelHeader}>
-              <span className={styles.panelTitle}>👥 Equipo en Línea</span>
+              <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUsers size={16} /> Equipo en Línea</span>
               <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginLeft: "auto" }}>
                 {conectadosTrabajando.length > 0 && (
                   <span className={styles.teamChip} style={{ background: "#dcfce7", color: "#166534" }}>
@@ -192,15 +200,15 @@ export const DashboardHomePage = () => {
                   </span>
                 )}
                 {conectadosAlmuerzo.length > 0 && (
-                  <span className={styles.teamChip} style={{ background: "#fef3c7", color: "#92400e" }}>
-                    🍽 {conectadosAlmuerzo.length} almuerzo
+                  <span className={styles.teamChip} style={{ background: "#fef3c7", color: "#92400e", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <LuUtensils size={13} /> {conectadosAlmuerzo.length} almuerzo
                   </span>
                 )}
               </div>
             </div>
             {conectados.length === 0 ? (
               <div className={styles.emptyPanel}>
-                <span>😴</span>
+                <span><LuMoon size={20} /></span>
                 <p>Nadie ha marcado entrada hoy.</p>
               </div>
             ) : (
@@ -226,7 +234,7 @@ export const DashboardHomePage = () => {
                       <span className={styles.avatarName}>{c.nombre}</span>
                       <span className={styles.avatarSub}>{c.puesto || c.rol} · desde {c.desde}</span>
                     </div>
-                    <span className={styles.statusChipAmber}>🍽 Alm.</span>
+                    <span className={styles.statusChipAmber} style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuUtensils size={12} /> Alm.</span>
                   </div>
                 ))}
               </div>
@@ -241,11 +249,11 @@ export const DashboardHomePage = () => {
           <div className={styles.rightTopRow}>
             <div className={styles.panel}>
               <div className={styles.panelHeader}>
-                <span className={styles.panelTitle}>🏆 Top Vendedores (Mes)</span>
+                <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuTrophy size={16} /> Top Vendedores (Mes)</span>
               </div>
               {!extended?.topVendedores?.length ? (
                 <div className={styles.emptyPanel}>
-                  <span>📊</span>
+                  <span><LuChartColumnStacked size={20} /></span>
                   <p>Sin cierres este mes aún.</p>
                 </div>
               ) : (
@@ -253,7 +261,7 @@ export const DashboardHomePage = () => {
                   {extended.topVendedores.map((v, i) => (
                     <div key={v.nombre} className={styles.rankRow}>
                       <span className={styles.rank}>
-                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                        {i === 0 ? <LuTrophy size={16} /> : i === 1 ? <LuMedal size={16} /> : i === 2 ? <LuAward size={16} /> : `#${i + 1}`}
                       </span>
                       <div className={styles.rankInfo}>
                         <span className={styles.rankName}>{v.nombre || "Sin asignar"}</span>
@@ -271,7 +279,7 @@ export const DashboardHomePage = () => {
 
             <div className={styles.panel}>
               <div className={styles.panelHeader}>
-                <span className={styles.panelTitle}>📈 Ventas Últimos 6 Meses</span>
+                <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuTrendingUp size={16} /> Ventas Últimos 6 Meses</span>
               </div>
               <div style={{ padding: "0.75rem 0.5rem 0.5rem" }}>
                 <ResponsiveContainer width="100%" height={200}>
@@ -296,7 +304,7 @@ export const DashboardHomePage = () => {
           {(basic?.salesBySellerData?.length ?? 0) > 0 && (
             <div className={styles.panel} style={{ marginTop: "1rem" }}>
               <div className={styles.panelHeader}>
-                <span className={styles.panelTitle}>👤 Ventas por Vendedor (Mes Actual)</span>
+                <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUser size={16} /> Ventas por Vendedor (Mes Actual)</span>
               </div>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={basic!.salesBySellerData} layout="vertical" margin={{ left: 20, right: 20 }}>
@@ -318,11 +326,11 @@ export const DashboardHomePage = () => {
           {/* ── Conversión cotización → venta por vendedor ─────────────── */}
           <div className={styles.panel} style={{ marginTop: "1rem" }}>
             <div className={styles.panelHeader}>
-              <span className={styles.panelTitle}>🎯 Conversión por Vendedor (Mes)</span>
+              <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuTarget size={16} /> Conversión por Vendedor (Mes)</span>
             </div>
             {!extended?.conversionVendedores?.length ? (
               <div className={styles.emptyPanel}>
-                <span>📊</span>
+                <span><LuChartColumnStacked size={20} /></span>
                 <p>Sin cotizaciones este mes aún.</p>
               </div>
             ) : (
@@ -366,8 +374,8 @@ export const DashboardHomePage = () => {
 };
 
 // ─── sub-componente QuickAction (acceso rápido) ──────────────────────────────
-const QuickAction = ({ emoji, label, onClick, primary }: {
-  emoji: string; label: string; onClick: () => void; primary?: boolean;
+const QuickAction = ({ icon, label, onClick, primary }: {
+  icon: ReactNode; label: string; onClick: () => void; primary?: boolean;
 }) => (
   <button
     onClick={onClick}
@@ -381,15 +389,15 @@ const QuickAction = ({ emoji, label, onClick, primary }: {
       boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
     }}
   >
-    <span style={{ fontSize: "1.1rem" }}>{emoji}</span> {label}
+    <span style={{ fontSize: "1.1rem", display: "inline-flex", alignItems: "center" }}>{icon}</span> {label}
   </button>
 );
 
 // ─── sub-componente MiniKpi (compact) ────────────────────────────────────────
 const MiniKpi = ({
-  icon, label, value, sub, color, onClick,
+  icon, label, value, sub, subIcon, color, onClick,
 }: {
-  icon: string; label: string; value: string; sub?: string;
+  icon: ReactNode; label: string; value: string; sub?: string; subIcon?: ReactNode;
   color: string; onClick?: () => void;
 }) => (
   <div
@@ -400,6 +408,6 @@ const MiniKpi = ({
     <span className={styles.miniKpiIcon}>{icon}</span>
     <span className={styles.miniKpiValue}>{value}</span>
     <span className={styles.miniKpiLabel}>{label}</span>
-    {sub && <span className={styles.miniKpiSub}>{sub}</span>}
+    {sub && <span className={styles.miniKpiSub} style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>{subIcon} {sub}</span>}
   </div>
 );

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useRef } from "react";
 import styles from "./ConfirmDialog.module.css";
+import { LuTriangleAlert, LuCircleHelp } from "react-icons/lu";
 
 interface ConfirmOptions {
   title?: string;
@@ -40,7 +41,7 @@ export const ConfirmProvider = ({ children }: { children: React.ReactNode }) => 
         <div className={styles.overlay} onClick={() => close(false)}>
           <div className={styles.box} onClick={(e) => e.stopPropagation()}>
             <div className={styles.body}>
-              <span className={styles.icon}>{state.danger ? "⚠️" : "❓"}</span>
+              <span className={styles.icon}>{state.danger ? <LuTriangleAlert /> : <LuCircleHelp />}</span>
               <div>
                 <h3 className={styles.title}>{state.title ?? "Confirmar acción"}</h3>
                 <p className={styles.message}>{state.message}</p>
