@@ -108,8 +108,9 @@ export const CreateQuotePage = () => {
 
   // ── Venta en dólares (precio fijo en USD como fuente de verdad) ──────────────
   const [monedaVenta, setMonedaVenta] = useState<"CRC" | "USD">("CRC");
-  const [precioUsd, setPrecioUsd] = useState(0); // valor FINAL en USD (IVA incluido)
-  const [tcVigente, setTcVigente] = useState(0); // TC de venta del día (para vista previa; se congela al guardar)
+  const [precioUsd, setPrecioUsd] = useState(0);    // precio de lista en USD (IVA incluido, antes de descuento)
+  const [descuentoUsd, setDescuentoUsd] = useState(0); // descuento en USD
+  const [tcVigente, setTcVigente] = useState(0);    // TC de venta del día (vista previa; se congela al guardar)
 
   // TC vigente para la vista previa CRC (se congela en el servidor al guardar).
   useEffect(() => {
@@ -118,12 +119,13 @@ export const CreateQuotePage = () => {
       .catch(() => {});
   }, []);
 
-  // En modo USD, el CRC con IVA se deriva del USD × TC vigente (previsualización).
+  // En modo USD, el CRC (precio y descuento) se deriva del USD × TC vigente (previsualización).
   useEffect(() => {
-    if (monedaVenta === "USD" && precioUsd > 0 && tcVigente > 0) {
-      setPrecioLista(Math.round(precioUsd * tcVigente));
+    if (monedaVenta === "USD" && tcVigente > 0) {
+      if (precioUsd > 0) setPrecioLista(Math.round(precioUsd * tcVigente));
+      setDescuentoMonto(Math.round(descuentoUsd * tcVigente));
     }
-  }, [monedaVenta, precioUsd, tcVigente]);
+  }, [monedaVenta, precioUsd, descuentoUsd, tcVigente]);
 
   // Pre-llenar datos del cliente desde el lead
   useEffect(() => {
@@ -148,9 +150,10 @@ export const CreateQuotePage = () => {
   const ivaMonto       = precioConIva - precioFinal;            // IVA desglosado
   const totalConIva    = precioConIva;                          // total = lo que ingresó el usuario
 
-  // Vista en dólares: valor FIJO en USD (IVA incluido). Base e IVA se derivan.
-  const precioUsdTotal = Number(precioUsd) || 0;
-  const hayUsd         = precioUsdTotal > 0;
+  // Vista en dólares: valor FIJO en USD (IVA incluido). Neto = lista − descuento.
+  const netUsd         = Math.max(0, (Number(precioUsd) || 0) - (Number(descuentoUsd) || 0));
+  const precioUsdTotal = netUsd;
+  const hayUsd         = (Number(precioUsd) || 0) > 0;
   const baseUsd        = hayUsd ? precioUsdTotal / divisor : 0;
   const ivaUsd         = precioUsdTotal - baseUsd;
   // Formatea un valor mostrando ₡ o $ según la moneda elegida en el resumen.
@@ -173,8 +176,8 @@ export const CreateQuotePage = () => {
         precio_lista: precioLista,
         descuento_monto: descuentoMonto,
         precio_final: precioFinal,
-        // Venta en USD: se manda el valor fijo en dólares; el backend congela CRC y TC.
-        precio_venta_usd: monedaVenta === "USD" && precioUsd > 0 ? precioUsd : undefined,
+        // Venta en USD: se manda el valor NETO en dólares (lista − descuento); el backend congela CRC y TC.
+        precio_venta_usd: monedaVenta === "USD" && netUsd > 0 ? netUsd : undefined,
         iva_porcentaje: ivaPorcentaje,
         // fecha_expiracion omitida → backend calcula automáticamente hoy + 4 días
         gasto_marchamo: gastoMarchamo,
@@ -309,11 +312,22 @@ export const CreateQuotePage = () => {
               <span className={styles.fieldHint}>Precio final al cliente con IVA incluido</span>
             </div>
           )}
-          <div className={styles.field}>
-            <label>Descuento (₡)</label>
-            <input type="number" min={0} value={descuentoMonto}
-              onChange={(e) => setDescuentoMonto(Number(e.target.value))} />
-          </div>
+          {monedaVenta === "USD" ? (
+            <div className={styles.field}>
+              <label>Descuento ($)</label>
+              <input type="number" min={0} value={descuentoUsd}
+                onChange={(e) => setDescuentoUsd(Number(e.target.value))} />
+              <span className={styles.fieldHint}>
+                {tcVigente > 0 ? `≈ ${fmtCRC(descuentoMonto)} al TC de hoy` : "Descuento en dólares"}
+              </span>
+            </div>
+          ) : (
+            <div className={styles.field}>
+              <label>Descuento (₡)</label>
+              <input type="number" min={0} value={descuentoMonto}
+                onChange={(e) => setDescuentoMonto(Number(e.target.value))} />
+            </div>
+          )}
           <div className={`${styles.field} ${styles.highlight}`}>
             <label>Base Imponible (sin IVA) — calculada</label>
             <input type="text" value={fmtCRC(precioFinal)} readOnly />
@@ -438,23 +452,23 @@ export const CreateQuotePage = () => {
           <>
             <div className={styles.summaryRow}>
               <span>Precio de lista:</span>
-              <span>{fmtCRC(precioLista)}</span>
+              <span>{fmtMon(precioLista, Number(precioUsd) || 0)}</span>
             </div>
             <div className={`${styles.summaryRow} ${styles.discount}`}>
               <span>Descuento:</span>
-              <span>− {fmtCRC(descuentoMonto)}</span>
+              <span>− {fmtMon(descuentoMonto, Number(descuentoUsd) || 0)}</span>
             </div>
           </>
         )}
 
         <div className={styles.summaryRow}>
           <span>Precio con IVA ingresado:</span>
-          <span>{fmtMon(precioLista, precioUsdTotal)}</span>
+          <span>{fmtMon(precioLista, Number(precioUsd) || 0)}</span>
         </div>
         {descuentoMonto > 0 && (
           <div className={`${styles.summaryRow} ${styles.discountRow}`}>
             <span>Descuento:</span>
-            <span>− {fmtCRC(descuentoMonto)}</span>
+            <span>− {fmtMon(descuentoMonto, Number(descuentoUsd) || 0)}</span>
           </div>
         )}
         <div className={`${styles.summaryRow} ${styles.subtotalRow}`}>
