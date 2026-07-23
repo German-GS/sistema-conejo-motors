@@ -43,11 +43,11 @@ export const CreateQuotePage = () => {
   const [fechaExpiracion, setFechaExpiracion] = useState("");
 
   // Gastos de inscripción
+  // Gastos de formalización (marchamo/inscripción): van incluidos en el precio y se guardan
+  // para el registro interno (autocompletados desde la ficha del vehículo). Ya no se editan
+  // en el formulario ni se muestran al cliente.
   const [gastoMarchamo, setGastoMarchamo] = useState(0);
   const [gastoInscripcion, setGastoInscripcion] = useState(0);
-  const [gastoPlacas, setGastoPlacas] = useState(0);
-  const [gastoOtros, setGastoOtros] = useState(0);
-  const [gastoOtrosDesc, setGastoOtrosDesc] = useState("");
 
   // Extras
   const [regalias, setRegalias] = useState("");
@@ -94,7 +94,6 @@ export const CreateQuotePage = () => {
         if (usd > 0) {
           setPrecioUsd(usd);
           setMonedaVenta("USD"); // el precio del vehículo está fijado en dólares → venta en USD
-          setVerEnUsd(true);     // el resumen abre mostrando dólares
         }
         if (v.marchamo) setGastoMarchamo(Number(v.marchamo));
         if (v.inscripcion_traspaso) setGastoInscripcion(Number(v.inscripcion_traspaso));
@@ -104,7 +103,6 @@ export const CreateQuotePage = () => {
   }, [vehicleId]);
 
   const [leadNombre, setLeadNombre] = useState("");
-  const [verEnUsd, setVerEnUsd] = useState(false); // toggle ₡/$ del resumen
 
   // ── Venta en dólares (precio fijo en USD como fuente de verdad) ──────────────
   const [monedaVenta, setMonedaVenta] = useState<"CRC" | "USD">("CRC");
@@ -156,8 +154,8 @@ export const CreateQuotePage = () => {
   const hayUsd         = (Number(precioUsd) || 0) > 0;
   const baseUsd        = hayUsd ? precioUsdTotal / divisor : 0;
   const ivaUsd         = precioUsdTotal - baseUsd;
-  // Formatea un valor mostrando ₡ o $ según la moneda elegida en el resumen.
-  const fmtMon = (crc: number, usd: number) => (verEnUsd ? fmtUSD(usd) : fmtCRC(crc));
+  // Formatea un valor mostrando ₡ o $ según la moneda elegida arriba (selector de la venta).
+  const fmtMon = (crc: number, usd: number) => (monedaVenta === "USD" ? fmtUSD(usd) : fmtCRC(crc));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,9 +180,9 @@ export const CreateQuotePage = () => {
         // fecha_expiracion omitida → backend calcula automáticamente hoy + 4 días
         gasto_marchamo: gastoMarchamo,
         gasto_inscripcion: gastoInscripcion,
-        gasto_placas: gastoPlacas,
-        gasto_otros: gastoOtros,
-        gasto_otros_descripcion: gastoOtrosDesc,
+        gasto_placas: 0,
+        gasto_otros: 0,
+        gasto_otros_descripcion: "",
         tipo_combustible: tipoCombustible,
         regalias,
         notas_cliente: notasCliente,
@@ -385,39 +383,8 @@ export const CreateQuotePage = () => {
         </div>
       </Card>
 
-      {/* Gastos de inscripción */}
-      <Card title="Gastos de Inscripción (desglosados en la proforma)">
-        <p className={styles.hint}>
-          Estos gastos se detallan en la factura proforma. El precio del vehículo <strong>no incluye</strong> estos costos.
-        </p>
-        <div className={styles.formGrid}>
-          <div className={styles.field}>
-            <label>Marchamo (primer año) ₡</label>
-            <input type="number" min={0} value={gastoMarchamo}
-              onChange={(e) => setGastoMarchamo(Number(e.target.value))} />
-          </div>
-          <div className={styles.field}>
-            <label>Inscripción / Derechos de Registro ₡</label>
-            <input type="number" min={0} value={gastoInscripcion}
-              onChange={(e) => setGastoInscripcion(Number(e.target.value))} />
-          </div>
-          <div className={styles.field}>
-            <label>Placas / Derechos de Circulación ₡</label>
-            <input type="number" min={0} value={gastoPlacas}
-              onChange={(e) => setGastoPlacas(Number(e.target.value))} />
-          </div>
-          <div className={styles.field}>
-            <label>Otros Gastos ₡</label>
-            <input type="number" min={0} value={gastoOtros}
-              onChange={(e) => setGastoOtros(Number(e.target.value))} />
-          </div>
-          <div className={`${styles.field} ${styles.fullWidth}`}>
-            <label>Descripción de Otros Gastos</label>
-            <input type="text" placeholder="Ej: Transporte, seguro de entrega..."
-              value={gastoOtrosDesc} onChange={(e) => setGastoOtrosDesc(e.target.value)} />
-          </div>
-        </div>
-      </Card>
+      {/* Los gastos de formalización (traspaso e inscripción) van incluidos en el precio.
+          El cliente solo ve "incluidos" en la proforma; no se desglosan en el formulario. */}
 
       {/* Regalías y extras */}
       <Card title="Regalías e Información Adicional">
@@ -439,15 +406,9 @@ export const CreateQuotePage = () => {
 
       {/* Resumen */}
       <div className={styles.summary}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-          <h3 style={{ margin: 0 }}>Resumen de la Proforma (vista cliente)</h3>
-          {hayUsd && (
-            <button type="button" onClick={() => setVerEnUsd(v => !v)}
-              style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 8, padding: "6px 12px", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>
-              {verEnUsd ? "💱 Ver en colones (₡)" : "💵 Ver en dólares ($)"}
-            </button>
-          )}
-        </div>
+        <h3 style={{ margin: 0 }}>
+          Resumen de la Proforma (vista cliente) · {monedaVenta === "USD" ? "$ dólares" : "₡ colones"}
+        </h3>
         {descuentoMonto > 0 && (
           <>
             <div className={styles.summaryRow}>
@@ -484,8 +445,8 @@ export const CreateQuotePage = () => {
           <span>{fmtMon(totalConIva, precioUsdTotal)}</span>
         </div>
         <p className={styles.summaryNote}>
-          {verEnUsd
-            ? "💵 Valor fijo del vehículo en dólares (IVA incluido). El botón lo vuelve a colones."
+          {monedaVenta === "USD"
+            ? "💵 Valor fijo en dólares (IVA y gastos de formalización incluidos). El CRC se congela al TC de hoy al guardar."
             : "✅ El precio ingresado ya incluye IVA — el sistema lo desglosa automáticamente"}
         </p>
       </div>
