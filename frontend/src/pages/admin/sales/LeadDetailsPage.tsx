@@ -7,6 +7,16 @@ import toast from "react-hot-toast";
 import styles from "./LeadDetailsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 import { PageLoader } from "@/components/PageLoader";
+import {
+  LuGlobe, LuHandshake, LuBuilding2, LuClipboardList,
+  LuCircleCheck, LuTriangleAlert, LuBriefcase, LuBanknote, LuWallet, LuCar,
+  LuTarget, LuCalendarDays, LuPencil, LuMessageCircle, LuMail, LuPhone, LuLock,
+  LuHome, LuSquarePen, LuThermometer, LuInfo, LuUpload, LuFileText, LuImage,
+  LuPaperclip, LuHourglass, LuDownload, LuChartColumnStacked, LuX, LuPlus,
+  LuCamera, LuThumbsUp, LuMusic, LuFlame, LuCloudSun, LuSnowflake,
+  LuIdCard, LuSignature, LuMegaphone, LuNotebookPen, LuCreditCard, LuUser,
+  LuArrowUp, LuArrowDown, LuUserCog, LuClock,
+} from "react-icons/lu";
 
 interface Actividad {
   id: number;
@@ -84,9 +94,9 @@ interface LeadDetails {
   actividades?: Actividad[];
 }
 
-const FUENTE_ICONS: Record<string, string> = {
-  Web: "🌐", Instagram: "📸", Facebook: "👍", WhatsApp: "💬",
-  TikTok: "🎵", Referido: "🤝", Presencial: "🏢", Otro: "📋",
+const FUENTE_ICONS: Record<string, ReactNode> = {
+  Web: <LuGlobe size={18} />, Instagram: <LuCamera size={18} />, Facebook: <LuThumbsUp size={18} />, WhatsApp: <LuMessageCircle size={18} />,
+  TikTok: <LuMusic size={18} />, Referido: <LuHandshake size={18} />, Presencial: <LuBuilding2 size={18} />, Otro: <LuClipboardList size={18} />,
 };
 
 const TIPO_ICONS: Record<string, string> = {
@@ -102,10 +112,10 @@ const ESTADO_COLORS: Record<string, string> = {
   Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "#94a3b8",
 };
 
-const TEMPERATURAS: { value: "Caliente" | "Tibio" | "Frio"; label: string; color: string }[] = [
-  { value: "Caliente", label: "🔥 Caliente", color: "#ef4444" },
-  { value: "Tibio",    label: "🌤️ Tibio",    color: "#f59e0b" },
-  { value: "Frio",     label: "❄️ Frío",     color: "#3b82f6" },
+const TEMPERATURAS: { value: "Caliente" | "Tibio" | "Frio"; label: ReactNode; color: string }[] = [
+  { value: "Caliente", label: <><LuFlame size={13} /> Caliente</>, color: "#ef4444" },
+  { value: "Tibio",    label: <><LuCloudSun size={13} /> Tibio</>, color: "#f59e0b" },
+  { value: "Frio",     label: <><LuSnowflake size={13} /> Frío</>, color: "#3b82f6" },
 ];
 const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
 
@@ -447,15 +457,15 @@ export const LeadDetailsPage = () => {
                   : navigate(`${catalogBase}?leadId=${lead.id}`)
               }
             >
-              📄 {lead.vehiculo_interes ? "Crear Cotización" : "Cotizar Vehículo"}
+              <LuFileText size={15} /> {lead.vehiculo_interes ? "Crear Cotización" : "Cotizar Vehículo"}
             </button>
           )}
           {/* Botón de facturación: comportamiento diferente por rol */}
           {lead.estado !== "Cerrado" && lead.estado !== "Perdido" && (
             esVendedor ? (
               facturaEnviada ? (
-                <div className={styles.facturaEnviadaBadge}>
-                  ✅ Enviado a contabilidad
+                <div className={styles.facturaEnviadaBadge} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <LuCircleCheck size={16} /> Enviado a contabilidad
                 </div>
               ) : (
                 <button
@@ -463,8 +473,9 @@ export const LeadDetailsPage = () => {
                   onClick={handleSolicitarFactura}
                   disabled={solicitandoFactura}
                   title="Enviar al equipo de contabilidad para que procesen la factura"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
                 >
-                  {solicitandoFactura ? "Enviando..." : "💼 Enviar a Facturar"}
+                  {solicitandoFactura ? "Enviando..." : <><LuBriefcase size={16} /> Enviar a Facturar</>}
                 </button>
               )
             ) : (
@@ -472,8 +483,9 @@ export const LeadDetailsPage = () => {
                 className={styles.billBtn}
                 onClick={() => navigate(`${billingBase}?cotizacionId=&leadId=${lead.id}`)}
                 title="Ir al módulo de facturación"
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
               >
-                💼 Facturar
+                <LuBriefcase size={16} /> Facturar
               </button>
             )
           )}
@@ -483,7 +495,7 @@ export const LeadDetailsPage = () => {
       {/* Banner de confirmación cuando vendedor envió solicitud de facturación */}
       {facturaEnviada && (
         <div className={styles.facturaEnviadaBanner}>
-          <div className={styles.facturaEnviadaIcon}>✅</div>
+          <div className={styles.facturaEnviadaIcon}><LuCircleCheck size={20} /></div>
           <div className={styles.facturaEnviadaText}>
             <strong>Solicitud enviada a contabilidad</strong>
             <p>El equipo de administración fue notificado y procesará la factura de <strong>{lead.nombre_cliente}</strong> a la brevedad.</p>
@@ -501,8 +513,8 @@ export const LeadDetailsPage = () => {
           const faltan = [!lead.cedula_cliente && "cédula", !lead.email_cliente && "correo"].filter(Boolean);
           if (faltan.length === 0) return null;
           return (
-            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 10, padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: "0.9rem" }}>
-              ℹ️ Completá los datos básicos de contacto (falta: {faltan.join(" y ")}).
+            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 10, padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuInfo size={16} /> Completá los datos básicos de contacto (falta: {faltan.join(" y ")}).
             </div>
           );
         }
@@ -510,8 +522,8 @@ export const LeadDetailsPage = () => {
         const avanzadas = ["En Progreso", "Prueba de Manejo", "Cotizacion Enviada", "Negociacion"];
         if (avanzadas.includes(estado) && (sugef.faltantes?.length ?? 0) > 0) {
           return (
-            <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", color: "#92400e", borderRadius: 10, padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: "0.9rem", fontWeight: 600 }}>
-              ⚠️ Faltan {sugef.faltantes.length} campo(s) de cumplimiento SUGEF para poder facturar. Podés seguir trabajando el lead; completalos en el "Expediente SUGEF".
+            <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", color: "#92400e", borderRadius: 10, padding: "0.7rem 1rem", marginBottom: "1rem", fontSize: "0.9rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuTriangleAlert size={16} /> Faltan {sugef.faltantes.length} campo(s) de cumplimiento SUGEF para poder facturar. Podés seguir trabajando el lead; completalos en el "Expediente SUGEF".
             </div>
           );
         }
@@ -566,9 +578,9 @@ export const LeadDetailsPage = () => {
                   <button
                     onClick={() => { setNombreEdit(lead.nombre_cliente); setEditandoNombre(true); }}
                     title="Editar nombre"
-                    style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", opacity: 0.6 }}
+                    style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", opacity: 0.6, display: "inline-flex" }}
                   >
-                    ✏️
+                    <LuPencil size={14} />
                   </button>
                 </h1>
               )}
@@ -593,6 +605,7 @@ export const LeadDetailsPage = () => {
                         border: `1.5px solid ${t.color}`, borderRadius: 20, padding: "2px 9px",
                         background: activa ? t.color : "#fff",
                         color: activa ? "#fff" : t.color,
+                        display: "inline-flex", alignItems: "center", gap: "0.25rem",
                       }}
                     >
                       {t.label}
@@ -604,7 +617,7 @@ export const LeadDetailsPage = () => {
           </div>
 
           {/* Contacto */}
-          <SidebarSection id="contacto" title="📋 Contacto" defaultOpen>
+          <SidebarSection id="contacto" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuClipboardList size={16} /> Contacto</span>} defaultOpen>
             <p><strong>Email:</strong> {lead.email_cliente}</p>
             <p><strong>Teléfono:</strong> {lead.telefono_cliente || "—"}</p>
             <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
@@ -635,8 +648,8 @@ export const LeadDetailsPage = () => {
               ];
               return (
                 <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.03em" }}>
-                    💬 Escribir por WhatsApp
+                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <LuMessageCircle size={14} /> Escribir por WhatsApp
                   </span>
                   {plantillas.map((p) => (
                     <button
@@ -650,7 +663,7 @@ export const LeadDetailsPage = () => {
                         fontSize: "0.82rem", fontWeight: 600,
                       }}
                     >
-                      💬 {p.label}
+                      <LuMessageCircle size={14} /> {p.label}
                     </button>
                   ))}
                 </div>
@@ -663,7 +676,7 @@ export const LeadDetailsPage = () => {
                   checked={lead.contacted_by_email}
                   onChange={() => save({ contacted_by_email: !lead.contacted_by_email })}
                 />
-                {" "}✉️ Contactado por email
+                {" "}<LuMail size={13} style={{ verticalAlign: "-2px" }} /> Contactado por email
               </label>
             </div>
             <div className={styles.checkRow}>
@@ -673,7 +686,7 @@ export const LeadDetailsPage = () => {
                   checked={lead.contacted_by_phone}
                   onChange={() => save({ contacted_by_phone: !lead.contacted_by_phone })}
                 />
-                {" "}📞 Contactado por teléfono
+                {" "}<LuPhone size={13} style={{ verticalAlign: "-2px" }} /> Contactado por teléfono
               </label>
             </div>
             <div className={styles.checkRow}>
@@ -683,7 +696,7 @@ export const LeadDetailsPage = () => {
                   checked={lead.contacted_by_whatsapp ?? false}
                   onChange={() => save({ contacted_by_whatsapp: !lead.contacted_by_whatsapp })}
                 />
-                {" "}💬 Contactado por WhatsApp
+                {" "}<LuMessageCircle size={13} style={{ verticalAlign: "-2px" }} /> Contactado por WhatsApp
               </label>
             </div>
           </SidebarSection>
@@ -703,7 +716,7 @@ export const LeadDetailsPage = () => {
               background: ro ? "#f1f5f9" : "#fff",
             };
             const lleno = (k: string) => { const v = kyc[k]; return v !== null && v !== undefined && v !== ""; };
-            const mark = (k: string) => (lleno(k) ? "✅" : "⚠️");
+            const mark = (k: string) => (lleno(k) ? <LuCircleCheck size={12} style={{ verticalAlign: "-1px" }} /> : <LuTriangleAlert size={12} style={{ verticalAlign: "-1px" }} />);
             // Campo de texto/fecha/número reutilizable
             const Campo = (k: string, label: string, tipo: "text" | "date" | "number" = "text") => (
               <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
@@ -718,14 +731,14 @@ export const LeadDetailsPage = () => {
                 />
               </label>
             );
-            const grupoTitulo = (t: string) => (
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.03em", margin: "0.5rem 0 0.35rem" }}>{t}</div>
+            const grupoTitulo = (t: ReactNode) => (
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.03em", margin: "0.5rem 0 0.35rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>{t}</div>
             );
             return (
-              <SidebarSection id="sugef" title="📋 Expediente SUGEF" defaultOpen={pct < 100} badge={ro ? "🔒" : `${completos}/${totalReq}`}>
+              <SidebarSection id="sugef" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuClipboardList size={16} /> Expediente SUGEF</span>} defaultOpen={pct < 100} badge={ro ? <LuLock size={14} /> : `${completos}/${totalReq}`}>
                 {ro && sugef.retencion && (
-                  <div style={{ background: "#dcfce7", border: "1px solid #16a34a", borderRadius: 8, padding: "0.5rem 0.7rem", fontSize: "0.8rem", color: "#15803d", fontWeight: 600 }}>
-                    ✅ Venta facturada — expediente bajo retención hasta {fmtFechaLocal(sugef.retencion.retener_hasta)}. Solo lectura.
+                  <div style={{ background: "#dcfce7", border: "1px solid #16a34a", borderRadius: 8, padding: "0.5rem 0.7rem", fontSize: "0.8rem", color: "#15803d", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <LuCircleCheck size={15} /> Venta facturada — expediente bajo retención hasta {fmtFechaLocal(sugef.retencion.retener_hasta)}. Solo lectura.
                   </div>
                 )}
                 {/* Barra de progreso */}
@@ -740,7 +753,7 @@ export const LeadDetailsPage = () => {
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
-                  {grupoTitulo("🪪 Identidad")}
+                  {grupoTitulo(<><LuIdCard size={13} /> Identidad</>)}
                   {/* Nacionalidad: al elegir Costarricense, autocompleta país de residencia */}
                   <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
                     <span>{mark("nacionalidad")} Nacionalidad</span>
@@ -761,11 +774,11 @@ export const LeadDetailsPage = () => {
                   {Campo("fecha_nacimiento", "Fecha de nacimiento", "date")}
                   {Campo("lugar_nacimiento", "Lugar de nacimiento")}
 
-                  {grupoTitulo("🏠 Domicilio")}
+                  {grupoTitulo(<><LuHome size={13} /> Domicilio</>)}
                   {Campo("direccion", "Dirección exacta")}
                   {Campo("pais_residencia", "País de residencia")}
 
-                  {grupoTitulo("💼 Perfil económico y origen de fondos")}
+                  {grupoTitulo(<><LuBriefcase size={13} /> Perfil económico y origen de fondos</>)}
                   <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
                     <span>{mark("tipo_ingreso")} Tipo de ingreso</span>
                     <select
@@ -786,12 +799,12 @@ export const LeadDetailsPage = () => {
                   )}
                   {independiente && Campo("profesion", "¿A qué se dedica?")}
                   {kyc.tipo_ingreso && (
-                    <div style={{ fontSize: "0.72rem", color: "#16a34a", background: "#f0fdf4", borderRadius: 6, padding: "0.3rem 0.5rem" }}>
-                      💵 Origen de fondos: {asalariado ? `Salario${kyc.empleador ? " — " + kyc.empleador : ""}` : `Actividad independiente${kyc.profesion ? ": " + kyc.profesion : ""}`}
+                    <div style={{ fontSize: "0.72rem", color: "#16a34a", background: "#f0fdf4", borderRadius: 6, padding: "0.3rem 0.5rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <LuWallet size={13} /> Origen de fondos: {asalariado ? `Salario${kyc.empleador ? " — " + kyc.empleador : ""}` : `Actividad independiente${kyc.profesion ? ": " + kyc.profesion : ""}`}
                     </div>
                   )}
                   <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
-                    <span>{kyc.es_pep === true || kyc.es_pep === false ? "✅" : "⚠️"} ¿Es PEP? (persona expuesta políticamente)</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>{kyc.es_pep === true || kyc.es_pep === false ? <LuCircleCheck size={12} /> : <LuTriangleAlert size={12} />} ¿Es PEP? (persona expuesta políticamente)</span>
                     <select
                       value={kyc.es_pep === true ? "si" : kyc.es_pep === false ? "no" : ""} disabled={ro}
                       onChange={(e) => guardarKyc("es_pep", e.target.value === "" ? null : e.target.value === "si")}
@@ -804,7 +817,7 @@ export const LeadDetailsPage = () => {
                   </label>
                   {Campo("monto_estimado_usd", "Monto estimado (USD)", "number")}
 
-                  {grupoTitulo("✍️ Declaración")}
+                  {grupoTitulo(<><LuSignature size={13} /> Declaración</>)}
                   {Campo("declaracion_fecha", "Fecha de declaración firmada", "date")}
                 </div>
               </SidebarSection>
@@ -813,7 +826,7 @@ export const LeadDetailsPage = () => {
 
           {/* Vehículo de interés */}
           {lead.vehiculo_interes && (
-            <SidebarSection id="vehiculo" title="🚗 Vehículo de Interés" defaultOpen>
+            <SidebarSection id="vehiculo" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuCar size={16} /> Vehículo de Interés</span>} defaultOpen>
               <p className={styles.vehicleTag}>
                 {lead.vehiculo_interes.marca} {lead.vehiculo_interes.modelo} ({lead.vehiculo_interes.año})
               </p>
@@ -851,7 +864,7 @@ export const LeadDetailsPage = () => {
 
           {/* Campaña — visible si la fuente es red social */}
           {["Facebook", "Instagram", "TikTok"].includes(lead.fuente) && (
-            <SidebarSection id="campana" title="📣 Campaña" defaultOpen={false}>
+            <SidebarSection id="campana" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuMegaphone size={16} /> Campaña</span>} defaultOpen={false}>
               <select
                 value={lead.campana?.id ?? ""}
                 onChange={(e) => save({ campana_id: e.target.value ? Number(e.target.value) : null } as any)}
@@ -868,15 +881,15 @@ export const LeadDetailsPage = () => {
                 }
               </select>
               {lead.campana && (
-                <p style={{ fontSize: "0.78rem", color: "#16a34a", margin: "0.4rem 0 0" }}>
-                  ✅ Asignado a: <strong>{lead.campana.nombre}</strong>
+                <p style={{ fontSize: "0.78rem", color: "#16a34a", margin: "0.4rem 0 0", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                  <LuCircleCheck size={14} /> Asignado a: <strong>{lead.campana.nombre}</strong>
                 </p>
               )}
             </SidebarSection>
           )}
 
           {/* Última etapa alcanzada */}
-          <SidebarSection id="etapa" title="🎯 Última Etapa Alcanzada" defaultOpen>
+          <SidebarSection id="etapa" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTarget size={16} /> Última Etapa Alcanzada</span>} defaultOpen>
             <select
               value={lead.ultima_etapa ?? ""}
               onChange={(e) => save({ ultima_etapa: e.target.value || null } as any)}
@@ -888,7 +901,7 @@ export const LeadDetailsPage = () => {
           </SidebarSection>
 
           {/* Seguimiento */}
-          <SidebarSection id="seguimiento" title="📅 Próximo Seguimiento" defaultOpen>
+          <SidebarSection id="seguimiento" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuCalendarDays size={16} /> Próximo Seguimiento</span>} defaultOpen>
             <input
               type="date"
               value={lead.fecha_followup ?? ""}
@@ -899,7 +912,7 @@ export const LeadDetailsPage = () => {
 
           {/* Asignación */}
           {vendedores.length > 0 && (
-            <SidebarSection id="vendedor" title="👤 Vendedor Asignado" defaultOpen={false}>
+            <SidebarSection id="vendedor" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuUser size={16} /> Vendedor Asignado</span>} defaultOpen={false}>
               <select
                 value={lead.vendedor_asignado?.id ?? ""}
                 onChange={(e) => save({ vendedor_asignado_id: Number(e.target.value) } as any)}
@@ -914,7 +927,7 @@ export const LeadDetailsPage = () => {
           )}
 
           {/* Notas */}
-          <SidebarSection id="notas" title="📝 Notas Generales" defaultOpen>
+          <SidebarSection id="notas" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuNotebookPen size={16} /> Notas Generales</span>} defaultOpen>
             <textarea
               value={lead.notas ?? ""}
               rows={4}
@@ -926,20 +939,21 @@ export const LeadDetailsPage = () => {
           </SidebarSection>
 
           {/* ── MODALIDAD DE COMPRA ── */}
-          <SidebarSection id="modalidad" title="💳 Modalidad de Compra" defaultOpen={false}>
+          <SidebarSection id="modalidad" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuCreditCard size={16} /> Modalidad de Compra</span>} defaultOpen={false}>
             <div className={styles.tipoPagoRow}>
               {(["Contado", "Crédito"] as const).map(tipo => (
                 <button
                   key={tipo}
                   className={`${styles.tipoPagoBtn} ${lead.tipo_pago === tipo ? styles.tipoPagoActive : ""}`}
                   onClick={() => save({ tipo_pago: tipo } as any)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
                 >
-                  {tipo === "Contado" ? "💵" : "🏦"} {tipo}
+                  {tipo === "Contado" ? <LuWallet size={14} /> : <LuBanknote size={14} />} {tipo}
                 </button>
               ))}
             </div>
-            <label style={{ display: "block", marginTop: "0.6rem", fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>
-              💰 Prima que puede aportar (₡)
+            <label style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "0.6rem", fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>
+              <LuWallet size={14} /> Prima que puede aportar (₡)
             </label>
             <input
               type="number"
@@ -955,7 +969,7 @@ export const LeadDetailsPage = () => {
           </SidebarSection>
 
           {/* Cotizaciones vinculadas */}
-          <SidebarSection id="cotizaciones" title="📄 Cotizaciones" defaultOpen badge={cotizaciones.length || undefined}>
+          <SidebarSection id="cotizaciones" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuFileText size={16} /> Cotizaciones</span>} defaultOpen badge={cotizaciones.length || undefined}>
             {cotizaciones.length === 0 ? (
               <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #64748b)", margin: 0 }}>
                 Sin cotizaciones aún.
@@ -990,8 +1004,8 @@ export const LeadDetailsPage = () => {
                         <span>#{c.id}</span>
                         <span>{new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(c.total_con_iva)}</span>
                         {c.estado === "Activa" && (
-                          <span style={{ color: vencida ? "#ef4444" : "#f59e0b" }}>
-                            {vencida ? "⚠️ Vencida" : `Vence ${fmtFechaLocal(c.fecha_expiracion)}`}
+                          <span style={{ color: vencida ? "#ef4444" : "#f59e0b", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                            {vencida ? <><LuTriangleAlert size={12} /> Vencida</> : `Vence ${fmtFechaLocal(c.fecha_expiracion)}`}
                           </span>
                         )}
                       </div>
@@ -1003,7 +1017,7 @@ export const LeadDetailsPage = () => {
           </SidebarSection>
 
           {/* Documentos del cliente */}
-          <SidebarSection id="documentos" title="📎 Documentos del Cliente" defaultOpen badge={documentos.length || undefined}>
+          <SidebarSection id="documentos" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuPaperclip size={16} /> Documentos del Cliente</span>} defaultOpen badge={documentos.length || undefined}>
             <p style={{ fontSize: "0.76rem", color: "#64748b", margin: "0 0 0.6rem" }}>
               Cédula, estados de cuenta, CIC, etc. Se eliminan automáticamente a los 2 meses por seguridad.
             </p>
@@ -1016,7 +1030,7 @@ export const LeadDetailsPage = () => {
                 color: "#475569", background: "#f8fafc",
               }}
             >
-              {subiendoDoc ? "Subiendo…" : "⬆️ Subir documento(s)"}
+              {subiendoDoc ? "Subiendo…" : <><LuUpload size={15} /> Subir documento(s)</>}
               <input
                 type="file"
                 multiple
@@ -1041,23 +1055,23 @@ export const LeadDetailsPage = () => {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                        <span style={{ flex: 1, fontSize: "0.84rem", fontWeight: 600, wordBreak: "break-word" }}>
-                          {d.tipo_mime?.includes("pdf") ? "📄" : d.tipo_mime?.includes("image") ? "🖼️" : "📎"} {d.nombre}
+                        <span style={{ flex: 1, fontSize: "0.84rem", fontWeight: 600, wordBreak: "break-word", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                          {d.tipo_mime?.includes("pdf") ? <LuFileText size={14} /> : d.tipo_mime?.includes("image") ? <LuImage size={14} /> : <LuPaperclip size={14} />} {d.nombre}
                         </span>
                         <button
                           onClick={() => handleDescargarDoc(d)}
                           disabled={descargandoId === d.id}
                           title="Descargar"
-                          style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "1rem" }}
+                          style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "1rem", display: "inline-flex" }}
                         >
-                          {descargandoId === d.id ? "⏳" : "⬇️"}
+                          {descargandoId === d.id ? <LuHourglass size={15} /> : <LuDownload size={15} />}
                         </button>
                         <button
                           onClick={() => handleEliminarDoc(d)}
                           title="Eliminar"
-                          style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "0.9rem", color: "#ef4444" }}
+                          style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: "0.9rem", color: "#ef4444", display: "inline-flex" }}
                         >
-                          ✕
+                          <LuX size={14} />
                         </button>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: 4 }}>
@@ -1077,7 +1091,7 @@ export const LeadDetailsPage = () => {
                         <span style={{ fontSize: "0.7rem", color: sugef.bajoRetencion ? "#16a34a" : (porVencer ? "#dc2626" : "#94a3b8") }}>
                           {(d.tamano_bytes / 1024).toFixed(0)} KB ·{" "}
                           {sugef.bajoRetencion
-                            ? "🔒 en retención"
+                            ? <><LuLock size={11} style={{ verticalAlign: "-1px" }} /> en retención</>
                             : dias > 0 ? `se elimina en ${dias}d` : "se eliminará hoy"}
                         </span>
                       </div>
@@ -1104,22 +1118,22 @@ export const LeadDetailsPage = () => {
             const totalCots = cotsActivas.reduce((s, c) => s + Number(c.total_con_iva || 0), 0);
             const finAprob = financiamientos.filter((f) => f.estado === "Aprobado").length;
             const finProceso = financiamientos.filter((f) => ["Enviado", "En Revisión", "Pre-Aprobado"].includes(f.estado)).length;
-            const dato = (icon: string, label: string, value: string) => (
+            const dato = (icon: ReactNode, label: string, value: string) => (
               <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
-                <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em" }}>{icon} {label}</span>
+                <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>{icon} {label}</span>
                 <span style={{ fontSize: "0.92rem", fontWeight: 700, color: "#0a2540" }}>{value}</span>
               </div>
             );
             return (
               <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.15rem", marginBottom: "1.25rem" }}>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.8rem" }}>
-                  📊 Resumen del Lead
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <LuChartColumnStacked size={15} /> Resumen del Lead
                 </div>
 
                 {/* Stepper de avance */}
                 {perdido ? (
-                  <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 8, padding: "0.5rem 0.8rem", fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.9rem" }}>
-                    ❌ Lead Perdido
+                  <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 8, padding: "0.5rem 0.8rem", fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.9rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <LuX size={16} /> Lead Perdido
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
@@ -1152,23 +1166,23 @@ export const LeadDetailsPage = () => {
 
                 {/* Datos recopilados */}
                 <div style={{ display: "flex", gap: "1.25rem", flexWrap: "wrap" }}>
-                  {dato("📅", "En sistema", `${dias} día${dias === 1 ? "" : "s"}`)}
-                  {dato("🕐", "Últ. actividad", ultimaAct ? fmtFechaLocal(ultimaAct) : "—")}
-                  {dato("💳", "Modalidad", lead.tipo_pago ?? "Sin definir")}
+                  {dato(<LuCalendarDays size={13} />, "En sistema", `${dias} día${dias === 1 ? "" : "s"}`)}
+                  {dato(<LuClock size={13} />, "Últ. actividad", ultimaAct ? fmtFechaLocal(ultimaAct) : "—")}
+                  {dato(<LuCreditCard size={13} />, "Modalidad", lead.tipo_pago ?? "Sin definir")}
                   {lead.temperatura && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
-                      <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em" }}>🌡️ Temperatura</span>
+                      <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuThermometer size={13} /> Temperatura</span>
                       <span style={{ fontSize: "0.92rem", fontWeight: 700, color: TEMP_COLOR[lead.temperatura] ?? "#0a2540" }}>
                         {TEMPERATURAS.find((t) => t.value === lead.temperatura)?.label ?? lead.temperatura}
                       </span>
                     </div>
                   )}
-                  {lead.ultima_etapa && dato("🎯", "Última etapa", lead.ultima_etapa)}
-                  {Number(lead.prima_disponible) > 0 && dato("💰", "Prima disponible", new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(lead.prima_disponible)))}
-                  {dato("🚗", "Vehículo", lead.vehiculo_interes ? `${lead.vehiculo_interes.marca} ${lead.vehiculo_interes.modelo}` : "—")}
-                  {dato("📄", "Cotizaciones", cotsActivas.length > 0 ? `${cotsActivas.length} · ${new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(totalCots)}` : String(cotizaciones.length))}
-                  {dato("📎", "Documentos", String(documentos.length))}
-                  {lead.tipo_pago === "Crédito" && dato("🏦", "Financieras", `${finProceso} en proceso · ${finAprob} aprob.`)}
+                  {lead.ultima_etapa && dato(<LuTarget size={13} />, "Última etapa", lead.ultima_etapa)}
+                  {Number(lead.prima_disponible) > 0 && dato(<LuWallet size={13} />, "Prima disponible", new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(lead.prima_disponible)))}
+                  {dato(<LuCar size={13} />, "Vehículo", lead.vehiculo_interes ? `${lead.vehiculo_interes.marca} ${lead.vehiculo_interes.modelo}` : "—")}
+                  {dato(<LuFileText size={13} />, "Cotizaciones", cotsActivas.length > 0 ? `${cotsActivas.length} · ${new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(totalCots)}` : String(cotizaciones.length))}
+                  {dato(<LuPaperclip size={13} />, "Documentos", String(documentos.length))}
+                  {lead.tipo_pago === "Crédito" && dato(<LuBanknote size={13} />, "Financieras", `${finProceso} en proceso · ${finAprob} aprob.`)}
                 </div>
               </div>
             );
@@ -1182,8 +1196,8 @@ export const LeadDetailsPage = () => {
               .sort((a, b) => (a.fecha_proximo_seguimiento! < b.fecha_proximo_seguimiento! ? -1 : 1));
             return (
               <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.6rem" }}>
-                  🏦 Estado de Financieras
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <LuBanknote size={15} /> Estado de Financieras
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   {activos.map((f) => {
@@ -1199,13 +1213,13 @@ export const LeadDetailsPage = () => {
                 </div>
                 {seguimientos.length > 0 && (
                   <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, padding: "0.5rem 0.8rem", marginTop: "0.7rem", fontSize: "0.83rem" }}>
-                    <strong style={{ color: "#92400e" }}>📞 Próximos contactos:</strong>{" "}
+                    <strong style={{ color: "#92400e", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuPhone size={13} /> Próximos contactos:</strong>{" "}
                     {seguimientos.map((s, i) => {
                       const vencido = new Date(s.fecha_proximo_seguimiento!) < new Date(new Date().toDateString());
                       return (
                         <span key={s.entidad} style={{ color: vencido ? "#dc2626" : "#92400e", fontWeight: vencido ? 700 : 400 }}>
                           {i > 0 && " · "}
-                          {s.entidad} ({fmtFechaLocal(s.fecha_proximo_seguimiento!)}{vencido ? " ⚠️" : ""})
+                          {s.entidad} ({fmtFechaLocal(s.fecha_proximo_seguimiento!)}{vencido ? <> <LuTriangleAlert size={11} style={{ verticalAlign: "-1px" }} /></> : ""})
                         </span>
                       );
                     })}
@@ -1247,7 +1261,7 @@ export const LeadDetailsPage = () => {
             {/* Vincular la nota a una financiera */}
             <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.6rem 0.75rem", margin: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>🏦 Financiera:</span>
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBanknote size={14} /> Financiera:</span>
                 <select
                   value={actEntidad}
                   onChange={(e) => setActEntidad(e.target.value)}
@@ -1267,7 +1281,7 @@ export const LeadDetailsPage = () => {
                     {ESTADOS_FIN.map((e) => <option key={e} value={e}>{e}</option>)}
                   </select>
                   <label style={{ fontSize: "0.78rem", color: "#64748b", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    📞 Próximo contacto:
+                    <LuPhone size={13} /> Próximo contacto:
                     <input
                       type="date"
                       value={actProxSeg}
@@ -1285,25 +1299,25 @@ export const LeadDetailsPage = () => {
                 const nombreCliente = lead.nombre_cliente.split(" ")[0];
                 return (
                   <div style={{ marginTop: "0.5rem", borderTop: "1px dashed #cbd5e1", paddingTop: "0.5rem" }}>
-                    <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
-                      📎 Formularios de {actEntidad}
+                    <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                      <LuPaperclip size={13} /> Formularios de {actEntidad}
                     </span>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "0.4rem" }}>
                       {ent.documentos.map((d) => (
                         <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.4rem 0.6rem" }}>
-                          <span style={{ flex: 1, fontSize: "0.82rem", minWidth: 120 }}>📄 {d.nombre}</span>
+                          <span style={{ flex: 1, fontSize: "0.82rem", minWidth: 120, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuFileText size={13} /> {d.nombre}</span>
                           <a
                             href={d.url} target="_blank" rel="noopener noreferrer"
-                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#024f7d", textDecoration: "none", border: "1px solid #cbd5e1", borderRadius: 6, padding: "0.25rem 0.6rem" }}
+                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#024f7d", textDecoration: "none", border: "1px solid #cbd5e1", borderRadius: 6, padding: "0.25rem 0.6rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                           >
-                            ⬇️ Descargar
+                            <LuDownload size={13} /> Descargar
                           </a>
                           <button
                             type="button"
                             onClick={() => escribirWhatsApp(`Hola ${nombreCliente}, para avanzar con su crédito en ${actEntidad}, por favor complete este formulario (${d.nombre}): ${d.url}`)}
-                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#15803d", background: "#dcfce7", border: "1px solid #16a34a", borderRadius: 6, padding: "0.25rem 0.6rem", cursor: "pointer" }}
+                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#15803d", background: "#dcfce7", border: "1px solid #16a34a", borderRadius: 6, padding: "0.25rem 0.6rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                           >
-                            💬 Enviar
+                            <LuMessageCircle size={13} /> Enviar
                           </button>
                         </div>
                       ))}
@@ -1322,7 +1336,7 @@ export const LeadDetailsPage = () => {
                   cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, color: "#475569", background: "#f8fafc",
                 }}
               >
-                📎 Adjuntar documento(s)
+                <LuPaperclip size={14} /> Adjuntar documento(s)
                 <input
                   type="file"
                   multiple
@@ -1343,13 +1357,13 @@ export const LeadDetailsPage = () => {
                     padding: "0.2rem 0.5rem", fontSize: "0.76rem",
                   }}
                 >
-                  📄 {f.name}
+                  <LuFileText size={13} /> {f.name}
                   <button
                     type="button"
                     onClick={() => setAdjuntosAct((prev) => prev.filter((_, j) => j !== i))}
-                    style={{ border: "none", background: "transparent", cursor: "pointer", color: "#0369a1", fontWeight: 700 }}
+                    style={{ border: "none", background: "transparent", cursor: "pointer", color: "#0369a1", fontWeight: 700, display: "inline-flex" }}
                   >
-                    ✕
+                    <LuX size={12} />
                   </button>
                 </span>
               ))}
@@ -1359,8 +1373,9 @@ export const LeadDetailsPage = () => {
               className={styles.addBtn}
               onClick={handleAddActividad}
               disabled={addingAct || (!descAct.trim() && adjuntosAct.length === 0 && !actEntidad)}
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
             >
-              {addingAct ? "Registrando..." : actEntidad ? "🏦 Registrar seguimiento" : "➕ Registrar actividad"}
+              {addingAct ? "Registrando..." : actEntidad ? <><LuBanknote size={15} /> Registrar seguimiento</> : <><LuPlus size={15} /> Registrar actividad</>}
             </button>
           </div>
 
@@ -1388,7 +1403,7 @@ export const LeadDetailsPage = () => {
                     {act.entidad && (
                       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", margin: "0.1rem 0 0.35rem", flexWrap: "wrap" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 6, padding: "0.15rem 0.5rem", fontSize: "0.76rem", fontWeight: 700 }}>
-                          🏦 {act.entidad}
+                          <LuBanknote size={12} /> {act.entidad}
                         </span>
                         {act.estado_fin && (
                           <span style={{ background: ESTADO_FIN_COLORS[act.estado_fin] ?? "#64748b", color: "#fff", borderRadius: 6, padding: "0.15rem 0.5rem", fontSize: "0.74rem", fontWeight: 700 }}>
@@ -1416,7 +1431,7 @@ export const LeadDetailsPage = () => {
                                 padding: "0.25rem 0.55rem", fontSize: "0.78rem", cursor: "pointer", color: "#334155",
                               }}
                             >
-                              {descargandoId === d.id ? "⏳" : (d.tipo_mime?.includes("pdf") ? "📄" : d.tipo_mime?.includes("image") ? "🖼️" : "📎")} {d.nombre}
+                              {descargandoId === d.id ? <LuHourglass size={13} /> : (d.tipo_mime?.includes("pdf") ? <LuFileText size={13} /> : d.tipo_mime?.includes("image") ? <LuImage size={13} /> : <LuPaperclip size={13} />)} {d.nombre}
                             </button>
                           ))}
                         </div>

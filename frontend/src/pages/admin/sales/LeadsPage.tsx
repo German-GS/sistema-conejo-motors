@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/sales/LeadsPage.tsx
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
@@ -8,6 +8,7 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { LeadsKanban } from "@/components/LeadsKanban";
 import styles from "./LeadsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
+import { LuChartColumnStacked, LuLock, LuTriangleAlert, LuCalendarDays, LuPlus } from "react-icons/lu";
 
 interface Lead {
   id: number;
@@ -227,9 +228,9 @@ export const LeadsPage = () => {
         <div style={{ marginBottom: "1rem" }}>
           <button
             onClick={toggleReporte}
-            style={{ border: "1px solid #cbd5e1", background: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#024f7d" }}
+            style={{ border: "1px solid #cbd5e1", background: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#024f7d", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
           >
-            📊 {showReporte ? "Ocultar" : "Ver"} reporte de conversión por fuente
+            <LuChartColumnStacked size={16} /> {showReporte ? "Ocultar" : "Ver"} reporte de conversión por fuente
           </button>
           {showReporte && (
             <div style={{ overflowX: "auto", marginTop: "0.75rem", border: "1px solid #e2e8f0", borderRadius: 12 }}>
@@ -352,12 +353,12 @@ export const LeadsPage = () => {
                         {(() => {
                           const st = sugefEstados[lead.id];
                           const avanzada = ["En Progreso", "Prueba de Manejo", "Cotizacion Enviada", "Negociacion"].includes(lead.estado);
-                          let icon = "", title = "";
-                          if (st === "retencion") { icon = "🔒"; title = "SUGEF: facturado, bajo retención"; }
-                          else if (st === "completo") { icon = "🟢"; title = "SUGEF: expediente completo"; }
-                          else if (st === "incompleto") { icon = "🟡"; title = "SUGEF: expediente incompleto"; }
-                          else if (avanzada) { icon = "🔴"; title = "SUGEF: sin datos"; }
-                          return icon ? <span title={title} style={{ fontSize: "0.72rem" }}>{icon}</span> : null;
+                          let icon: React.ReactNode = null, title = "";
+                          if (st === "retencion") { icon = <LuLock size={12} />; title = "SUGEF: facturado, bajo retención"; }
+                          else if (st === "completo") { icon = <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />; title = "SUGEF: expediente completo"; }
+                          else if (st === "incompleto") { icon = <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#eab308", display: "inline-block" }} />; title = "SUGEF: expediente incompleto"; }
+                          else if (avanzada) { icon = <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />; title = "SUGEF: sin datos"; }
+                          return icon ? <span title={title} style={{ fontSize: "0.72rem", display: "inline-flex", alignItems: "center" }}>{icon}</span> : null;
                         })()}
                       </span>
                       <br />
@@ -386,8 +387,8 @@ export const LeadsPage = () => {
                       {archivado ? (
                         <span className={styles.sub}>—</span>
                       ) : followup ? (
-                        <span className={followupVencido ? styles.followupAlert : styles.followup}>
-                          {followupVencido ? "⚠️ " : "📅 "}
+                        <span className={followupVencido ? styles.followupAlert : styles.followup} style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                          {followupVencido ? <LuTriangleAlert size={12} /> : <LuCalendarDays size={12} />}
                           {fmtFechaLocal(lead.fecha_followup)}
                         </span>
                       ) : <span className={styles.sub}>—</span>}
@@ -429,7 +430,7 @@ export const LeadsPage = () => {
           style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
         >
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, width: "min(440px, 94vw)", padding: "1.5rem", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <h2 style={{ margin: "0 0 1rem", fontSize: "1.1rem" }}>➕ Nuevo Lead</h2>
+            <h2 style={{ margin: "0 0 1rem", fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuPlus size={18} /> Nuevo Lead</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
                 Nombre del cliente *

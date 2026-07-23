@@ -1,9 +1,14 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import { getImageUrl } from "@/utils/imageUrl";
 import toast from "react-hot-toast";
 import styles from "./VehicleDetailSalesPage.module.css";
+import {
+  LuBriefcase, LuRoute, LuGauge, LuUsers, LuRefreshCw,
+  LuMoveHorizontal, LuMoveVertical, LuArrowUp, LuScale, LuShield, LuCar,
+  LuZap, LuBatteryCharging, LuWrench, LuRocket, LuLuggage, LuArmchair, LuMapPin, LuSmartphone,
+} from "react-icons/lu";
 
 interface VehicleDetail {
   id: number;
@@ -35,10 +40,10 @@ interface VehicleDetail {
   categoria?: string;
 }
 
-const Spec = ({ icon, label, value, unit }: { icon: string; label: string; value?: number | string | null; unit?: string }) =>
+const Spec = ({ icon, label, value, unit }: { icon: React.ReactNode; label: string; value?: number | string | null; unit?: string }) =>
   value ? (
     <div className={styles.specItem}>
-      <span className={styles.specIcon}>{icon}</span>
+      <span className={styles.specIcon} style={{ display: "inline-flex" }}>{icon}</span>
       <div>
         <p className={styles.specValue}>{value} {unit}</p>
         <p className={styles.specLabel}>{label}</p>
@@ -46,10 +51,10 @@ const Spec = ({ icon, label, value, unit }: { icon: string; label: string; value
     </div>
   ) : null;
 
-const FeatureGroup = ({ title, items }: { title: string; items?: string[] }) =>
+const FeatureGroup = ({ title, items }: { title: React.ReactNode; items?: string[] }) =>
   items && items.length > 0 ? (
     <div className={styles.featureGroup}>
-      <h4>{title}</h4>
+      <h4 style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>{title}</h4>
       <ul>{items.map((item, i) => <li key={i}>✓ {item}</li>)}</ul>
     </div>
   ) : null;
@@ -87,8 +92,9 @@ export const VehicleDetailSalesPage = () => {
         <button
           className={styles.cotizarBtn}
           onClick={() => navigate(`${basePath}/catalog/${vehicle.id}/quote`)}
+          style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
         >
-          💼 Cotizar este vehículo
+          <LuBriefcase size={16} /> Cotizar este vehículo
         </button>
       </div>
 
@@ -134,21 +140,22 @@ export const VehicleDetailSalesPage = () => {
               </span>
             )}
           </p>
-          {vehicle.bodega && <p className={styles.location}>📍 {vehicle.bodega.nombre}</p>}
+          {vehicle.bodega && <p className={styles.location} style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuMapPin size={14} /> {vehicle.bodega.nombre}</p>}
 
           {/* Specs clave */}
           <div className={styles.keySpecs}>
-            <Spec icon="⚡" label="Potencia"  value={vehicle.potencia_hp}           unit="HP" />
-            <Spec icon="🔋" label="Batería"   value={vehicle.capacidad_bateria_kwh}  unit="kWh" />
-            <Spec icon="🛣️" label="Autonomía" value={vehicle.autonomia_km}           unit="km" />
-            <Spec icon="🏎️" label="0-100 km/h" value={vehicle.aceleracion_0_100}     unit="s" />
+            <Spec icon={<LuZap size={16} />} label="Potencia"  value={vehicle.potencia_hp}           unit="HP" />
+            <Spec icon={<LuBatteryCharging size={16} />} label="Batería"   value={vehicle.capacidad_bateria_kwh}  unit="kWh" />
+            <Spec icon={<LuRoute size={16} />} label="Autonomía" value={vehicle.autonomia_km}           unit="km" />
+            <Spec icon={<LuGauge size={16} />} label="0-100 km/h" value={vehicle.aceleracion_0_100}     unit="s" />
           </div>
 
           <button
             className={styles.cotizarBtnLarge}
             onClick={() => navigate(`${basePath}/catalog/${vehicle.id}/quote`)}
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
           >
-            💼 Cotizar este vehículo
+            <LuBriefcase size={16} /> Cotizar este vehículo
           </button>
         </div>
       </div>
@@ -169,31 +176,31 @@ export const VehicleDetailSalesPage = () => {
       <div className={styles.tabContent}>
         {activeTab === "rendimiento" && (
           <div className={styles.specsGrid}>
-            <Spec icon="⚡" label="Potencia"          value={vehicle.potencia_hp}           unit="HP" />
-            <Spec icon="🔩" label="Torque"            value={vehicle.torque_nm}             unit="Nm" />
-            <Spec icon="🏎️" label="0-100 km/h"       value={vehicle.aceleracion_0_100}     unit="s" />
-            <Spec icon="🚀" label="Vel. Máxima"       value={vehicle.velocidad_maxima}      unit="km/h" />
-            <Spec icon="🛣️" label="Autonomía"         value={vehicle.autonomia_km}          unit="km" />
-            <Spec icon="🔋" label="Batería"           value={vehicle.capacidad_bateria_kwh} unit="kWh" />
-            <Spec icon="👥" label="Pasajeros"         value={vehicle.numero_pasajeros} />
-            <Spec icon="🔄" label="Tracción"          value={vehicle.traccion} />
+            <Spec icon={<LuZap size={16} />} label="Potencia"          value={vehicle.potencia_hp}           unit="HP" />
+            <Spec icon={<LuWrench size={16} />} label="Torque"            value={vehicle.torque_nm}             unit="Nm" />
+            <Spec icon={<LuGauge size={16} />} label="0-100 km/h"       value={vehicle.aceleracion_0_100}     unit="s" />
+            <Spec icon={<LuRocket size={16} />} label="Vel. Máxima"       value={vehicle.velocidad_maxima}      unit="km/h" />
+            <Spec icon={<LuRoute size={16} />} label="Autonomía"         value={vehicle.autonomia_km}          unit="km" />
+            <Spec icon={<LuBatteryCharging size={16} />} label="Batería"           value={vehicle.capacidad_bateria_kwh} unit="kWh" />
+            <Spec icon={<LuUsers size={16} />} label="Pasajeros"         value={vehicle.numero_pasajeros} />
+            <Spec icon={<LuRefreshCw size={16} />} label="Tracción"          value={vehicle.traccion} />
           </div>
         )}
         {activeTab === "dimensiones" && (
           <div className={styles.specsGrid}>
-            <Spec icon="↔️" label="Largo"             value={vehicle.largo_mm}             unit="mm" />
-            <Spec icon="↕️" label="Ancho"             value={vehicle.ancho_mm}             unit="mm" />
-            <Spec icon="⬆️" label="Alto"              value={vehicle.alto_mm}              unit="mm" />
-            <Spec icon="⚖️" label="Peso"              value={vehicle.peso_kg}              unit="kg" />
-            <Spec icon="🧳" label="Maletero"          value={vehicle.capacidad_maletero_l} unit="L" />
+            <Spec icon={<LuMoveHorizontal size={16} />} label="Largo"             value={vehicle.largo_mm}             unit="mm" />
+            <Spec icon={<LuMoveVertical size={16} />} label="Ancho"             value={vehicle.ancho_mm}             unit="mm" />
+            <Spec icon={<LuArrowUp size={16} />} label="Alto"              value={vehicle.alto_mm}              unit="mm" />
+            <Spec icon={<LuScale size={16} />} label="Peso"              value={vehicle.peso_kg}              unit="kg" />
+            <Spec icon={<LuLuggage size={16} />} label="Maletero"          value={vehicle.capacidad_maletero_l} unit="L" />
           </div>
         )}
         {activeTab === "equipamiento" && (
           <div className={styles.featureGrid}>
-            <FeatureGroup title="🛡️ Seguridad"   items={vehicle.seguridad} />
-            <FeatureGroup title="🪑 Interior"    items={vehicle.interior} />
-            <FeatureGroup title="🚗 Exterior"    items={vehicle.exterior} />
-            <FeatureGroup title="📱 Tecnología"  items={vehicle.tecnologia} />
+            <FeatureGroup title={<><LuShield size={16} /> Seguridad</>}   items={vehicle.seguridad} />
+            <FeatureGroup title={<><LuArmchair size={16} /> Interior</>}    items={vehicle.interior} />
+            <FeatureGroup title={<><LuCar size={16} /> Exterior</>}    items={vehicle.exterior} />
+            <FeatureGroup title={<><LuSmartphone size={16} /> Tecnología</>}  items={vehicle.tecnologia} />
           </div>
         )}
         {activeTab !== "equipamiento" && (

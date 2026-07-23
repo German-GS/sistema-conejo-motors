@@ -6,6 +6,7 @@ import { Card } from "@/components/Card";
 import styles from "./CreateQuotePage.module.css";
 import toast from "react-hot-toast";
 import { PageLoader } from "@/components/PageLoader";
+import { LuLink, LuPhone, LuHome, LuMessageCircle, LuCamera, LuUsers, LuMusic, LuHandshake, LuGlobe, LuPin, LuLock, LuWallet, LuTriangleAlert, LuCircleCheck } from "react-icons/lu";
 
 interface VehicleDetails {
   id: number;
@@ -220,29 +221,29 @@ export const CreateQuotePage = () => {
       </div>
       {/* Badge lead existente */}
       {leadId ? (
-        <div className={styles.leadBadge}>
-          🔗 Cotización para <strong>{leadNombre || `Lead #${leadId}`}</strong> — los datos del cliente se pre-llenaron automáticamente. Completá la cédula/pasaporte para continuar.
+        <div className={styles.leadBadge} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem" }}>
+          <LuLink size={16} style={{ marginTop: 3, flexShrink: 0 }} /> <span>Cotización para <strong>{leadNombre || `Lead #${leadId}`}</strong> — los datos del cliente se pre-llenaron automáticamente. Completá la cédula/pasaporte para continuar.</span>
         </div>
       ) : (
         /* Sin lead previo → selector de fuente para crear uno automático */
         <div className={styles.fuenteCard}>
-          <div className={styles.fuenteTitle}>
-            📞 ¿Cómo llegó el cliente?
+          <div className={styles.fuenteTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <LuPhone size={18} /> ¿Cómo llegó el cliente?
           </div>
           <p className={styles.fuenteHint}>
             Se creará un Lead automáticamente vinculado a esta cotización.
           </p>
           <div className={styles.fuenteGrid}>
             {[
-              { value: "Presencial",  icon: "🏠", label: "Presencial" },
-              { value: "Llamada",     icon: "📞", label: "Llamada" },
-              { value: "WhatsApp",    icon: "💬", label: "WhatsApp" },
-              { value: "Instagram",   icon: "📸", label: "Instagram" },
-              { value: "Facebook",    icon: "👥", label: "Facebook" },
-              { value: "TikTok",      icon: "🎵", label: "TikTok" },
-              { value: "Referido",    icon: "🤝", label: "Referido" },
-              { value: "Web",         icon: "🌐", label: "Sitio Web" },
-              { value: "Otro",        icon: "📌", label: "Otro" },
+              { value: "Presencial",  icon: <LuHome size={16} />, label: "Presencial" },
+              { value: "Llamada",     icon: <LuPhone size={16} />, label: "Llamada" },
+              { value: "WhatsApp",    icon: <LuMessageCircle size={16} />, label: "WhatsApp" },
+              { value: "Instagram",   icon: <LuCamera size={16} />, label: "Instagram" },
+              { value: "Facebook",    icon: <LuUsers size={16} />, label: "Facebook" },
+              { value: "TikTok",      icon: <LuMusic size={16} />, label: "TikTok" },
+              { value: "Referido",    icon: <LuHandshake size={16} />, label: "Referido" },
+              { value: "Web",         icon: <LuGlobe size={16} />, label: "Sitio Web" },
+              { value: "Otro",        icon: <LuPin size={16} />, label: "Otro" },
             ].map((f) => (
               <button
                 key={f.value}
@@ -348,7 +349,7 @@ export const CreateQuotePage = () => {
           <div className={styles.field}>
             <label>
               IVA (%)
-              {rolActual === "Vendedor" && <span className={styles.lockBadge}>🔒 Solo Admin</span>}
+              {rolActual === "Vendedor" && <span className={styles.lockBadge} style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuLock size={12} /> Solo Admin</span>}
             </label>
             <select
               value={ivaPorcentaje}
@@ -373,20 +374,20 @@ export const CreateQuotePage = () => {
             <input type="text" value={fmtMon(ivaMonto, ivaUsd)} readOnly />
           </div>
           <div className={`${styles.field} ${styles.totalIvaField}`}>
-            <label>💰 Total al cliente con IVA</label>
+            <label style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuWallet size={16} /> Total al cliente con IVA</label>
             <input type="text" value={fmtMon(totalConIva, precioUsdTotal)} readOnly />
             {monedaVenta === "USD" && (
               <span className={styles.fieldHint}>
                 {tcVigente > 0
                   ? `≈ ${fmtCRC(precioLista - descuentoMonto)} al TC de hoy (₡${tcVigente.toLocaleString("es-CR")}/USD) · se congela al guardar`
-                  : "⚠️ Sin TC del día — cargalo en Multimoneda para congelar el precio"}
+                  : <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Sin TC del día — cargalo en Multimoneda para congelar el precio</span>}
               </span>
             )}
           </div>
           <div className={`${styles.field} ${styles.fullWidth}`}>
-            <div className={styles.reservaBanner}>
-              🔒 Al crear esta cotización el vehículo quedará <strong>reservado automáticamente por 4 días</strong>.
-              Si no se concreta, se liberará solo. Un administrador puede extender el plazo.
+            <div className={styles.reservaBanner} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem" }}>
+              <LuLock size={16} style={{ marginTop: 3, flexShrink: 0 }} /> <span>Al crear esta cotización el vehículo quedará <strong>reservado automáticamente por 4 días</strong>.
+              Si no se concreta, se liberará solo. Un administrador puede extender el plazo.</span>
             </div>
           </div>
         </div>
@@ -450,13 +451,13 @@ export const CreateQuotePage = () => {
           <span>{fmtMon(ivaMonto, ivaUsd)}</span>
         </div>
         <div className={`${styles.summaryRow} ${styles.total}`}>
-          <span>💰 Total al cliente:</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuWallet size={15} /> Total al cliente:</span>
           <span>{fmtMon(totalConIva, precioUsdTotal)}</span>
         </div>
-        <p className={styles.summaryNote}>
+        <p className={styles.summaryNote} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           {monedaVenta === "USD"
-            ? "💵 Valor fijo en dólares (IVA y gastos de formalización incluidos). El CRC se congela al TC de hoy al guardar."
-            : "✅ El precio ingresado ya incluye IVA — el sistema lo desglosa automáticamente"}
+            ? <><LuWallet size={14} /> Valor fijo en dólares (IVA y gastos de formalización incluidos). El CRC se congela al TC de hoy al guardar.</>
+            : <><LuCircleCheck size={14} /> El precio ingresado ya incluye IVA — el sistema lo desglosa automáticamente</>}
         </p>
       </div>
 

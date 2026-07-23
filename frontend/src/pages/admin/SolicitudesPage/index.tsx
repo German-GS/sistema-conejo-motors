@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./SolicitudesPage.module.css";
+import { LuClipboardList, LuUser, LuCalendarDays, LuClock, LuCircleCheck, LuX } from "react-icons/lu";
 
 type TipoSolicitud = "dia_libre" | "vacaciones" | "salida_anticipada" | "llegada_tarde" | "permiso_personal" | "otro";
 type EstadoSolicitud = "pendiente" | "aprobada" | "rechazada";
@@ -197,16 +198,18 @@ export const SolicitudesPage = () => {
           <div className={styles.tabs}>
             {isAdmin && (
               <button className={`${styles.tab} ${tab === "todas" ? styles.tabActive : ""}`}
-                onClick={() => setTab("todas")}>
-                📋 Todas
+                onClick={() => setTab("todas")}
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                <LuClipboardList size={16} /> Todas
                 {pendientes > 0 && tab !== "todas" && (
                   <span className={styles.badge}>{pendientes}</span>
                 )}
               </button>
             )}
             <button className={`${styles.tab} ${tab === "mis" ? styles.tabActive : ""}`}
-              onClick={() => setTab("mis")}>
-              👤 Mis Solicitudes
+              onClick={() => setTab("mis")}
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuUser size={16} /> Mis Solicitudes
             </button>
           </div>
 
@@ -240,11 +243,11 @@ export const SolicitudesPage = () => {
 
                   <div className={styles.cardBody}>
                     <div className={styles.fechas}>
-                      <span>📅 {fmtFecha(s.fecha_inicio)}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCalendarDays size={14} /> {fmtFecha(s.fecha_inicio)}</span>
                       {s.fecha_fin && s.fecha_fin !== s.fecha_inicio && (
                         <span> → {fmtFecha(s.fecha_fin)}</span>
                       )}
-                      {s.hora && <span> · 🕐 {s.hora}</span>}
+                      {s.hora && <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}> · <LuClock size={14} /> {s.hora}</span>}
                     </div>
                     <p className={styles.motivo}>{s.motivo}</p>
                     {s.respuesta_admin && (
@@ -270,12 +273,14 @@ export const SolicitudesPage = () => {
                           />
                           <div className={styles.resolveActions}>
                             <button className={styles.btnAprobar}
-                              onClick={() => handleResolver(s.id, "aprobada")}>
-                              ✅ Aprobar
+                              onClick={() => handleResolver(s.id, "aprobada")}
+                              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                              <LuCircleCheck size={16} /> Aprobar
                             </button>
                             <button className={styles.btnRechazar}
-                              onClick={() => handleResolver(s.id, "rechazada")}>
-                              ❌ Rechazar
+                              onClick={() => handleResolver(s.id, "rechazada")}
+                              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                              <LuX size={16} /> Rechazar
                             </button>
                             <button className={styles.btnCancelar}
                               onClick={() => { setResolvingId(null); setRespuesta(""); }}>

@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import { Card } from "@/components/Card";
 import toast from "react-hot-toast";
 import styles from "./ReportsPage.module.css";
 import * as XLSX from "xlsx";
+import { LuWallet, LuTrophy, LuCar, LuClipboardList, LuUsers, LuTarget, LuChartColumnStacked, LuPackage, LuBriefcase, LuTrendingUp, LuDownload, LuThermometer, LuFolder, LuPlay } from "react-icons/lu";
 
 const MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
@@ -18,16 +19,16 @@ type ReportType =
   | "inventory"
   | "payroll";
 
-const reportOptions: { value: ReportType; label: string; icon: string; needsDates: boolean }[] = [
-  { value: "profit",           label: "Ganancias del Período",      icon: "💰", needsDates: true  },
-  { value: "sales-by-seller",  label: "Ventas por Vendedor",         icon: "🏆", needsDates: true  },
-  { value: "sales-by-vehicle", label: "Ventas por Vehículo",         icon: "🚗", needsDates: true  },
-  { value: "detailed-sales",   label: "Listado General de Ventas",   icon: "📋", needsDates: true  },
-  { value: "leads-by-seller",  label: "Leads por Vendedor",          icon: "👥", needsDates: true  },
-  { value: "leads-crm",        label: "Análisis de Leads (CRM)",     icon: "🎯", needsDates: true  },
-  { value: "most-quoted",      label: "Vehículos Más Cotizados",     icon: "📊", needsDates: true  },
-  { value: "inventory",        label: "Inventario Actual",           icon: "📦", needsDates: false },
-  { value: "payroll",          label: "Informe de Planilla",         icon: "💼", needsDates: true  },
+const reportOptions: { value: ReportType; label: string; icon: React.ReactNode; needsDates: boolean }[] = [
+  { value: "profit",           label: "Ganancias del Período",      icon: <LuWallet size={18} />, needsDates: true  },
+  { value: "sales-by-seller",  label: "Ventas por Vendedor",         icon: <LuTrophy size={18} />, needsDates: true  },
+  { value: "sales-by-vehicle", label: "Ventas por Vehículo",         icon: <LuCar size={18} />, needsDates: true  },
+  { value: "detailed-sales",   label: "Listado General de Ventas",   icon: <LuClipboardList size={18} />, needsDates: true  },
+  { value: "leads-by-seller",  label: "Leads por Vendedor",          icon: <LuUsers size={18} />, needsDates: true  },
+  { value: "leads-crm",        label: "Análisis de Leads (CRM)",     icon: <LuTarget size={18} />, needsDates: true  },
+  { value: "most-quoted",      label: "Vehículos Más Cotizados",     icon: <LuChartColumnStacked size={18} />, needsDates: true  },
+  { value: "inventory",        label: "Inventario Actual",           icon: <LuPackage size={18} />, needsDates: false },
+  { value: "payroll",          label: "Informe de Planilla",         icon: <LuBriefcase size={18} />, needsDates: true  },
 ];
 
 const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
@@ -141,17 +142,17 @@ export const ReportsPage = () => {
         return (
           <div className={styles.kpiRow}>
             <div className={styles.kpiCard}>
-              <span className={styles.kpiIcon}>💰</span>
+              <span className={styles.kpiIcon}><LuWallet size={20} /></span>
               <span className={styles.kpiNum}>{fmtCRC(totalVentas)}</span>
               <span className={styles.kpiLabel}>Total Vendido</span>
             </div>
             <div className={styles.kpiCard}>
-              <span className={styles.kpiIcon}>📦</span>
+              <span className={styles.kpiIcon}><LuPackage size={20} /></span>
               <span className={styles.kpiNum}>{fmtCRC(totalCosto)}</span>
               <span className={styles.kpiLabel}>Costo Inventario</span>
             </div>
             <div className={`${styles.kpiCard} ${styles.kpiGreen}`}>
-              <span className={styles.kpiIcon}>📈</span>
+              <span className={styles.kpiIcon}><LuTrendingUp size={20} /></span>
               <span className={styles.kpiNum}>{fmtCRC(gananciaBruta)}</span>
               <span className={styles.kpiLabel}>Ganancia Bruta</span>
             </div>
@@ -280,12 +281,12 @@ export const ReportsPage = () => {
           <>
             <div className={styles.kpiRow}>
               <div className={styles.kpiCard}>
-                <span className={styles.kpiIcon}>🚗</span>
+                <span className={styles.kpiIcon}><LuCar size={20} /></span>
                 <span className={styles.kpiNum}>{reportData.totalVehicles}</span>
                 <span className={styles.kpiLabel}>Vehículos en Stock</span>
               </div>
               <div className={styles.kpiCard}>
-                <span className={styles.kpiIcon}>💰</span>
+                <span className={styles.kpiIcon}><LuWallet size={20} /></span>
                 <span className={styles.kpiNum}>{fmtCRC(Number(reportData.inventoryCost))}</span>
                 <span className={styles.kpiLabel}>Costo Total Inventario</span>
               </div>
@@ -359,7 +360,7 @@ export const ReportsPage = () => {
 
             {/* Embudo */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>📊 Embudo por estado</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={18} /> Embudo por estado</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
                 {d.funnel.map((f: any) => (
                   <div key={f.estado} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
@@ -394,7 +395,7 @@ export const ReportsPage = () => {
 
             {/* Temperatura */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>🌡️ Por temperatura (¿convierten más los calientes?)</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuThermometer size={18} /> Por temperatura (¿convierten más los calientes?)</h3>
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                 {d.porTemperatura.map((t: any) => (
                   <div key={t.temperatura} style={{ flex: 1, minWidth: 140, background: "#fff", border: `1px solid ${TEMP_COLOR[t.temperatura]}`, borderRadius: 12, padding: "0.8rem 1rem" }}>
@@ -412,7 +413,7 @@ export const ReportsPage = () => {
 
             {/* Etapa — dónde se quedan */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>🎯 ¿Dónde se quedan los leads? (última etapa alcanzada)</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTarget size={18} /> ¿Dónde se quedan los leads? (última etapa alcanzada)</h3>
               <table className={styles.reportTable}>
                 <thead><tr><th>Última etapa</th><th>Leads</th></tr></thead>
                 <tbody>
@@ -468,7 +469,7 @@ export const ReportsPage = () => {
       </div>
 
       {/* ── Controles de fecha ── */}
-      <Card title={`${selectedOpt.icon} ${selectedOpt.label}`}>
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>{selectedOpt.icon} {selectedOpt.label}</span>}>
         <div className={styles.controls}>
           {selectedOpt.needsDates && (
             <>
@@ -482,11 +483,11 @@ export const ReportsPage = () => {
               </div>
             </>
           )}
-          <button className="btn btn-principal" onClick={handleGenerate} disabled={loading}>
-            {loading ? "Generando..." : "▶ Generar Informe"}
+          <button className="btn btn-principal" onClick={handleGenerate} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+            {loading ? "Generando..." : <><LuPlay size={16} /> Generar Informe</>}
           </button>
-          <button className="btn btn-secondary" onClick={handleExport} disabled={!reportData}>
-            📥 Exportar Excel
+          <button className="btn btn-secondary" onClick={handleExport} disabled={!reportData} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+            <LuDownload size={16} /> Exportar Excel
           </button>
         </div>
       </Card>
@@ -497,7 +498,7 @@ export const ReportsPage = () => {
       </Card>
 
       {/* ── Historial de Cierres de Mes ── */}
-      <Card title="📁 Historial de Cierres de Mes">
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuFolder size={20} /> Historial de Cierres de Mes</span>}>
         {loadingCierres ? (
           <p style={{ color: "#94a3b8", padding: "1rem" }}>Cargando...</p>
         ) : cierres.length === 0 ? (
@@ -529,10 +530,10 @@ export const ReportsPage = () => {
                   <td>
                     <button
                       className="btn btn-secondary"
-                      style={{ fontSize: "0.78rem", padding: "0.3rem 0.75rem" }}
                       onClick={() => handleDescargarCierre(c.id, c.mes, c.anio)}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontSize: "0.78rem", padding: "0.3rem 0.75rem" }}
                     >
-                      📥 Excel
+                      <LuDownload size={14} /> Excel
                     </button>
                   </td>
                 </tr>

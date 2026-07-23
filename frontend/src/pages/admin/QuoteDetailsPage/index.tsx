@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import styles from "./QuoteDetailsPage.module.css";
 import { fmtFechaLocal } from "@/utils/dateUtils";
 import { PageLoader } from "@/components/PageLoader";
+import { LuLink, LuReceiptText, LuBriefcase, LuBan, LuPalette, LuTriangleAlert, LuHourglass, LuWallet, LuGift, LuNotebookPen } from "react-icons/lu";
 
 // Para pantalla: usa el símbolo ₡
 const fmtCRC = (value: number) =>
@@ -134,11 +135,11 @@ export const QuoteDetailsPage = () => {
       <div className={styles.header}>
         <div>
           <h1>Cotización #{quote.id}</h1>
-          {quote.lead && <span className={styles.leadLink}>🔗 Lead #{quote.lead.id}</span>}
+          {quote.lead && <span className={styles.leadLink} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuLink size={14} /> Lead #{quote.lead.id}</span>}
         </div>
         <div className={styles.actions}>
-          <button className="btn btn-principal" onClick={verProforma}>
-            🧾 Ver Proforma
+          <button className="btn btn-principal" onClick={verProforma} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+            <LuReceiptText size={16} /> Ver Proforma
           </button>
           {(quote.estado === "Borrador" || quote.estado === "Enviada") && (
             <button
@@ -152,15 +153,19 @@ export const QuoteDetailsPage = () => {
                 fontWeight: 700,
                 fontSize: "0.88rem",
                 cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
               }}
             >
-              🚫 Cancelar cotización
+              <LuBan size={16} /> Cancelar cotización
             </button>
           )}
           {puedeFacturar && (
             <button className="btn btn-principal" onClick={handleIrAFacturar}
-              title="Ir a facturación para completar la venta con IVA y datos de factura">
-              💼 Facturar
+              title="Ir a facturación para completar la venta con IVA y datos de factura"
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuBriefcase size={16} /> Facturar
             </button>
           )}
         </div>
@@ -179,8 +184,8 @@ export const QuoteDetailsPage = () => {
           <span>Estado: {quote.vehiculo.estado}</span>
           {quote.vehiculo.color && <span>Color disponible: {quote.vehiculo.color}</span>}
           {quote.color_solicitado && (
-            <span style={{ color: "#7c3aed", fontWeight: 700 }}>
-              🎨 Color solicitado: {quote.color_solicitado}
+            <span style={{ color: "#7c3aed", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+              <LuPalette size={14} /> Color solicitado: {quote.color_solicitado}
             </span>
           )}
           <span>Combustible: <strong>{quote.tipo_combustible || "Eléctrico"}</strong></span>
@@ -193,9 +198,9 @@ export const QuoteDetailsPage = () => {
             const ms = new Date(quote.fecha_expiracion).getTime() - Date.now();
             const dias = Math.ceil(ms / (1000 * 60 * 60 * 24));
             if (quote.estado !== 'Borrador' && quote.estado !== 'Enviada') return null;
-            if (dias < 0) return <span style={{ color: "#ef4444", fontWeight: 700 }}>⚠️ Vencida</span>;
-            if (dias === 0) return <span style={{ color: "#f59e0b", fontWeight: 700 }}>⚠️ Vence hoy</span>;
-            return <span style={{ color: dias <= 1 ? "#f59e0b" : "#16a34a", fontWeight: 600 }}>⏳ {dias} día(s) restante(s)</span>;
+            if (dias < 0) return <span style={{ color: "#ef4444", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Vencida</span>;
+            if (dias === 0) return <span style={{ color: "#f59e0b", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Vence hoy</span>;
+            return <span style={{ color: dias <= 1 ? "#f59e0b" : "#16a34a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuHourglass size={14} /> {dias} día(s) restante(s)</span>;
           })()}
           {/* Botón extender — solo admin */}
           {rolActual === "Administrador" && ['Borrador', 'Enviada'].includes(quote.estado) && (
@@ -254,7 +259,7 @@ export const QuoteDetailsPage = () => {
           <span>+ {fmtCRC(ivaMonto)}</span>
         </div>
         <div className={`${styles.priceRow} ${styles.total}`}>
-          <span>💰 Total con IVA</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuWallet size={16} /> Total con IVA</span>
           <span>{fmtCRC(totalIva)}</span>
         </div>
 
@@ -262,12 +267,12 @@ export const QuoteDetailsPage = () => {
 
       {quote.regalias && (
         <div className={styles.regalias}>
-          <strong>🎁 Regalías incluidas:</strong> {quote.regalias}
+          <strong style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuGift size={15} /> Regalías incluidas:</strong> {quote.regalias}
         </div>
       )}
       {quote.notas_cliente && (
         <div className={styles.notas}>
-          <strong>📝 Notas:</strong> {quote.notas_cliente}
+          <strong style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuNotebookPen size={15} /> Notas:</strong> {quote.notas_cliente}
         </div>
       )}
       {quote.estado === "Cancelada" && quote.motivo_cancelacion && (
@@ -276,7 +281,7 @@ export const QuoteDetailsPage = () => {
           borderLeft: "4px solid #dc2626", borderRadius: "10px",
           padding: "1rem 1.25rem", marginTop: "1rem",
         }}>
-          <strong style={{ color: "#dc2626" }}>🚫 Motivo de cancelación:</strong>
+          <strong style={{ color: "#dc2626", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBan size={15} /> Motivo de cancelación:</strong>
           <p style={{ margin: "0.35rem 0 0", color: "#7f1d1d", fontSize: "0.92rem" }}>
             {quote.motivo_cancelacion}
           </p>
@@ -306,7 +311,7 @@ export const QuoteDetailsPage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", alignItems: "flex-start", gap: "0.85rem", marginBottom: "1rem" }}>
-              <span style={{ fontSize: "1.75rem" }}>🚫</span>
+              <span style={{ fontSize: "1.75rem", display: "inline-flex" }}><LuBan size={28} /></span>
               <div>
                 <strong style={{ display: "block", fontSize: "1rem", color: "#0a2540" }}>
                   Cancelar Cotización #{quote.id}
@@ -320,8 +325,9 @@ export const QuoteDetailsPage = () => {
               background: "#fff7ed", border: "1px solid #fed7aa",
               borderLeft: "4px solid #f97316", borderRadius: "8px",
               padding: "0.65rem 1rem", fontSize: "0.85rem", color: "#9a3412", marginBottom: "1rem",
+              display: "flex", alignItems: "center", gap: "0.4rem",
             }}>
-              ⚠️ Al cancelar, el vehículo quedará <strong>disponible</strong> nuevamente.
+              <LuTriangleAlert size={16} /> Al cancelar, el vehículo quedará <strong>disponible</strong> nuevamente.
             </div>
             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#475569", marginBottom: "0.4rem" }}>
               Motivo de cancelación *

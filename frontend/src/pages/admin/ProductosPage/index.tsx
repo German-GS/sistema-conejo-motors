@@ -3,6 +3,7 @@ import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./ProductosPage.module.css";
 import { fmtFecha } from "@/utils/dateUtils";
+import { LuPackage, LuTriangleAlert, LuCircleCheck, LuWallet, LuReceiptText, LuSearch, LuPencil, LuTrash2, LuCreditCard, LuUser, LuCalendarDays, LuShoppingCart } from "react-icons/lu";
 
 type Categoria = "Repuesto" | "Accesorio" | "Lubricante" | "Electrónico" | "Herramienta" | "Otro";
 
@@ -174,19 +175,19 @@ export const ProductosPage = () => {
       {stats && (
         <div className={styles.kpiRow}>
           <div className={styles.kpi} style={{ "--c": "#024f7d" } as any}>
-            <span className={styles.kpiIcon}>📦</span>
+            <span className={styles.kpiIcon}><LuPackage size={20} /></span>
             <div><span className={styles.kpiVal}>{stats.totalProductos}</span><span className={styles.kpiLbl}>Productos activos</span></div>
           </div>
           <div className={styles.kpi} style={{ "--c": stats.stockBajoCount > 0 ? "#dc2626" : "#059669" } as any}>
-            <span className={styles.kpiIcon}>{stats.stockBajoCount > 0 ? "⚠️" : "✅"}</span>
+            <span className={styles.kpiIcon}>{stats.stockBajoCount > 0 ? <LuTriangleAlert size={20} /> : <LuCircleCheck size={20} />}</span>
             <div><span className={styles.kpiVal}>{stats.stockBajoCount}</span><span className={styles.kpiLbl}>Stock bajo</span></div>
           </div>
           <div className={styles.kpi} style={{ "--c": "#0891b2" } as any}>
-            <span className={styles.kpiIcon}>🛒</span>
+            <span className={styles.kpiIcon}><LuShoppingCart size={20} /></span>
             <div><span className={styles.kpiVal}>{stats.ventasMesCount}</span><span className={styles.kpiLbl}>Ventas del mes</span></div>
           </div>
           <div className={styles.kpi} style={{ "--c": "#059669" } as any}>
-            <span className={styles.kpiIcon}>💰</span>
+            <span className={styles.kpiIcon}><LuWallet size={20} /></span>
             <div><span className={styles.kpiVal}>{fmtCRC(stats.ventasMesTotal)}</span><span className={styles.kpiLbl}>Ingresos del mes</span></div>
           </div>
         </div>
@@ -195,13 +196,14 @@ export const ProductosPage = () => {
       {/* ── Tabs ── */}
       <div className={styles.tabBar}>
         {[
-          { key: "productos", label: "📦 Inventario" },
-          { key: "ventas",    label: "🧾 Ventas" },
-          { key: "nueva_venta", label: "🛒 Nueva Venta" },
+          { key: "productos", label: "Inventario", icon: <LuPackage size={16} /> },
+          { key: "ventas",    label: "Ventas", icon: <LuReceiptText size={16} /> },
+          { key: "nueva_venta", label: "Nueva Venta", icon: <LuShoppingCart size={16} /> },
         ].map(t => (
           <button key={t.key} className={`${styles.tab} ${tab === t.key ? styles.tabActive : ""}`}
-            onClick={() => setTab(t.key as any)}>
-            {t.label}
+            onClick={() => setTab(t.key as any)}
+            style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            {t.icon} {t.label}
           </button>
         ))}
       </div>
@@ -273,13 +275,13 @@ export const ProductosPage = () => {
                       <td><strong>{fmtCRC(Number(p.precio_venta))}</strong></td>
                       <td>{margen !== "—" ? <span className={styles.margen}>{margen}%</span> : "—"}</td>
                       <td>
-                        <span className={`${styles.stockBadge} ${stockBajo ? styles.stockLow : styles.stockOk}`}>
-                          {stockBajo ? "⚠️ " : ""}{p.stock} {p.unidad ?? ""}
+                        <span className={`${styles.stockBadge} ${stockBajo ? styles.stockLow : styles.stockOk}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                          {stockBajo ? <LuTriangleAlert size={14} /> : null}{p.stock} {p.unidad ?? ""}
                         </span>
                       </td>
                       <td>{p.stock_minimo}</td>
                       <td className={styles.sub}>{p.proveedor ?? "—"}</td>
-                      <td><button className={styles.editBtn} onClick={() => openEdit(p)}>✏️ Editar</button></td>
+                      <td><button className={styles.editBtn} onClick={() => openEdit(p)} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={14} /> Editar</button></td>
                     </tr>
                   );
                 })}
@@ -310,7 +312,7 @@ export const ProductosPage = () => {
                 ))}
               </div>
               <div className={styles.ordenFooter}>
-                <span className={styles.sub}>💳 {o.metodo_pago} · 👤 {o.vendedor?.nombre_completo ?? "—"} · 📅 {fmtFecha(o.fecha_creacion)}</span>
+                <span className={styles.sub} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuCreditCard size={14} /> {o.metodo_pago} · <LuUser size={14} /> {o.vendedor?.nombre_completo ?? "—"} · <LuCalendarDays size={14} /> {fmtFecha(o.fecha_creacion)}</span>
                 <strong className={styles.ordenTotal}>{fmtCRC(Number(o.total))}</strong>
               </div>
             </div>
@@ -323,7 +325,7 @@ export const ProductosPage = () => {
         <div className={styles.posLayout}>
           {/* Buscador de productos */}
           <div className={styles.posLeft}>
-            <h3 className={styles.posSection}>🔍 Agregar Productos</h3>
+            <h3 className={styles.posSection} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuSearch size={18} /> Agregar Productos</h3>
             <div className={styles.posSearchWrap}>
               <input className={styles.posSearch} placeholder="Buscar producto por nombre o SKU..."
                 value={posSearch} onChange={e => setPosSearch(e.target.value)} autoFocus />
@@ -349,7 +351,7 @@ export const ProductosPage = () => {
                 <div key={i} className={styles.carritoLinea}>
                   <div className={styles.carritoNombre}>{l.producto.nombre}</div>
                   <div className={styles.carritoControls}>
-                    <button className={styles.qtyBtn} onClick={() => setPosLineas(prev => prev.filter((_, j) => j !== i))}>🗑</button>
+                    <button className={styles.qtyBtn} onClick={() => setPosLineas(prev => prev.filter((_, j) => j !== i))}><LuTrash2 size={14} /></button>
                     <input type="number" min={1} max={l.producto.stock} className={styles.qtyInput}
                       value={l.cantidad}
                       onChange={e => setPosLineas(prev => { const n=[...prev]; n[i]={...n[i], cantidad: Number(e.target.value)}; return n; })} />
@@ -370,7 +372,7 @@ export const ProductosPage = () => {
 
           {/* Panel de cobro */}
           <div className={styles.posRight}>
-            <h3 className={styles.posSection}>🧾 Datos de la Venta</h3>
+            <h3 className={styles.posSection} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuReceiptText size={18} /> Datos de la Venta</h3>
             <div className={styles.posForm}>
               <label>Cliente *</label>
               <input placeholder="Nombre del cliente" value={posCliente.nombre}
@@ -395,8 +397,8 @@ export const ProductosPage = () => {
               <div className={`${styles.posTotalRow} ${styles.totalFinal}`}><span>TOTAL:</span><strong>{fmtCRC(posTotal)}</strong></div>
             </div>
 
-            <button className={styles.cobrarBtn} onClick={handleVenta} disabled={submittingVenta || posLineas.length === 0}>
-              {submittingVenta ? "Procesando..." : `✅ Cobrar ${fmtCRC(posTotal)}`}
+            <button className={styles.cobrarBtn} onClick={handleVenta} disabled={submittingVenta || posLineas.length === 0} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
+              {submittingVenta ? "Procesando..." : <><LuCircleCheck size={16} /> {`Cobrar ${fmtCRC(posTotal)}`}</>}
             </button>
           </div>
         </div>

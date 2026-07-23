@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
@@ -9,6 +9,10 @@ import {
 import styles from "./SalesDashboardPage.module.css";
 import { LeadsFollowUpWidget } from "@/components/LeadsFollowUpWidget";
 import { QuotesExpiringWidget } from "@/components/QuotesExpiringWidget";
+import {
+  LuCar, LuUsers, LuFileText, LuCircleCheck, LuWallet, LuTarget,
+  LuUtensils, LuTrendingUp, LuClipboardList, LuCalendarDays, LuMail,
+} from "react-icons/lu";
 
 interface SalesStats {
   totalVehicles: number;
@@ -120,22 +124,22 @@ export const SalesDashboardPage = () => {
 
       {/* ── Accesos rápidos ──────────────────────────────────────────────── */}
       <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
-        <button onClick={() => navigate("/sales/catalog")} style={qaStyle(true)}>🚗 Nueva cotización</button>
-        <button onClick={() => navigate("/sales/leads")} style={qaStyle(false)}>👥 Mis Leads</button>
-        <button onClick={() => navigate("/sales/quotes")} style={qaStyle(false)}>📄 Mis Cotizaciones</button>
+        <button onClick={() => navigate("/sales/catalog")} style={qaStyle(true)}><LuCar size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />Nueva cotización</button>
+        <button onClick={() => navigate("/sales/leads")} style={qaStyle(false)}><LuUsers size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />Mis Leads</button>
+        <button onClick={() => navigate("/sales/quotes")} style={qaStyle(false)}><LuFileText size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />Mis Cotizaciones</button>
       </div>
 
       {/* ── KPIs ────────────────────────────────────────────────────────── */}
       <div className={styles.kpiRow}>
-        <KpiCard icon="🚗" label="Disponibles" value={String(stats?.totalVehicles ?? 0)}
+        <KpiCard icon={<LuCar size={20} />} label="Disponibles" value={String(stats?.totalVehicles ?? 0)}
           sub="en catálogo" color="#024f7d" onClick={() => navigate("/sales/catalog")} />
-        <KpiCard icon="✅" label="Mis Ventas" value={String(stats?.monthlySalesCount ?? 0)}
+        <KpiCard icon={<LuCircleCheck size={20} />} label="Mis Ventas" value={String(stats?.monthlySalesCount ?? 0)}
           sub="este mes" color="#059669" onClick={() => navigate("/sales/quotes")} />
-        <KpiCard icon="💰" label="Ingresos Generados" value={fmtCRC(stats?.monthlyRevenue ?? 0)}
+        <KpiCard icon={<LuWallet size={20} />} label="Ingresos Generados" value={fmtCRC(stats?.monthlyRevenue ?? 0)}
           sub="este mes" color="#0891b2" />
-        <KpiCard icon="🎯" label="Comisiones Est." value={fmtCRC(stats?.estimatedCommissions ?? 0)}
+        <KpiCard icon={<LuTarget size={20} />} label="Comisiones Est." value={fmtCRC(stats?.estimatedCommissions ?? 0)}
           sub="estimado del mes" color="#7c3aed" />
-        <KpiCard icon="📄" label="Pendientes" value={String(stats?.pendingItemsCount ?? 0)}
+        <KpiCard icon={<LuFileText size={20} />} label="Pendientes" value={String(stats?.pendingItemsCount ?? 0)}
           sub="cotizaciones + leads" color={stats?.pendingItemsCount ? "#d97706" : "#64748b"}
           onClick={() => navigate("/sales/quotes")} />
       </div>
@@ -146,7 +150,7 @@ export const SalesDashboardPage = () => {
         {/* Panel equipo online */}
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
-            <span className={styles.panelTitle}>👥 Equipo en Línea</span>
+            <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUsers size={16} /> Equipo en Línea</span>
             <span className={styles.onlineDot} />
             <span className={styles.onlineCount}>{conectados.length} activos</span>
           </div>
@@ -190,7 +194,7 @@ export const SalesDashboardPage = () => {
                   </div>
                   <div className={styles.avatarInfo}>
                     <span className={styles.avatarName}>{c.nombre}</span>
-                    <span className={styles.avatarSub}>🍽️ Almuerzo</span>
+                    <span className={styles.avatarSub} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuUtensils size={12} /> Almuerzo</span>
                   </div>
                   <span className={styles.statusDot} style={{ background: "#f59e0b" }} />
                 </div>
@@ -202,7 +206,7 @@ export const SalesDashboardPage = () => {
         {/* Gráfico */}
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
-            <span className={styles.panelTitle}>📈 Mis Ventas Últimos 6 Meses</span>
+            <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuTrendingUp size={16} /> Mis Ventas Últimos 6 Meses</span>
           </div>
           <div style={{ padding: "1rem 0.5rem 0.5rem" }}>
             <ResponsiveContainer width="100%" height={240}>
@@ -230,11 +234,11 @@ export const SalesDashboardPage = () => {
       {/* ── Accesos rápidos ─────────────────────────────────────────────── */}
       <div className={styles.quickLinks}>
         {[
-          { icon: "📋", label: "Mis Cotizaciones",  path: "/sales/quotes" },
-          { icon: "👥", label: "Mis Leads",          path: "/sales/leads" },
-          { icon: "🚗", label: "Catálogo",           path: "/sales/catalog" },
-          { icon: "📆", label: "Mi Asistencia",      path: "/sales/asistencia" },
-          { icon: "📩", label: "Mis Solicitudes",    path: "/sales/solicitudes" },
+          { icon: <LuClipboardList size={18} />, label: "Mis Cotizaciones",  path: "/sales/quotes" },
+          { icon: <LuUsers size={18} />, label: "Mis Leads",          path: "/sales/leads" },
+          { icon: <LuCar size={18} />, label: "Catálogo",           path: "/sales/catalog" },
+          { icon: <LuCalendarDays size={18} />, label: "Mi Asistencia",      path: "/sales/asistencia" },
+          { icon: <LuMail size={18} />, label: "Mis Solicitudes",    path: "/sales/solicitudes" },
         ].map((l) => (
           <button key={l.path} className={styles.quickLink} onClick={() => navigate(l.path)}>
             <span className={styles.quickIcon}>{l.icon}</span>
@@ -250,7 +254,7 @@ export const SalesDashboardPage = () => {
 const KpiCard = ({
   icon, label, value, sub, color, onClick,
 }: {
-  icon: string; label: string; value: string; sub?: string;
+  icon: React.ReactNode; label: string; value: string; sub?: string;
   color: string; onClick?: () => void;
 }) => (
   <div

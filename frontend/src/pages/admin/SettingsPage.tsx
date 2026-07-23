@@ -10,6 +10,11 @@ import { EntidadesFinancierasSettings } from "../../components/EntidadesFinancie
 import { EditProfileModal } from "./EditProfileModal";
 import { jwtDecode } from "jwt-decode";
 import { startRegistration } from "@simplewebauthn/browser";
+import {
+  LuSettings, LuCar, LuGlobe, LuBanknote, LuReceiptText, LuCalculator, LuTarget,
+  LuWallet, LuTrendingDown, LuLock, LuKeyRound, LuEye, LuSave, LuPlus, LuX,
+  LuHourglass, LuArrowRight, LuInfo,
+} from "react-icons/lu";
 
 // --- INTERFACES ---
 interface Parametro {
@@ -324,16 +329,16 @@ const FinanciamientoSocioSettings: React.FC = () => {
           <div style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 2 }}>2150 préstamo (pasivo) / 3150 aporte (patrimonio)</div>
         </div>
       </div>
-      <button onClick={guardar} className="btn btn-principal" style={{ alignSelf: "flex-start" }}>💾 Guardar cuentas</button>
+      <button onClick={guardar} className="btn btn-principal" style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuSave size={16} /> Guardar cuentas</button>
 
       <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
         <button disabled={busy} onClick={() => accion("/contabilidad/reclasificar-caja-a-socio", "Reclasificando caja")}
-          style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700 }}>
-          1️⃣ Reclasificar Caja/Banco negativos → socio
+          style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          1. Reclasificar Caja/Banco negativos <LuArrowRight size={14} /> socio
         </button>
         <button disabled={busy} onClick={() => accion("/contabilidad/reclasificar-socio-a-destino", "Reclasificando al destino")}
-          style={{ background: "#059669", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700 }}>
-          2️⃣ Reclasificar socio → destino (post-reunión)
+          style={{ background: "#059669", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          2. Reclasificar socio <LuArrowRight size={14} /> destino (post-reunión)
         </button>
       </div>
       <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0 }}>
@@ -387,8 +392,8 @@ const PasskeySettings: React.FC = () => {
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
         <strong style={{ color: "#0a2540" }}>Tus passkeys</strong>
-        <button onClick={registrar} disabled={registrando} className="btn btn-principal">
-          {registrando ? "Registrando…" : "➕ Registrar este dispositivo"}
+        <button onClick={registrar} disabled={registrando} className="btn btn-principal" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          {registrando ? "Registrando…" : <><LuPlus size={16} /> Registrar este dispositivo</>}
         </button>
       </div>
       {loading ? <p style={{ color: "#94a3b8" }}>Cargando…</p>
@@ -403,7 +408,7 @@ const PasskeySettings: React.FC = () => {
             <tbody>
               {passkeys.map((p) => (
                 <tr key={p.id} style={{ borderTop: "1px solid #f1f5f9" }}>
-                  <td style={{ padding: "8px", fontSize: "0.88rem", color: "#334155" }}>🔑 {p.device_name || "Dispositivo sin nombre"}</td>
+                  <td style={{ padding: "8px", fontSize: "0.88rem", color: "#334155" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuKeyRound size={14} /> {p.device_name || "Dispositivo sin nombre"}</span></td>
                   <td style={{ padding: "8px", fontSize: "0.85rem", color: "#64748b" }}>{new Date(p.creado_en).toLocaleDateString("es-CR")}</td>
                   <td style={{ padding: "8px", textAlign: "right" }}>
                     <button onClick={() => eliminar(p.id)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.78rem" }}>Eliminar</button>
@@ -419,16 +424,16 @@ const PasskeySettings: React.FC = () => {
 
 // --- COMPONENTE PRINCIPAL ---
 type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion" | "facturacion" | "contabilidad" | "seguridad";
-const SECCIONES: { id: SeccionConfig; icon: string; label: string; desc: string; roles?: string[] }[] = [
-  { id: "vehiculos",      icon: "🚗", label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones", roles: ["Administrador"] },
-  { id: "sitio",          icon: "🌐", label: "Sitio Web",     desc: "Página principal y contenido público", roles: ["Administrador"] },
-  { id: "financiamiento", icon: "🏦", label: "Financiamiento", desc: "Entidades, formularios y calculadora", roles: ["Administrador"] },
-  { id: "facturacion",    icon: "🧾", label: "Facturación",   desc: "Datos del emisor y previsualización de comprobantes electrónicos", roles: ["Administrador"] },
-  { id: "contabilidad",   icon: "🧮", label: "Contabilidad",  desc: "Financiamiento del socio y reclasificación de cuentas", roles: ["Administrador"] },
-  { id: "crm",            icon: "🎯", label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads", roles: ["Administrador"] },
-  { id: "planilla",       icon: "💰", label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones", roles: ["Administrador"] },
-  { id: "depreciacion",   icon: "📉", label: "Depreciación",  desc: "Tabla de vida útil por categoría de activo", roles: ["Administrador"] },
-  { id: "seguridad",      icon: "🔐", label: "Seguridad",     desc: "Passkeys (Face ID / huella) de tu cuenta" }, // sin roles = todos (admin y contador)
+const SECCIONES: { id: SeccionConfig; icon: React.ReactNode; label: string; desc: string; roles?: string[] }[] = [
+  { id: "vehiculos",      icon: <LuCar size={18} />, label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones", roles: ["Administrador"] },
+  { id: "sitio",          icon: <LuGlobe size={18} />, label: "Sitio Web",     desc: "Página principal y contenido público", roles: ["Administrador"] },
+  { id: "financiamiento", icon: <LuBanknote size={18} />, label: "Financiamiento", desc: "Entidades, formularios y calculadora", roles: ["Administrador"] },
+  { id: "facturacion",    icon: <LuReceiptText size={18} />, label: "Facturación",   desc: "Datos del emisor y previsualización de comprobantes electrónicos", roles: ["Administrador"] },
+  { id: "contabilidad",   icon: <LuCalculator size={18} />, label: "Contabilidad",  desc: "Financiamiento del socio y reclasificación de cuentas", roles: ["Administrador"] },
+  { id: "crm",            icon: <LuTarget size={18} />, label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads", roles: ["Administrador"] },
+  { id: "planilla",       icon: <LuWallet size={18} />, label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones", roles: ["Administrador"] },
+  { id: "depreciacion",   icon: <LuTrendingDown size={18} />, label: "Depreciación",  desc: "Tabla de vida útil por categoría de activo", roles: ["Administrador"] },
+  { id: "seguridad",      icon: <LuLock size={18} />, label: "Seguridad",     desc: "Passkeys (Face ID / huella) de tu cuenta" }, // sin roles = todos (admin y contador)
 ];
 
 // --- COMPONENTE DE FACTURACIÓN ELECTRÓNICA (emisor + previsualización) ---
@@ -510,11 +515,11 @@ const FacturacionSettings: React.FC = () => {
       </div>
 
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
-        <button onClick={guardar} disabled={saving} className="btn btn-principal">{saving ? "Guardando…" : "💾 Guardar datos del emisor"}</button>
+        <button onClick={guardar} disabled={saving} className="btn btn-principal" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>{saving ? "Guardando…" : <><LuSave size={16} /> Guardar datos del emisor</>}</button>
         <span style={{ width: 1, height: 24, background: "#e2e8f0" }} />
-        <button onClick={() => verEjemplo("factura")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }}>👁️ Factura de ejemplo</button>
-        <button onClick={() => verEjemplo("tiquete")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }}>👁️ Tiquete de ejemplo</button>
-        <button onClick={() => verEjemplo("proforma")} style={{ background: "#fff", border: "1.5px solid #64748b", color: "#475569", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }}>👁️ Proforma de ejemplo</button>
+        <button onClick={() => verEjemplo("factura")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Factura de ejemplo</button>
+        <button onClick={() => verEjemplo("tiquete")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Tiquete de ejemplo</button>
+        <button onClick={() => verEjemplo("proforma")} style={{ background: "#fff", border: "1.5px solid #64748b", color: "#475569", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Proforma de ejemplo</button>
       </div>
       <p style={{ fontSize: "0.78rem", color: "#94a3b8", margin: 0 }}>
         Los ejemplos usan datos ficticios con tus datos de emisor reales, para ver cómo se ve el comprobante impreso. Las cotizaciones reales generan su Proforma PDF desde el detalle de la cotización.
@@ -573,7 +578,7 @@ const DepreciacionConfig: React.FC = () => {
             Doble libro: <strong>vida financiera</strong> (NIIF, va al mayor) y <strong>vida fiscal</strong> (Anexo Nº 2 del Decreto 43198-H, solo para renta).
             La tasa anual es la del Anexo. Verificá los valores contra el reglamento vigente.
             <br />
-            <span style={{ color: "#b45309" }}>ℹ️ La vida útil se ingresa en <strong>meses</strong>, pero la tabla de Hacienda la muestra en <strong>años</strong>: multiplicá por 12 (10 años = 120 meses). Debajo de cada valor se muestra el equivalente en años.</span>
+            <span style={{ color: "#b45309", display: "inline-flex", alignItems: "flex-start", gap: "0.3rem" }}><LuInfo size={14} style={{ marginTop: 2, flexShrink: 0 }} /> La vida útil se ingresa en <strong>meses</strong>, pero la tabla de Hacienda la muestra en <strong>años</strong>: multiplicá por 12 (10 años = 120 meses). Debajo de cada valor se muestra el equivalente en años.</span>
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -802,7 +807,7 @@ export const SettingsPage = () => {
     <>
       {/* Encabezado + navegación por secciones */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540", margin: "0 0 0.25rem" }}>⚙️ Configuración</h1>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540", margin: "0 0 0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuSettings size={22} /> Configuración</h1>
         <p style={{ color: "#64748b", fontSize: "0.9rem", margin: 0 }}>{seccionActual.desc}</p>
       </div>
 
@@ -834,7 +839,7 @@ export const SettingsPage = () => {
       {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
 
       {seccion === "vehiculos" && (
-      <Card title="🧾 Impuesto (IVA) por defecto en cotizaciones">
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={18} /> Impuesto (IVA) por defecto en cotizaciones</span>}>
         <ImpuestoSettings />
       </Card>
       )}
@@ -1080,12 +1085,12 @@ export const SettingsPage = () => {
             type="submit"
             className={`btn btn-principal ${styles.fullWidth}`}
             disabled={creatingProfile}
-            style={{ opacity: creatingProfile ? 0.75 : 1, cursor: creatingProfile ? "not-allowed" : "pointer" }}
+            style={{ opacity: creatingProfile ? 0.75 : 1, cursor: creatingProfile ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}
           >
             {creatingProfile
               ? profileImages.length > 0
-                ? `⏳ Subiendo ${profileImages.length} imagen(es)…`
-                : "⏳ Creando perfil…"
+                ? <><LuHourglass size={16} /> {`Subiendo ${profileImages.length} imagen(es)…`}</>
+                : <><LuHourglass size={16} /> Creando perfil…</>
               : "Añadir Perfil"}
           </button>
         </form>
@@ -1148,42 +1153,42 @@ export const SettingsPage = () => {
 
       {seccion === "financiamiento" && (
       <>
-        <Card title="🏦 Entidades Financieras y sus Documentos">
+        <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBanknote size={18} /> Entidades Financieras y sus Documentos</span>}>
           <EntidadesFinancierasSettings />
         </Card>
 
-        <Card title="🧮 Calculadora de Financiamiento — Parámetros predeterminados">
+        <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuCalculator size={18} /> Calculadora de Financiamiento — Parámetros predeterminados</span>}>
           <CalcSettings />
         </Card>
       </>
       )}
 
       {seccion === "facturacion" && (
-      <Card title="🧾 Facturación Electrónica — Datos del emisor y ejemplos">
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={18} /> Facturación Electrónica — Datos del emisor y ejemplos</span>}>
         <FacturacionSettings />
       </Card>
       )}
 
       {seccion === "contabilidad" && (
-      <Card title="🧮 Financiamiento del socio (gastos pagados por el dueño)">
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuCalculator size={18} /> Financiamiento del socio (gastos pagados por el dueño)</span>}>
         <FinanciamientoSocioSettings />
       </Card>
       )}
 
       {seccion === "seguridad" && (
-      <Card title="🔐 Seguridad — Passkeys (Face ID / huella)">
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuLock size={18} /> Seguridad — Passkeys (Face ID / huella)</span>}>
         <PasskeySettings />
       </Card>
       )}
 
       {seccion === "crm" && (
-      <Card title="🎯 Auto-descarte de leads tibios">
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuTarget size={18} /> Auto-descarte de leads tibios</span>}>
         <LeadsConfigSettings />
       </Card>
       )}
 
       {seccion === "depreciacion" && (
-      <Card title="📉 Tabla de depreciación por categoría de activo">
+      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuTrendingDown size={18} /> Tabla de depreciación por categoría de activo</span>}>
         <DepreciacionConfig />
       </Card>
       )}

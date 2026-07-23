@@ -6,6 +6,7 @@ import { Pagination } from "@/components/Pagination";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 import { useConfirm } from "@/components/ConfirmDialog";
 import toast from "react-hot-toast";
+import { LuLink, LuTriangleAlert, LuClock, LuBan } from "react-icons/lu";
 
 interface Quote {
   id: number;
@@ -231,7 +232,7 @@ export const MyQuotesPage = () => {
                       <td>
                         <span className={styles.quoteId}>#{q.id}</span>
                         {q.lead && (
-                          <span className={styles.leadBadge} title={`Lead #${q.lead.id}`}>🔗</span>
+                          <span className={styles.leadBadge} title={`Lead #${q.lead.id}`} style={{ display: "inline-flex" }}><LuLink size={13} /></span>
                         )}
                       </td>
                       <td className={styles.dateCell}>
@@ -271,8 +272,8 @@ export const MyQuotesPage = () => {
                         )}
                       </td>
                       <td>
-                        <span className={vencida ? styles.expired : venceProx ? styles.expiringSoon : styles.dateCell}>
-                          {vencida ? "⚠️ " : venceProx ? "⏰ " : ""}
+                        <span className={vencida ? styles.expired : venceProx ? styles.expiringSoon : styles.dateCell} style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                          {vencida ? <LuTriangleAlert size={12} /> : venceProx ? <LuClock size={12} /> : null}
                           {fmtFechaLocal(q.fecha_expiracion)}
                         </span>
                       </td>
@@ -332,14 +333,14 @@ export const MyQuotesPage = () => {
         <div className={styles.modalOverlay} onClick={() => { setCancelModal(null); setMotivo(""); }}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <span className={styles.modalIcon}>🚫</span>
+              <span className={styles.modalIcon} style={{ display: "inline-flex" }}><LuBan size={24} /></span>
               <div>
                 <strong>Cancelar Cotización #{cancelModal.quoteId}</strong>
                 <p className={styles.modalSub}>{cancelModal.cliente} — {cancelModal.vehiculo}</p>
               </div>
             </div>
-            <p className={styles.modalWarning}>
-              ⚠️ Al cancelar, el vehículo quedará <strong>disponible</strong> nuevamente.
+            <p className={styles.modalWarning} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuTriangleAlert size={15} /> Al cancelar, el vehículo quedará <strong>disponible</strong> nuevamente.
             </p>
             <label className={styles.modalLabel}>Motivo de cancelación *</label>
             <textarea

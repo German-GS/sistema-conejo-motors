@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
+import { LuBookOpen, LuDownload, LuCircleCheck, LuTriangleAlert } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
@@ -38,7 +39,7 @@ export const ReportesContablesPage = () => {
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540" }}>📚 Reportes Contables</h1>
+      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBookOpen size={22} /> Reportes Contables</h1>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -69,8 +70,8 @@ const Balanza = () => {
       <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap", marginBottom: "1rem" }}>
         <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Al</label>
         <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
-        <button style={btnGreen} onClick={() => descargar(`/reportes-contables/balanza/excel?hasta=${hasta}`, `Balanza-${hasta}.xlsx`)}>📥 Excel</button>
-        {data && <span style={{ marginLeft: "auto", fontWeight: 700, color: data.cuadra ? "#059669" : "#dc2626" }}>{data.cuadra ? "✓ Cuadra" : "⚠️ No cuadra"}</span>}
+        <button style={{ ...btnGreen, display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={() => descargar(`/reportes-contables/balanza/excel?hasta=${hasta}`, `Balanza-${hasta}.xlsx`)}><LuDownload size={16} /> Excel</button>
+        {data && <span style={{ marginLeft: "auto", fontWeight: 700, color: data.cuadra ? "#059669" : "#dc2626", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>{data.cuadra ? <><LuCircleCheck size={15} /> Cuadra</> : <><LuTriangleAlert size={15} /> No cuadra</>}</span>}
       </div>
       {data && (
         <div style={{ overflowX: "auto" }}>
@@ -114,7 +115,7 @@ const Mayor = () => {
         <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
         <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
         <button style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }} onClick={cargar}>Ver</button>
-        <button style={btnGreen} onClick={() => descargar(`/reportes-contables/mayor/excel?codigo=${codigo}&desde=${desde}&hasta=${hasta}`, `Mayor-${codigo}.xlsx`)}>📥 Excel</button>
+        <button style={{ ...btnGreen, display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={() => descargar(`/reportes-contables/mayor/excel?codigo=${codigo}&desde=${desde}&hasta=${hasta}`, `Mayor-${codigo}.xlsx`)}><LuDownload size={16} /> Excel</button>
       </div>
       {data && (
         <>
@@ -149,7 +150,7 @@ const Diario = () => {
       <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
         <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
         <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
-        <button style={btnGreen} onClick={() => descargar(`/reportes-contables/diario/excel?desde=${desde}&hasta=${hasta}`, `Libro-Diario-${desde}_${hasta}.xlsx`)}>📥 Excel</button>
+        <button style={{ ...btnGreen, display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={() => descargar(`/reportes-contables/diario/excel?desde=${desde}&hasta=${hasta}`, `Libro-Diario-${desde}_${hasta}.xlsx`)}><LuDownload size={16} /> Excel</button>
       </div>
     </div>
   );
@@ -170,7 +171,7 @@ const Aging = () => {
           <option value="cxc">Cuentas por Cobrar</option>
           <option value="cxp">Cuentas por Pagar</option>
         </select>
-        <button style={btnGreen} onClick={() => descargar(`/reportes-contables/aging/excel?tipo=${tipo}`, `Aging-${tipo}.xlsx`)}>📥 Excel</button>
+        <button style={{ ...btnGreen, display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={() => descargar(`/reportes-contables/aging/excel?tipo=${tipo}`, `Aging-${tipo}.xlsx`)}><LuDownload size={16} /> Excel</button>
       </div>
       {data && (
         <div style={{ overflowX: "auto" }}>

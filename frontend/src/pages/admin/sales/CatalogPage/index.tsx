@@ -7,6 +7,7 @@ import { Pagination } from "@/components/Pagination";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 import toast from "react-hot-toast";
 import { VehicleRibbon } from "@/components/VehicleRibbon";
+import { LuLink, LuBookmark, LuUser, LuUserCog, LuCalendarDays, LuTriangleAlert, LuHourglass, LuSearch, LuX, LuLockOpen, LuBatteryCharging, LuZap, LuRoute, LuMapPin, LuFileText } from "react-icons/lu";
 
 interface VehiculoReservado {
   id: number;
@@ -146,7 +147,7 @@ export const CatalogPage = () => {
 
       {leadId && (
         <div style={{ background: "#eff6ff", border: "1.5px solid #3b82f6", borderRadius: 10, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "1.2rem" }}>🔗</span>
+          <span style={{ fontSize: "1.2rem", display: "inline-flex" }}><LuLink size={20} /></span>
           <div>
             <strong style={{ color: "#1d4ed8" }}>Cotizando para Lead #{leadId}</strong>
             <span style={{ color: "#3b82f6", marginLeft: 8, fontSize: "0.88rem" }}>— Seleccioná el vehículo para continuar con la cotización</span>
@@ -158,8 +159,8 @@ export const CatalogPage = () => {
       {isAdmin && reservados.length > 0 && (
         <div className={styles.reservadosPanel}>
           <div className={styles.reservadosHeader}>
-            <span className={styles.reservadosTitle}>
-              🔖 Vehículos Reservados ({reservados.length})
+            <span className={styles.reservadosTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <LuBookmark size={16} /> Vehículos Reservados ({reservados.length})
             </span>
             <span className={styles.reservadosHint}>
               Tienen cotización activa. Libéralos si el negocio no prosperó.
@@ -176,13 +177,13 @@ export const CatalogPage = () => {
                   </div>
                   {v.cotizacion ? (
                     <div className={styles.cotizacionInfo}>
-                      <span>👤 {v.cotizacion.cliente}</span>
-                      <span>🧑‍💼 {v.cotizacion.vendedor}</span>
-                      <span>
-                        📅 Cotiz. #{v.cotizacion.id} — {fmtFecha(v.cotizacion.fecha_creacion)}
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuUser size={14} /> {v.cotizacion.cliente}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuUserCog size={14} /> {v.cotizacion.vendedor}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                        <LuCalendarDays size={14} /> Cotiz. #{v.cotizacion.id} — {fmtFecha(v.cotizacion.fecha_creacion)}
                       </span>
-                      <span className={expirado ? styles.expiradoText : ""}>
-                        {expirado ? "⚠️ Venció" : "⏳ Vence"}: {fmtFechaLocal(String(v.cotizacion.fecha_expiracion))}
+                      <span className={expirado ? styles.expiradoText : ""} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                        {expirado ? <><LuTriangleAlert size={14} /> Venció</> : <><LuHourglass size={14} /> Vence</>}: {fmtFechaLocal(String(v.cotizacion.fecha_expiracion))}
                       </span>
                     </div>
                   ) : (
@@ -204,8 +205,9 @@ export const CatalogPage = () => {
                       className={styles.liberarBtn}
                       onClick={() => liberarVehiculo(v.id, v.marca, v.modelo)}
                       disabled={liberando === v.id}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
                     >
-                      {liberando === v.id ? "Liberando..." : "🔓 Liberar"}
+                      {liberando === v.id ? "Liberando..." : <><LuLockOpen size={14} /> Liberar</>}
                     </button>
                   </div>
                 </div>
@@ -249,7 +251,7 @@ export const CatalogPage = () => {
 
       {filtered.length === 0 ? (
         <div className={styles.noResults}>
-          <p>🔍 Ningún vehículo coincide con los filtros aplicados.</p>
+          <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", justifyContent: "center" }}><LuSearch size={16} /> Ningún vehículo coincide con los filtros aplicados.</p>
           <button className={styles.resetBtn} onClick={resetFilters}>Limpiar filtros</button>
         </div>
       ) : (
@@ -284,20 +286,21 @@ export const CatalogPage = () => {
                   <p className={styles.oldPrice}>{fmtCRC(Number(vehicle.precio_venta))}</p>
                 )}
                 <div className={styles.specs}>
-                  <span title="Batería">🔋 {vehicle.capacidad_bateria_kwh} kWh</span>
-                  <span title="Potencia">⚡ {vehicle.potencia_hp} HP</span>
-                  <span title="Autonomía">🛣️ {vehicle.autonomia_km} km</span>
+                  <span title="Batería" style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuBatteryCharging size={14} /> {vehicle.capacidad_bateria_kwh} kWh</span>
+                  <span title="Potencia" style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuZap size={14} /> {vehicle.potencia_hp} HP</span>
+                  <span title="Autonomía" style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuRoute size={14} /> {vehicle.autonomia_km} km</span>
                 </div>
                 <div className={styles.meta}>
                   <span>{vehicle.color}</span>
-                  {vehicle.bodega && <span>📍 {vehicle.bodega.nombre}</span>}
+                  {vehicle.bodega && <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuMapPin size={14} /> {vehicle.bodega.nombre}</span>}
                 </div>
                 {leadId ? (
                   <Link
                     to={`${basePath}/catalog/${vehicle.id}/quote?leadId=${leadId}`}
                     className="btn btn-principal"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
                   >
-                    📄 Cotizar para este Lead
+                    <LuFileText size={16} /> Cotizar para este Lead
                   </Link>
                 ) : (
                   <Link to={`${basePath}/catalog/${vehicle.id}`} className="btn btn-principal">
