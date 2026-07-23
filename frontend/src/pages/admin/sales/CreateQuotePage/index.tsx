@@ -90,6 +90,12 @@ export const CreateQuotePage = () => {
         setVehicle(v);
         const lista = Number(v.precio_venta_final ?? v.precio_venta);
         setPrecioLista(lista);
+        const usd = Number(v.precio_venta_usd) || 0;
+        if (usd > 0) {
+          setPrecioUsd(usd);
+          setMonedaVenta("USD"); // el precio del vehículo está fijado en dólares → venta en USD
+          setVerEnUsd(true);     // el resumen abre mostrando dólares
+        }
         if (v.marchamo) setGastoMarchamo(Number(v.marchamo));
         if (v.inscripcion_traspaso) setGastoInscripcion(Number(v.inscripcion_traspaso));
       })
@@ -99,6 +105,25 @@ export const CreateQuotePage = () => {
 
   const [leadNombre, setLeadNombre] = useState("");
   const [verEnUsd, setVerEnUsd] = useState(false); // toggle ₡/$ del resumen
+
+  // ── Venta en dólares (precio fijo en USD como fuente de verdad) ──────────────
+  const [monedaVenta, setMonedaVenta] = useState<"CRC" | "USD">("CRC");
+  const [precioUsd, setPrecioUsd] = useState(0); // valor FINAL en USD (IVA incluido)
+  const [tcVigente, setTcVigente] = useState(0); // TC de venta del día (para vista previa; se congela al guardar)
+
+  // TC vigente para la vista previa CRC (se congela en el servidor al guardar).
+  useEffect(() => {
+    apiClient.get("/tipo-cambio/actual")
+      .then((r) => setTcVigente(Number(r.data?.venta) || 0))
+      .catch(() => {});
+  }, []);
+
+  // En modo USD, el CRC con IVA se deriva del USD × TC vigente (previsualización).
+  useEffect(() => {
+    if (monedaVenta === "USD" && precioUsd > 0 && tcVigente > 0) {
+      setPrecioLista(Math.round(precioUsd * tcVigente));
+    }
+  }, [monedaVenta, precioUsd, tcVigente]);
 
   // Pre-llenar datos del cliente desde el lead
   useEffect(() => {
@@ -123,8 +148,8 @@ export const CreateQuotePage = () => {
   const ivaMonto       = precioConIva - precioFinal;            // IVA desglosado
   const totalConIva    = precioConIva;                          // total = lo que ingresó el usuario
 
-  // Vista en dólares: valor FIJO del vehículo (IVA incluido). Base e IVA se derivan.
-  const precioUsdTotal = Number(vehicle?.precio_venta_usd) || 0;
+  // Vista en dólares: valor FIJO en USD (IVA incluido). Base e IVA se derivan.
+  const precioUsdTotal = Number(precioUsd) || 0;
   const hayUsd         = precioUsdTotal > 0;
   const baseUsd        = hayUsd ? precioUsdTotal / divisor : 0;
   const ivaUsd         = precioUsdTotal - baseUsd;
@@ -148,6 +173,8 @@ export const CreateQuotePage = () => {
         precio_lista: precioLista,
         descuento_monto: descuentoMonto,
         precio_final: precioFinal,
+        // Venta en USD: se manda el valor fijo en dólares; el backend congela CRC y TC.
+        precio_venta_usd: monedaVenta === "USD" && precioUsd > 0 ? precioUsd : undefined,
         iva_porcentaje: ivaPorcentaje,
         // fecha_expiracion omitida → backend calcula automáticamente hoy + 4 días
         gasto_marchamo: gastoMarchamo,
@@ -244,11 +271,44 @@ export const CreateQuotePage = () => {
       <Card title="Precio del Vehículo e IVA">
         <div className={styles.formGrid}>
           <div className={styles.field}>
-            <label>Precio de Venta — incluye IVA (₡)</label>
-            <input type="number" value={precioLista}
-              onChange={(e) => setPrecioLista(Number(e.target.value))} />
-            <span className={styles.fieldHint}>Precio final al cliente con IVA incluido</span>
+            <label>Moneda de la venta</label>
+            <select value={monedaVenta} onChange={(e) => setMonedaVenta(e.target.value as "CRC" | "USD")}>
+              <option value="CRC">₡ Colones</option>
+              <option value="USD">$ Dólares (precio fijo)</option>
+            </select>
+            <span className={styles.fieldHint}>
+              {monedaVenta === "USD"
+                ? "El precio se fija en dólares; el CRC se congela al TC de hoy al guardar."
+                : "Precio ingresado en colones."}
+            </span>
           </div>
+
+          {monedaVenta === "USD" ? (
+            <>
+              <div className={styles.field}>
+                <label>Precio de Venta — incluye IVA ($)</label>
+                <input type="number" min={0} value={precioUsd}
+                  onChange={(e) => setPrecioUsd(Number(e.target.value))} />
+                <span className={styles.fieldHint}>Valor fijo del vehículo en dólares (no cambia con el TC)</span>
+              </div>
+              <div className={styles.field}>
+                <label>Precio con IVA (₡) — vista previa</label>
+                <input type="text" value={fmtCRC(precioLista)} readOnly />
+                <span className={styles.fieldHint}>
+                  {tcVigente > 0
+                    ? `Al TC ₡${tcVigente.toLocaleString("es-CR")}/USD · se congela al guardar`
+                    : "⚠️ Sin TC del día — cargalo en Multimoneda para congelar el precio"}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className={styles.field}>
+              <label>Precio de Venta — incluye IVA (₡)</label>
+              <input type="number" value={precioLista}
+                onChange={(e) => setPrecioLista(Number(e.target.value))} />
+              <span className={styles.fieldHint}>Precio final al cliente con IVA incluido</span>
+            </div>
+          )}
           <div className={styles.field}>
             <label>Descuento (₡)</label>
             <input type="number" min={0} value={descuentoMonto}

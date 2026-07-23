@@ -35,6 +35,14 @@ export class Venta {
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   total_con_iva: number;
 
+  /** Precio de venta FIJO en dólares (IVA incluido) si la venta se pactó en USD; null si fue en CRC. */
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  precio_venta_usd: number | null;
+
+  /** Tipo de cambio (₡/USD) congelado de la venta. Null si fue en CRC. */
+  @Column({ type: 'decimal', precision: 12, scale: 5, nullable: true })
+  tipo_cambio: number | null;
+
   // ── Clasificación de IVA para la D-150 (TRIBU-CR) ─────────────────────────
   /** Tarifa: T13 | T04 | T02 | T01 | T005 | Exento | NoSujeto */
   @Column({ length: 10, default: 'T13' })

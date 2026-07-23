@@ -3,20 +3,13 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import logo from "@/img/Logos/Logo-Conejo-Motors.png";
 import styles from "./QuoteDetailsPage.module.css";
-import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
+import { fmtFechaLocal } from "@/utils/dateUtils";
 import { PageLoader } from "@/components/PageLoader";
 
 // Para pantalla: usa el símbolo ₡
 const fmtCRC = (value: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(value);
-
-// Para PDF: jsPDF/Helvetica no soporta ₡ (U+20A1), se usa "CRC" que es el formato ISO estándar
-const fmtPDF = (value: number) =>
-  "CRC " + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(value);
 
 interface QuoteDetails {
   id: number;
@@ -112,180 +105,17 @@ export const QuoteDetailsPage = () => {
     navigate(`${billingPath}?cotizacionId=${quote!.id}`);
   };
 
-  const handleDownloadPDF = () => {
+  /** Abre la proforma canónica del backend (HTML → imprimir/guardar PDF desde el navegador). */
+  const verProforma = async () => {
     if (!quote) return;
-    const doc = new jsPDF();
-    const pW = doc.internal.pageSize.width;
-    const pH = doc.internal.pageSize.height;
-    const margin = 14;
-    const colWidth = pW - 2 * margin;
-    const primaryColor: [number, number, number] = [2, 79, 125];
-    const darkColor: [number, number, number] = [10, 37, 64];
-
-    const { cliente, vehiculo, vendedor } = quote;
-    const nombreVendedor = vendedor?.nombre_completo || "Equipo de Ventas";
-
-    // Helper USD para PDF
-    const fmtUSD = (value: number) =>
-      "$ " + new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
-
-    // ── ENCABEZADO ─────────────────────────────
-    // Fondo azul oscuro (más alto para incluir cédula jurídica)
-    doc.setFillColor(...darkColor);
-    doc.rect(0, 0, pW, 46, "F");
-
-    // Logo
-    doc.addImage(logo, "PNG", margin, 5, 28, 28);
-
-    // Título derecha
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("FACTURA PROFORMA", pW - margin, 16, { align: "right" });
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Cotización N° ${quote.id}`, pW - margin, 24, { align: "right" });
-    doc.text(`Fecha: ${fmtFecha(quote.fecha_creacion)}`, pW - margin, 30, { align: "right" });
-
-    // Cédula Jurídica (izquierda, bajo el logo)
-    doc.setFontSize(7.5);
-    doc.setTextColor(180, 210, 240);
-    doc.text("Conejo Motors | Ced. Jur. 3-101-857-775", margin, 38);
-    doc.text("Actividad ATV 501001 | TRIBU-CR 4510.0", margin, 43);
-
-    let y = 54;
-
-    // ── DATOS DEL CLIENTE Y VEHÍCULO ───────────
-    doc.setTextColor(0, 0, 0);
-    autoTable(doc, {
-      startY: y,
-      head: [["DATOS DEL CLIENTE", "VEHÍCULO COTIZADO"]],
-      body: [[
-        `${cliente.nombre_completo}\nCédula/ID: ${cliente.cedula}${cliente.telefono ? "\nTel: " + cliente.telefono : ""}${cliente.email ? "\nEmail: " + cliente.email : ""}`,
-        `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.año}${vehiculo.color ? "\nColor: " + vehiculo.color : ""}\nTipo combustible: ${quote.tipo_combustible || "Electrico"}${vehiculo.autonomia_km ? "\nAutonomía: " + vehiculo.autonomia_km + " km" : ""}${vehiculo.potencia_hp ? "\nPotencia: " + vehiculo.potencia_hp + " HP" : ""}`,
-      ]],
-      theme: "grid",
-      headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: "bold", fontSize: 9 },
-      bodyStyles: { fontSize: 9, cellPadding: 4 },
-      columnStyles: { 0: { cellWidth: colWidth / 2 }, 1: { cellWidth: colWidth / 2 } },
-    });
-
-    y = (doc as any).lastAutoTable.finalY + 8;
-
-    // ── DESGLOSE DEL PRECIO (limpio para el cliente) ────────────────────
-    // Los gastos de inscripción son internos — no se muestran en la proforma
-    const pdfIvaPct   = Number(quote.iva_porcentaje) || 13;
-    const pdfIvaMonto = Number(quote.iva_monto) || Math.round(Number(quote.precio_final) * pdfIvaPct / 100);
-    const pdfTotalIva = Number(quote.total_con_iva) || (Number(quote.precio_final) + pdfIvaMonto);
-
-    // Calcular equivalentes en USD si hay precio de referencia en el vehículo
-    const precioUsdVehiculo = Number(vehiculo.precio_venta_usd) || 0;
-    // Tipo de cambio derivado del precio de lista (sin descuento) para mayor precisión
-    const precioListaCRC = Number(quote.precio_lista) || Number(quote.precio_final);
-    const tipoCambioImplicito = precioUsdVehiculo > 0 && precioListaCRC > 0
-      ? precioListaCRC / precioUsdVehiculo
-      : 0;
-
-    const crcToUsd = (crc: number): string => {
-      if (tipoCambioImplicito > 0) return fmtUSD(Math.round(crc / tipoCambioImplicito));
-      if (precioUsdVehiculo > 0) return fmtUSD(precioUsdVehiculo); // fallback: precio base
-      return "—";
-    };
-
-    const priceRows: [string, string, string][] = [];
-
-    if (Number(quote.descuento_monto) > 0) {
-      const listaBase = Number(quote.precio_lista || quote.precio_final);
-      priceRows.push(["Precio de lista", "", crcToUsd(listaBase)]);
-      const descMonto = Number(quote.descuento_monto);
-      priceRows.push(["Descuento aplicado", "", `– ${crcToUsd(descMonto)}`]);
-    }
-
-    priceRows.push([
-      `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.año}`,
-      quote.tipo_combustible || "Eléctrico",
-      crcToUsd(Number(quote.precio_final)),
-    ]);
-
-    autoTable(doc, {
-      startY: y,
-      head: [["DESCRIPCIÓN", "COMBUSTIBLE", "MONTO (USD)"]],
-      body: priceRows,
-      foot: [
-        ["Base imponible (sin IVA)", "", crcToUsd(Number(quote.precio_final))],
-        [`IVA (${pdfIvaPct}% desglosado)`, "", crcToUsd(pdfIvaMonto)],
-        ["PRECIO TOTAL (IVA incluido)", "", crcToUsd(pdfTotalIva)],
-      ],
-      theme: "striped",
-      headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: "bold", fontSize: 9 },
-      bodyStyles: { fontSize: 9 },
-      footStyles: { fontStyle: "bold", fontSize: 9, fillColor: [0, 64, 0] as [number, number, number], textColor: [255, 255, 255] as [number, number, number] },
-      columnStyles: {
-        0: { cellWidth: colWidth * 0.55 },
-        1: { cellWidth: colWidth * 0.22 },
-        2: { cellWidth: colWidth * 0.23, halign: "right" },
-      },
-      // Alinea a la derecha la columna de montos en TODAS las secciones (encabezado incluido)
-      didParseCell: (data: any) => {
-        if (data.column.index === 2) data.cell.styles.halign = "right";
-      },
-    });
-
-    y = (doc as any).lastAutoTable.finalY + 8;
-
-    // ── REGALÍAS ────────────────────────────────
-    if (quote.regalias && quote.regalias.trim()) {
-      autoTable(doc, {
-        startY: y,
-        head: [["🎁 REGALÍAS E INCENTIVOS INCLUIDOS"]],
-        body: [[quote.regalias]],
-        theme: "grid",
-        headStyles: { fillColor: [0, 150, 100], textColor: 255, fontStyle: "bold", fontSize: 9 },
-        bodyStyles: { fontSize: 9 },
-      });
-      y = (doc as any).lastAutoTable.finalY + 8;
-    }
-
-    // ── NOTAS ADICIONALES ───────────────────────
-    const notas: string[] = [
-      `• El precio incluye los gastos de inscripción.`,
-      `• Esta proforma es válida hasta el: ${fmtFechaLocal(quote.fecha_expiracion)}.`,
-    ];
-    if (quote.notas_cliente?.trim()) {
-      notas.push(`• ${quote.notas_cliente}`);
-    }
-
-    autoTable(doc, {
-      startY: y,
-      head: [["CONDICIONES Y NOTAS"]],
-      body: notas.map((n) => [n]),
-      theme: "plain",
-      headStyles: { fillColor: [245, 245, 245], textColor: darkColor, fontStyle: "bold", fontSize: 8 },
-      bodyStyles: { fontSize: 8, textColor: [80, 80, 80] },
-    });
-
-    y = (doc as any).lastAutoTable.finalY + 12;
-
-    // ── FIRMA ───────────────────────────────────
-    if (y > pH - 55) { doc.addPage(); y = 20; }
-
-    doc.setDrawColor(...primaryColor);
-    doc.setLineWidth(0.5);
-    doc.line(margin, y + 20, margin + 70, y + 20);
-    doc.setFontSize(9);
-    doc.setTextColor(...darkColor);
-    doc.text(nombreVendedor, margin, y + 26);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Asesor de Ventas — Conejo Motors", margin, y + 32);
-
-    // Conejo Motors info derecha
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.text("Conejo Motors | Ced. Jur. 3-101-857-775", pW - margin, y + 20, { align: "right" });
-    doc.text("Venta de Vehículos Eléctricos BYD", pW - margin, y + 26, { align: "right" });
-    doc.text("contabilidad@conejomotors.com", pW - margin, y + 32, { align: "right" });
-
-    doc.save(`Proforma_${quote.id}_${cliente.nombre_completo.replace(/\s/g, "_")}.pdf`);
+    const tId = toast.loading("Generando proforma…");
+    try {
+      const res = await apiClient.get(`/billing/proforma/${quote.id}`, { responseType: "text" });
+      const url = URL.createObjectURL(new Blob([res.data], { type: "text/html" }));
+      window.open(url, "_blank");
+      toast.dismiss(tId);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { toast.error("No se pudo generar la proforma.", { id: tId }); }
   };
 
   if (!quote) return <PageLoader message="Cargando cotización..." />;
@@ -307,23 +137,8 @@ export const QuoteDetailsPage = () => {
           {quote.lead && <span className={styles.leadLink}>🔗 Lead #{quote.lead.id}</span>}
         </div>
         <div className={styles.actions}>
-          <button
-            className="btn btn-principal"
-            onClick={async () => {
-              const tId = toast.loading("Generando proforma…");
-              try {
-                const res = await apiClient.get(`/billing/proforma/${quote.id}`, { responseType: "text" });
-                const url = URL.createObjectURL(new Blob([res.data], { type: "text/html" }));
-                window.open(url, "_blank");
-                toast.dismiss(tId);
-                setTimeout(() => URL.revokeObjectURL(url), 60000);
-              } catch { toast.error("No se pudo generar la proforma.", { id: tId }); }
-            }}
-          >
+          <button className="btn btn-principal" onClick={verProforma}>
             🧾 Ver Proforma
-          </button>
-          <button className="btn btn-secondary" onClick={handleDownloadPDF}>
-            📄 Proforma PDF (clásica)
           </button>
           {(quote.estado === "Borrador" || quote.estado === "Enviada") && (
             <button

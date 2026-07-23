@@ -22,9 +22,17 @@ export class CreateCotizacionDto {
   @IsNumber()
   descuento_monto?: number;
 
-  /** Precio final acordado (base imponible, sin IVA) */
+  /** Precio final acordado (base imponible, sin IVA, CRC) */
   @IsNumber()
   precio_final: number;
+
+  /**
+   * Precio de venta FIJO en dólares (IVA incluido). Si viene, es la fuente de verdad:
+   * el CRC se deriva y congela al TC del día. Si no viene, se usa precio_final (CRC).
+   */
+  @IsOptional()
+  @IsNumber()
+  precio_venta_usd?: number;
 
   /** Porcentaje de IVA (default 13). 0 si el producto está exento. */
   @IsOptional()

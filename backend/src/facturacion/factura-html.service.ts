@@ -76,10 +76,17 @@ export class FacturaHtmlService {
       : (cot.vehiculo_descripcion ?? 'Vehículo');
     const tarifa = (Number(cot.iva_porcentaje) || 13) / 100;
     const precioCrc = Number(cot.precio_final) || 0;
-    // Valor FINAL en dólares del vehículo (IVA incluido). Si no está cargado, se estima con el TC vigente.
-    const precioUsd = Number(veh?.precio_venta_usd) > 0
+    const totalCrc = Number(cot.total_con_iva) || +(precioCrc * (1 + tarifa)).toFixed(2);
+    // Valor FINAL en dólares (IVA incluido). Prioridad:
+    //  1) el USD congelado en la cotización (venta pactada en dólares),
+    //  2) el precio en dólares de la ficha del vehículo,
+    //  3) conversión con el TC vigente (solo informativa, cotizaciones viejas en CRC).
+    const tcCongelado = Number(cot.tipo_cambio) > 0 ? Number(cot.tipo_cambio) : (tipoCambio || 0);
+    const precioUsd = Number(cot.precio_venta_usd) > 0
+      ? Number(cot.precio_venta_usd)
+      : Number(veh?.precio_venta_usd) > 0
       ? Number(veh.precio_venta_usd)
-      : (tipoCambio && tipoCambio > 0 ? +(precioCrc / tipoCambio).toFixed(2) : 0);
+      : (tcCongelado > 0 ? +(totalCrc / tcCongelado).toFixed(2) : 0);
     const lineas: LineaHtml[] = [
       { cabys: CABYS_DEFAULTS.VEHICULO_ELECTRICO, detalle, cantidad: 1, precioUnitario: precioCrc, tarifaIva: tarifa, precioUnitarioUsd: precioUsd },
     ];

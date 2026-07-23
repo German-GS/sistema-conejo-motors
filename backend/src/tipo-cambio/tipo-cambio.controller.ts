@@ -20,6 +20,7 @@ export class TipoCambioController {
   }
 
   @Get('actual')
+  @Roles('Administrador', 'Contador', 'Vendedor') // lectura del TC para la vista previa de cotizaciones
   async actual(@Query('fecha') fecha?: string) {
     return { fecha: fecha ?? null, venta: await this.svc.getVenta(fecha) };
   }

@@ -42,9 +42,21 @@ export class Cotizacion {
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
   descuento_monto: number;
 
-  /** Precio de venta final (lista - descuento) — base imponible antes de IVA */
+  /** Precio de venta final (lista - descuento) — base imponible antes de IVA (CRC, congelado) */
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   precio_final: number;
+
+  /**
+   * Precio de venta FIJO en dólares (IVA incluido), fuente de verdad cuando la venta se
+   * pactó en USD. El CRC (precio_final/total) se deriva y congela al TC de la fecha.
+   * Null en cotizaciones pensadas en CRC (flujo viejo).
+   */
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  precio_venta_usd: number | null;
+
+  /** Tipo de cambio de venta (₡/USD) congelado en la creación. Null si la venta fue en CRC. */
+  @Column({ type: 'decimal', precision: 12, scale: 5, nullable: true })
+  tipo_cambio: number | null;
 
   /** Porcentaje de IVA aplicado (13 por defecto según Ley CR) */
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 13 })

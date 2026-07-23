@@ -200,10 +200,14 @@ export class FacturacionService {
     //
     // Mientras esté en 'Borrador', el comprobante NO es válido fiscalmente.
     // ─────────────────────────────────────────────────────────────────────────
+    // Flag de producción: gobierna numeración/estado. En interino (default) todo queda
+    // en borrador con numeración provisional; en producción se consume el consecutivo
+    // definitivo y la situación normal. La firma/envío reales se enchufan por DI aparte.
+    const produccion = String(this.configService.get('FACTURACION_PRODUCCION') ?? 'false').toLowerCase() === 'true';
     const gen = await this.xmlGenerator.generar(cotizacion, {
       exonerado: datos.exonerado,
       numeroExoneracion: datos.numero_exoneracion,
-      borrador: true,
+      borrador: !produccion,
     });
     const firma = await this.firmador.firmar(gen.xml);
     const envio = await this.haciendaClient.enviar(gen.clave, firma.xml);
@@ -224,9 +228,12 @@ export class FacturacionService {
         cotizacion,
         vendedor:            cotizacion.vendedor ?? adminUser,
         fecha_venta:         datos.fecha ? new Date(`${datos.fecha}T12:00:00`) : new Date(),
-        monto_final:         cotizacion.precio_final,  // base imponible (sin IVA)
+        monto_final:         cotizacion.precio_final,  // base imponible (sin IVA, CRC congelado)
         iva_monto:           ivaMonto,
         total_con_iva:       totalConIva,
+        // Moneda: si la venta se pactó en USD, se hereda el valor fijo y el TC congelado.
+        precio_venta_usd:    cotizacion.precio_venta_usd ?? null,
+        tipo_cambio:         cotizacion.tipo_cambio ?? null,
         iva_tarifa:          datos.exonerado ? 'Exento' : 'T13',
         iva_condicion:       datos.exonerado ? 'Exonerado' : 'Gravado',
         numero_exoneracion:  datos.exonerado ? (datos.numero_exoneracion ?? null) : null,

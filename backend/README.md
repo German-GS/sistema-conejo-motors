@@ -35,6 +35,35 @@ válidos hasta rotarlos. Por eso, ante cualquier filtración:
    ```
 3. Verificar que los valores viejos ya no funcionen en ningún entorno.
 
+## Facturación electrónica — pasar a producción (las llaves)
+
+Hoy el sistema opera en **modo interino**: genera el XML v4.4 con clave/consecutivo reales en
+estructura pero **provisional** (no consume la secuencia oficial), sin firma XAdES ni transmisión
+a Hacienda; las facturas quedan en estado **Borrador** (no válidas fiscalmente).
+
+El interruptor es la env var **`FACTURACION_PRODUCCION`** (default `false`):
+
+- `false` → borrador + numeración provisional (no quema consecutivos).
+- `true`  → se consume el **consecutivo definitivo atómico** (`NumeracionService.generarDefinitivo`)
+  y la situación queda normal (`1`). El estado final (`Enviada/Aceptada`) lo determina el
+  `HaciendaClient` real.
+
+Para ir a producción (sin tocar `facturacion.service`):
+
+1. Implementar `FirmadorReal` (firma **XAdES-BES** usando el `.p12`) y `HaciendaClientReal`
+   (OAuth al IDP de Hacienda → `POST` a recepción → consulta de estado) y enchufarlos por DI en
+   los tokens `FIRMADOR` / `HACIENDA_CLIENT` de `facturacion.module.ts` (reemplazan los `NoOp`).
+2. Subir a Cloud Run como env vars (**nunca al repo**): ruta/clave del `.p12` y credenciales del
+   IDP. El `.p12` va en el bucket privado o montado como secreto.
+3. Prender el flag:
+   ```bash
+   gcloud run services update conejo-motors-backend --region us-central1 \
+     --update-env-vars FACTURACION_PRODUCCION=true
+   ```
+
+> Ventas en dólares: el XML indica `CodigoTipoMoneda = USD` con el `TipoCambio` **congelado** en la
+> cotización; el desglose de impuestos permanece coherente con el CRC de los libros (moneda funcional).
+
 ## Migraciones
 `synchronize: false`. El esquema se cambia por migraciones (`src/migrations`, `data-source.ts`):
 ```bash

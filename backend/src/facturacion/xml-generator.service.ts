@@ -54,14 +54,35 @@ export class XmlGeneratorService {
     const cedulaEmisor = cfg.cedula || (this.configService.get<string>('EMISOR_CEDULA') ?? '0');
     const provisional = opts.borrador !== false; // por defecto, borrador
 
-    // Numeración: provisional (no consume secuencia) en interino.
-    const secuencialProvisional = Number(String(Date.now()).slice(-10));
-    const consecutivo = this.numeracion.armarConsecutivo({ sucursal: cfg.sucursal, terminal: cfg.terminal, tipo: '01', secuencial: secuencialProvisional });
-    const { clave, codigoSeguridad, situacion } = this.numeracion.armarClave({
-      cedulaEmisor,
-      consecutivo,
-      fecha: ahora,
-    });
+    // Numeración:
+    //  · Interino (provisional): NO consume la secuencia oficial (evita huecos).
+    //  · Producción (borrador:false): consume el consecutivo definitivo atómico.
+    let consecutivo: string;
+    let clave: string;
+    let codigoSeguridad: string;
+    let situacion: string;
+    if (provisional) {
+      const secuencialProvisional = Number(String(Date.now()).slice(-10));
+      consecutivo = this.numeracion.armarConsecutivo({ sucursal: cfg.sucursal, terminal: cfg.terminal, tipo: '01', secuencial: secuencialProvisional });
+      ({ clave, codigoSeguridad, situacion } = this.numeracion.armarClave({
+        cedulaEmisor,
+        consecutivo,
+        fecha: ahora,
+      }));
+    } else {
+      const def = await this.numeracion.generarDefinitivo({
+        cedulaEmisor,
+        tipo: '01',
+        sucursal: cfg.sucursal,
+        terminal: cfg.terminal,
+        fecha: ahora,
+        situacion: '1', // normal
+      });
+      consecutivo = def.consecutivo;
+      clave = def.clave;
+      codigoSeguridad = def.codigoSeguridad;
+      situacion = def.situacion;
+    }
 
     const base = Number(cotizacion.precio_final) || 0;
     const tarifa = opts.exonerado ? 0 : 13;
@@ -128,8 +149,16 @@ export class XmlGeneratorService {
       MontoTotalLinea: totalLinea.toFixed(2),
     };
 
+    // Moneda del comprobante. Si la venta se pactó en USD, se declara USD con el TC congelado
+    // en la cotización; los montos permanecen en CRC (coherentes con los libros — moneda
+    // funcional colón). La implementación real de producción deberá expresar los montos en la
+    // moneda declarada según el Anexo v4.4; en interino se mantiene el CRC de los libros.
+    const ventaEnUsd = Number((cotizacion as any).precio_venta_usd) > 0 && Number((cotizacion as any).tipo_cambio) > 0;
+    const codigoMoneda = ventaEnUsd ? 'USD' : 'CRC';
+    const tipoCambioXml = ventaEnUsd ? Number((cotizacion as any).tipo_cambio).toFixed(5) : '1.00000';
+
     const resumen = {
-      CodigoTipoMoneda: { CodigoMoneda: 'CRC', TipoCambio: '1.00000' },
+      CodigoTipoMoneda: { CodigoMoneda: codigoMoneda, TipoCambio: tipoCambioXml },
       TotalServGravados: '0.00',
       TotalServExentos: '0.00',
       TotalMercanciasGravadas: opts.exonerado ? '0.00' : base.toFixed(2),

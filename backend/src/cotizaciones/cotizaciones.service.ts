@@ -10,6 +10,7 @@ import { Vehicle } from '../vehicles/vehicle.entity';
 import { VehicleEstadoHistorial } from '../vehicles/vehicle-estado-historial.entity';
 import { Lead } from '../leads/lead.entity';
 import { LeadActividad } from '../leads/lead-actividad.entity';
+import { TipoCambioService } from '../tipo-cambio/tipo-cambio.service';
 
 /** Días de reserva automática al crear una cotización */
 const DIAS_RESERVA = 4;
@@ -30,6 +31,7 @@ export class CotizacionesService {
     @InjectRepository(LeadActividad)
     private actividadesRepo: Repository<LeadActividad>,
     private clientesService: ClientesService,
+    private tipoCambioService: TipoCambioService,
   ) {}
 
   async findByLead(leadId: number): Promise<Cotizacion[]> {
@@ -218,6 +220,35 @@ export class CotizacionesService {
       fechaExpiracion.setHours(23, 59, 59, 0);
     }
 
+    // ── Precio y moneda ───────────────────────────────────────────────────────
+    // Fuente de verdad:
+    //  · Si viene precio_venta_usd (venta pactada en dólares): se congela el TC de la
+    //    fecha, el total CRC = round(usd × TC) y la base/IVA se derivan hacia atrás.
+    //    El valor en dólares NO cambia aunque suba el dólar (proforma/factura usan el TC guardado).
+    //  · Si no viene (flujo viejo / venta en CRC): se sigue como hoy con precio_final en CRC.
+    const ivaPct = createDto.iva_porcentaje ?? 13;
+    const divisor = 1 + ivaPct / 100;
+
+    let precioVentaUsd: number | null = null;
+    let tipoCambio: number | null = null;
+    let precioFinal = Number(createDto.precio_final) || 0; // base imponible CRC
+    let ivaMonto = +(precioFinal * (ivaPct / 100)).toFixed(2);
+    let totalConIva = +(precioFinal * divisor).toFixed(2);
+    let precioLista = createDto.precio_lista ?? createDto.precio_final;
+
+    if (createDto.precio_venta_usd && Number(createDto.precio_venta_usd) > 0) {
+      precioVentaUsd = Number(createDto.precio_venta_usd);
+      tipoCambio = await this.tipoCambioService.getVenta(); // TC de venta de hoy (se congela)
+      if (!tipoCambio || tipoCambio <= 0) {
+        throw new NotFoundException('No hay tipo de cambio disponible para congelar el precio en dólares. Cargá el TC del día e intentá de nuevo.');
+      }
+      const totalCRC = Math.round(precioVentaUsd * tipoCambio); // total con IVA en CRC
+      precioFinal = Math.round(totalCRC / divisor);             // base imponible CRC
+      ivaMonto = totalCRC - precioFinal;                        // IVA CRC (cuadra al céntimo)
+      totalConIva = totalCRC;
+      precioLista = createDto.precio_lista ?? totalCRC;
+    }
+
     const nuevaCotizacion = this.cotizacionesRepository.create({
       cliente,
       vehiculo,
@@ -225,12 +256,14 @@ export class CotizacionesService {
       lead:             lead ?? undefined,
       vehiculo_descripcion: `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.año})`,
       color_solicitado: createDto.color_solicitado ?? '',
-      precio_lista:     createDto.precio_lista    ?? createDto.precio_final,
+      precio_lista:     precioLista,
       descuento_monto:  createDto.descuento_monto  ?? 0,
-      precio_final:     createDto.precio_final,
-      iva_porcentaje:   createDto.iva_porcentaje   ?? 13,
-      iva_monto:        +(createDto.precio_final * ((createDto.iva_porcentaje ?? 13) / 100)).toFixed(2),
-      total_con_iva:    +(createDto.precio_final * (1 + (createDto.iva_porcentaje ?? 13) / 100)).toFixed(2),
+      precio_final:     precioFinal,
+      precio_venta_usd: precioVentaUsd,
+      tipo_cambio:      tipoCambio,
+      iva_porcentaje:   ivaPct,
+      iva_monto:        ivaMonto,
+      total_con_iva:    totalConIva,
       fecha_expiracion: fechaExpiracion,
       gasto_marchamo:          createDto.gasto_marchamo          ?? 0,
       gasto_inscripcion:       createDto.gasto_inscripcion       ?? 0,
