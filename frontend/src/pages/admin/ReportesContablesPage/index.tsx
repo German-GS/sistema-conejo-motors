@@ -4,13 +4,13 @@ import toast from "react-hot-toast";
 import { LuBookOpen, LuDownload, LuCircleCheck, LuTriangleAlert } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
-const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
-const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "#64748b", textAlign: "left" };
+const card: React.CSSProperties = { background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1.25rem" };
+const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "var(--slate-500)", textAlign: "left" };
 const thR: React.CSSProperties = { ...th, textAlign: "right" };
-const td: React.CSSProperties = { padding: "6px 10px", color: "#334155", fontSize: "0.82rem" };
+const td: React.CSSProperties = { padding: "6px 10px", color: "var(--slate-700)", fontSize: "0.82rem" };
 const tdR: React.CSSProperties = { ...td, textAlign: "right" };
-const inp: React.CSSProperties = { padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" };
-const btnGreen: React.CSSProperties = { background: "#059669", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 };
+const inp: React.CSSProperties = { padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", fontFamily: "inherit" };
+const btnGreen: React.CSSProperties = { background: "var(--success)", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 };
 
 const hoy = () => new Date().toISOString().slice(0, 10);
 const inicioMes = () => hoy().slice(0, 8) + "01";
@@ -44,7 +44,7 @@ export const ReportesContablesPage = () => {
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
             style={{ padding: "0.5rem 1rem", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: "0.85rem",
-              border: tab === t.id ? "none" : "1.5px solid #e2e8f0", background: tab === t.id ? "#024f7d" : "#fff", color: tab === t.id ? "#fff" : "#475569" }}>
+              border: tab === t.id ? "none" : "1.5px solid var(--slate-200)", background: tab === t.id ? "var(--brand)" : "#fff", color: tab === t.id ? "#fff" : "var(--slate-600)" }}>
             {t.label}
           </button>
         ))}
@@ -68,10 +68,10 @@ const Balanza = () => {
   return (
     <div style={card}>
       <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap", marginBottom: "1rem" }}>
-        <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Al</label>
+        <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-600)" }}>Al</label>
         <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
         <button style={{ ...btnGreen, display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={() => descargar(`/reportes-contables/balanza/excel?hasta=${hasta}`, `Balanza-${hasta}.xlsx`)}><LuDownload size={16} /> Excel</button>
-        {data && <span style={{ marginLeft: "auto", fontWeight: 700, color: data.cuadra ? "#059669" : "#dc2626", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>{data.cuadra ? <><LuCircleCheck size={15} /> Cuadra</> : <><LuTriangleAlert size={15} /> No cuadra</>}</span>}
+        {data && <span style={{ marginLeft: "auto", fontWeight: 700, color: data.cuadra ? "var(--success)" : "var(--danger)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>{data.cuadra ? <><LuCircleCheck size={15} /> Cuadra</> : <><LuTriangleAlert size={15} /> No cuadra</>}</span>}
       </div>
       {data && (
         <div style={{ overflowX: "auto" }}>
@@ -79,7 +79,7 @@ const Balanza = () => {
             <thead><tr><th style={th}>Código</th><th style={th}>Cuenta</th><th style={thR}>Débitos</th><th style={thR}>Créditos</th><th style={thR}>Deudor</th><th style={thR}>Acreedor</th></tr></thead>
             <tbody>
               {data.cuentas.map((c: any) => (
-                <tr key={c.codigo} style={{ borderTop: "1px solid #f1f5f9" }}>
+                <tr key={c.codigo} style={{ borderTop: "1px solid var(--slate-100)" }}>
                   <td style={td}>{c.codigo}</td><td style={td}>{c.nombre}</td>
                   <td style={tdR}>{CRC(c.debe)}</td><td style={tdR}>{CRC(c.haber)}</td>
                   <td style={tdR}>{c.saldoDeudor ? CRC(c.saldoDeudor) : "—"}</td>
@@ -114,7 +114,7 @@ const Mayor = () => {
         <input style={{ ...inp, width: 100 }} placeholder="Código" value={codigo} onChange={(e) => setCodigo(e.target.value)} />
         <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
         <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
-        <button style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }} onClick={cargar}>Ver</button>
+        <button style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700 }} onClick={cargar}>Ver</button>
         <button style={{ ...btnGreen, display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={() => descargar(`/reportes-contables/mayor/excel?codigo=${codigo}&desde=${desde}&hasta=${hasta}`, `Mayor-${codigo}.xlsx`)}><LuDownload size={16} /> Excel</button>
       </div>
       {data && (
@@ -125,7 +125,7 @@ const Mayor = () => {
               <thead><tr><th style={th}>Fecha</th><th style={th}>Asiento</th><th style={th}>Descripción</th><th style={thR}>Debe</th><th style={thR}>Haber</th><th style={thR}>Saldo</th></tr></thead>
               <tbody>
                 {data.movimientos.map((m: any, i: number) => (
-                  <tr key={i} style={{ borderTop: "1px solid #f1f5f9" }}>
+                  <tr key={i} style={{ borderTop: "1px solid var(--slate-100)" }}>
                     <td style={td}>{m.fecha}</td><td style={td}>#{m.asiento}</td><td style={td}>{m.detalle || m.descripcion}</td>
                     <td style={tdR}>{m.debe ? CRC(m.debe) : "—"}</td><td style={tdR}>{m.haber ? CRC(m.haber) : "—"}</td>
                     <td style={tdR}>{CRC(m.saldo)}</td>
@@ -146,7 +146,7 @@ const Diario = () => {
   const [hasta, setHasta] = useState(hoy());
   return (
     <div style={card}>
-      <p style={{ fontSize: "0.85rem", color: "#64748b", marginTop: 0 }}>Exportá el libro diario (todos los asientos con sus líneas) del rango seleccionado.</p>
+      <p style={{ fontSize: "0.85rem", color: "var(--slate-500)", marginTop: 0 }}>Exportá el libro diario (todos los asientos con sus líneas) del rango seleccionado.</p>
       <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
         <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
         <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
@@ -179,7 +179,7 @@ const Aging = () => {
             <thead><tr><th style={th}>{tipo === "cxc" ? "Cliente" : "Proveedor"}</th>{data.tramos.map((t: string) => <th key={t} style={thR}>{t}</th>)}<th style={thR}>Total</th></tr></thead>
             <tbody>
               {data.entidades.map((e: any, i: number) => (
-                <tr key={i} style={{ borderTop: "1px solid #f1f5f9" }}>
+                <tr key={i} style={{ borderTop: "1px solid var(--slate-100)" }}>
                   <td style={td}>{e.entidad}</td>
                   {data.tramos.map((t: string) => <td key={t} style={tdR}>{e.tramos[t] ? CRC(e.tramos[t]) : "—"}</td>)}
                   <td style={{ ...tdR, fontWeight: 700 }}>{CRC(e.total)}</td>

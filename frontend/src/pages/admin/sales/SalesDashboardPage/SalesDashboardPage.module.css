@@ -3,11 +3,11 @@
 
 .loadingWrap {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 4rem; gap: 1rem; color: #64748b;
+  justify-content: center; padding: 4rem; gap: 1rem; color: var(--slate-500);
 }
 .spinner {
   width: 36px; height: 36px;
-  border: 3px solid #e2e8f0; border-top-color: #024f7d;
+  border: 3px solid var(--slate-200); border-top-color: var(--brand);
   border-radius: 50%; animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -23,7 +23,7 @@
 }
 
 .welcomeSub {
-  font-size: 0.85rem; color: #64748b; margin: 0;
+  font-size: 0.85rem; color: var(--slate-500); margin: 0;
   display: flex; align-items: center; gap: 0.75rem;
   text-transform: capitalize;
 }
@@ -35,13 +35,13 @@
 }
 
 .refreshBtn {
-  background: #f1f5f9; border: 1px solid #e2e8f0;
+  background: var(--slate-100); border: 1px solid var(--slate-200);
   border-radius: 6px; width: 30px; height: 30px;
-  font-size: 1.1rem; cursor: pointer; color: #475569;
+  font-size: 1.1rem; cursor: pointer; color: var(--slate-600);
   transition: background 0.15s;
   display: flex; align-items: center; justify-content: center;
 }
-.refreshBtn:hover { background: #e2e8f0; }
+.refreshBtn:hover { background: var(--slate-200); }
 
 /* ── KPIs ───────────────────────────────────────────────────────────────── */
 .kpiRow {
@@ -54,10 +54,10 @@
 @media (max-width: 768px)  { .kpiRow { grid-template-columns: repeat(2, 1fr); } }
 
 .kpi {
-  background: white; border: 1.5px solid #e2e8f0;
+  background: white; border: 1.5px solid var(--slate-200);
   border-radius: 12px; padding: 0.9rem 1rem;
   display: flex; align-items: center; gap: 0.75rem;
-  border-left: 4px solid var(--accent, #024f7d);
+  border-left: 4px solid var(--accent, var(--brand));
   transition: box-shadow 0.15s, transform 0.12s;
 }
 .kpiClickable { cursor: pointer; }
@@ -70,11 +70,11 @@
 .kpiValue { font-size: 1.3rem; font-weight: 800; color: var(--brand-dark); line-height: 1.1; }
 
 .kpiLabel {
-  font-size: 0.7rem; font-weight: 700; color: #64748b;
+  font-size: 0.7rem; font-weight: 700; color: var(--slate-500);
   text-transform: uppercase; letter-spacing: 0.04em;
 }
 
-.kpiSub { font-size: 0.68rem; color: #94a3b8; margin-top: 1px; }
+.kpiSub { font-size: 0.68rem; color: var(--slate-400); margin-top: 1px; }
 
 /* ── Grid principal ─────────────────────────────────────────────────────── */
 .mainGrid {
@@ -87,14 +87,14 @@
 
 /* ── Panel ──────────────────────────────────────────────────────────────── */
 .panel {
-  background: white; border: 1.5px solid #e2e8f0;
+  background: white; border: 1.5px solid var(--slate-200);
   border-radius: 14px; overflow: hidden;
 }
 
 .panelHeader {
   display: flex; align-items: center; gap: 0.5rem;
   padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--slate-100);
 }
 
 .panelTitle { font-size: 0.88rem; font-weight: 700; color: var(--brand-dark); }
@@ -113,7 +113,7 @@
 
 .emptyPanel {
   padding: 2rem; text-align: center;
-  color: #94a3b8; font-size: 0.85rem;
+  color: var(--slate-400); font-size: 0.85rem;
 }
 .emptyPanel span { font-size: 1.75rem; display: block; margin-bottom: 0.5rem; }
 .emptyPanel p { margin: 0; }
@@ -125,14 +125,14 @@
   max-height: 290px; overflow-y: auto;
 }
 .avatarList::-webkit-scrollbar { width: 4px; }
-.avatarList::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
+.avatarList::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 2px; }
 
 .avatarRow {
   display: flex; align-items: center; gap: 0.7rem;
   padding: 0.4rem 0.5rem; border-radius: 8px;
   transition: background 0.1s;
 }
-.avatarRow:hover { background: #f8fafc; }
+.avatarRow:hover { background: var(--slate-50); }
 .avatarMuted { opacity: 0.65; }
 
 .avatar {
@@ -157,7 +157,7 @@
 
 .avatarSub {
   display: flex; align-items: center; gap: 4px;
-  font-size: 0.71rem; color: #94a3b8; margin-top: 1px;
+  font-size: 0.71rem; color: var(--slate-400); margin-top: 1px;
 }
 
 .rolChip {
@@ -176,14 +176,14 @@
 
 .quickLink {
   display: flex; align-items: center; gap: 0.5rem;
-  background: white; border: 1.5px solid #e2e8f0;
+  background: white; border: 1.5px solid var(--slate-200);
   border-radius: 10px; padding: 0.65rem 1.1rem;
   font-size: 0.85rem; font-weight: 600; color: var(--brand-dark);
   cursor: pointer; transition: all 0.15s;
 }
 .quickLink:hover {
-  background: #024f7d; color: white;
-  border-color: #024f7d; transform: translateY(-2px);
+  background: var(--brand); color: white;
+  border-color: var(--brand); transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(2,79,125,0.25);
 }
 

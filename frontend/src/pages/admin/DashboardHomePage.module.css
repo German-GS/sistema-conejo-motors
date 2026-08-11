@@ -10,13 +10,13 @@
   justify-content: center;
   padding: 4rem;
   gap: 1rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .spinner {
   width: 36px; height: 36px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #024f7d;
+  border: 3px solid var(--slate-200);
+  border-top-color: var(--brand);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -39,7 +39,7 @@
 
 .welcomeSub {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--slate-500);
   margin: 0;
   text-transform: capitalize;
 }
@@ -52,21 +52,21 @@
 
 .lastUpdate {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--slate-400);
 }
 
 .refreshBtn {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--slate-100);
+  border: 1px solid var(--slate-200);
   border-radius: 6px;
   width: 30px; height: 30px;
   font-size: 1.1rem;
   cursor: pointer;
-  color: #475569;
+  color: var(--slate-600);
   transition: background 0.15s;
   display: flex; align-items: center; justify-content: center;
 }
-.refreshBtn:hover { background: #e2e8f0; }
+.refreshBtn:hover { background: var(--slate-200); }
 
 /* ── Layout principal: columna izquierda + columna derecha ──────────────── */
 .mainGrid {
@@ -113,9 +113,9 @@
 }
 
 .miniKpi {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-left: 3px solid var(--accent, #024f7d);
+  background: var(--slate-50);
+  border: 1.5px solid var(--slate-200);
+  border-left: 3px solid var(--accent, var(--brand));
   border-radius: 10px;
   padding: 0.65rem 0.75rem;
   display: flex;
@@ -148,14 +148,14 @@
 .miniKpiLabel {
   font-size: 0.68rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--slate-500);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .miniKpiSub {
   font-size: 0.65rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -164,7 +164,7 @@
 /* ── Panel genérico ─────────────────────────────────────────────────────── */
 .panel {
   background: white;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -174,7 +174,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--slate-100);
 }
 
 .panelTitle {
@@ -205,7 +205,7 @@
 .emptyPanel {
   padding: 2rem;
   text-align: center;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-size: 0.85rem;
 }
 .emptyPanel span { font-size: 1.75rem; display: block; margin-bottom: 0.5rem; }
@@ -229,7 +229,7 @@
   border-radius: 8px;
   transition: background 0.1s;
 }
-.avatarRow:hover { background: #f8fafc; }
+.avatarRow:hover { background: var(--slate-50); }
 
 .avatar {
   width: 30px; height: 30px;
@@ -259,7 +259,7 @@
 .avatarSub {
   display: block;
   font-size: 0.68rem;
-  color: #94a3b8;
+  color: var(--slate-400);
 }
 
 .statusDot {
@@ -285,7 +285,7 @@
 }
 .avatarRowAlmuerzo {
   background: #fffbeb;
-  border-left: 3px solid #f59e0b;
+  border-left: 3px solid var(--warning);
 }
 
 /* ── Ranking vendedores ─────────────────────────────────────────────────── */
@@ -327,14 +327,14 @@
 
 .rankBar {
   height: 5px;
-  background: #f1f5f9;
+  background: var(--slate-100);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .rankBarFill {
   height: 100%;
-  background: linear-gradient(90deg, #024f7d, #0891b2);
+  background: linear-gradient(90deg, var(--brand), var(--info));
   border-radius: 3px;
   transition: width 0.6s ease;
 }
@@ -342,13 +342,13 @@
 .rankCount {
   font-size: 0.85rem;
   font-weight: 800;
-  color: #024f7d;
+  color: var(--brand);
   min-width: 20px;
   text-align: right;
 }
 
 .rankIngresos {
-  font-size: 0.72rem; color: #059669; font-weight: 600; margin-top: 2px;
+  font-size: 0.72rem; color: var(--success); font-weight: 600; margin-top: 2px;
 }
 
 /* ── Responsive mobile ──────────────────────────────────────────────────── */

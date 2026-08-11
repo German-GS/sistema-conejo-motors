@@ -35,7 +35,7 @@ export const Breadcrumbs = () => {
   return (
     <nav
       aria-label="breadcrumb"
-      style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.4rem", fontSize: "0.82rem", color: "#94a3b8", marginBottom: "1rem" }}
+      style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.4rem", fontSize: "0.82rem", color: "var(--slate-400)", marginBottom: "1rem" }}
     >
       {segments.map((seg, i) => {
         const isLast = i === segments.length - 1;
@@ -45,9 +45,9 @@ export const Breadcrumbs = () => {
           <span key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             {i > 0 && <span style={{ opacity: 0.6 }}>›</span>}
             {isLast ? (
-              <span style={{ color: "#475569", fontWeight: 600 }}>{label}</span>
+              <span style={{ color: "var(--slate-600)", fontWeight: 600 }}>{label}</span>
             ) : (
-              <Link to={linkPathFor(segments, i)} style={{ color: "#94a3b8", textDecoration: "none" }}>
+              <Link to={linkPathFor(segments, i)} style={{ color: "var(--slate-400)", textDecoration: "none" }}>
                 {label}
               </Link>
             )}

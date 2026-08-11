@@ -39,10 +39,10 @@ const PLATAFORMA_ICONS: Record<string, IconType> = {
   Facebook: LuThumbsUp, Instagram: LuCamera, TikTok: LuMusic, Otro: LuMegaphone,
 };
 const PLATAFORMA_COLORS: Record<string, string> = {
-  Facebook: "#1877f2", Instagram: "#c13584", TikTok: "#010101", Otro: "#64748b",
+  Facebook: "#1877f2", Instagram: "#c13584", TikTok: "#010101", Otro: "var(--slate-500)",
 };
 const ESTADO_COLORS: Record<string, string> = {
-  Activa: "#16a34a", Pausada: "#f59e0b", Finalizada: "#64748b",
+  Activa: "#16a34a", Pausada: "var(--warning)", Finalizada: "var(--slate-500)",
 };
 
 const EMPTY_FORM = {

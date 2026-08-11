@@ -147,7 +147,7 @@ export const QuoteDetailsPage = () => {
               style={{
                 padding: "0.5rem 1rem",
                 background: "#fef2f2",
-                color: "#dc2626",
+                color: "var(--danger)",
                 border: "1.5px solid #fecaca",
                 borderRadius: "8px",
                 fontWeight: 700,
@@ -199,8 +199,8 @@ export const QuoteDetailsPage = () => {
             const dias = Math.ceil(ms / (1000 * 60 * 60 * 24));
             if (quote.estado !== 'Borrador' && quote.estado !== 'Enviada') return null;
             if (dias < 0) return <span style={{ color: "#ef4444", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Vencida</span>;
-            if (dias === 0) return <span style={{ color: "#f59e0b", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Vence hoy</span>;
-            return <span style={{ color: dias <= 1 ? "#f59e0b" : "#16a34a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuHourglass size={14} /> {dias} día(s) restante(s)</span>;
+            if (dias === 0) return <span style={{ color: "var(--warning)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuTriangleAlert size={14} /> Vence hoy</span>;
+            return <span style={{ color: dias <= 1 ? "var(--warning)" : "#16a34a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuHourglass size={14} /> {dias} día(s) restante(s)</span>;
           })()}
           {/* Botón extender — solo admin */}
           {rolActual === "Administrador" && ['Borrador', 'Enviada'].includes(quote.estado) && (
@@ -212,14 +212,14 @@ export const QuoteDetailsPage = () => {
                   disabled={extendiendo}
                   style={{
                     fontSize: "0.72rem", padding: "3px 10px",
-                    background: "#f0f9ff", border: "1.5px solid #0891b2",
+                    background: "#f0f9ff", border: "1.5px solid var(--info)",
                     color: "#0369a1", borderRadius: "6px", cursor: "pointer", fontWeight: 700
                   }}
                 >
                   +{d}d
                 </button>
               ))}
-              {extendiendo && <span style={{ fontSize: "0.72rem", color: "#64748b" }}>Guardando...</span>}
+              {extendiendo && <span style={{ fontSize: "0.72rem", color: "var(--slate-500)" }}>Guardando...</span>}
             </div>
           )}
         </div>
@@ -278,10 +278,10 @@ export const QuoteDetailsPage = () => {
       {quote.estado === "Cancelada" && quote.motivo_cancelacion && (
         <div style={{
           background: "#fef2f2", border: "1px solid #fecaca",
-          borderLeft: "4px solid #dc2626", borderRadius: "10px",
+          borderLeft: "4px solid var(--danger)", borderRadius: "10px",
           padding: "1rem 1.25rem", marginTop: "1rem",
         }}>
-          <strong style={{ color: "#dc2626", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBan size={15} /> Motivo de cancelación:</strong>
+          <strong style={{ color: "var(--danger)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBan size={15} /> Motivo de cancelación:</strong>
           <p style={{ margin: "0.35rem 0 0", color: "#7f1d1d", fontSize: "0.92rem" }}>
             {quote.motivo_cancelacion}
           </p>
@@ -316,7 +316,7 @@ export const QuoteDetailsPage = () => {
                 <strong style={{ display: "block", fontSize: "1rem", color: "var(--brand-dark)" }}>
                   Cancelar Cotización #{quote.id}
                 </strong>
-                <p style={{ margin: "3px 0 0", fontSize: "0.82rem", color: "#64748b" }}>
+                <p style={{ margin: "3px 0 0", fontSize: "0.82rem", color: "var(--slate-500)" }}>
                   {quote.cliente.nombre_completo} — {quote.vehiculo.marca} {quote.vehiculo.modelo}
                 </p>
               </div>
@@ -329,7 +329,7 @@ export const QuoteDetailsPage = () => {
             }}>
               <LuTriangleAlert size={16} /> Al cancelar, el vehículo quedará <strong>disponible</strong> nuevamente.
             </div>
-            <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#475569", marginBottom: "0.4rem" }}>
+            <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--slate-600)", marginBottom: "0.4rem" }}>
               Motivo de cancelación *
             </label>
             <textarea
@@ -339,7 +339,7 @@ export const QuoteDetailsPage = () => {
               onChange={(e) => setMotivoCancel(e.target.value)}
               autoFocus
               style={{
-                width: "100%", border: "1.5px solid #cbd5e1", borderRadius: "8px",
+                width: "100%", border: "1.5px solid var(--slate-300)", borderRadius: "8px",
                 padding: "0.65rem 0.8rem", fontSize: "0.9rem", fontFamily: "inherit",
                 resize: "vertical", boxSizing: "border-box",
               }}
@@ -350,8 +350,8 @@ export const QuoteDetailsPage = () => {
                 disabled={cancelando}
                 style={{
                   padding: "0.55rem 1.1rem", background: "white",
-                  border: "1.5px solid #e2e8f0", borderRadius: "8px",
-                  fontSize: "0.88rem", fontWeight: 600, color: "#475569", cursor: "pointer",
+                  border: "1.5px solid var(--slate-200)", borderRadius: "8px",
+                  fontSize: "0.88rem", fontWeight: 600, color: "var(--slate-600)", cursor: "pointer",
                 }}
               >
                 No, mantener
@@ -360,7 +360,7 @@ export const QuoteDetailsPage = () => {
                 onClick={handleCancelarDesdeDetalle}
                 disabled={cancelando || !motivoCancel.trim()}
                 style={{
-                  padding: "0.55rem 1.25rem", background: "#dc2626", color: "white",
+                  padding: "0.55rem 1.25rem", background: "var(--danger)", color: "white",
                   border: "none", borderRadius: "8px", fontSize: "0.88rem",
                   fontWeight: 700, cursor: "pointer", opacity: (cancelando || !motivoCancel.trim()) ? 0.5 : 1,
                 }}

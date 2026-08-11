@@ -96,7 +96,7 @@ export default function CajaChicaPage() {
                 {movimientos.map(m => (
                   <div key={m.id} className={styles.movRow}>
                     <div className={styles.movIcon} style={{ background: m.tipo === 'Ingreso' ? '#d1fae5' : '#fee2e2' }}>
-                      {m.tipo === 'Ingreso' ? <LuCirclePlus size={16} color="#059669" /> : <LuCircleMinus size={16} color="#ef4444" />}
+                      {m.tipo === 'Ingreso' ? <LuCirclePlus size={16} color="var(--success)" /> : <LuCircleMinus size={16} color="#ef4444" />}
                     </div>
                     <div className={styles.movInfo}>
                       <div className={styles.movDesc}>{m.descripcion}</div>

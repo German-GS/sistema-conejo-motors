@@ -6,7 +6,7 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #024f7d;
+  background: var(--brand);
   color: white;
   font-size: 1.3rem;
   border: none;
@@ -72,7 +72,7 @@
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
 .header {
-  background: #024f7d;
+  background: var(--brand);
   color: white;
   padding: 0.75rem 1rem;
   display: flex;
@@ -126,11 +126,11 @@
   scroll-behavior: smooth;
 }
 .messages::-webkit-scrollbar { width: 4px; }
-.messages::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
+.messages::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 2px; }
 
 .empty {
   text-align: center;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-size: 0.82rem;
   margin: auto;
   line-height: 1.6;
@@ -139,7 +139,7 @@
 .dateDivider {
   text-align: center;
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   margin: 0.75rem 0 0.5rem;
   text-transform: capitalize;
   position: relative;
@@ -150,7 +150,7 @@
   top: 50%;
   width: 28%;
   height: 1px;
-  background: #e2e8f0;
+  background: var(--slate-200);
 }
 .dateDivider::before { left: 0; }
 .dateDivider::after  { right: 0; }
@@ -189,14 +189,14 @@
 /* ── Burbuja ─────────────────────────────────────────────────────────────── */
 .bubble {
   max-width: 72%;
-  background: #f1f5f9;
+  background: var(--slate-100);
   border-radius: 14px 14px 14px 4px;
   padding: 0.45rem 0.75rem 0.35rem;
   position: relative;
 }
 
 .msgRow.own .bubble {
-  background: #024f7d;
+  background: var(--brand);
   border-radius: 14px 14px 4px 14px;
 }
 
@@ -206,12 +206,12 @@
   gap: 4px;
   font-size: 0.7rem;
   font-weight: 700;
-  color: #0891b2;
+  color: var(--info);
   margin-bottom: 2px;
 }
 
 .rolBadge {
-  background: #0891b2;
+  background: var(--info);
   color: white;
   font-size: 0.6rem;
   padding: 0 5px;
@@ -235,7 +235,7 @@
 .msgTime {
   display: block;
   font-size: 0.64rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   text-align: right;
   margin-top: 2px;
 }
@@ -249,7 +249,7 @@
   display: flex;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  border-top: 1.5px solid #f1f5f9;
+  border-top: 1.5px solid var(--slate-100);
   flex-shrink: 0;
   background: white;
 }
@@ -257,19 +257,19 @@
 .input {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 20px;
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.15s;
   font-family: inherit;
 }
-.input:focus { border-color: #024f7d; }
+.input:focus { border-color: var(--brand); }
 
 .sendBtn {
   width: 36px;
   height: 36px;
-  background: #024f7d;
+  background: var(--brand);
   color: white;
   border: none;
   border-radius: 50%;

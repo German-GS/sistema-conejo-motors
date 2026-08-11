@@ -19,7 +19,7 @@
   font-size: clamp(1.6rem, 4vw, 2.6rem);
   color: var(--brand-dark); font-weight: 900; margin: 0 0 0.5rem;
 }
-.pageHeader p { color: #64748b; font-size: 1rem; margin: 0; }
+.pageHeader p { color: var(--slate-500); font-size: 1rem; margin: 0; }
 
 /* ── Selectores ─────────────────────────────────────────────────────────── */
 .selectorsGrid {
@@ -31,7 +31,7 @@
 
 .selectorCard {
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--slate-200);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
@@ -57,7 +57,7 @@
   color: var(--brand-dark); margin: 0 0 2px;
 }
 .selectorYear {
-  font-size: 0.75rem; color: #94a3b8;
+  font-size: 0.75rem; color: var(--slate-400);
   display: block; margin-bottom: 4px;
 }
 .selectorPrice {
@@ -74,21 +74,21 @@
   padding: 0.75rem 1rem 0;
 }
 .selectorChangBtn {
-  flex: 1; padding: 0.4rem; background: #f1f5f9;
-  border: 1.5px solid #e2e8f0; border-radius: 7px;
-  font-size: 0.8rem; font-weight: 600; color: #475569;
+  flex: 1; padding: 0.4rem; background: var(--slate-100);
+  border: 1.5px solid var(--slate-200); border-radius: 7px;
+  font-size: 0.8rem; font-weight: 600; color: var(--slate-600);
   cursor: pointer; transition: all 0.15s;
 }
-.selectorChangBtn:hover { background: #e2e8f0; }
+.selectorChangBtn:hover { background: var(--slate-200); }
 .selectorRemoveBtn {
   width: 34px; height: 34px;
   background: #fef2f2; border: 1.5px solid #fecaca;
-  border-radius: 7px; color: #dc2626;
+  border-radius: 7px; color: var(--danger);
   font-size: 0.9rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
 }
-.selectorRemoveBtn:hover { background: #dc2626; color: white; }
+.selectorRemoveBtn:hover { background: var(--danger); color: white; }
 
 .selectorCtas {
   padding: 0.75rem 1rem 1rem;
@@ -104,7 +104,7 @@
 .ctaTest {
   display: block; text-align: center;
   padding: 0.5rem 1rem; border-radius: 8px;
-  color: #024f7d; font-weight: 600; font-size: 0.8rem;
+  color: var(--brand); font-weight: 600; font-size: 0.8rem;
   text-decoration: none; background: #f0f9ff;
   border: 1.5px solid #bae6fd; transition: background 0.15s;
 }
@@ -114,20 +114,20 @@
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   flex: 1; gap: 0.5rem; cursor: pointer;
-  border: 2px dashed #e2e8f0; border-radius: 12px;
+  border: 2px dashed var(--slate-200); border-radius: 12px;
   margin: 1rem; transition: border-color 0.2s, background 0.2s;
   padding: 2rem;
 }
-.emptySelector:hover { border-color: #024f7d; background: #f8fafc; }
+.emptySelector:hover { border-color: var(--brand); background: var(--slate-50); }
 .emptyIcon {
   width: 48px; height: 48px; border-radius: 50%;
-  background: #f1f5f9; display: flex;
+  background: var(--slate-100); display: flex;
   align-items: center; justify-content: center;
-  font-size: 1.5rem; color: #94a3b8;
+  font-size: 1.5rem; color: var(--slate-400);
   transition: background 0.2s;
 }
-.emptySelector:hover .emptyIcon { background: #e0f2fe; color: #024f7d; }
-.emptySelector span { font-size: 0.88rem; color: #94a3b8; font-weight: 600; }
+.emptySelector:hover .emptyIcon { background: #e0f2fe; color: var(--brand); }
+.emptySelector span { font-size: 0.88rem; color: var(--slate-400); font-weight: 600; }
 
 /* ── Métricas de impacto ────────────────────────────────────────────────── */
 .impactSection {
@@ -137,7 +137,7 @@
 
 .impactBlock {
   background: white;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 16px;
   padding: 1.75rem;
 }
@@ -147,7 +147,7 @@
 }
 .impactIcon { font-size: 1.75rem; line-height: 1; flex-shrink: 0; }
 .impactHeader h3 { font-size: 1.05rem; font-weight: 800; color: var(--brand-dark); margin: 0 0 4px; }
-.impactHeader p  { font-size: 0.8rem; color: #64748b; margin: 0; }
+.impactHeader p  { font-size: 0.8rem; color: var(--slate-500); margin: 0; }
 
 .impactCols {
   display: grid;
@@ -159,9 +159,9 @@
 
 /* Barras */
 .barWrap { display: flex; flex-direction: column; gap: 4px; }
-.barLabel { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+.barLabel { font-size: 0.75rem; color: var(--slate-500); font-weight: 600; }
 .barTrack {
-  height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;
+  height: 8px; background: var(--slate-100); border-radius: 4px; overflow: hidden;
 }
 .barFill {
   height: 100%; border-radius: 4px;
@@ -169,8 +169,8 @@
 }
 .barValue { font-size: 0.75rem; font-weight: 700; color: var(--brand-dark); }
 
-.noData { font-size: 0.78rem; color: #94a3b8; margin: 0; }
-.impactNote { font-size: 0.73rem; color: #94a3b8; margin: 1rem 0 0; font-style: italic; }
+.noData { font-size: 0.78rem; color: var(--slate-400); margin: 0; }
+.impactNote { font-size: 0.73rem; color: var(--slate-400); margin: 1rem 0 0; font-style: italic; }
 
 /* Costo por carga */
 .costGrid {
@@ -179,12 +179,12 @@
   gap: 1.25rem;
 }
 .costCard {
-  border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden;
+  border: 1.5px solid var(--slate-200); border-radius: 12px; overflow: hidden;
 }
 .costCardHeader {
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.75rem 1rem;
-  background: #f8fafc;
+  background: var(--slate-50);
   border-left: 4px solid;
   font-size: 0.85rem;
 }
@@ -198,18 +198,18 @@
   flex: 1; padding: 0.85rem; display: flex; flex-direction: column; gap: 3px;
   font-size: 0.78rem;
 }
-.costItem span { color: #64748b; font-size: 0.72rem; }
+.costItem span { color: var(--slate-500); font-size: 0.72rem; }
 .costItem strong { font-size: 1rem; font-weight: 800; }
-.costItem small { font-size: 0.68rem; color: #94a3b8; }
+.costItem small { font-size: 0.68rem; color: var(--slate-400); }
 .costElec { background: rgba(0,199,177,0.05); }
 .costElec strong { color: #00897b; }
 .costGas  { background: rgba(239,68,68,0.04); }
-.costGas strong  { color: #dc2626; }
+.costGas strong  { color: var(--danger); }
 .costVs {
   display: flex; align-items: center;
-  font-size: 0.7rem; font-weight: 800; color: #94a3b8;
+  font-size: 0.7rem; font-weight: 800; color: var(--slate-400);
   padding: 0 0.25rem; background: white;
-  border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;
+  border-left: 1px solid var(--slate-100); border-right: 1px solid var(--slate-100);
 }
 .costSavings {
   padding: 0.5rem 0.85rem;
@@ -231,17 +231,17 @@
 }
 .filterBtn {
   padding: 0.35rem 0.85rem;
-  background: #f8fafc; border: 1.5px solid #e2e8f0;
+  background: var(--slate-50); border: 1.5px solid var(--slate-200);
   border-radius: 20px; font-size: 0.78rem; font-weight: 600;
-  color: #475569; cursor: pointer; transition: all 0.15s;
+  color: var(--slate-600); cursor: pointer; transition: all 0.15s;
   font-family: inherit;
 }
-.filterBtn:hover { border-color: #024f7d; color: #024f7d; }
-.filterActive { background: #024f7d !important; color: white !important; border-color: #024f7d !important; }
+.filterBtn:hover { border-color: var(--brand); color: var(--brand); }
+.filterActive { background: var(--brand) !important; color: white !important; border-color: var(--brand) !important; }
 
 .tableWrap {
   overflow-x: auto; -webkit-overflow-scrolling: touch;
-  border-radius: 12px; border: 1.5px solid #e2e8f0;
+  border-radius: 12px; border: 1.5px solid var(--slate-200);
 }
 .compareTable {
   width: 100%; min-width: 520px; border-collapse: collapse; font-size: 0.88rem;
@@ -256,7 +256,7 @@
 .featureCol {
   min-width: 140px; text-align: left;
   padding: 1rem 1.1rem; font-size: 0.75rem; font-weight: 700;
-  color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.04em;
   background: white;
 }
 .vehicleCol { padding: 0.75rem 0.85rem; text-align: center; }
@@ -267,8 +267,8 @@
   width: 80px; height: 52px; object-fit: cover; border-radius: 6px;
 }
 .thName { font-size: 0.82rem; font-weight: 800; color: var(--brand-dark); }
-.thPrice { font-size: 0.78rem; color: #64748b; }
-.thEmpty { color: #cbd5e1; font-size: 1.25rem; }
+.thPrice { font-size: 0.78rem; color: var(--slate-500); }
+.thEmpty { color: var(--slate-300); font-size: 1.25rem; }
 
 /* Filas de datos */
 .sectionRow td {
@@ -278,16 +278,16 @@
   letter-spacing: 0.05em; text-transform: uppercase;
   border: none;
 }
-.dataRow td { border-bottom: 1px solid #f1f5f9; }
-.dataRow:hover td { background: #f8fafc; }
+.dataRow td { border-bottom: 1px solid var(--slate-100); }
+.dataRow:hover td { background: var(--slate-50); }
 .featureCell {
   text-align: left; padding: 0.75rem 1.1rem;
-  font-size: 0.82rem; font-weight: 600; color: #475569;
+  font-size: 0.82rem; font-weight: 600; color: var(--slate-600);
   position: sticky; left: 0; background: white; z-index: 1;
   box-shadow: 2px 0 4px rgba(0,0,0,0.04);
   min-width: 140px;
 }
-.dataRow:hover .featureCell { background: #f8fafc; }
+.dataRow:hover .featureCell { background: var(--slate-50); }
 
 .dataCell {
   text-align: center; padding: 0.75rem 0.85rem;
@@ -307,7 +307,7 @@
   margin-right: 4px; vertical-align: middle;
 }
 .legend {
-  font-size: 0.75rem; color: #94a3b8; margin: 0.75rem 0 0;
+  font-size: 0.75rem; color: var(--slate-400); margin: 0.75rem 0 0;
   display: flex; align-items: center; gap: 6px;
 }
 .legendDot {
@@ -321,14 +321,14 @@
   gap: 1.25rem;
 }
 .finalCtaCard {
-  background: white; border: 2px solid #e2e8f0; border-radius: 14px;
+  background: white; border: 2px solid var(--slate-200); border-radius: 14px;
   padding: 1.5rem; text-align: center;
   display: flex; flex-direction: column; gap: 0.5rem;
   transition: box-shadow 0.2s;
 }
 .finalCtaCard:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
 .finalCtaModel { font-size: 0.9rem; font-weight: 800; color: var(--brand-dark); margin: 0; }
-.finalCtaPrice { font-size: 1.05rem; font-weight: 800; color: #64748b; margin: 0; }
+.finalCtaPrice { font-size: 1.05rem; font-weight: 800; color: var(--slate-500); margin: 0; }
 .finalCtaBtn {
   display: block; padding: 0.75rem 1rem; border-radius: 9px;
   color: white; font-weight: 800; font-size: 0.9rem;
@@ -338,7 +338,7 @@
 .finalCtaBtn:hover { opacity: 0.88; transform: translateY(-1px); }
 .finalCtaBtnSec {
   display: block; padding: 0.6rem 1rem; border-radius: 9px;
-  color: #024f7d; font-weight: 600; font-size: 0.85rem;
+  color: var(--brand); font-weight: 600; font-size: 0.85rem;
   text-decoration: none; background: #f0f9ff;
   border: 1.5px solid #bae6fd; transition: background 0.15s;
 }
@@ -359,9 +359,9 @@
 .modalItem img { width: 96px; height: 60px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
 .modalItemInfo { flex: 1; min-width: 0; }
 .modalItemInfo h4 { margin: 0 0 3px; font-size: 0.9rem; color: var(--brand-dark); font-weight: 700; }
-.modalItemInfo p  { margin: 0 0 3px; font-size: 0.85rem; color: #64748b; font-weight: 600; }
+.modalItemInfo p  { margin: 0 0 3px; font-size: 0.85rem; color: var(--slate-500); font-weight: 600; }
 .modalItemInfo span { font-size: 0.75rem; color: #00897b; font-weight: 600; }
-.modalArrow { color: #94a3b8; font-size: 1rem; flex-shrink: 0; }
+.modalArrow { color: var(--slate-400); font-size: 1rem; flex-shrink: 0; }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
@@ -387,5 +387,5 @@
   .thImg { width: 60px; height: 40px; }
   .thName { font-size: 0.72rem; }
   .costRow { flex-direction: column; }
-  .costVs { padding: 0.25rem; border-left: none; border-right: none; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+  .costVs { padding: 0.25rem; border-left: none; border-right: none; border-top: 1px solid var(--slate-100); border-bottom: 1px solid var(--slate-100); }
 }

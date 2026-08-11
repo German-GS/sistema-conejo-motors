@@ -4,12 +4,12 @@ import toast from "react-hot-toast";
 import { LuBanknote, LuUpload, LuLink } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
-const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
-const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "#64748b", textAlign: "left" };
+const card: React.CSSProperties = { background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1.25rem" };
+const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "var(--slate-500)", textAlign: "left" };
 const thR: React.CSSProperties = { ...th, textAlign: "right" };
-const td: React.CSSProperties = { padding: "6px 10px", color: "#334155", fontSize: "0.82rem" };
+const td: React.CSSProperties = { padding: "6px 10px", color: "var(--slate-700)", fontSize: "0.82rem" };
 const tdR: React.CSSProperties = { ...td, textAlign: "right" };
-const inp: React.CSSProperties = { padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" };
+const inp: React.CSSProperties = { padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", fontFamily: "inherit" };
 const hoy = () => new Date().toISOString().slice(0, 10);
 const inicioMes = () => hoy().slice(0, 8) + "01";
 
@@ -85,10 +85,10 @@ export const ConciliacionPage = () => {
           <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
           <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) importar(f); }} />
-          <button disabled={busy} onClick={() => fileRef.current?.click()} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUpload size={16} /> Importar extracto (CSV)</button>
-          <button disabled={busy} onClick={conciliar} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLink size={16} /> Conciliar automáticamente</button>
+          <button disabled={busy} onClick={() => fileRef.current?.click()} style={{ background: "#fff", border: "1.5px solid var(--brand)", color: "var(--brand)", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUpload size={16} /> Importar extracto (CSV)</button>
+          <button disabled={busy} onClick={conciliar} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLink size={16} /> Conciliar automáticamente</button>
         </div>
-        <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: "0.6rem 0 0" }}>
+        <p style={{ fontSize: "0.75rem", color: "var(--slate-400)", margin: "0.6rem 0 0" }}>
           CSV: <code>fecha,descripcion,monto,referencia</code> — monto firmado (+ entrada / − salida). Ej: <code>2026-05-10,Depósito cliente,150000,REF123</code>
         </p>
       </div>
@@ -97,13 +97,13 @@ export const ConciliacionPage = () => {
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
             {[
-              ["Saldo según libros", rep.saldoLibros, "#024f7d"],
+              ["Saldo según libros", rep.saldoLibros, "var(--brand)"],
               ["(−) En libros no en banco", rep.partidasLibrosNoBanco, "#b45309"],
               ["(+) En banco no en libros", rep.partidasBancoNoLibros, "#b45309"],
-              ["= Saldo según banco", rep.saldoBanco, "#059669"],
+              ["= Saldo según banco", rep.saldoBanco, "var(--success)"],
             ].map(([l, v, c]) => (
               <div key={l as string} style={{ ...card, padding: "0.9rem 1rem" }}>
-                <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{l as string}</div>
+                <div style={{ fontSize: "0.72rem", color: "var(--slate-500)" }}>{l as string}</div>
                 <div style={{ fontSize: "1.15rem", fontWeight: 800, color: c as string }}>{CRC(v as number)}</div>
               </div>
             ))}
@@ -117,7 +117,7 @@ export const ConciliacionPage = () => {
                 <tbody>
                   {rep.enLibrosNoEnBanco.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. ✓</td></tr>}
                   {rep.enLibrosNoEnBanco.map((l: any) => (
-                    <tr key={l.lineaId} style={{ borderTop: "1px solid #f1f5f9" }}>
+                    <tr key={l.lineaId} style={{ borderTop: "1px solid var(--slate-100)" }}>
                       <td style={td}>{l.fecha}</td><td style={td}>#{l.asientoId}</td><td style={td}>{l.descripcion}</td>
                       <td style={tdR}>{CRC(l.monto)}</td>
                     </tr>
@@ -135,11 +135,11 @@ export const ConciliacionPage = () => {
                 <tbody>
                   {rep.enBancoNoEnLibros.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. ✓</td></tr>}
                   {rep.enBancoNoEnLibros.map((m: any) => (
-                    <tr key={m.id} style={{ borderTop: "1px solid #f1f5f9" }}>
+                    <tr key={m.id} style={{ borderTop: "1px solid var(--slate-100)" }}>
                       <td style={td}>{m.fecha}</td><td style={td}>{m.descripcion}</td>
-                      <td style={{ ...tdR, color: m.monto < 0 ? "#dc2626" : "#059669" }}>{CRC(m.monto)}</td>
+                      <td style={{ ...tdR, color: m.monto < 0 ? "var(--danger)" : "var(--success)" }}>{CRC(m.monto)}</td>
                       <td style={tdR}>
-                        <button onClick={() => crearAsiento(m.id)} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.75rem" }}>
+                        <button onClick={() => crearAsiento(m.id)} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.75rem" }}>
                           Crear asiento
                         </button>
                       </td>

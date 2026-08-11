@@ -25,7 +25,7 @@ const setLastSeen = (id: number) =>
   localStorage.setItem(STORAGE_KEY, String(id));
 
 const AVATAR_COLORS = [
-  "#024f7d","#0891b2","#059669","#7c3aed","#db2777","#d97706","#dc2626",
+  "var(--brand)","var(--info)","var(--success)","#7c3aed","#db2777","#d97706","var(--danger)",
 ];
 const avatarColor = (name: string) =>
   AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];

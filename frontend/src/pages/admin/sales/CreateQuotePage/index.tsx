@@ -209,9 +209,9 @@ export const CreateQuotePage = () => {
             type="button"
             onClick={() => setMonedaVenta(m => (m === "USD" ? "CRC" : "USD"))}
             style={{
-              background: monedaVenta === "USD" ? "#024f7d" : "#fff",
-              color: monedaVenta === "USD" ? "#fff" : "#024f7d",
-              border: "2px solid #024f7d", borderRadius: 10, padding: "0.5rem 1.1rem",
+              background: monedaVenta === "USD" ? "var(--brand)" : "#fff",
+              color: monedaVenta === "USD" ? "#fff" : "var(--brand)",
+              border: "2px solid var(--brand)", borderRadius: 10, padding: "0.5rem 1.1rem",
               fontWeight: 800, fontSize: "0.95rem", cursor: "pointer",
             }}
           >

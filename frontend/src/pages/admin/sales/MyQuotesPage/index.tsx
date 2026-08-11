@@ -31,12 +31,12 @@ const fmtCRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
 
 const ESTADO_COLORS: Record<string, string> = {
-  Borrador:   "#0891b2",
+  Borrador:   "var(--info)",
   Enviada:    "#3b82f6",
   Aceptada:   "#10b981",
   Rechazada:  "#ef4444",
   Facturada:  "#8b5cf6",
-  Cancelada:  "#dc2626",
+  Cancelada:  "var(--danger)",
 };
 
 /** "Borrador" se muestra como "Generada" en toda la UI */
@@ -280,7 +280,7 @@ export const MyQuotesPage = () => {
                       <td>
                         <span
                           className={styles.statusBadge}
-                          style={{ background: ESTADO_COLORS[q.estado] ?? "#64748b" }}
+                          style={{ background: ESTADO_COLORS[q.estado] ?? "var(--slate-500)" }}
                         >
                           {labelEstado(q.estado)}
                         </span>

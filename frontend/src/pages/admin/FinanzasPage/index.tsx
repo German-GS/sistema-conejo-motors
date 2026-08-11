@@ -23,10 +23,10 @@ const CRC = (v: number) =>
   "₡" + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(v || 0);
 
 const Kpi = ({ label, value, color, sub }: { label: React.ReactNode; value: string; color: string; sub?: string }) => (
-  <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderLeft: `4px solid ${color}`, borderRadius: 12, padding: "1rem 1.25rem", flex: "1 1 200px" }}>
-    <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem" }}>{label}</div>
+  <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderLeft: `4px solid ${color}`, borderRadius: 12, padding: "1rem 1.25rem", flex: "1 1 200px" }}>
+    <div style={{ fontSize: "0.8rem", color: "var(--slate-500)", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem" }}>{label}</div>
     <div style={{ fontSize: "1.5rem", fontWeight: 800, color, marginTop: 4 }}>{value}</div>
-    {sub && <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 2 }}>{sub}</div>}
+    {sub && <div style={{ fontSize: "0.75rem", color: "var(--slate-400)", marginTop: 2 }}>{sub}</div>}
   </div>
 );
 
@@ -47,19 +47,19 @@ export default function FinanzasPage() {
   return (
     <div>
       <h1 style={{ marginBottom: "0.25rem" }}>Resumen Financiero</h1>
-      <p style={{ color: "#64748b", marginBottom: "1.25rem" }}>
+      <p style={{ color: "var(--slate-500)", marginBottom: "1.25rem" }}>
         Posición de caja, cuentas por cobrar/pagar y flujo de caja proyectado.
       </p>
 
       {/* KPIs principales */}
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
-        <Kpi label={<><LuWallet size={14} /> Caja y Bancos</>} value={CRC(r.saldoCajaBancos)} color="#024f7d" />
-        <Kpi label={<><LuDownload size={14} /> Por Cobrar (CxC)</>} value={CRC(r.porCobrar)} color="#059669"
+        <Kpi label={<><LuWallet size={14} /> Caja y Bancos</>} value={CRC(r.saldoCajaBancos)} color="var(--brand)" />
+        <Kpi label={<><LuDownload size={14} /> Por Cobrar (CxC)</>} value={CRC(r.porCobrar)} color="var(--success)"
           sub={`${r.cuentas.cxcAbiertas} cuenta(s)${r.cuentas.cxcVencidas > 0 ? ` · ⚠️ ${r.cuentas.cxcVencidas} vencidas` : ""}`} />
-        <Kpi label={<><LuUpload size={14} /> Por Pagar (CxP)</>} value={CRC(r.porPagar)} color="#dc2626"
+        <Kpi label={<><LuUpload size={14} /> Por Pagar (CxP)</>} value={CRC(r.porPagar)} color="var(--danger)"
           sub={`${r.cuentas.cxpAbiertas} cuenta(s)${r.cuentas.cxpVencidas > 0 ? ` · ⚠️ ${r.cuentas.cxpVencidas} vencidas` : ""}`} />
         <Kpi label={<><LuChartColumnStacked size={14} /> Flujo Proyectado</>} value={CRC(r.flujoProyectado)}
-          color={r.flujoProyectado >= 0 ? "#059669" : "#dc2626"}
+          color={r.flujoProyectado >= 0 ? "var(--success)" : "var(--danger)"}
           sub="Caja + por cobrar − por pagar" />
       </div>
 
@@ -68,7 +68,7 @@ export default function FinanzasPage() {
         <Card title={<><LuCalendarDays size={16} /> Flujo de caja proyectado</>}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
             <thead>
-              <tr style={{ textAlign: "left", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>
+              <tr style={{ textAlign: "left", color: "var(--slate-500)", borderBottom: "1px solid var(--slate-200)" }}>
                 <th style={{ padding: "8px 6px" }}>Horizonte</th>
                 <th style={{ padding: "8px 6px", textAlign: "right" }}>Por cobrar</th>
                 <th style={{ padding: "8px 6px", textAlign: "right" }}>Por pagar</th>
@@ -76,17 +76,17 @@ export default function FinanzasPage() {
               </tr>
             </thead>
             <tbody>
-              <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <tr style={{ borderBottom: "1px solid var(--slate-100)" }}>
                 <td style={{ padding: "8px 6px" }}>Próximos 7 días</td>
-                <td style={{ padding: "8px 6px", textAlign: "right", color: "#059669" }}>{CRC(r.proyeccion.dias7.cobrar)}</td>
-                <td style={{ padding: "8px 6px", textAlign: "right", color: "#dc2626" }}>{CRC(r.proyeccion.dias7.pagar)}</td>
-                <td style={{ padding: "8px 6px", textAlign: "right", fontWeight: 700, color: r.proyeccion.dias7.neto >= 0 ? "#059669" : "#dc2626" }}>{CRC(r.proyeccion.dias7.neto)}</td>
+                <td style={{ padding: "8px 6px", textAlign: "right", color: "var(--success)" }}>{CRC(r.proyeccion.dias7.cobrar)}</td>
+                <td style={{ padding: "8px 6px", textAlign: "right", color: "var(--danger)" }}>{CRC(r.proyeccion.dias7.pagar)}</td>
+                <td style={{ padding: "8px 6px", textAlign: "right", fontWeight: 700, color: r.proyeccion.dias7.neto >= 0 ? "var(--success)" : "var(--danger)" }}>{CRC(r.proyeccion.dias7.neto)}</td>
               </tr>
               <tr>
                 <td style={{ padding: "8px 6px" }}>Próximos 30 días</td>
-                <td style={{ padding: "8px 6px", textAlign: "right", color: "#059669" }}>{CRC(r.proyeccion.dias30.cobrar)}</td>
-                <td style={{ padding: "8px 6px", textAlign: "right", color: "#dc2626" }}>{CRC(r.proyeccion.dias30.pagar)}</td>
-                <td style={{ padding: "8px 6px", textAlign: "right", fontWeight: 700, color: r.proyeccion.dias30.neto >= 0 ? "#059669" : "#dc2626" }}>{CRC(r.proyeccion.dias30.neto)}</td>
+                <td style={{ padding: "8px 6px", textAlign: "right", color: "var(--success)" }}>{CRC(r.proyeccion.dias30.cobrar)}</td>
+                <td style={{ padding: "8px 6px", textAlign: "right", color: "var(--danger)" }}>{CRC(r.proyeccion.dias30.pagar)}</td>
+                <td style={{ padding: "8px 6px", textAlign: "right", fontWeight: 700, color: r.proyeccion.dias30.neto >= 0 ? "var(--success)" : "var(--danger)" }}>{CRC(r.proyeccion.dias30.neto)}</td>
               </tr>
             </tbody>
           </table>
@@ -95,15 +95,15 @@ export default function FinanzasPage() {
         {/* Vencidos */}
         <Card title={<><LuTriangleAlert size={16} /> Vencimientos</>}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", fontSize: "0.9rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid var(--slate-100)" }}>
               <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuDownload size={14} /> CxC vencidas</span>
-              <strong style={{ color: r.cuentas.cxcVencidas > 0 ? "#dc2626" : "#059669" }}>
+              <strong style={{ color: r.cuentas.cxcVencidas > 0 ? "var(--danger)" : "var(--success)" }}>
                 {r.cuentas.cxcVencidas} · {CRC(r.cuentas.montoCxcVencidas)}
               </strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0" }}>
               <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}><LuUpload size={14} /> CxP vencidas</span>
-              <strong style={{ color: r.cuentas.cxpVencidas > 0 ? "#dc2626" : "#059669" }}>
+              <strong style={{ color: r.cuentas.cxpVencidas > 0 ? "var(--danger)" : "var(--success)" }}>
                 {r.cuentas.cxpVencidas} · {CRC(r.cuentas.montoCxpVencidas)}
               </strong>
             </div>

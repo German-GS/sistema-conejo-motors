@@ -267,7 +267,7 @@
   font-size: 0.85rem;
   transition: background 0.15s;
 }
-.logoutButton:hover { background: #f1f5f9; }
+.logoutButton:hover { background: var(--slate-100); }
 
 /* Contenido */
 .content { flex: 1; padding: 2rem; overflow-y: auto; }
@@ -283,7 +283,7 @@
   border-radius: 6px;
   transition: background 0.15s;
 }
-.hamburger:hover { background: #f1f5f9; }
+.hamburger:hover { background: var(--slate-100); }
 
 /* ── Backdrop (solo tablet/móvil) ── */
 .backdrop {
@@ -425,4 +425,4 @@
   transition: background 0.15s;
 }
 .notificationItem:last-child { border-bottom: none; }
-.notificationItem:hover { background: #f8fafc; }
+.notificationItem:hover { background: var(--slate-50); }

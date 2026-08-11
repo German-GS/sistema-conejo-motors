@@ -160,7 +160,7 @@ export const SalesLayout = () => {
                 title="Volver al panel de administrador"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                  background: "#024f7d", border: "none", color: "#fff",
+                  background: "var(--brand)", border: "none", color: "#fff",
                   borderRadius: 8, padding: "0.45rem 0.85rem", cursor: "pointer",
                   fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap",
                 }}
@@ -171,11 +171,11 @@ export const SalesLayout = () => {
             <button
               onClick={() => window.dispatchEvent(new Event("global-search:open"))}
               title="Buscar (⌘/Ctrl + K)"
-              style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.4rem 0.7rem", cursor: "pointer", color: "#64748b", fontSize: "0.85rem" }}
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "var(--slate-100)", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.4rem 0.7rem", cursor: "pointer", color: "var(--slate-500)", fontSize: "0.85rem" }}
             >
               <LuSearch size={16} />
               <span>Buscar</span>
-              <span style={{ fontSize: "0.7rem", border: "1px solid #cbd5e1", borderRadius: 4, padding: "1px 5px", background: "#fff" }}>⌘K</span>
+              <span style={{ fontSize: "0.7rem", border: "1px solid var(--slate-300)", borderRadius: 4, padding: "1px 5px", background: "#fff" }}>⌘K</span>
             </button>
             <ClockWidget />
             <div className={styles.notificationBell} onClick={() => setShowNotifications(!showNotifications)}>

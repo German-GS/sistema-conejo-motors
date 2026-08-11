@@ -1,9 +1,9 @@
 .container { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
 
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-.backBtn { background: none; border: none; color: #024f7d; cursor: pointer; font-size: 0.95rem; font-weight: 500; }
+.backBtn { background: none; border: none; color: var(--brand); cursor: pointer; font-size: 0.95rem; font-weight: 500; }
 .backBtn:hover { text-decoration: underline; }
-.cotizarBtn { padding: 0.5rem 1.2rem; background: #024f7d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.cotizarBtn { padding: 0.5rem 1.2rem; background: var(--brand); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
 /* HERO */
 .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 2rem; }
@@ -16,7 +16,7 @@
 .thumbnails { display: flex; gap: 8px; flex-wrap: wrap; }
 .thumb { width: 76px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: 0.55; border: 2px solid transparent; transition: all 0.15s; }
 .thumb:hover { opacity: 0.9; }
-.thumbActive { width: 76px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: 1; border: 2px solid #024f7d; }
+.thumbActive { width: 76px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: 1; border: 2px solid var(--brand); }
 
 /* INFO */
 .info { display: flex; flex-direction: column; gap: 0.6rem; }
@@ -24,7 +24,7 @@
 .badge { background: #ebf8ff; color: #2b6cb0; padding: 2px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
 .info h1 { font-size: 1.8rem; color: #1a202c; margin: 0; }
 .year { color: #718096; font-size: 0.95rem; margin: 0; }
-.price { font-size: 2rem; font-weight: 700; color: #024f7d; margin: 0.2rem 0; }
+.price { font-size: 2rem; font-weight: 700; color: var(--brand); margin: 0.2rem 0; }
 .location { color: #718096; font-size: 0.9rem; }
 
 /* KEY SPECS */
@@ -34,14 +34,14 @@
 .specValue { font-weight: 700; color: #1a202c; font-size: 1rem; margin: 0; }
 .specLabel { color: #718096; font-size: 0.78rem; margin: 0; }
 
-.cotizarBtnLarge { padding: 0.85rem; background: #024f7d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 700; width: 100%; margin-top: 0.5rem; transition: background 0.2s; }
+.cotizarBtnLarge { padding: 0.85rem; background: var(--brand); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 700; width: 100%; margin-top: 0.5rem; transition: background 0.2s; }
 .cotizarBtnLarge:hover { background: #023a5c; }
 
 /* TABS */
-.tabs { display: flex; gap: 4px; border-bottom: 2px solid #e2e8f0; margin-bottom: 1.5rem; }
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--slate-200); margin-bottom: 1.5rem; }
 .tab { padding: 0.6rem 1.4rem; border: none; background: none; cursor: pointer; color: #718096; font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.2s; }
-.tab:hover { color: #024f7d; }
-.tabActive { padding: 0.6rem 1.4rem; border: none; background: none; cursor: pointer; color: #024f7d; font-weight: 600; border-bottom: 2px solid #024f7d; margin-bottom: -2px; }
+.tab:hover { color: var(--brand); }
+.tabActive { padding: 0.6rem 1.4rem; border: none; background: none; cursor: pointer; color: var(--brand); font-weight: 600; border-bottom: 2px solid var(--brand); margin-bottom: -2px; }
 
 /* SPECS GRID */
 .specsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
@@ -51,7 +51,7 @@
 
 /* EQUIPAMIENTO */
 .featureGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
-.featureGroup h4 { font-size: 0.95rem; color: #024f7d; margin-bottom: 0.5rem; }
+.featureGroup h4 { font-size: 0.95rem; color: var(--brand); margin-bottom: 0.5rem; }
 .featureGroup ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
 .featureGroup li { font-size: 0.85rem; color: #4a5568; }
 
@@ -62,7 +62,7 @@
 .calculatorSection {
   margin-top: 3rem;
   padding-top: 2rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--slate-200);
   max-width: 560px;
 }
 .calculatorSection h2 {
@@ -73,6 +73,6 @@
 }
 .calcSubtitle {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--slate-500);
   margin: 0 0 1.25rem;
 }

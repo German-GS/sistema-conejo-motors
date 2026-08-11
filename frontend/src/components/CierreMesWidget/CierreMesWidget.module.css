@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: space-between;
   background: #fff;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   gap: 1rem;
@@ -13,7 +13,7 @@
 }
 
 .widgetUrgente {
-  border-color: #f59e0b;
+  border-color: var(--warning);
   background: #fffbeb;
 }
 
@@ -33,13 +33,13 @@
 
 .sub {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--slate-500);
   margin-top: 0.15rem;
 }
 
 .btn {
   padding: 0.5rem 1.25rem;
-  background: #024f7d;
+  background: var(--brand);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -86,7 +86,7 @@
 
 .modalSub {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--slate-500);
   margin: 0 0 1.25rem;
 }
 
@@ -98,17 +98,17 @@
 }
 
 .statBox {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
   border-radius: 10px;
   padding: 0.75rem;
   text-align: center;
 }
 
 .statIcon { font-size: 1.25rem; }
-.statLabel { font-size: 0.7rem; color: #64748b; margin: 0.15rem 0; }
-.statValue { font-size: 1.05rem; font-weight: 700; color: #024f7d; }
-.statSub   { font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem; }
+.statLabel { font-size: 0.7rem; color: var(--slate-500); margin: 0.15rem 0; }
+.statValue { font-size: 1.05rem; font-weight: 700; color: var(--brand); }
+.statSub   { font-size: 0.7rem; color: var(--slate-400); margin-top: 0.1rem; }
 
 .checkLabel {
   display: flex;
@@ -134,19 +134,19 @@
 
 .btnCancel {
   padding: 0.55rem 1.25rem;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--slate-100);
+  color: var(--slate-600);
   border: none;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
 }
-.btnCancel:hover { background: #e2e8f0; }
+.btnCancel:hover { background: var(--slate-200); }
 
 .btnConfirm {
   padding: 0.55rem 1.5rem;
-  background: #059669;
+  background: var(--success);
   color: #fff;
   border: none;
   border-radius: 8px;

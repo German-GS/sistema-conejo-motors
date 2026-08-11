@@ -67,8 +67,8 @@ const fmtCRC = (v: number) =>
   "₡ " + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(Number(v) || 0);
 
 const ESTADO_COLORS: Record<string, string> = {
-  Borrador: "#64748b", Enviada: "#0891b2", Aceptada: "#059669",
-  Rechazada: "#dc2626", Facturada: "#7c3aed",
+  Borrador: "var(--slate-500)", Enviada: "var(--info)", Aceptada: "var(--success)",
+  Rechazada: "var(--danger)", Facturada: "#7c3aed",
 };
 
 const METODOS_PAGO = ["Efectivo", "Tarjeta Débito", "Tarjeta Crédito", "Transferencia bancaria", "SINPE Móvil", "Cheque", "Otro"];
@@ -251,7 +251,7 @@ const PendingBillingPage = () => {
       <div className={styles.pageHeader}>
         <h1 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBriefcase size={22} /> Facturación</h1>
         <div className={styles.kpis}>
-          <span className={styles.kpiChip} style={{ background: "#e0f2fe", color: "#0891b2", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+          <span className={styles.kpiChip} style={{ background: "#e0f2fe", color: "var(--info)", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
             <LuClipboardList size={14} /> {pendientes.length} pendientes
           </span>
           <span className={styles.kpiChip} style={{ background: "#dcfce7", color: "#166534", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
@@ -532,7 +532,7 @@ const PendingBillingPage = () => {
                 </thead>
                 <tbody>
                   {historial.length === 0 && (
-                    <tr><td colSpan={9} style={{ textAlign: "center", color: "#94a3b8", padding: "2rem" }}>Sin ventas aún.</td></tr>
+                    <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--slate-400)", padding: "2rem" }}>Sin ventas aún.</td></tr>
                   )}
                   {historial.map(v => (
                     <tr key={v.id}>
@@ -540,21 +540,21 @@ const PendingBillingPage = () => {
                       <td>{fmtFecha(v.fecha_venta)}</td>
                       <td>
                         <strong>{v.factura_nombre || v.cotizacion?.cliente?.nombre_completo || "—"}</strong>
-                        {v.factura_cedula && <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{v.factura_cedula}</div>}
+                        {v.factura_cedula && <div style={{ fontSize: "0.75rem", color: "var(--slate-400)" }}>{v.factura_cedula}</div>}
                       </td>
                       <td>{v.cotizacion?.vehiculo ? `${v.cotizacion.vehiculo.marca} ${v.cotizacion.vehiculo.modelo}` : "—"}</td>
                       <td style={{ fontSize: "0.82rem" }}>{v.vendedor?.nombre_completo ?? "—"}</td>
                       <td style={{ fontSize: "0.82rem" }}>{v.metodo_pago}</td>
                       <td>
-                        <strong style={{ color: "#059669" }}>{fmtCRC(Number(v.total_con_iva) || Number(v.monto_final))}</strong>
-                        {Number(v.iva_monto) > 0 && <div style={{ fontSize: "0.72rem", color: "#64748b" }}>IVA: {fmtCRC(v.iva_monto)}</div>}
+                        <strong style={{ color: "var(--success)" }}>{fmtCRC(Number(v.total_con_iva) || Number(v.monto_final))}</strong>
+                        {Number(v.iva_monto) > 0 && <div style={{ fontSize: "0.72rem", color: "var(--slate-500)" }}>IVA: {fmtCRC(v.iva_monto)}</div>}
                       </td>
                       <td><span className={styles.estadoOk} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCircleCheck size={13} /> {v.estado}</span></td>
                       <td>
                         {v.comprobante_gcs_path ? (
                           <button onClick={() => verComprobanteVenta(v.id)} title="Ver documento adjunto" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem", display: "inline-flex", alignItems: "center" }}><LuPaperclip size={16} /></button>
                         ) : (
-                          <label title="Adjuntar documento (foto o PDF)" style={{ cursor: "pointer", color: "#64748b", display: "inline-flex", alignItems: "center" }}>
+                          <label title="Adjuntar documento (foto o PDF)" style={{ cursor: "pointer", color: "var(--slate-500)", display: "inline-flex", alignItems: "center" }}>
                             <LuUpload size={16} />
                             <input type="file" accept="image/*,application/pdf" capture="environment" style={{ display: "none" }} onChange={(e) => subirComprobanteVenta(v.id, e.target.files?.[0] ?? null)} />
                           </label>
@@ -574,10 +574,10 @@ const PendingBillingPage = () => {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div style={{ background: "#fff", borderRadius: 12, padding: 26, width: "min(480px, 100%)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
             <h3 style={{ margin: "0 0 8px", color: "#92400e", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTriangleAlert size={17} /> Cumplimiento SUGEF incompleto</h3>
-            <p style={{ fontSize: "0.9rem", color: "#475569", margin: "0 0 12px" }}>
+            <p style={{ fontSize: "0.9rem", color: "var(--slate-600)", margin: "0 0 12px" }}>
               El expediente de este cliente tiene <strong>{sugefModal.faltantes.length}</strong> campo(s) pendiente(s) para cumplir con SUGEF:
             </p>
-            <ul style={{ fontSize: "0.85rem", color: "#334155", margin: "0 0 16px", paddingLeft: 18 }}>
+            <ul style={{ fontSize: "0.85rem", color: "var(--slate-700)", margin: "0 0 16px", paddingLeft: 18 }}>
               {sugefModal.faltantes.map((f) => (
                 <li key={f}>{f.replace(/_/g, " ")}</li>
               ))}
@@ -592,12 +592,12 @@ const PendingBillingPage = () => {
               <button
                 onClick={() => enviarFactura(true)}
                 disabled={procesando}
-                style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700 }}
+                style={{ background: "var(--danger)", color: "#fff", border: "none", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700 }}
               >
                 Facturar de todas formas
               </button>
             </div>
-            <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: "10px 0 0" }}>
+            <p style={{ fontSize: "0.75rem", color: "var(--slate-400)", margin: "10px 0 0" }}>
               "Facturar de todas formas" registra el incumplimiento en el historial del lead.
             </p>
           </div>
@@ -619,7 +619,7 @@ const CotizacionCard = ({ cot, onSelect }: { cot: Cotizacion; onSelect: (c: Coti
     <div className={`${styles.cotCard} ${expirado ? styles.cotExpirada : ""}`}>
       <div className={styles.cotCardHeader}>
         <span className={styles.cotId}>#{cot.id}</span>
-        <span className={styles.cotEstado} style={{ background: ESTADO_COLORS[cot.estado] ?? "#64748b" }}>
+        <span className={styles.cotEstado} style={{ background: ESTADO_COLORS[cot.estado] ?? "var(--slate-500)" }}>
           {cot.estado}
         </span>
         {cot.lead && <span className={styles.leadBadge} title={`Lead #${cot.lead.id}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuLink size={12} /> Lead</span>}

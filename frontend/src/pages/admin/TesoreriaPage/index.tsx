@@ -92,10 +92,10 @@ export default function TesoreriaPage() {
 
               {/* Conciliación bancaria */}
               {conciliacion && (
-                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "0.75rem 1rem", marginBottom: "0.75rem", fontSize: "0.85rem" }}>
-                  <div><div style={{ color: "#64748b" }}>Saldo en libros</div><strong>₡{Number(conciliacion.saldoLibros).toLocaleString("es-CR")}</strong></div>
-                  <div><div style={{ color: "#64748b" }}>Saldo conciliado</div><strong style={{ color: "#059669" }}>₡{Number(conciliacion.saldoConciliado).toLocaleString("es-CR")}</strong></div>
-                  <div><div style={{ color: "#64748b" }}>Pendiente conciliar</div><strong style={{ color: conciliacion.pendientesConciliar > 0 ? "#d97706" : "#059669" }}>{conciliacion.pendientesConciliar} mov · ₡{Number(conciliacion.montoPendiente).toLocaleString("es-CR")}</strong></div>
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 10, padding: "0.75rem 1rem", marginBottom: "0.75rem", fontSize: "0.85rem" }}>
+                  <div><div style={{ color: "var(--slate-500)" }}>Saldo en libros</div><strong>₡{Number(conciliacion.saldoLibros).toLocaleString("es-CR")}</strong></div>
+                  <div><div style={{ color: "var(--slate-500)" }}>Saldo conciliado</div><strong style={{ color: "var(--success)" }}>₡{Number(conciliacion.saldoConciliado).toLocaleString("es-CR")}</strong></div>
+                  <div><div style={{ color: "var(--slate-500)" }}>Pendiente conciliar</div><strong style={{ color: conciliacion.pendientesConciliar > 0 ? "#d97706" : "var(--success)" }}>{conciliacion.pendientesConciliar} mov · ₡{Number(conciliacion.montoPendiente).toLocaleString("es-CR")}</strong></div>
                 </div>
               )}
 
@@ -104,7 +104,7 @@ export default function TesoreriaPage() {
                 {movimientos.map(m => (
                   <div key={m.id} className={styles.movRow}>
                     <div className={styles.movIcon} style={{ background: esEntrada(m.tipo) ? '#d1fae5' : '#fee2e2' }}>
-                      {esEntrada(m.tipo) ? <LuArrowUpRight size={16} color="#059669" /> : <LuArrowDownRight size={16} color="#ef4444" />}
+                      {esEntrada(m.tipo) ? <LuArrowUpRight size={16} color="var(--success)" /> : <LuArrowDownRight size={16} color="#ef4444" />}
                     </div>
                     <div className={styles.movInfo}>
                       <div className={styles.movDesc}>{m.descripcion}</div>
@@ -114,9 +114,9 @@ export default function TesoreriaPage() {
                       onClick={() => toggleConciliar(m.id)}
                       title={m.conciliado ? "Conciliado (clic para desmarcar)" : "Marcar como conciliado"}
                       style={{
-                        border: `1px solid ${m.conciliado ? "#16a34a" : "#cbd5e1"}`,
+                        border: `1px solid ${m.conciliado ? "#16a34a" : "var(--slate-300)"}`,
                         background: m.conciliado ? "#dcfce7" : "#fff",
-                        color: m.conciliado ? "#15803d" : "#94a3b8",
+                        color: m.conciliado ? "#15803d" : "var(--slate-400)",
                         borderRadius: 6, padding: "2px 8px", cursor: "pointer",
                         fontSize: "0.72rem", fontWeight: 600, whiteSpace: "nowrap",
                       }}

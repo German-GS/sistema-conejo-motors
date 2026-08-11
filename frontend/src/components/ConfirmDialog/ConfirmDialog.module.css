@@ -39,7 +39,7 @@
 .message {
   margin: 0;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--slate-600);
   line-height: 1.45;
 }
 
@@ -59,17 +59,17 @@
 }
 .cancel {
   background: #fff;
-  border-color: #cbd5e1;
-  color: #475569;
+  border-color: var(--slate-300);
+  color: var(--slate-600);
 }
-.cancel:hover { background: #f8fafc; }
+.cancel:hover { background: var(--slate-50); }
 .confirm {
-  background: #024f7d;
+  background: var(--brand);
   color: #fff;
 }
 .confirm:hover { filter: brightness(1.08); }
 .danger {
-  background: #dc2626;
+  background: var(--danger);
   color: #fff;
 }
 .danger:hover { filter: brightness(1.08); }

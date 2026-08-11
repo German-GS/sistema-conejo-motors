@@ -114,7 +114,7 @@
   border-radius: 8px;
   cursor: pointer;
   opacity: 1;
-  border: 2px solid #024f7d;
+  border: 2px solid var(--brand);
   flex-shrink: 0;
 }
 
@@ -151,7 +151,7 @@
 .price {
   font-size: 2.1rem;
   font-weight: 800;
-  color: #024f7d;
+  color: var(--brand);
   letter-spacing: -0.5px;
   margin: 0;
 }
@@ -166,7 +166,7 @@
 
 .keySpecs > div {
   background: #f7fafc;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--slate-200);
   border-radius: 10px;
   padding: 0.75rem 1rem;
   text-align: center;
@@ -176,7 +176,7 @@
   display: block;
   font-size: 1.25rem;
   font-weight: 800;
-  color: #024f7d;
+  color: var(--brand);
   line-height: 1.2;
 }
 
@@ -192,7 +192,7 @@
 /* ─── CONTACT FORM ──────────────────────────── */
 .contactForm {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--slate-200);
   border-radius: 14px;
   padding: 1.25rem;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
@@ -214,7 +214,7 @@
 .contactForm input {
   width: 100%;
   padding: 0.7rem 0.9rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--slate-200);
   border-radius: 8px;
   font-size: 0.9rem;
   box-sizing: border-box;
@@ -223,13 +223,13 @@
 }
 .contactForm input:focus {
   outline: none;
-  border-color: #024f7d;
+  border-color: var(--brand);
   background: white;
 }
 
 .contactForm button {
   padding: 0.75rem;
-  background: #024f7d;
+  background: var(--brand);
   color: white;
   border: none;
   border-radius: 8px;
@@ -245,7 +245,7 @@
 .tabs {
   display: flex;
   gap: 0;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--slate-200);
   margin-bottom: 2rem;
 }
 
@@ -262,11 +262,11 @@
   transition: color 0.2s;
 }
 
-.tabs button:hover { color: #024f7d; }
+.tabs button:hover { color: var(--brand); }
 
 .tabs button.active {
-  color: #024f7d;
-  border-bottom-color: #024f7d;
+  color: var(--brand);
+  border-bottom-color: var(--brand);
 }
 
 /* ─── TABS SCROLL ───────────────────────────── */
@@ -323,7 +323,7 @@
 }
 
 .featureSection h4 {
-  color: #024f7d;
+  color: var(--brand);
   font-size: 0.9rem;
   font-weight: 700;
   text-transform: uppercase;

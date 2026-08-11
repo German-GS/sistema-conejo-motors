@@ -27,8 +27,8 @@ const TIPO_ICONS: Record<string, IconType> = {
 };
 
 const TIPO_CUENTA_COLORS: Record<string, string> = {
-  Activo: "#0891b2", Pasivo: "#dc2626", Patrimonio: "#7c3aed",
-  Ingreso: "#059669", Gasto: "#d97706",
+  Activo: "var(--info)", Pasivo: "var(--danger)", Patrimonio: "#7c3aed",
+  Ingreso: "var(--success)", Gasto: "#d97706",
 };
 
 // Nombres legibles de las cuentas de activo
@@ -45,7 +45,7 @@ const SERIES = ["#2a78d6", "#1baf7a", "#eda100", "#4a3aa7", "#e34948", "#e87ba4"
 // Dona: distribución del costo de activos por cuenta contable
 const DonutCuentas = ({ data }: { data: { cuenta: string; costo: number; color: string }[] }) => {
   const total = data.reduce((s, d) => s + d.costo, 0);
-  if (total <= 0) return <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Sin datos.</p>;
+  if (total <= 0) return <p style={{ color: "var(--slate-400)", fontSize: "0.85rem" }}>Sin datos.</p>;
   const R = 60, r = 38, cx = 70, cy = 70;
   let acc = 0;
   const arc = (frac0: number, frac1: number) => {
@@ -73,7 +73,7 @@ const DonutCuentas = ({ data }: { data: { cuenta: string; costo: number; color: 
         {data.map((d) => (
           <div key={d.cuenta} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <span style={{ width: 11, height: 11, borderRadius: 3, background: d.color, flexShrink: 0 }} />
-            <span style={{ color: "#334155" }}>{nombreCuenta(d.cuenta)}</span>
+            <span style={{ color: "var(--slate-700)" }}>{nombreCuenta(d.cuenta)}</span>
             <strong style={{ color: "var(--brand-dark)", marginLeft: "auto" }}>{fmtCRC(d.costo)}</strong>
           </div>
         ))}
@@ -90,16 +90,16 @@ const BarrasNeto = ({ data }: { data: { cuenta: string; costo: number; dep: numb
       {data.map((d) => (
         <div key={d.cuenta}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", marginBottom: 2 }}>
-            <span style={{ color: "#334155" }}>{nombreCuenta(d.cuenta)}</span>
-            <span style={{ color: "#64748b" }}>neto {fmtCRC(d.neto)} · dep {fmtCRC(d.dep)}</span>
+            <span style={{ color: "var(--slate-700)" }}>{nombreCuenta(d.cuenta)}</span>
+            <span style={{ color: "var(--slate-500)" }}>neto {fmtCRC(d.neto)} · dep {fmtCRC(d.dep)}</span>
           </div>
-          <div style={{ display: "flex", height: 16, borderRadius: 4, overflow: "hidden", background: "#f1f5f9", width: `${(d.costo / max) * 100}%`, minWidth: "30%", gap: 2 }}>
+          <div style={{ display: "flex", height: 16, borderRadius: 4, overflow: "hidden", background: "var(--slate-100)", width: `${(d.costo / max) * 100}%`, minWidth: "30%", gap: 2 }}>
             <div title={`Valor neto ${fmtCRC(d.neto)}`} style={{ background: "#2a78d6", width: `${(d.neto / d.costo) * 100}%`, borderRadius: "4px 0 0 4px" }} />
             <div title={`Depreciación ${fmtCRC(d.dep)}`} style={{ background: "#eda100", width: `${(d.dep / d.costo) * 100}%` }} />
           </div>
         </div>
       ))}
-      <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>
+      <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "var(--slate-500)", marginTop: 2 }}>
         <span><span style={{ display: "inline-block", width: 10, height: 10, background: "#2a78d6", borderRadius: 2, marginRight: 4 }} />Valor neto</span>
         <span><span style={{ display: "inline-block", width: 10, height: 10, background: "#eda100", borderRadius: 2, marginRight: 4 }} />Depreciación acumulada</span>
       </div>
@@ -107,9 +107,9 @@ const BarrasNeto = ({ data }: { data: { cuenta: string; costo: number; dep: numb
   );
 };
 
-const inputStyle: CSSProperties = { display: "block", width: "100%", marginTop: 4, padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit", boxSizing: "border-box" };
+const inputStyle: CSSProperties = { display: "block", width: "100%", marginTop: 4, padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.85rem", fontFamily: "inherit", boxSizing: "border-box" };
 const thStyle: CSSProperties = { padding: "0.6rem 0.8rem", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em" };
-const tdStyle: CSSProperties = { padding: "0.55rem 0.8rem", color: "#334155" };
+const tdStyle: CSSProperties = { padding: "0.55rem 0.8rem", color: "var(--slate-700)" };
 
 export const ContabilidadPage = () => {
   const [tab, setTab] = useState<"dashboard" | "cuentas" | "asientos" | "balance" | "cierres" | "activos">("dashboard");
@@ -448,9 +448,9 @@ export const ContabilidadPage = () => {
           {/* ── Resumen del día ── */}
           <div className={styles.sectionTitle}>Resumen del Día — {fmtFecha(preview.fecha)}</div>
           <div className={styles.kpiRow}>
-            <KpiCard icon={<LuWallet size={20} />} label="Ingresos Hoy" value={fmtCRC(preview.ingresos)} color="#059669" />
-            <KpiCard icon={<LuBanknote size={20} />} label="Gastos Hoy" value={fmtCRC(preview.gastos)} color="#dc2626" />
-            <KpiCard icon={<LuTrendingUp size={20} />} label="Utilidad Hoy" value={fmtCRC(preview.utilidad)} color={preview.utilidad >= 0 ? "#0891b2" : "#dc2626"} />
+            <KpiCard icon={<LuWallet size={20} />} label="Ingresos Hoy" value={fmtCRC(preview.ingresos)} color="var(--success)" />
+            <KpiCard icon={<LuBanknote size={20} />} label="Gastos Hoy" value={fmtCRC(preview.gastos)} color="var(--danger)" />
+            <KpiCard icon={<LuTrendingUp size={20} />} label="Utilidad Hoy" value={fmtCRC(preview.utilidad)} color={preview.utilidad >= 0 ? "var(--info)" : "var(--danger)"} />
             <KpiCard icon={<LuNotebookPen size={20} />} label="Asientos" value={String(preview.num_asientos)} color="#7c3aed" />
           </div>
 
@@ -480,16 +480,16 @@ export const ContabilidadPage = () => {
                 Mes en Curso — {new Date().toLocaleDateString("es-CR", { month: "long", year: "numeric" })}
               </div>
               <div className={styles.kpiRow}>
-                <KpiCard icon={<LuWallet size={20} />} label="Ingresos MTD" value={fmtCRC(resumenMes.ingresos)} color="#059669" />
-                <KpiCard icon={<LuBanknote size={20} />} label="Gastos MTD" value={fmtCRC(resumenMes.gastos)} color="#dc2626" />
-                <KpiCard icon={<LuTrendingUp size={20} />} label="Utilidad MTD" value={fmtCRC(resumenMes.utilidad)} color={resumenMes.utilidad >= 0 ? "#0891b2" : "#dc2626"} />
+                <KpiCard icon={<LuWallet size={20} />} label="Ingresos MTD" value={fmtCRC(resumenMes.ingresos)} color="var(--success)" />
+                <KpiCard icon={<LuBanknote size={20} />} label="Gastos MTD" value={fmtCRC(resumenMes.gastos)} color="var(--danger)" />
+                <KpiCard icon={<LuTrendingUp size={20} />} label="Utilidad MTD" value={fmtCRC(resumenMes.utilidad)} color={resumenMes.utilidad >= 0 ? "var(--info)" : "var(--danger)"} />
                 <KpiCard icon={<LuNotebookPen size={20} />} label="Asientos MTD" value={String(resumenMes.num_asientos)} color="#7c3aed" />
               </div>
 
               {/* Desglose de gastos del mes */}
               {resumenMes.gastos_por_tipo && Object.keys(resumenMes.gastos_por_tipo).length > 0 && (
-                <div style={{ background: "var(--bg-card, #fff)", border: "1px solid var(--border, #e2e8f0)", borderRadius: 12, padding: "1rem 1.25rem", marginTop: "1rem" }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-secondary, #64748b)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <div style={{ background: "var(--bg-card, #fff)", border: "1px solid var(--border, var(--slate-200))", borderRadius: 12, padding: "1rem 1.25rem", marginTop: "1rem" }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-secondary, var(--slate-500))", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                     <LuBanknote size={15} /> Desglose de Gastos del Mes
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
@@ -500,11 +500,11 @@ export const ContabilidadPage = () => {
                         return (
                           <div key={nombre} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                             <span style={{ flex: 1, fontSize: "0.88rem" }}>{nombre}</span>
-                            <div style={{ flex: 2, background: "#f1f5f9", borderRadius: 6, height: 8, overflow: "hidden" }}>
-                              <div style={{ width: `${pct}%`, height: "100%", background: "#dc2626", borderRadius: 6, transition: "width 0.4s" }} />
+                            <div style={{ flex: 2, background: "var(--slate-100)", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                              <div style={{ width: `${pct}%`, height: "100%", background: "var(--danger)", borderRadius: 6, transition: "width 0.4s" }} />
                             </div>
-                            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#dc2626", minWidth: 90, textAlign: "right" }}>{fmtCRC(monto)}</span>
-                            <span style={{ fontSize: "0.75rem", color: "var(--text-secondary, #64748b)", minWidth: 32, textAlign: "right" }}>{pct}%</span>
+                            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--danger)", minWidth: 90, textAlign: "right" }}>{fmtCRC(monto)}</span>
+                            <span style={{ fontSize: "0.75rem", color: "var(--text-secondary, var(--slate-500))", minWidth: 32, textAlign: "right" }}>{pct}%</span>
                           </div>
                         );
                       })}
@@ -649,21 +649,21 @@ export const ContabilidadPage = () => {
           <div className={styles.sectionTitle}>Activos Fijos</div>
           {activos && (
             <div className={styles.kpiRow}>
-              <KpiCard icon={<LuBuilding2 size={20} />} label="Costo total" value={fmtCRC(activos.totales.costo)} color="#0891b2" />
-              <KpiCard icon={<LuTrendingDown size={20} />} label="Depreciación acumulada" value={fmtCRC(activos.totales.depreciacion_acumulada)} color="#dc2626" />
-              <KpiCard icon={<LuGem size={20} />} label="Valor neto en libros" value={fmtCRC(activos.totales.valor_neto)} color="#059669" />
+              <KpiCard icon={<LuBuilding2 size={20} />} label="Costo total" value={fmtCRC(activos.totales.costo)} color="var(--info)" />
+              <KpiCard icon={<LuTrendingDown size={20} />} label="Depreciación acumulada" value={fmtCRC(activos.totales.depreciacion_acumulada)} color="var(--danger)" />
+              <KpiCard icon={<LuGem size={20} />} label="Valor neto en libros" value={fmtCRC(activos.totales.valor_neto)} color="var(--success)" />
             </div>
           )}
 
           {/* Gráficos por cuenta contable */}
           {activosPorCuenta.length > 0 && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem", margin: "1rem 0" }}>
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem" }}>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.75rem" }}>Costo por cuenta</div>
+              <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.75rem" }}>Costo por cuenta</div>
                 <DonutCuentas data={activosPorCuenta} />
               </div>
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem" }}>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.75rem" }}>Valor neto vs. depreciación</div>
+              <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.75rem" }}>Valor neto vs. depreciación</div>
                 <BarrasNeto data={activosPorCuenta} />
               </div>
             </div>
@@ -675,17 +675,17 @@ export const ContabilidadPage = () => {
               <LuFileStack size={16} /> {showFiscal ? "Cerrar reporte fiscal" : "Reporte fiscal (impuesto diferido)"}
             </button>
             {showFiscal && fiscal && (
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
+              <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
-                  <p style={{ fontSize: "0.82rem", color: "#64748b", margin: 0, maxWidth: 560 }}>
+                  <p style={{ fontSize: "0.82rem", color: "var(--slate-500)", margin: 0, maxWidth: 560 }}>
                     Diferencia entre la depreciación <strong>financiera</strong> (mayor) y la <strong>fiscal</strong> (Anexo 2). La diferencia temporaria genera el impuesto diferido. El carril fiscal NO afecta la contabilidad.
                   </p>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569", whiteSpace: "nowrap" }}>Tasa de renta %
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)", whiteSpace: "nowrap" }}>Tasa de renta %
                     <input type="number" value={tasaRenta} onChange={(e) => setTasaRenta(Number(e.target.value))} onBlur={() => fetchFiscal(tasaRenta)} style={{ ...inputStyle, width: 80, display: "inline-block", marginLeft: 8 }} />
                   </label>
                 </div>
                 <div className={styles.kpiRow}>
-                  <KpiCard icon={<LuBookOpen size={20} />} label="Dep. financiera acum." value={fmtCRC(fiscal.totales.dep_financiera)} color="#0891b2" />
+                  <KpiCard icon={<LuBookOpen size={20} />} label="Dep. financiera acum." value={fmtCRC(fiscal.totales.dep_financiera)} color="var(--info)" />
                   <KpiCard icon={<LuBookMarked size={20} />} label="Dep. fiscal acum." value={fmtCRC(fiscal.totales.dep_fiscal)} color="#d97706" />
                   <KpiCard icon={<LuScale size={20} />} label="Diferencia temporaria" value={fmtCRC(fiscal.totales.diferencia_temporaria)} color="#7c3aed" />
                   <KpiCard icon={<LuReceiptText size={20} />} label={`Impuesto diferido (${tasaRenta}%)`} value={fmtCRC(fiscal.totales.impuesto_diferido)} color="#15803d" />
@@ -693,7 +693,7 @@ export const ContabilidadPage = () => {
                 <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", minWidth: 620 }}>
                     <thead>
-                      <tr style={{ background: "#f8fafc", textAlign: "left", color: "#475569" }}>
+                      <tr style={{ background: "var(--slate-50)", textAlign: "left", color: "var(--slate-600)" }}>
                         <th style={thStyle}>Activo</th>
                         <th style={{ ...thStyle, textAlign: "center" }}>Vida fin/fiscal</th>
                         <th style={{ ...thStyle, textAlign: "right" }}>Dep. financiera</th>
@@ -703,12 +703,12 @@ export const ContabilidadPage = () => {
                     </thead>
                     <tbody>
                       {fiscal.items.map((it: any) => (
-                        <tr key={`${it.tipo}-${it.id}`} style={{ borderTop: "1px solid #f1f5f9" }}>
+                        <tr key={`${it.tipo}-${it.id}`} style={{ borderTop: "1px solid var(--slate-100)" }}>
                           <td style={tdStyle}>{it.nombre}</td>
-                          <td style={{ ...tdStyle, textAlign: "center", color: "#64748b" }}>{it.vida_financiera}/{it.vida_fiscal} m</td>
+                          <td style={{ ...tdStyle, textAlign: "center", color: "var(--slate-500)" }}>{it.vida_financiera}/{it.vida_fiscal} m</td>
                           <td style={{ ...tdStyle, textAlign: "right" }}>{fmtCRC(it.dep_financiera)}</td>
                           <td style={{ ...tdStyle, textAlign: "right" }}>{fmtCRC(it.dep_fiscal)}</td>
-                          <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700, color: it.diferencia >= 0 ? "#7c3aed" : "#dc2626" }}>{fmtCRC(it.diferencia)}</td>
+                          <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700, color: it.diferencia >= 0 ? "#7c3aed" : "var(--danger)" }}>{fmtCRC(it.diferencia)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -724,17 +724,17 @@ export const ContabilidadPage = () => {
               <LuRefreshCw size={16} /> {showMigrar ? "Cerrar migración" : "Migrar vehículo a uso interno"}
             </button>
             {showMigrar && (
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
-                <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 0 }}>
+              <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem", marginTop: "0.75rem" }}>
+                <p style={{ fontSize: "0.82rem", color: "var(--slate-500)", marginTop: 0 }}>
                   Reclasifica un vehículo del inventario de venta (1300) a activo fijo de uso interno / demo (1520). Genera el asiento y lo saca del catálogo.
                 </p>
                 {vehiculosInv.length === 0 ? (
-                  <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>No hay vehículos disponibles para migrar.</p>
+                  <p style={{ color: "var(--slate-400)", fontSize: "0.85rem" }}>No hay vehículos disponibles para migrar.</p>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", maxHeight: 260, overflowY: "auto" }}>
                     {vehiculosInv.map((v) => (
-                      <div key={v.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.4rem", fontSize: "0.85rem" }}>
-                        <span>{v.marca} {v.modelo} <span style={{ color: "#94a3b8" }}>· VIN {v.vin} · {fmtCRC(Number(v.precio_costo) || 0)}</span></span>
+                      <div key={v.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", borderTop: "1px solid var(--slate-100)", paddingTop: "0.4rem", fontSize: "0.85rem" }}>
+                        <span>{v.marca} {v.modelo} <span style={{ color: "var(--slate-400)" }}>· VIN {v.vin} · {fmtCRC(Number(v.precio_costo) || 0)}</span></span>
                         <button onClick={() => migrarVehiculo(v.id, `${v.marca} ${v.modelo}`)} style={{ background: "#ede9fe", border: "1px solid #ddd6fe", color: "#7c3aed", borderRadius: 6, padding: "2px 10px", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, whiteSpace: "nowrap" }}>Migrar →</button>
                       </div>
                     ))}
@@ -745,12 +745,12 @@ export const ContabilidadPage = () => {
           </div>
 
           {/* Formulario alta */}
-          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem", margin: "1rem 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem", alignItems: "end" }}>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Nombre
+          <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem", margin: "1rem 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem", alignItems: "end" }}>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Nombre
               <input value={activoForm.nombre} onChange={(e) => setActivoForm(f => ({ ...f, nombre: e.target.value }))} placeholder="Ej: Elevador de taller" style={inputStyle} />
             </label>
             {categoriasDep.length > 0 ? (
-              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Categoría (tabla depreciación)
+              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Categoría (tabla depreciación)
                 <select
                   value={activoForm.categoria}
                   onChange={(e) => {
@@ -769,7 +769,7 @@ export const ContabilidadPage = () => {
                 </select>
               </label>
             ) : (
-              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Categoría
+              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Categoría
                 <select value={activoForm.categoria} onChange={(e) => {
                   const categoria = e.target.value;
                   const cuenta_activo = categoria === "Edificio / Instalaciones" ? "1500" : "1510";
@@ -783,16 +783,16 @@ export const ContabilidadPage = () => {
                 </select>
               </label>
             )}
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Costo (₡)
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Costo (₡)
               <input type="number" value={activoForm.costo || ""} onChange={(e) => setActivoForm(f => ({ ...f, costo: Number(e.target.value) }))} style={inputStyle} />
             </label>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Valor residual (₡)
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Valor residual (₡)
               <input type="number" value={activoForm.valor_residual || ""} onChange={(e) => setActivoForm(f => ({ ...f, valor_residual: Number(e.target.value) }))} style={inputStyle} />
             </label>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Vida útil (meses)
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Vida útil (meses)
               <input type="number" value={activoForm.vida_util_meses || ""} onChange={(e) => setActivoForm(f => ({ ...f, vida_util_meses: Number(e.target.value) }))} style={inputStyle} />
             </label>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Se pagó con
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Se pagó con
               <select value={activoForm.contrapartida} onChange={(e) => setActivoForm(f => ({ ...f, contrapartida: e.target.value }))} style={inputStyle}>
                 <option value="2100">Crédito (Cuentas por Pagar)</option>
                 <option value="1110">Banco</option>
@@ -805,10 +805,10 @@ export const ContabilidadPage = () => {
           </div>
 
           {/* Tabla */}
-          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, overflow: "hidden" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
               <thead>
-                <tr style={{ background: "#f8fafc", textAlign: "left", color: "#475569" }}>
+                <tr style={{ background: "var(--slate-50)", textAlign: "left", color: "var(--slate-600)" }}>
                   <th style={thStyle}>Activo</th><th style={thStyle}>Tipo</th><th style={thStyle}>Cuenta</th>
                   <th style={{ ...thStyle, textAlign: "right" }}>Costo</th>
                   <th style={{ ...thStyle, textAlign: "right" }}>Dep. acum.</th>
@@ -818,24 +818,24 @@ export const ContabilidadPage = () => {
               </thead>
               <tbody>
                 {(!activos || activos.items.length === 0) ? (
-                  <tr><td colSpan={7} style={{ padding: "1.5rem", textAlign: "center", color: "#94a3b8" }}>Sin activos fijos registrados.</td></tr>
+                  <tr><td colSpan={7} style={{ padding: "1.5rem", textAlign: "center", color: "var(--slate-400)" }}>Sin activos fijos registrados.</td></tr>
                 ) : activos.items.map((a) => (
-                  <tr key={`${a.tipo}-${a.id}`} style={{ borderTop: "1px solid #f1f5f9", opacity: a.activo ? 1 : 0.5 }}>
+                  <tr key={`${a.tipo}-${a.id}`} style={{ borderTop: "1px solid var(--slate-100)", opacity: a.activo ? 1 : 0.5 }}>
                     <td style={tdStyle}>{a.nombre}</td>
                     <td style={tdStyle}><span style={{ fontSize: "0.72rem", background: a.tipo === "Vehículo Demo" ? "#ede9fe" : "#e0f2fe", color: a.tipo === "Vehículo Demo" ? "#7c3aed" : "#0369a1", borderRadius: 20, padding: "1px 8px", fontWeight: 700 }}>{a.tipo}</span></td>
                     <td style={tdStyle}>{a.cuenta}</td>
                     <td style={{ ...tdStyle, textAlign: "right" }}>{fmtCRC(a.costo)}</td>
-                    <td style={{ ...tdStyle, textAlign: "right", color: "#dc2626" }}>{fmtCRC(a.depreciacion_acumulada)}</td>
+                    <td style={{ ...tdStyle, textAlign: "right", color: "var(--danger)" }}>{fmtCRC(a.depreciacion_acumulada)}</td>
                     <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{fmtCRC(a.valor_neto)}</td>
                     <td style={{ ...tdStyle, textAlign: "right" }}>
                       <span style={{ display: "inline-flex", gap: "0.35rem" }}>
                         {a.activo && (
-                          <button onClick={() => setEditItem({ ...a })} style={{ background: "none", border: "1px solid #e2e8f0", color: "#475569", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Editar</button>
+                          <button onClick={() => setEditItem({ ...a })} style={{ background: "none", border: "1px solid var(--slate-200)", color: "var(--slate-600)", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Editar</button>
                         )}
                         {a.tipo === "Activo" && a.activo && (
                           <>
                             <button onClick={() => venderActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Vender</button>
-                            <button onClick={() => darDeBajaActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Dar de baja</button>
+                            <button onClick={() => darDeBajaActivo(a.id, a.nombre)} style={{ background: "none", border: "1px solid #fecaca", color: "var(--danger)", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Dar de baja</button>
                           </>
                         )}
                       </span>
@@ -845,7 +845,7 @@ export const ContabilidadPage = () => {
               </tbody>
             </table>
           </div>
-          <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "0.75rem" }}>
+          <p style={{ fontSize: "0.78rem", color: "var(--slate-400)", marginTop: "0.75rem" }}>
             La depreciación se calcula automáticamente el día 1 de cada mes (línea recta), sobre la base costo − valor residual y la vida útil de cada activo (editable).
           </p>
 
@@ -854,56 +854,56 @@ export const ContabilidadPage = () => {
             <div onClick={() => setEditItem(null)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }}>
               <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 12, padding: "1.25rem", width: "min(460px, 100%)", maxHeight: "90vh", overflowY: "auto" }}>
                 <h3 style={{ margin: "0 0 0.25rem", color: "var(--brand-dark)" }}>Editar activo</h3>
-                <p style={{ margin: "0 0 1rem", fontSize: "0.82rem", color: "#64748b" }}>{editItem.nombre}</p>
+                <p style={{ margin: "0 0 1rem", fontSize: "0.82rem", color: "var(--slate-500)" }}>{editItem.nombre}</p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                   {editItem.tipo === "Activo" && (
-                    <label style={{ gridColumn: "1 / -1", fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Nombre
+                    <label style={{ gridColumn: "1 / -1", fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Nombre
                       <input value={editItem.nombre} onChange={(e) => setEditItem({ ...editItem, nombre: e.target.value })} style={inputStyle} />
                     </label>
                   )}
                   {editItem.tipo === "Vehículo Demo" && (
                     <>
-                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Placa
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Placa
                         <input value={editItem.placa ?? ""} onChange={(e) => setEditItem({ ...editItem, placa: e.target.value })} placeholder="Ej: CM-1234" style={inputStyle} />
                       </label>
-                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Marchamo (₡)
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Marchamo (₡)
                         <input type="number" value={editItem.marchamo ?? 0} onChange={(e) => setEditItem({ ...editItem, marchamo: e.target.value })} style={inputStyle} />
                       </label>
                     </>
                   )}
-                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Vida financiera (meses)
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Vida financiera (meses)
                     <input type="number" value={editItem.vida_util_meses ?? 60} onChange={(e) => setEditItem({ ...editItem, vida_util_meses: e.target.value })} style={inputStyle} />
                   </label>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Valor residual (₡)
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Valor residual (₡)
                     <input type="number" value={editItem.valor_residual ?? 0} onChange={(e) => setEditItem({ ...editItem, valor_residual: e.target.value })} style={inputStyle} />
                   </label>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }} title="Vida útil fiscal (Anexo 2) — solo renta, no afecta el mayor">Vida fiscal (meses)
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }} title="Vida útil fiscal (Anexo 2) — solo renta, no afecta el mayor">Vida fiscal (meses)
                     <input type="number" value={editItem.vida_util_fiscal_meses ?? 120} onChange={(e) => setEditItem({ ...editItem, vida_util_fiscal_meses: e.target.value })} style={inputStyle} />
                   </label>
                   {editItem.tipo === "Activo" && (
                     <>
-                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Método fiscal
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Método fiscal
                         <select value={editItem.metodo_fiscal ?? "LineaRecta"} onChange={(e) => setEditItem({ ...editItem, metodo_fiscal: e.target.value })} style={inputStyle}>
                           <option value="LineaRecta">Línea recta</option>
                           <option value="SumaDigitos">Suma de dígitos</option>
                         </select>
                       </label>
-                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>N° inventario
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>N° inventario
                         <input value={editItem.numero_inventario ?? ""} onChange={(e) => setEditItem({ ...editItem, numero_inventario: e.target.value })} style={inputStyle} />
                       </label>
-                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Localización
+                      <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Localización
                         <input value={editItem.localizacion ?? ""} onChange={(e) => setEditItem({ ...editItem, localizacion: e.target.value })} style={inputStyle} />
                       </label>
                     </>
                   )}
                   {editItem.tipo === "Activo" && (
-                    <label style={{ gridColumn: "1 / -1", fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Notas
+                    <label style={{ gridColumn: "1 / -1", fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Notas
                       <textarea value={editItem.notas ?? ""} onChange={(e) => setEditItem({ ...editItem, notas: e.target.value })} rows={2} style={{ ...inputStyle, resize: "vertical" }} />
                     </label>
                   )}
                 </div>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1.25rem" }}>
-                  <button onClick={() => setEditItem(null)} style={{ background: "#fff", border: "1px solid #e2e8f0", color: "#475569", borderRadius: 8, padding: "0.45rem 1rem", cursor: "pointer" }}>Cancelar</button>
+                  <button onClick={() => setEditItem(null)} style={{ background: "#fff", border: "1px solid var(--slate-200)", color: "var(--slate-600)", borderRadius: 8, padding: "0.45rem 1rem", cursor: "pointer" }}>Cancelar</button>
                   <button onClick={guardarEdicion} disabled={savingEdit} className={styles.seedBtn}>{savingEdit ? "Guardando…" : "Guardar"}</button>
                 </div>
               </div>
@@ -916,19 +916,19 @@ export const ContabilidadPage = () => {
       {tab === "cierres" && (
         <>
         {/* Cierre de período con bloqueo */}
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
+        <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
             <strong style={{ fontSize: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLock size={16} /> Cierre de período</strong>
-            <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Salda ingresos/gastos a resultados y bloquea la fecha</span>
+            <span style={{ fontSize: "0.78rem", color: "var(--slate-500)" }}>Salda ingresos/gastos a resultados y bloquea la fecha</span>
           </div>
           <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "end" }}>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Tipo
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Tipo
               <select value={tipoCierre} onChange={(e) => setTipoCierre(e.target.value as any)} style={{ ...inputStyle, width: "auto" }}>
                 <option value="Mensual">Mensual</option>
                 <option value="Anual">Anual</option>
               </select>
             </label>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Período
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Período
               <input type="month" value={periodoCierre} onChange={(e) => setPeriodoCierre(e.target.value)} style={{ ...inputStyle, width: "auto" }} />
             </label>
             <button onClick={cerrarPeriodo} className={styles.seedBtn} style={{ height: 38, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLock size={16} /> Cerrar {tipoCierre === "Anual" ? periodoCierre.slice(0, 4) : periodoCierre}</button>
@@ -936,10 +936,10 @@ export const ContabilidadPage = () => {
           {cierresPeriodo.length > 0 && (
             <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
               {cierresPeriodo.map((c) => (
-                <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", fontSize: "0.85rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.4rem" }}>
+                <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", fontSize: "0.85rem", borderTop: "1px solid var(--slate-100)", paddingTop: "0.4rem" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><strong>{c.periodo}</strong> <span style={{ fontSize: "0.72rem", background: "#e0e7ff", color: "#3730a3", borderRadius: 20, padding: "1px 8px" }}>{c.tipo}</span> {c.cerrado ? <LuLock size={14} /> : <LuLockOpen size={14} />}</span>
-                  <span style={{ color: "#64748b" }}>Utilidad: {fmtCRC(c.utilidad_neta)}</span>
-                  {c.cerrado && <button onClick={() => reabrirPeriodo(c.periodo)} style={{ background: "none", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem", color: "#64748b" }}>Reabrir</button>}
+                  <span style={{ color: "var(--slate-500)" }}>Utilidad: {fmtCRC(c.utilidad_neta)}</span>
+                  {c.cerrado && <button onClick={() => reabrirPeriodo(c.periodo)} style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem", color: "var(--slate-500)" }}>Reabrir</button>}
                 </div>
               ))}
             </div>
@@ -948,7 +948,7 @@ export const ContabilidadPage = () => {
 
         {/* Checklist de cierre */}
         {checklist && (
-          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
+          <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
               <strong style={{ fontSize: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuClipboardList size={16} /> Checklist de Cierre</strong>
               <span style={{
@@ -965,8 +965,8 @@ export const ContabilidadPage = () => {
                 <div key={it.clave} style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", fontSize: "0.88rem" }}>
                   <span>{it.estado === "ok" ? <LuCircleCheck size={16} /> : it.estado === "alerta" ? <LuTriangleAlert size={16} /> : <LuInfo size={16} />}</span>
                   <div>
-                    <strong style={{ color: it.estado === "alerta" ? "#b45309" : "#334155" }}>{it.titulo}</strong>
-                    <div style={{ color: "#64748b", fontSize: "0.82rem" }}>{it.detalle}</div>
+                    <strong style={{ color: it.estado === "alerta" ? "#b45309" : "var(--slate-700)" }}>{it.titulo}</strong>
+                    <div style={{ color: "var(--slate-500)", fontSize: "0.82rem" }}>{it.detalle}</div>
                   </div>
                 </div>
               ))}
@@ -1066,7 +1066,7 @@ const fmtCRC2 = (v: number) => (v < 0 ? "−" : "") + "₡ " + new Intl.NumberFo
 
 const AsientosTable = ({ asientos }: { asientos: Asiento[] }) => (
   <div className={styles.asientosTable}>
-    {asientos.length === 0 && <p style={{ textAlign: "center", color: "#94a3b8", padding: "2rem" }}>Sin asientos en el período seleccionado.</p>}
+    {asientos.length === 0 && <p style={{ textAlign: "center", color: "var(--slate-400)", padding: "2rem" }}>Sin asientos en el período seleccionado.</p>}
     {asientos.map(a => (
       <details key={a.id} className={styles.asientoCard}>
         <summary className={styles.asientoSummary}>

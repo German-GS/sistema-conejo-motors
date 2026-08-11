@@ -10,7 +10,7 @@
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.25rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--slate-200);
   padding-bottom: 0;
 }
 
@@ -22,13 +22,13 @@
   margin-bottom: -2px;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--slate-500);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
   border-radius: 6px 6px 0 0;
 }
-.tab:hover { color: #024f7d; }
-.tabActive { color: #024f7d; border-bottom-color: #024f7d; }
+.tab:hover { color: var(--brand); }
+.tabActive { color: var(--brand); border-bottom-color: var(--brand); }
 
 /* Controles */
 .controls {
@@ -47,16 +47,16 @@
 .field label {
   font-size: 0.74rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--slate-500);
 }
 .field input {
   padding: 0.5rem 0.75rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.9rem;
   background: white;
 }
-.field input:focus { outline: none; border-color: #024f7d; }
+.field input:focus { outline: none; border-color: var(--brand); }
 
 /* KPIs */
 .kpiRow {
@@ -67,7 +67,7 @@
 }
 .kpi {
   background: white;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 10px;
   padding: 0.85rem 1.25rem;
   display: flex;
@@ -81,7 +81,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #64748b;
+  color: var(--slate-500);
 }
 .kpiN {
   font-size: 1.8rem;
@@ -93,7 +93,7 @@
 /* Tabla */
 .tableWrap {
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--slate-200);
   overflow: hidden;
   overflow-x: auto;
 }
@@ -108,7 +108,7 @@
 .table th, .table td {
   padding: 0.7rem 0.9rem;
   text-align: left;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--slate-100);
   vertical-align: middle;
 }
 
@@ -117,12 +117,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #64748b;
-  background: #f8fafc;
+  color: var(--slate-500);
+  background: var(--slate-50);
 }
 
 .table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover { background: #f8fafc; }
+.table tbody tr:hover { background: var(--slate-50); }
 
 /* Badges — texto blanco siempre para legibilidad */
 .badgeEntrada,
@@ -149,7 +149,7 @@
 
 .badge_almuerzo {
   display: inline-block;
-  background: #f59e0b;
+  background: var(--warning);
   color: white;
   font-size: 0.76rem;
   font-weight: 700;
@@ -164,14 +164,14 @@
   color: var(--brand-dark);
 }
 
-.sub { color: #94a3b8; font-size: 0.82rem; }
+.sub { color: var(--slate-400); font-size: 0.82rem; }
 
 .horasOk  { color: #10b981; }
-.horasBaja { color: #f59e0b; }
+.horasBaja { color: var(--warning); }
 
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #64748b;
+  color: var(--slate-500);
   font-size: 0.95rem;
 }

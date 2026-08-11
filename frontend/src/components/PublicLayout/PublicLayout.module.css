@@ -137,7 +137,7 @@
   transition: background 0.2s, color 0.2s;
   color: var(--texto-secundario);
 }
-.mobileLink:hover { background: #f1f5f9; color: var(--azul-principal); }
+.mobileLink:hover { background: var(--slate-100); color: var(--azul-principal); }
 .mobileActiveLink { color: var(--azul-principal); background: #eff6ff; }
 
 .mobileBtnIngreso {

@@ -42,7 +42,7 @@ const fmtCRC = (v: number) =>
   "₡ " + new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(v);
 
 const AVATAR_COLORS = [
-  "#024f7d","#0891b2","#059669","#7c3aed","#db2777","#d97706","#dc2626",
+  "var(--brand)","var(--info)","var(--success)","#7c3aed","#db2777","#d97706","var(--danger)",
 ];
 const avatarColor = (name: string) =>
   AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];
@@ -132,15 +132,15 @@ export const SalesDashboardPage = () => {
       {/* ── KPIs ────────────────────────────────────────────────────────── */}
       <div className={styles.kpiRow}>
         <KpiCard icon={<LuCar size={20} />} label="Disponibles" value={String(stats?.totalVehicles ?? 0)}
-          sub="en catálogo" color="#024f7d" onClick={() => navigate("/sales/catalog")} />
+          sub="en catálogo" color="var(--brand)" onClick={() => navigate("/sales/catalog")} />
         <KpiCard icon={<LuCircleCheck size={20} />} label="Mis Ventas" value={String(stats?.monthlySalesCount ?? 0)}
-          sub="este mes" color="#059669" onClick={() => navigate("/sales/quotes")} />
+          sub="este mes" color="var(--success)" onClick={() => navigate("/sales/quotes")} />
         <KpiCard icon={<LuWallet size={20} />} label="Ingresos Generados" value={fmtCRC(stats?.monthlyRevenue ?? 0)}
-          sub="este mes" color="#0891b2" />
+          sub="este mes" color="var(--info)" />
         <KpiCard icon={<LuTarget size={20} />} label="Comisiones Est." value={fmtCRC(stats?.estimatedCommissions ?? 0)}
           sub="estimado del mes" color="#7c3aed" />
         <KpiCard icon={<LuFileText size={20} />} label="Pendientes" value={String(stats?.pendingItemsCount ?? 0)}
-          sub="cotizaciones + leads" color={stats?.pendingItemsCount ? "#d97706" : "#64748b"}
+          sub="cotizaciones + leads" color={stats?.pendingItemsCount ? "#d97706" : "var(--slate-500)"}
           onClick={() => navigate("/sales/quotes")} />
       </div>
 
@@ -196,7 +196,7 @@ export const SalesDashboardPage = () => {
                     <span className={styles.avatarName}>{c.nombre}</span>
                     <span className={styles.avatarSub} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuUtensils size={12} /> Almuerzo</span>
                   </div>
-                  <span className={styles.statusDot} style={{ background: "#f59e0b" }} />
+                  <span className={styles.statusDot} style={{ background: "var(--warning)" }} />
                 </div>
               ))}
             </div>
@@ -275,8 +275,8 @@ const qaStyle = (primary: boolean): React.CSSProperties => ({
   display: "flex", alignItems: "center", gap: "0.5rem",
   padding: "0.6rem 1rem", borderRadius: 10, cursor: "pointer",
   fontSize: "0.9rem", fontWeight: 600,
-  border: primary ? "none" : "1px solid #e2e8f0",
-  background: primary ? "#024f7d" : "#fff",
-  color: primary ? "#fff" : "#334155",
+  border: primary ? "none" : "1px solid var(--slate-200)",
+  background: primary ? "var(--brand)" : "#fff",
+  color: primary ? "#fff" : "var(--slate-700)",
   boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
 });

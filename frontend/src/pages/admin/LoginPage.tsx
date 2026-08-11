@@ -138,30 +138,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         {mostrarTarjeta ? (
           /* ── Tarjeta "Continuar como …" (correo recordado + biometría en un toque) ── */
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.85rem" }}>
-            <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#024f7d", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem", fontWeight: 800 }}>
+            <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--brand)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem", fontWeight: 800 }}>
               {email.charAt(0).toUpperCase()}
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.8rem", color: "#64748b" }}>Continuar como</div>
+              <div style={{ fontSize: "0.8rem", color: "var(--slate-500)" }}>Continuar como</div>
               <div style={{ fontWeight: 700, color: "var(--brand-dark)", wordBreak: "break-all" }}>{email}</div>
             </div>
             <button type="button" onClick={handlePasskeyLogin} disabled={cargando}
               style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.75rem 1rem",
+                background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.75rem 1rem",
                 cursor: cargando ? "not-allowed" : "pointer", fontWeight: 700, fontSize: "0.95rem" }}>
               {cargando ? (<><span className={styles.spinner} /> Ingresando…</>) : (<><LuFingerprint size={17} /> Entrar con biometría (Face ID / huella)</>)}
             </button>
-            {cargando && <p style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", margin: 0 }}>{mensajeCarga}</p>}
+            {cargando && <p style={{ fontSize: "0.85rem", color: "var(--slate-500)", textAlign: "center", margin: 0 }}>{mensajeCarga}</p>}
             {error && !cargando && <p className={styles.error}>{error}</p>}
             {!cargando && (
               <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.82rem", flexWrap: "wrap", justifyContent: "center" }}>
                 <button type="button" onClick={() => cambiarModo("password")}
-                  style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, textDecoration: "underline" }}>
+                  style={{ background: "none", border: "none", color: "var(--brand)", cursor: "pointer", fontWeight: 600, textDecoration: "underline" }}>
                   Usar contraseña
                 </button>
-                <span style={{ color: "#cbd5e1" }}>·</span>
+                <span style={{ color: "var(--slate-300)" }}>·</span>
                 <button type="button" onClick={() => { setEmail(""); setContrasena(""); setError(""); setCambiarUsuario(true); }}
-                  style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontWeight: 600, textDecoration: "underline" }}>
+                  style={{ background: "none", border: "none", color: "var(--slate-500)", cursor: "pointer", fontWeight: 600, textDecoration: "underline" }}>
                   Usar otra cuenta
                 </button>
               </div>
@@ -210,7 +210,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               </button>
 
               {cargando && (
-                <p style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", margin: "0.25rem 0 0" }}>
+                <p style={{ fontSize: "0.85rem", color: "var(--slate-500)", textAlign: "center", margin: "0.25rem 0 0" }}>
                   {mensajeCarga}
                 </p>
               )}
@@ -222,13 +222,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <div style={{ textAlign: "center", marginTop: "0.9rem" }}>
                 {modo === "biometria" ? (
                   <button type="button" onClick={() => cambiarModo("password")}
-                    style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
+                    style={{ background: "none", border: "none", color: "var(--brand)", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline" }}>
                     Prefiero usar mi contraseña
                   </button>
                 ) : (
                   soportaPasskey && (
                     <button type="button" onClick={() => cambiarModo("biometria")}
-                      style={{ background: "none", border: "none", color: "#024f7d", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                      style={{ background: "none", border: "none", color: "var(--brand)", cursor: "pointer", fontWeight: 600, fontSize: "0.85rem", textDecoration: "underline", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
                       <LuFingerprint size={15} /> Entrar con biometría (Face ID / huella)
                     </button>
                   )
@@ -236,7 +236,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               </div>
             )}
             {modo === "biometria" && !cargando && (
-              <p style={{ fontSize: "0.72rem", color: "#94a3b8", textAlign: "center", marginTop: "0.5rem" }}>
+              <p style={{ fontSize: "0.72rem", color: "var(--slate-400)", textAlign: "center", marginTop: "0.5rem" }}>
                 Disponible para Admin y Contador que registraron su dispositivo en Configuración → Seguridad.
               </p>
             )}

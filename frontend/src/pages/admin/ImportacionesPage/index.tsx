@@ -25,7 +25,7 @@ interface Importacion {
 
 const ESTADOS = ['En Transito','En Puerto','En Aduana','Nacionalizado','Entregado'];
 const estadoColor: Record<string, string> = {
-  'En Transito':'#3b82f6','En Puerto':'#f59e0b','En Aduana':'#f97316','Nacionalizado':'#8b5cf6','Entregado':'#10b981'
+  'En Transito':'#3b82f6','En Puerto':'var(--warning)','En Aduana':'#f97316','Nacionalizado':'#8b5cf6','Entregado':'#10b981'
 };
 
 const emptyVeh = { vin: '', marca: '', modelo: '', anio: '', color: '', costo_estimado_crc: '' };
@@ -129,7 +129,7 @@ export default function ImportacionesPage() {
                 <div className={styles.cardLeft}>
                   <button
                     onClick={() => toggleExpand(imp.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#024f7d', display: 'flex', alignItems: 'center' }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)', display: 'flex', alignItems: 'center' }}
                     title="Ver vehículos"
                   >
                     {isExp ? <LuChevronDown size={20} /> : <LuChevronRight size={20} />}
@@ -158,12 +158,12 @@ export default function ImportacionesPage() {
               </div>
 
               {isExp && (
-                <div style={{ marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--slate-200)', paddingTop: '1rem' }}>
                   {/* Lista de vehículos */}
                   {(imp.vehiculos?.length ?? 0) > 0 ? (
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                       <thead>
-                        <tr style={{ textAlign: 'left', color: '#64748b' }}>
+                        <tr style={{ textAlign: 'left', color: 'var(--slate-500)' }}>
                           <th style={{ padding: '4px 8px' }}>VIN</th>
                           <th style={{ padding: '4px 8px' }}>Marca / Modelo</th>
                           <th style={{ padding: '4px 8px' }}>Año</th>
@@ -175,7 +175,7 @@ export default function ImportacionesPage() {
                       </thead>
                       <tbody>
                         {imp.vehiculos!.map(v => (
-                          <tr key={v.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                          <tr key={v.id} style={{ borderTop: '1px solid var(--slate-100)' }}>
                             <td style={{ padding: '4px 8px', fontFamily: 'monospace' }}>{v.vin || '—'}</td>
                             <td style={{ padding: '4px 8px' }}>{[v.marca, v.modelo].filter(Boolean).join(' ') || '—'}</td>
                             <td style={{ padding: '4px 8px' }}>{v.anio || '—'}</td>
@@ -184,7 +184,7 @@ export default function ImportacionesPage() {
                             <td style={{ padding: '4px 8px' }}>
                               {v.vehiculo
                                 ? <span style={{ color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: 4 }}><LuCircleCheck size={14} /> #{v.vehiculo.id}</span>
-                                : <span style={{ color: '#94a3b8' }}>No creado</span>}
+                                : <span style={{ color: 'var(--slate-400)' }}>No creado</span>}
                             </td>
                             <td style={{ padding: '4px 8px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                               {!v.vehiculo && (
@@ -209,7 +209,7 @@ export default function ImportacionesPage() {
                       </tbody>
                     </table>
                   ) : (
-                    <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>Sin vehículos. Agregue abajo.</p>
+                    <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>Sin vehículos. Agregue abajo.</p>
                   )}
 
                   {/* Form para agregar vehículo */}
@@ -257,5 +257,5 @@ export default function ImportacionesPage() {
 }
 
 const inp = (w: number): React.CSSProperties => ({
-  width: w, padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.82rem',
+  width: w, padding: '6px 8px', border: '1px solid var(--slate-300)', borderRadius: 6, fontSize: '0.82rem',
 });

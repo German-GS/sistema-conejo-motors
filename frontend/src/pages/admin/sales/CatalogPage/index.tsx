@@ -277,7 +277,7 @@ export const CatalogPage = () => {
                 <p className={styles.price}>
                   {fmtCRC(Number(vehicle.precio_venta_final ?? vehicle.precio_venta))}
                   {vehicle.precio_venta_usd && (
-                    <span style={{ fontSize: "0.8em", color: "#64748b", marginLeft: "0.5rem" }}>
+                    <span style={{ fontSize: "0.8em", color: "var(--slate-500)", marginLeft: "0.5rem" }}>
                       / ${Number(vehicle.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })} USD
                     </span>
                   )}

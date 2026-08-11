@@ -41,11 +41,11 @@ const CAMPOS: { key: keyof Accesorio; label: string; Icon: IconType }[] = [
 ];
 
 const COLOR_HEX: Record<string, string> = {
-  negro: "#111827", blanco: "#f8fafc", gris: "#9ca3af", plateado: "#cbd5e1", plata: "#cbd5e1",
-  celeste: "#7dd3fc", azul: "#2563eb", rojo: "#dc2626", verde: "#16a34a", amarillo: "#eab308",
+  negro: "#111827", blanco: "var(--slate-50)", gris: "#9ca3af", plateado: "var(--slate-300)", plata: "var(--slate-300)",
+  celeste: "#7dd3fc", azul: "#2563eb", rojo: "var(--danger)", verde: "#16a34a", amarillo: "#eab308",
   naranja: "#f97316", morado: "#7c3aed", dorado: "#d4af37", beige: "#e7dcc8", vino: "#7f1d1d",
 };
-const colorHex = (c?: string) => COLOR_HEX[(c ?? "").trim().toLowerCase()] ?? "#cbd5e1";
+const colorHex = (c?: string) => COLOR_HEX[(c ?? "").trim().toLowerCase()] ?? "var(--slate-300)";
 
 // Estados posibles y ciclo al hacer clic en edición
 const CICLO: Record<string, string> = { "✅": "❌", "❌": "🔲", "🔲": "✅" };
@@ -54,7 +54,7 @@ const norm = (v?: string) => (v === "✅" || v === "❌" ? v : "🔲");
 const estiloEstado = (v: string): React.CSSProperties => {
   if (v === "✅") return { background: "#dcfce7", color: "#15803d", borderColor: "#bbf7d0" };
   if (v === "❌") return { background: "#fee2e2", color: "#b91c1c", borderColor: "#fecaca" };
-  return { background: "#f8fafc", color: "#94a3b8", borderColor: "#e2e8f0" };
+  return { background: "var(--slate-50)", color: "var(--slate-400)", borderColor: "var(--slate-200)" };
 };
 
 export const AccesoriosPage = () => {
@@ -134,7 +134,7 @@ export const AccesoriosPage = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="🔍 Buscar por marca, modelo, VIN, color…"
-          style={{ flex: "1 1 240px", minWidth: 220, padding: "0.5rem 0.8rem", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: "0.88rem", fontFamily: "inherit" }}
+          style={{ flex: "1 1 240px", minWidth: 220, padding: "0.5rem 0.8rem", borderRadius: 10, border: "1.5px solid var(--slate-200)", fontSize: "0.88rem", fontFamily: "inherit" }}
         />
         <div style={{ display: "flex", gap: "0.35rem" }}>
           {([["todos", "Todos"], ["incompletos", "Incompletos"], ["no_entregados", "No entregados"]] as const).map(([k, l]) => (
@@ -143,8 +143,8 @@ export const AccesoriosPage = () => {
               onClick={() => setFiltro(k)}
               style={{
                 fontSize: "0.8rem", borderRadius: 8, padding: "0.4rem 0.7rem", cursor: "pointer", fontWeight: 600,
-                border: `1.5px solid ${filtro === k ? "#024f7d" : "#e2e8f0"}`,
-                background: filtro === k ? "#024f7d" : "#fff", color: filtro === k ? "#fff" : "#475569",
+                border: `1.5px solid ${filtro === k ? "var(--brand)" : "var(--slate-200)"}`,
+                background: filtro === k ? "var(--brand)" : "#fff", color: filtro === k ? "#fff" : "var(--slate-600)",
               }}
             >{l}</button>
           ))}
@@ -163,16 +163,16 @@ export const AccesoriosPage = () => {
             const ok = contar(acc);
             const pct = Math.round((ok / total) * 100);
             return (
-              <div key={acc.id} style={{ background: "#fff", border: `1px solid ${isEditing ? "#024f7d" : "#e2e8f0"}`, borderRadius: 12, padding: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div key={acc.id} style={{ background: "#fff", border: `1px solid ${isEditing ? "var(--brand)" : "var(--slate-200)"}`, borderRadius: 12, padding: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {/* Encabezado */}
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "0.5rem" }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <span title={acc.vehiculo.color} style={{ width: 14, height: 14, borderRadius: "50%", background: colorHex(acc.vehiculo.color), border: "1.5px solid rgba(0,0,0,0.15)", flexShrink: 0 }} />
                       <strong style={{ color: "var(--brand-dark)" }}>{acc.vehiculo.marca} {acc.vehiculo.modelo}</strong>
-                      <span style={{ color: "#94a3b8", fontSize: "0.82rem" }}>{acc.vehiculo.año}</span>
+                      <span style={{ color: "var(--slate-400)", fontSize: "0.82rem" }}>{acc.vehiculo.año}</span>
                     </div>
-                    <button onClick={() => copyVin(acc.vehiculo.vin)} title="Copiar VIN" style={{ marginTop: 4, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "1px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.74rem", color: "#334155", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuClipboardList size={13} /> {acc.vehiculo.vin}</button>
+                    <button onClick={() => copyVin(acc.vehiculo.vin)} title="Copiar VIN" style={{ marginTop: 4, background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "1px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.74rem", color: "var(--slate-700)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuClipboardList size={13} /> {acc.vehiculo.vin}</button>
                   </div>
                   {acc.entregado_al_cliente && !isEditing && (
                     <span style={{ fontSize: "0.7rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "2px 8px", fontWeight: 700, whiteSpace: "nowrap" }}>✅ Entregado</span>
@@ -181,11 +181,11 @@ export const AccesoriosPage = () => {
 
                 {/* Progreso */}
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#64748b", marginBottom: 3 }}>
-                    <span>Accesorios recibidos</span><strong style={{ color: pct === 100 ? "#15803d" : "#334155" }}>{ok}/{total}</strong>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--slate-500)", marginBottom: 3 }}>
+                    <span>Accesorios recibidos</span><strong style={{ color: pct === 100 ? "#15803d" : "var(--slate-700)" }}>{ok}/{total}</strong>
                   </div>
-                  <div style={{ height: 6, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "#16a34a" : pct >= 50 ? "#0891b2" : "#f59e0b", transition: "width 0.2s" }} />
+                  <div style={{ height: 6, background: "var(--slate-100)", borderRadius: 4, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "#16a34a" : pct >= 50 ? "var(--info)" : "var(--warning)", transition: "width 0.2s" }} />
                   </div>
                 </div>
 
@@ -216,23 +216,23 @@ export const AccesoriosPage = () => {
                 {/* Color interior / obs */}
                 {isEditing ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <input value={(editData.color_interior as string) ?? ""} onChange={(e) => change("color_interior", e.target.value)} placeholder="Color interior" style={{ padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit" }} />
-                    <input value={(editData.observaciones as string) ?? ""} onChange={(e) => change("observaciones", e.target.value)} placeholder="Observaciones" style={{ padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit" }} />
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", color: "#475569" }}>
+                    <input value={(editData.color_interior as string) ?? ""} onChange={(e) => change("color_interior", e.target.value)} placeholder="Color interior" style={{ padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.82rem", fontFamily: "inherit" }} />
+                    <input value={(editData.observaciones as string) ?? ""} onChange={(e) => change("observaciones", e.target.value)} placeholder="Observaciones" style={{ padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.82rem", fontFamily: "inherit" }} />
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", color: "var(--slate-600)" }}>
                       <input type="checkbox" checked={!!editData.entregado_al_cliente} onChange={(e) => change("entregado_al_cliente", e.target.checked)} />
                       Entregado al cliente
                     </label>
                     <div style={{ display: "flex", gap: "0.5rem" }}>
                       <button onClick={handleSave} className="btn btn-principal" style={{ fontSize: "0.82rem", flex: 1 }}>Guardar</button>
-                      <button onClick={cancelar} className="btn" style={{ border: "1px solid #e2e8f0", background: "#fff", color: "#475569", fontSize: "0.82rem" }}>Cancelar</button>
+                      <button onClick={cancelar} className="btn" style={{ border: "1px solid var(--slate-200)", background: "#fff", color: "var(--slate-600)", fontSize: "0.82rem" }}>Cancelar</button>
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", fontSize: "0.8rem", color: "#64748b", borderTop: "1px solid #f1f5f9", paddingTop: "0.6rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", fontSize: "0.8rem", color: "var(--slate-500)", borderTop: "1px solid var(--slate-100)", paddingTop: "0.6rem" }}>
                     <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
                       <LuPalette size={13} /> {acc.color_interior || "—"}{acc.observaciones ? <> · <LuNotebookPen size={13} /> {acc.observaciones}</> : ""}
                     </span>
-                    <button onClick={() => startEdit(acc)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.8rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={13} /> Editar</button>
+                    <button onClick={() => startEdit(acc)} className="btn" style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", fontSize: "0.8rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={13} /> Editar</button>
                   </div>
                 )}
               </div>

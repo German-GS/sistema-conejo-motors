@@ -8,7 +8,7 @@
 
 .column {
   flex: 0 0 240px;
-  background: #f1f5f9;
+  background: var(--slate-100);
   border-radius: 12px;
   padding: 0.6rem;
   min-height: 120px;
@@ -26,7 +26,7 @@
   gap: 0.4rem;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--slate-700);
   padding: 0.25rem 0.4rem 0.6rem;
 }
 .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -36,15 +36,15 @@
   border-radius: 10px;
   padding: 1px 8px;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .cards { display: flex; flex-direction: column; gap: 0.5rem; }
 
 .card {
   background: #fff;
-  border: 1px solid #e2e8f0;
-  border-left: 3px solid var(--accent, #94a3b8);
+  border: 1px solid var(--slate-200);
+  border-left: 3px solid var(--accent, var(--slate-400));
   border-radius: 9px;
   padding: 0.55rem 0.65rem;
   cursor: grab;
@@ -55,11 +55,11 @@
 .cardAlert { border-left-color: #ef4444; background: #fef2f2; }
 
 .name { font-size: 0.85rem; font-weight: 700; color: #1e293b; }
-.meta { font-size: 0.74rem; color: #64748b; margin-top: 0.2rem; display: flex; flex-direction: column; gap: 1px; }
-.followAlert { color: #dc2626; font-weight: 600; }
+.meta { font-size: 0.74rem; color: var(--slate-500); margin-top: 0.2rem; display: flex; flex-direction: column; gap: 1px; }
+.followAlert { color: var(--danger); font-weight: 600; }
 
 .cardActions { margin-top: 0.4rem; }
 .verBtn {
-  font-size: 0.72rem; color: #024f7d; text-decoration: none; font-weight: 600;
+  font-size: 0.72rem; color: var(--brand); text-decoration: none; font-weight: 600;
 }
-.emptyCol { font-size: 0.74rem; color: #94a3b8; text-align: center; padding: 0.75rem 0; }
+.emptyCol { font-size: 0.74rem; color: var(--slate-400); text-align: center; padding: 0.75rem 0; }

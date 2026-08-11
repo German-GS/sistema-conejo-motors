@@ -477,13 +477,13 @@ export const AdminLayout = () => {
               title="Buscar o ir a una sección (⌘/Ctrl + K)"
               style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",
-                background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8,
-                padding: "0.4rem 0.7rem", cursor: "pointer", color: "#64748b", fontSize: "0.85rem",
+                background: "var(--slate-100)", border: "1px solid var(--slate-200)", borderRadius: 8,
+                padding: "0.4rem 0.7rem", cursor: "pointer", color: "var(--slate-500)", fontSize: "0.85rem",
               }}
             >
               <LuSearch size={16} />
               <span>Buscar o ir a…</span>
-              <span style={{ fontSize: "0.7rem", border: "1px solid #cbd5e1", borderRadius: 4, padding: "1px 5px", background: "#fff" }}>⌘K</span>
+              <span style={{ fontSize: "0.7rem", border: "1px solid var(--slate-300)", borderRadius: 4, padding: "1px 5px", background: "#fff" }}>⌘K</span>
             </button>
             <ClockWidget />
             {userRole === "Administrador" && (
@@ -524,7 +524,7 @@ export const AdminLayout = () => {
                 title="Previsualizar el sistema como lo ve un vendedor"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                  background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d",
+                  background: "#fff", border: "1.5px solid var(--brand)", color: "var(--brand)",
                   borderRadius: 8, padding: "0.45rem 0.85rem", cursor: "pointer",
                   fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap",
                 }}

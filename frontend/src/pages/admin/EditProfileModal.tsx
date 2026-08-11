@@ -346,7 +346,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
               <div className={styles.uploadPreview}>
                 {newFiles.map((f, i) => (
                   <img key={i} src={URL.createObjectURL(f)} alt=""
-                    style={{ width: 64, height: 52, objectFit: "cover", borderRadius: 6, border: "2px solid #024f7d" }}
+                    style={{ width: 64, height: 52, objectFit: "cover", borderRadius: 6, border: "2px solid var(--brand)" }}
                   />
                 ))}
                 <button

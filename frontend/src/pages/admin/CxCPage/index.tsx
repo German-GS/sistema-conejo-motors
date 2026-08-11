@@ -13,7 +13,7 @@ interface CxC {
 }
 
 const estadoColor: Record<string, string> = {
-  Pendiente: '#f59e0b', 'Pagado Parcial': '#3b82f6', Pagado: '#10b981', Vencido: '#ef4444', Anulado: '#94a3b8',
+  Pendiente: 'var(--warning)', 'Pagado Parcial': '#3b82f6', Pagado: '#10b981', Vencido: '#ef4444', Anulado: 'var(--slate-400)',
 };
 
 export default function CxCPage() {
@@ -59,7 +59,7 @@ export default function CxCPage() {
       <div className={styles.header}>
         <div><h1>Cuentas por Cobrar</h1><p>Control de créditos y pagos pendientes</p></div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={exportar}><LuChartColumnStacked size={16} /> Excel</button>
+          <button className={styles.btnPrimary} style={{ background: "#fff", color: "var(--slate-700)", border: "1px solid var(--slate-300)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onClick={exportar}><LuChartColumnStacked size={16} /> Excel</button>
           <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nueva CxC</button>
         </div>
       </div>

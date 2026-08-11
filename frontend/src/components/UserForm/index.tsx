@@ -234,11 +234,11 @@ export const UserForm: React.FC<UserFormProps> = ({
         ))}
       </select>
       {/* Calculadora de salario bruto/neto */}
-      <div style={{ gridColumn: "1 / -1", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "0.85rem 1rem" }}>
+      <div style={{ gridColumn: "1 / -1", background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 10, padding: "0.85rem 1rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#334155", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuCalculator size={16} /> Calculadora de salario</span>
-          <span style={{ fontSize: "0.82rem", color: "#64748b" }}>El monto que escribí arriba es:</span>
-          <div style={{ display: "inline-flex", border: "1px solid #cbd5e1", borderRadius: 8, overflow: "hidden" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--slate-700)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuCalculator size={16} /> Calculadora de salario</span>
+          <span style={{ fontSize: "0.82rem", color: "var(--slate-500)" }}>El monto que escribí arriba es:</span>
+          <div style={{ display: "inline-flex", border: "1px solid var(--slate-300)", borderRadius: 8, overflow: "hidden" }}>
             {(["bruto", "neto"] as const).map((m) => (
               <button
                 key={m}
@@ -246,8 +246,8 @@ export const UserForm: React.FC<UserFormProps> = ({
                 onClick={() => { setModoSalario(m); setCalcResult(null); }}
                 style={{
                   border: "none", cursor: "pointer", padding: "0.35rem 0.85rem", fontSize: "0.82rem", fontWeight: 600,
-                  background: modoSalario === m ? "#024f7d" : "#fff",
-                  color: modoSalario === m ? "#fff" : "#475569",
+                  background: modoSalario === m ? "var(--brand)" : "#fff",
+                  color: modoSalario === m ? "#fff" : "var(--slate-600)",
                 }}
               >
                 {m === "bruto" ? "Bruto" : "Neto (lo que recibe)"}
@@ -264,25 +264,25 @@ export const UserForm: React.FC<UserFormProps> = ({
           </button>
         </div>
 
-        <p style={{ fontSize: "0.76rem", color: "#94a3b8", margin: "0.5rem 0 0" }}>
+        <p style={{ fontSize: "0.76rem", color: "var(--slate-400)", margin: "0.5rem 0 0" }}>
           Si prometés un <strong>neto</strong> al colaborador, elegí “Neto” y Calcular: el sistema sube el monto al bruto necesario (se guarda el bruto, que es lo que usa la planilla).
         </p>
 
         {calcResult && (
           <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
-              <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase" }}>Salario Bruto</div>
+            <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
+              <div style={{ fontSize: "0.72rem", color: "var(--slate-400)", textTransform: "uppercase" }}>Salario Bruto</div>
               <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--brand-dark)" }}>{fmtCRC(calcResult.bruto)}</div>
               <div style={{ fontSize: "0.68rem", color: "#16a34a" }}>✓ se guarda este</div>
             </div>
-            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
-              <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase" }}>Neto que recibe</div>
-              <div style={{ fontSize: "1rem", fontWeight: 700, color: "#024f7d" }}>{fmtCRC(calcResult.neto)}</div>
+            <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
+              <div style={{ fontSize: "0.72rem", color: "var(--slate-400)", textTransform: "uppercase" }}>Neto que recibe</div>
+              <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--brand)" }}>{fmtCRC(calcResult.neto)}</div>
             </div>
-            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
-              <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase" }}>Deducciones CCSS</div>
-              <div style={{ fontSize: "1rem", fontWeight: 700, color: "#dc2626" }}>−{fmtCRC(calcResult.totalDeducciones)}</div>
-              <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>
+            <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
+              <div style={{ fontSize: "0.72rem", color: "var(--slate-400)", textTransform: "uppercase" }}>Deducciones CCSS</div>
+              <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--danger)" }}>−{fmtCRC(calcResult.totalDeducciones)}</div>
+              <div style={{ fontSize: "0.68rem", color: "var(--slate-400)" }}>
                 SEM {fmtCRC(calcResult.desglose.sem)} · IVM {fmtCRC(calcResult.desglose.ivm)} · BP {fmtCRC(calcResult.desglose.bancoPopular)}
                 {calcResult.desglose.renta > 0 ? ` · Renta ${fmtCRC(calcResult.desglose.renta)}` : ""}
               </div>

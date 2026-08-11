@@ -33,11 +33,11 @@ function ComprobanteThumb({ id, mime, onOpenImagen, onOpenOtro }: { id: number; 
     );
   }
   if (!url) {
-    return <span title="Cargando…" style={{ display: "inline-block", width: 38, height: 38, marginLeft: 6, borderRadius: 6, background: "#f1f5f9", border: "1px solid #e2e8f0", verticalAlign: "middle" }} />;
+    return <span title="Cargando…" style={{ display: "inline-block", width: 38, height: 38, marginLeft: 6, borderRadius: 6, background: "var(--slate-100)", border: "1px solid var(--slate-200)", verticalAlign: "middle" }} />;
   }
   return (
     <img src={url} alt="Factura" title="Click para ver en grande" onClick={() => onOpenImagen(url)}
-      style={{ width: 38, height: 38, objectFit: "cover", borderRadius: 6, border: "1px solid #e2e8f0", cursor: "zoom-in", marginLeft: 6, verticalAlign: "middle" }} />
+      style={{ width: 38, height: 38, objectFit: "cover", borderRadius: 6, border: "1px solid var(--slate-200)", cursor: "zoom-in", marginLeft: 6, verticalAlign: "middle" }} />
   );
 }
 
@@ -176,7 +176,7 @@ export default function GastosPage() {
       <div className={styles.header}>
         <div><h1>Gastos Operativos</h1><p>Control de gastos y costos de operación</p></div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className={styles.btnPrimary} style={{ background: "#fff", color: "#334155", border: "1px solid #cbd5e1", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={exportar}><LuChartColumnStacked size={16} /> Excel</button>
+          <button className={styles.btnPrimary} style={{ background: "#fff", color: "var(--slate-700)", border: "1px solid var(--slate-300)", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={exportar}><LuChartColumnStacked size={16} /> Excel</button>
           <button className={styles.btnPrimary} onClick={abrirNuevo}><LuPlus size={16} /> Nuevo Gasto</button>
         </div>
       </div>
@@ -192,18 +192,18 @@ export default function GastosPage() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <input type="month" value={periodo} disabled={verTodos} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem" }} />
-            <button onClick={() => setVerTodos((v) => !v)} style={{ fontSize: "0.82rem", borderRadius: 8, padding: "0.45rem 0.8rem", cursor: "pointer", fontWeight: 600, border: `1.5px solid ${verTodos ? "#024f7d" : "#e2e8f0"}`, background: verTodos ? "#024f7d" : "#fff", color: verTodos ? "#fff" : "#475569" }}>
+            <input type="month" value={periodo} disabled={verTodos} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem" }} />
+            <button onClick={() => setVerTodos((v) => !v)} style={{ fontSize: "0.82rem", borderRadius: 8, padding: "0.45rem 0.8rem", cursor: "pointer", fontWeight: 600, border: `1.5px solid ${verTodos ? "var(--brand)" : "var(--slate-200)"}`, background: verTodos ? "var(--brand)" : "#fff", color: verTodos ? "#fff" : "var(--slate-600)" }}>
               {verTodos ? "Ver por mes" : "Ver todos"}
             </button>
           </div>
         </div>
         {/* Desglose por categoría */}
         {porCategoria.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.9rem", paddingTop: "0.9rem", borderTop: "1px solid #f1f5f9" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.9rem", paddingTop: "0.9rem", borderTop: "1px solid var(--slate-100)" }}>
             {porCategoria.map(([cat, monto]) => (
-              <span key={cat} style={{ display: "inline-flex", alignItems: "baseline", gap: "0.4rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "3px 12px", fontSize: "0.8rem" }}>
-                <span style={{ color: "#475569" }}>{cat}</span>
+              <span key={cat} style={{ display: "inline-flex", alignItems: "baseline", gap: "0.4rem", background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 20, padding: "3px 12px", fontSize: "0.8rem" }}>
+                <span style={{ color: "var(--slate-600)" }}>{cat}</span>
                 <strong style={{ color: "var(--brand-dark)" }}>₡{monto.toLocaleString('es-CR')}</strong>
               </span>
             ))}

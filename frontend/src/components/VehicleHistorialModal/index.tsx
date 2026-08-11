@@ -19,7 +19,7 @@ interface Props {
 }
 
 const tipoColor: Record<string, string> = {
-  estado: "#024f7d",
+  estado: "var(--brand)",
   visibilidad: "#7c3aed",
   clasificacion: "#d97706",
 };
@@ -51,9 +51,9 @@ export const VehicleHistorialModal = ({ vehicleId, vehicleLabel, onClose }: Prop
       title={`Historial de estados${vehicleLabel ? ` — ${vehicleLabel}` : ""}`}
     >
       {loading ? (
-        <p style={{ padding: "1rem", color: "#64748b" }}>Cargando historial...</p>
+        <p style={{ padding: "1rem", color: "var(--slate-500)" }}>Cargando historial...</p>
       ) : items.length === 0 ? (
-        <p style={{ padding: "1rem", color: "#64748b" }}>
+        <p style={{ padding: "1rem", color: "var(--slate-500)" }}>
           Sin cambios registrados todavía. Las transiciones (reserva, venta, liberación,
           visibilidad) quedarán registradas aquí a partir de ahora.
         </p>
@@ -64,7 +64,7 @@ export const VehicleHistorialModal = ({ vehicleId, vehicleLabel, onClose }: Prop
               key={it.id}
               style={{
                 display: "flex", gap: "0.75rem", alignItems: "flex-start",
-                borderLeft: `3px solid ${tipoColor[it.tipo] || "#94a3b8"}`,
+                borderLeft: `3px solid ${tipoColor[it.tipo] || "var(--slate-400)"}`,
                 paddingLeft: "0.75rem",
               }}
             >
@@ -73,17 +73,17 @@ export const VehicleHistorialModal = ({ vehicleId, vehicleLabel, onClose }: Prop
                   {it.estado_anterior ? `${it.estado_anterior} → ` : ""}
                   {it.estado_nuevo}
                   <span style={{
-                    fontSize: "0.7rem", fontWeight: 500, color: tipoColor[it.tipo] || "#94a3b8",
-                    background: (tipoColor[it.tipo] || "#94a3b8") + "1a",
+                    fontSize: "0.7rem", fontWeight: 500, color: tipoColor[it.tipo] || "var(--slate-400)",
+                    background: (tipoColor[it.tipo] || "var(--slate-400)") + "1a",
                     borderRadius: 6, padding: "1px 6px", marginLeft: "0.5rem",
                   }}>
                     {it.tipo}
                   </span>
                 </div>
                 {it.motivo && (
-                  <div style={{ fontSize: "0.82rem", color: "#475569", marginTop: "0.15rem" }}>{it.motivo}</div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--slate-600)", marginTop: "0.15rem" }}>{it.motivo}</div>
                 )}
-                <div style={{ fontSize: "0.74rem", color: "#94a3b8", marginTop: "0.15rem" }}>
+                <div style={{ fontSize: "0.74rem", color: "var(--slate-400)", marginTop: "0.15rem" }}>
                   {fmtFecha(it.fecha)}
                   {it.usuario && ` · ${it.usuario.nombre_completo || it.usuario.email}`}
                 </div>

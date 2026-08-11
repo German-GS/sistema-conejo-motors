@@ -14,7 +14,7 @@ interface Garantia {
   vin?: string;
 }
 
-const estadoColor: Record<string, string> = { Activa: '#10b981', Vencida: '#ef4444', Anulada: '#94a3b8' };
+const estadoColor: Record<string, string> = { Activa: '#10b981', Vencida: '#ef4444', Anulada: 'var(--slate-400)' };
 const TIPOS = ['General', 'Bateria', 'Motor', 'Electrico', 'Transmision'];
 
 export default function GarantiasPage() {

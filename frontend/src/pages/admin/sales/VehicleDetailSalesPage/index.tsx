@@ -135,7 +135,7 @@ export const VehicleDetailSalesPage = () => {
           <p className={styles.price}>
             {formatCRC(vehicle.precio_venta)}
             {vehicle.precio_venta_usd && (
-              <span style={{ fontSize: "0.75em", color: "#64748b", marginLeft: "0.6rem", fontWeight: 400 }}>
+              <span style={{ fontSize: "0.75em", color: "var(--slate-500)", marginLeft: "0.6rem", fontWeight: 400 }}>
                 / ${Number(vehicle.precio_venta_usd).toLocaleString("en-US", { maximumFractionDigits: 0 })} USD
               </span>
             )}

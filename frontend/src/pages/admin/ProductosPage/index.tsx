@@ -174,19 +174,19 @@ export const ProductosPage = () => {
       {/* ── KPIs ── */}
       {stats && (
         <div className={styles.kpiRow}>
-          <div className={styles.kpi} style={{ "--c": "#024f7d" } as any}>
+          <div className={styles.kpi} style={{ "--c": "var(--brand)" } as any}>
             <span className={styles.kpiIcon}><LuPackage size={20} /></span>
             <div><span className={styles.kpiVal}>{stats.totalProductos}</span><span className={styles.kpiLbl}>Productos activos</span></div>
           </div>
-          <div className={styles.kpi} style={{ "--c": stats.stockBajoCount > 0 ? "#dc2626" : "#059669" } as any}>
+          <div className={styles.kpi} style={{ "--c": stats.stockBajoCount > 0 ? "var(--danger)" : "var(--success)" } as any}>
             <span className={styles.kpiIcon}>{stats.stockBajoCount > 0 ? <LuTriangleAlert size={20} /> : <LuCircleCheck size={20} />}</span>
             <div><span className={styles.kpiVal}>{stats.stockBajoCount}</span><span className={styles.kpiLbl}>Stock bajo</span></div>
           </div>
-          <div className={styles.kpi} style={{ "--c": "#0891b2" } as any}>
+          <div className={styles.kpi} style={{ "--c": "var(--info)" } as any}>
             <span className={styles.kpiIcon}><LuShoppingCart size={20} /></span>
             <div><span className={styles.kpiVal}>{stats.ventasMesCount}</span><span className={styles.kpiLbl}>Ventas del mes</span></div>
           </div>
-          <div className={styles.kpi} style={{ "--c": "#059669" } as any}>
+          <div className={styles.kpi} style={{ "--c": "var(--success)" } as any}>
             <span className={styles.kpiIcon}><LuWallet size={20} /></span>
             <div><span className={styles.kpiVal}>{fmtCRC(stats.ventasMesTotal)}</span><span className={styles.kpiLbl}>Ingresos del mes</span></div>
           </div>
@@ -359,7 +359,7 @@ export const ProductosPage = () => {
                       title="Tarifa de IVA"
                       value={l.iva_tarifa}
                       onChange={e => setPosLineas(prev => { const n=[...prev]; n[i]={...n[i], iva_tarifa: e.target.value}; return n; })}
-                      style={{ fontSize: "0.72rem", borderRadius: 6, border: "1px solid #e2e8f0", padding: "2px 4px" }}
+                      style={{ fontSize: "0.72rem", borderRadius: 6, border: "1px solid var(--slate-200)", padding: "2px 4px" }}
                     >
                       <option value="T13">13%</option><option value="T04">4%</option><option value="T02">2%</option><option value="T01">1%</option><option value="T005">0,5%</option><option value="Exento">Exento</option>
                     </select>

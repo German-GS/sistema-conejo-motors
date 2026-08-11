@@ -63,7 +63,7 @@ const initials = (name: string) =>
   name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
 const AVATAR_COLORS = [
-  "#024f7d", "#0891b2", "#059669", "#7c3aed", "#db2777", "#d97706", "#dc2626",
+  "var(--brand)", "var(--info)", "var(--success)", "#7c3aed", "#db2777", "#d97706", "var(--danger)",
 ];
 const avatarColor = (name: string) =>
   AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
@@ -165,20 +165,20 @@ export const DashboardHomePage = () => {
               <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={16} /> Indicadores del Mes</span>
             </div>
             <div className={styles.miniKpiGrid}>
-              <MiniKpi icon={<LuCar size={18} />} label="Disponibles"   value={String(extended?.inventario.disponibles ?? basic?.totalVehicles ?? 0)} color="#024f7d" onClick={() => navigate("/admin/inventory")} />
+              <MiniKpi icon={<LuCar size={18} />} label="Disponibles"   value={String(extended?.inventario.disponibles ?? basic?.totalVehicles ?? 0)} color="var(--brand)" onClick={() => navigate("/admin/inventory")} />
               <MiniKpi icon={<LuBookmark size={18} />} label="Reservados"    value={String(extended?.inventario.reservados ?? 0)} color="#7c3aed" onClick={() => navigate("/admin/inventory")} />
-              <MiniKpi icon={<LuCircleCheck size={18} />} label="Vendidos"      value={String(extended?.inventario.vendidosMes ?? basic?.monthlySales ?? 0)} color="#059669" onClick={() => navigate("/admin/billing")} />
-              <MiniKpi icon={<LuWallet size={18} />} label="Ingresos"      value={fmtCRC(basic?.monthlyRevenue ?? 0)} sub={`Ganancia ${fmtCRC(basic?.monthlyGrossProfit ?? 0)}`} color="#0891b2" />
+              <MiniKpi icon={<LuCircleCheck size={18} />} label="Vendidos"      value={String(extended?.inventario.vendidosMes ?? basic?.monthlySales ?? 0)} color="var(--success)" onClick={() => navigate("/admin/billing")} />
+              <MiniKpi icon={<LuWallet size={18} />} label="Ingresos"      value={fmtCRC(basic?.monthlyRevenue ?? 0)} sub={`Ganancia ${fmtCRC(basic?.monthlyGrossProfit ?? 0)}`} color="var(--info)" />
               <MiniKpi icon={<LuUsers size={18} />} label="Leads activos" value={String(extended?.leads.activos ?? 0)} sub={`+${extended?.leads.hoy ?? 0} hoy`} color="#d97706" onClick={() => navigate("/admin/leads")} />
               <MiniKpi
                 icon={<LuFileText size={18} />} label="Cotizaciones"
                 value={String(extended?.cotizaciones.activas ?? 0)}
                 sub={(extended?.cotizaciones.vencidas ?? 0) > 0 ? `${extended!.cotizaciones.vencidas} vencidas` : `${extended?.cotizaciones.mes ?? 0} este mes`}
                 subIcon={(extended?.cotizaciones.vencidas ?? 0) > 0 ? <LuTriangleAlert size={13} /> : undefined}
-                color={(extended?.cotizaciones.vencidas ?? 0) > 0 ? "#dc2626" : "#024f7d"}
+                color={(extended?.cotizaciones.vencidas ?? 0) > 0 ? "var(--danger)" : "var(--brand)"}
                 onClick={() => navigate("/admin/sales/quotes")}
               />
-              <MiniKpi icon={<LuWrench size={18} />} label="Repuestos"     value={String(extended?.repuestos.ventasMes ?? 0)} sub={fmtCRC(extended?.repuestos.ingresosMes ?? 0)} color="#0891b2" onClick={() => navigate("/admin/productos")} />
+              <MiniKpi icon={<LuWrench size={18} />} label="Repuestos"     value={String(extended?.repuestos.ventasMes ?? 0)} sub={fmtCRC(extended?.repuestos.ingresosMes ?? 0)} color="var(--info)" onClick={() => navigate("/admin/productos")} />
               <MiniKpi
                 icon={conectadosAlmuerzo.length > 0 ? <LuUtensils size={18} /> : <LuCircle size={18} fill="currentColor" />}
                 label="Equipo activo"
@@ -227,7 +227,7 @@ export const DashboardHomePage = () => {
                 ))}
                 {conectadosAlmuerzo.map((c) => (
                   <div key={c.id} className={`${styles.avatarRow} ${styles.avatarRowAlmuerzo}`}>
-                    <div className={styles.avatar} style={{ background: "#f59e0b" }}>
+                    <div className={styles.avatar} style={{ background: "var(--warning)" }}>
                       {initials(c.nombre)}
                     </div>
                     <div className={styles.avatarInfo}>
@@ -344,7 +344,7 @@ export const DashboardHomePage = () => {
                           className={styles.rankBarFill}
                           style={{
                             width: `${Math.min(100, v.conversion)}%`,
-                            background: v.conversion >= 50 ? "#059669" : v.conversion >= 25 ? "#d97706" : "#dc2626",
+                            background: v.conversion >= 50 ? "var(--success)" : v.conversion >= 25 ? "#d97706" : "var(--danger)",
                           }}
                         />
                       </div>
@@ -383,9 +383,9 @@ const QuickAction = ({ icon, label, onClick, primary }: {
       display: "flex", alignItems: "center", gap: "0.5rem",
       padding: "0.6rem 1rem", borderRadius: 10, cursor: "pointer",
       fontSize: "0.9rem", fontWeight: 600,
-      border: primary ? "none" : "1px solid #e2e8f0",
-      background: primary ? "#024f7d" : "#fff",
-      color: primary ? "#fff" : "#334155",
+      border: primary ? "none" : "1px solid var(--slate-200)",
+      background: primary ? "var(--brand)" : "#fff",
+      color: primary ? "#fff" : "var(--slate-700)",
       boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
     }}
   >

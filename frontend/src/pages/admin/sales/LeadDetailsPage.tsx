@@ -108,16 +108,16 @@ const TIPO_ICONS: Record<string, string> = {
 const TIPOS_MANUALES = ["nota", "llamada", "email", "whatsapp", "reunion"];
 
 const ESTADO_COLORS: Record<string, string> = {
-  Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
-  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "#94a3b8",
+  Nuevo: "#3b82f6", Contactado: "var(--warning)", "En Progreso": "#8b5cf6",
+  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "var(--slate-400)",
 };
 
 const TEMPERATURAS: { value: "Caliente" | "Tibio" | "Frio"; label: ReactNode; color: string }[] = [
   { value: "Caliente", label: <><LuFlame size={13} /> Caliente</>, color: "#ef4444" },
-  { value: "Tibio",    label: <><LuCloudSun size={13} /> Tibio</>, color: "#f59e0b" },
+  { value: "Tibio",    label: <><LuCloudSun size={13} /> Tibio</>, color: "var(--warning)" },
   { value: "Frio",     label: <><LuSnowflake size={13} /> Frío</>, color: "#3b82f6" },
 ];
-const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
+const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "var(--warning)", Frio: "#3b82f6" };
 
 const ETAPAS = [
   "Preguntó precio",
@@ -205,7 +205,7 @@ export const LeadDetailsPage = () => {
     : ["Lafise", "Banco Promerica", "Davivienda", "Coopenae", "Flexi Leasing"];
   const ESTADOS_FIN = ["Pendiente", "Enviado", "En Revisión", "Pre-Aprobado", "Aprobado", "Rechazado", "Desistió"];
   const ESTADO_FIN_COLORS: Record<string, string> = {
-    "Pendiente": "#94a3b8", "Enviado": "#3b82f6", "En Revisión": "#f59e0b",
+    "Pendiente": "var(--slate-400)", "Enviado": "#3b82f6", "En Revisión": "var(--warning)",
     "Pre-Aprobado": "#8b5cf6", "Aprobado": "#10b981", "Rechazado": "#ef4444",
     "Desistió": "#78716c",
   };
@@ -551,7 +551,7 @@ export const LeadDetailsPage = () => {
                       }
                       if (e.key === "Escape") setEditandoNombre(false);
                     }}
-                    style={{ fontSize: "1.05rem", fontWeight: 700, padding: "0.3rem 0.5rem", borderRadius: 8, border: "1.5px solid #024f7d", width: "100%" }}
+                    style={{ fontSize: "1.05rem", fontWeight: 700, padding: "0.3rem 0.5rem", borderRadius: 8, border: "1.5px solid var(--brand)", width: "100%" }}
                   />
                   <div style={{ display: "flex", gap: "0.4rem" }}>
                     <button
@@ -560,13 +560,13 @@ export const LeadDetailsPage = () => {
                         if (n && n !== lead.nombre_cliente) save({ nombre_cliente: n } as any);
                         setEditandoNombre(false);
                       }}
-                      style={{ background: "#024f7d", color: "#fff", border: "none", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
+                      style={{ background: "var(--brand)", color: "#fff", border: "none", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
                     >
                       Guardar
                     </button>
                     <button
                       onClick={() => setEditandoNombre(false)}
-                      style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem" }}
+                      style={{ background: "var(--slate-100)", color: "var(--slate-600)", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem" }}
                     >
                       Cancelar
                     </button>
@@ -586,7 +586,7 @@ export const LeadDetailsPage = () => {
               )}
               <span
                 className={styles.estadoBadge}
-                style={{ background: ESTADO_COLORS[lead.estado] ?? "#64748b" }}
+                style={{ background: ESTADO_COLORS[lead.estado] ?? "var(--slate-500)" }}
               >
                 {lead.estado}
               </span>
@@ -630,7 +630,7 @@ export const LeadDetailsPage = () => {
                   const v = e.target.value.trim();
                   if (v !== (lead.cedula_cliente ?? "")) save({ cedula_cliente: v } as any);
                 }}
-                style={{ flex: 1, minWidth: 120, boxSizing: "border-box", padding: "0.3rem 0.5rem", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: "0.88rem", fontFamily: "inherit" }}
+                style={{ flex: 1, minWidth: 120, boxSizing: "border-box", padding: "0.3rem 0.5rem", borderRadius: 6, border: "1px solid var(--slate-200)", fontSize: "0.88rem", fontFamily: "inherit" }}
               />
             </p>
             <p><strong>Registrado:</strong> {fmtFecha(lead.fecha_creacion)}</p>
@@ -712,14 +712,14 @@ export const LeadDetailsPage = () => {
             const pct = Math.round((completos / totalReq) * 100);
             const iSt: React.CSSProperties = {
               width: "100%", boxSizing: "border-box", padding: "0.4rem 0.55rem", borderRadius: 6,
-              border: "1px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit",
-              background: ro ? "#f1f5f9" : "#fff",
+              border: "1px solid var(--slate-200)", fontSize: "0.85rem", fontFamily: "inherit",
+              background: ro ? "var(--slate-100)" : "#fff",
             };
             const lleno = (k: string) => { const v = kyc[k]; return v !== null && v !== undefined && v !== ""; };
             const mark = (k: string) => (lleno(k) ? <LuCircleCheck size={12} style={{ verticalAlign: "-1px" }} /> : <LuTriangleAlert size={12} style={{ verticalAlign: "-1px" }} />);
             // Campo de texto/fecha/número reutilizable
             const Campo = (k: string, label: string, tipo: "text" | "date" | "number" = "text") => (
-              <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+              <label style={{ fontSize: "0.78rem", color: "var(--slate-700)", display: "flex", flexDirection: "column", gap: 2 }}>
                 <span>{mark(k)} {label}</span>
                 <input
                   type={tipo} defaultValue={kyc[k] ?? ""} disabled={ro} key={String(kyc[k] ?? "")}
@@ -732,7 +732,7 @@ export const LeadDetailsPage = () => {
               </label>
             );
             const grupoTitulo = (t: ReactNode) => (
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.03em", margin: "0.5rem 0 0.35rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>{t}</div>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--slate-600)", textTransform: "uppercase", letterSpacing: "0.03em", margin: "0.5rem 0 0.35rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>{t}</div>
             );
             return (
               <SidebarSection id="sugef" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuClipboardList size={16} /> Expediente SUGEF</span>} defaultOpen={pct < 100} badge={ro ? <LuLock size={14} /> : `${completos}/${totalReq}`}>
@@ -743,19 +743,19 @@ export const LeadDetailsPage = () => {
                 )}
                 {/* Barra de progreso */}
                 <div style={{ margin: "0.2rem 0 0.3rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#64748b", marginBottom: 3 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--slate-500)", marginBottom: 3 }}>
                     <span>{completos} de {totalReq} campos completados</span>
-                    <span style={{ fontWeight: 700, color: pct === 100 ? "#16a34a" : "#f59e0b" }}>{pct}%</span>
+                    <span style={{ fontWeight: 700, color: pct === 100 ? "#16a34a" : "var(--warning)" }}>{pct}%</span>
                   </div>
-                  <div style={{ background: "#f1f5f9", borderRadius: 6, height: 8, overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#16a34a" : "#f59e0b", transition: "width 0.3s" }} />
+                  <div style={{ background: "var(--slate-100)", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#16a34a" : "var(--warning)", transition: "width 0.3s" }} />
                   </div>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
                   {grupoTitulo(<><LuIdCard size={13} /> Identidad</>)}
                   {/* Nacionalidad: al elegir Costarricense, autocompleta país de residencia */}
-                  <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                  <label style={{ fontSize: "0.78rem", color: "var(--slate-700)", display: "flex", flexDirection: "column", gap: 2 }}>
                     <span>{mark("nacionalidad")} Nacionalidad</span>
                     <select
                       value={kyc.nacionalidad ?? ""} disabled={ro}
@@ -779,7 +779,7 @@ export const LeadDetailsPage = () => {
                   {Campo("pais_residencia", "País de residencia")}
 
                   {grupoTitulo(<><LuBriefcase size={13} /> Perfil económico y origen de fondos</>)}
-                  <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                  <label style={{ fontSize: "0.78rem", color: "var(--slate-700)", display: "flex", flexDirection: "column", gap: 2 }}>
                     <span>{mark("tipo_ingreso")} Tipo de ingreso</span>
                     <select
                       value={kyc.tipo_ingreso ?? ""} disabled={ro}
@@ -803,7 +803,7 @@ export const LeadDetailsPage = () => {
                       <LuWallet size={13} /> Origen de fondos: {asalariado ? `Salario${kyc.empleador ? " — " + kyc.empleador : ""}` : `Actividad independiente${kyc.profesion ? ": " + kyc.profesion : ""}`}
                     </div>
                   )}
-                  <label style={{ fontSize: "0.78rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
+                  <label style={{ fontSize: "0.78rem", color: "var(--slate-700)", display: "flex", flexDirection: "column", gap: 2 }}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>{kyc.es_pep === true || kyc.es_pep === false ? <LuCircleCheck size={12} /> : <LuTriangleAlert size={12} />} ¿Es PEP? (persona expuesta políticamente)</span>
                     <select
                       value={kyc.es_pep === true ? "si" : kyc.es_pep === false ? "no" : ""} disabled={ro}
@@ -839,7 +839,7 @@ export const LeadDetailsPage = () => {
               value={lead.estado}
               onChange={(e) => save({ estado: e.target.value } as any)}
               className={styles.select}
-              style={{ borderColor: ESTADO_COLORS[lead.estado] ?? "#cbd5e1" }}
+              style={{ borderColor: ESTADO_COLORS[lead.estado] ?? "var(--slate-300)" }}
             >
               {["Nuevo", "Contactado", "En Progreso", "Cerrado", "Perdido", "Descartado"].map((e) => (
                 <option key={e} value={e}>{e}</option>
@@ -868,7 +868,7 @@ export const LeadDetailsPage = () => {
               <select
                 value={lead.campana?.id ?? ""}
                 onChange={(e) => save({ campana_id: e.target.value ? Number(e.target.value) : null } as any)}
-                style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.75rem", borderRadius: "8px", border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
+                style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.75rem", borderRadius: "8px", border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", fontFamily: "inherit" }}
               >
                 <option value="">— Orgánico / sin campaña —</option>
                 {/* Siempre mostrar la campaña actual aunque esté pausada/finalizada */}
@@ -893,7 +893,7 @@ export const LeadDetailsPage = () => {
             <select
               value={lead.ultima_etapa ?? ""}
               onChange={(e) => save({ ultima_etapa: e.target.value || null } as any)}
-              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.75rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.75rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", fontFamily: "inherit" }}
             >
               <option value="">— Sin definir —</option>
               {ETAPAS.map((et) => <option key={et} value={et}>{et}</option>)}
@@ -952,7 +952,7 @@ export const LeadDetailsPage = () => {
                 </button>
               ))}
             </div>
-            <label style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "0.6rem", fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "0.6rem", fontSize: "0.78rem", fontWeight: 700, color: "var(--slate-500)" }}>
               <LuWallet size={14} /> Prima que puede aportar (₡)
             </label>
             <input
@@ -964,14 +964,14 @@ export const LeadDetailsPage = () => {
                 const v = e.target.value ? Number(e.target.value) : null;
                 if (Number(lead.prima_disponible ?? 0) !== Number(v ?? 0)) save({ prima_disponible: v } as any);
               }}
-              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.65rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem 0.65rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", fontFamily: "inherit" }}
             />
           </SidebarSection>
 
           {/* Cotizaciones vinculadas */}
           <SidebarSection id="cotizaciones" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuFileText size={16} /> Cotizaciones</span>} defaultOpen badge={cotizaciones.length || undefined}>
             {cotizaciones.length === 0 ? (
-              <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #64748b)", margin: 0 }}>
+              <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, var(--slate-500))", margin: 0 }}>
                 Sin cotizaciones aún.
               </p>
             ) : (
@@ -979,15 +979,15 @@ export const LeadDetailsPage = () => {
                 {cotizaciones.map((c) => {
                   const vencida = new Date(c.fecha_expiracion) < new Date();
                   const estadoColor: Record<string, string> = {
-                    Activa: "#10b981", Expirada: "#f59e0b", Cancelada: "#ef4444",
+                    Activa: "#10b981", Expirada: "var(--warning)", Cancelada: "#ef4444",
                   };
-                  const color = estadoColor[c.estado] ?? "#64748b";
+                  const color = estadoColor[c.estado] ?? "var(--slate-500)";
                   return (
                     <div
                       key={c.id}
                       onClick={() => navigate(`${location.pathname.startsWith("/admin") ? "/admin" : "/sales"}/quotes/${c.id}`)}
                       style={{
-                        background: "var(--bg, #f8fafc)", border: "1px solid var(--border, #e2e8f0)",
+                        background: "var(--bg, var(--slate-50))", border: "1px solid var(--border, var(--slate-200))",
                         borderRadius: 8, padding: "0.6rem 0.8rem", cursor: "pointer",
                         borderLeft: `3px solid ${color}`,
                       }}
@@ -1000,11 +1000,11 @@ export const LeadDetailsPage = () => {
                           {c.estado}
                         </span>
                       </div>
-                      <div style={{ fontSize: "0.78rem", color: "var(--text-secondary, #64748b)", display: "flex", gap: "0.75rem" }}>
+                      <div style={{ fontSize: "0.78rem", color: "var(--text-secondary, var(--slate-500))", display: "flex", gap: "0.75rem" }}>
                         <span>#{c.id}</span>
                         <span>{new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(c.total_con_iva)}</span>
                         {c.estado === "Activa" && (
-                          <span style={{ color: vencida ? "#ef4444" : "#f59e0b", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                          <span style={{ color: vencida ? "#ef4444" : "var(--warning)", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
                             {vencida ? <><LuTriangleAlert size={12} /> Vencida</> : `Vence ${fmtFechaLocal(c.fecha_expiracion)}`}
                           </span>
                         )}
@@ -1018,16 +1018,16 @@ export const LeadDetailsPage = () => {
 
           {/* Documentos del cliente */}
           <SidebarSection id="documentos" title={<span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuPaperclip size={16} /> Documentos del Cliente</span>} defaultOpen badge={documentos.length || undefined}>
-            <p style={{ fontSize: "0.76rem", color: "#64748b", margin: "0 0 0.6rem" }}>
+            <p style={{ fontSize: "0.76rem", color: "var(--slate-500)", margin: "0 0 0.6rem" }}>
               Cédula, estados de cuenta, CIC, etc. Se eliminan automáticamente a los 2 meses por seguridad.
             </p>
 
             <label
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
-                border: "1.5px dashed #94a3b8", borderRadius: 8, padding: "0.6rem",
+                border: "1.5px dashed var(--slate-400)", borderRadius: 8, padding: "0.6rem",
                 cursor: subiendoDoc ? "wait" : "pointer", fontSize: "0.85rem", fontWeight: 600,
-                color: "#475569", background: "#f8fafc",
+                color: "var(--slate-600)", background: "var(--slate-50)",
               }}
             >
               {subiendoDoc ? "Subiendo…" : <><LuUpload size={15} /> Subir documento(s)</>}
@@ -1050,7 +1050,7 @@ export const LeadDetailsPage = () => {
                     <div
                       key={d.id}
                       style={{
-                        background: "#f8fafc", border: "1px solid #e2e8f0",
+                        background: "var(--slate-50)", border: "1px solid var(--slate-200)",
                         borderRadius: 8, padding: "0.55rem 0.7rem",
                       }}
                     >
@@ -1084,11 +1084,11 @@ export const LeadDetailsPage = () => {
                               .then(() => cargarDocumentos())
                               .catch(() => toast.error("No se pudo cambiar el tipo."));
                           }}
-                          style={{ fontSize: "0.72rem", padding: "0.2rem 0.35rem", borderRadius: 6, border: "1px solid #e2e8f0", fontFamily: "inherit" }}
+                          style={{ fontSize: "0.72rem", padding: "0.2rem 0.35rem", borderRadius: 6, border: "1px solid var(--slate-200)", fontFamily: "inherit" }}
                         >
                           {TIPOS_DOC.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
-                        <span style={{ fontSize: "0.7rem", color: sugef.bajoRetencion ? "#16a34a" : (porVencer ? "#dc2626" : "#94a3b8") }}>
+                        <span style={{ fontSize: "0.7rem", color: sugef.bajoRetencion ? "#16a34a" : (porVencer ? "var(--danger)" : "var(--slate-400)") }}>
                           {(d.tamano_bytes / 1024).toFixed(0)} KB ·{" "}
                           {sugef.bajoRetencion
                             ? <><LuLock size={11} style={{ verticalAlign: "-1px" }} /> en retención</>
@@ -1120,19 +1120,19 @@ export const LeadDetailsPage = () => {
             const finProceso = financiamientos.filter((f) => ["Enviado", "En Revisión", "Pre-Aprobado"].includes(f.estado)).length;
             const dato = (icon: ReactNode, label: string, value: string) => (
               <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
-                <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>{icon} {label}</span>
+                <span style={{ fontSize: "0.72rem", color: "var(--slate-400)", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>{icon} {label}</span>
                 <span style={{ fontSize: "0.92rem", fontWeight: 700, color: "var(--brand-dark)" }}>{value}</span>
               </div>
             );
             return (
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.15rem", marginBottom: "1.25rem" }}>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem 1.15rem", marginBottom: "1.25rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                   <LuChartColumnStacked size={15} /> Resumen del Lead
                 </div>
 
                 {/* Stepper de avance */}
                 {perdido ? (
-                  <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 8, padding: "0.5rem 0.8rem", fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.9rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "var(--danger)", borderRadius: 8, padding: "0.5rem 0.8rem", fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.9rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                     <LuX size={16} /> Lead Perdido
                   </div>
                 ) : (
@@ -1147,16 +1147,16 @@ export const LeadDetailsPage = () => {
                               width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
                               display: "flex", alignItems: "center", justifyContent: "center",
                               fontSize: "0.7rem", fontWeight: 700,
-                              background: done ? (ESTADO_COLORS[lead.estado] ?? "#10b981") : "#e2e8f0",
-                              color: done ? "#fff" : "#94a3b8",
+                              background: done ? (ESTADO_COLORS[lead.estado] ?? "#10b981") : "var(--slate-200)",
+                              color: done ? "#fff" : "var(--slate-400)",
                               boxShadow: actual ? `0 0 0 3px ${(ESTADO_COLORS[lead.estado] ?? "#10b981")}33` : "none",
                             }}>
                               {done ? "✓" : i + 1}
                             </div>
-                            <span style={{ fontSize: "0.68rem", color: actual ? "var(--brand-dark)" : "#94a3b8", fontWeight: actual ? 700 : 500, whiteSpace: "nowrap" }}>{etapa}</span>
+                            <span style={{ fontSize: "0.68rem", color: actual ? "var(--brand-dark)" : "var(--slate-400)", fontWeight: actual ? 700 : 500, whiteSpace: "nowrap" }}>{etapa}</span>
                           </div>
                           {i < FUNNEL.length - 1 && (
-                            <div style={{ flex: 1, height: 2, background: i < idxActual ? (ESTADO_COLORS[lead.estado] ?? "#10b981") : "#e2e8f0", margin: "0 4px", marginBottom: 16 }} />
+                            <div style={{ flex: 1, height: 2, background: i < idxActual ? (ESTADO_COLORS[lead.estado] ?? "#10b981") : "var(--slate-200)", margin: "0 4px", marginBottom: 16 }} />
                           )}
                         </div>
                       );
@@ -1171,7 +1171,7 @@ export const LeadDetailsPage = () => {
                   {dato(<LuCreditCard size={13} />, "Modalidad", lead.tipo_pago ?? "Sin definir")}
                   {lead.temperatura && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
-                      <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuThermometer size={13} /> Temperatura</span>
+                      <span style={{ fontSize: "0.72rem", color: "var(--slate-400)", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuThermometer size={13} /> Temperatura</span>
                       <span style={{ fontSize: "0.92rem", fontWeight: 700, color: TEMP_COLOR[lead.temperatura] ?? "var(--brand-dark)" }}>
                         {TEMPERATURAS.find((t) => t.value === lead.temperatura)?.label ?? lead.temperatura}
                       </span>
@@ -1195,15 +1195,15 @@ export const LeadDetailsPage = () => {
               .filter((f) => f.fecha_proximo_seguimiento && !["Aprobado", "Rechazado", "Desistió"].includes(f.estado))
               .sort((a, b) => (a.fecha_proximo_seguimiento! < b.fecha_proximo_seguimiento! ? -1 : 1));
             return (
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                   <LuBanknote size={15} /> Estado de Financieras
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   {activos.map((f) => {
-                    const color = ESTADO_FIN_COLORS[f.estado] ?? "#64748b";
+                    const color = ESTADO_FIN_COLORS[f.estado] ?? "var(--slate-500)";
                     return (
-                      <span key={f.entidad} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "0.25rem 0.7rem", fontSize: "0.82rem" }}>
+                      <span key={f.entidad} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 20, padding: "0.25rem 0.7rem", fontSize: "0.82rem" }}>
                         <span style={{ width: 9, height: 9, borderRadius: "50%", background: color }} />
                         <strong>{f.entidad}</strong>
                         <span style={{ color }}>{f.estado}</span>
@@ -1217,7 +1217,7 @@ export const LeadDetailsPage = () => {
                     {seguimientos.map((s, i) => {
                       const vencido = new Date(s.fecha_proximo_seguimiento!) < new Date(new Date().toDateString());
                       return (
-                        <span key={s.entidad} style={{ color: vencido ? "#dc2626" : "#92400e", fontWeight: vencido ? 700 : 400 }}>
+                        <span key={s.entidad} style={{ color: vencido ? "var(--danger)" : "#92400e", fontWeight: vencido ? 700 : 400 }}>
                           {i > 0 && " · "}
                           {s.entidad} ({fmtFechaLocal(s.fecha_proximo_seguimiento!)}{vencido ? <> <LuTriangleAlert size={11} style={{ verticalAlign: "-1px" }} /></> : ""})
                         </span>
@@ -1259,13 +1259,13 @@ export const LeadDetailsPage = () => {
             />
 
             {/* Vincular la nota a una financiera */}
-            <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.6rem 0.75rem", margin: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <div style={{ background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.6rem 0.75rem", margin: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBanknote size={14} /> Financiera:</span>
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-600)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuBanknote size={14} /> Financiera:</span>
                 <select
                   value={actEntidad}
                   onChange={(e) => setActEntidad(e.target.value)}
-                  style={{ flex: 1, minWidth: 140, padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit" }}
+                  style={{ flex: 1, minWidth: 140, padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.85rem", fontFamily: "inherit" }}
                 >
                   <option value="">— Ninguna (nota normal) —</option>
                   {ENTIDADES.map((e) => <option key={e} value={e}>{e}</option>)}
@@ -1276,17 +1276,17 @@ export const LeadDetailsPage = () => {
                   <select
                     value={actEstadoFin}
                     onChange={(e) => setActEstadoFin(e.target.value)}
-                    style={{ flex: 1, minWidth: 130, padding: "0.4rem 0.6rem", borderRadius: 8, border: `1.5px solid ${ESTADO_FIN_COLORS[actEstadoFin] ?? "#e2e8f0"}`, fontSize: "0.85rem", fontFamily: "inherit", fontWeight: 600 }}
+                    style={{ flex: 1, minWidth: 130, padding: "0.4rem 0.6rem", borderRadius: 8, border: `1.5px solid ${ESTADO_FIN_COLORS[actEstadoFin] ?? "var(--slate-200)"}`, fontSize: "0.85rem", fontFamily: "inherit", fontWeight: 600 }}
                   >
                     {ESTADOS_FIN.map((e) => <option key={e} value={e}>{e}</option>)}
                   </select>
-                  <label style={{ fontSize: "0.78rem", color: "#64748b", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.78rem", color: "var(--slate-500)", display: "flex", alignItems: "center", gap: "0.35rem" }}>
                     <LuPhone size={13} /> Próximo contacto:
                     <input
                       type="date"
                       value={actProxSeg}
                       onChange={(e) => setActProxSeg(e.target.value)}
-                      style={{ padding: "0.35rem 0.5rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit" }}
+                      style={{ padding: "0.35rem 0.5rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.82rem", fontFamily: "inherit" }}
                     />
                   </label>
                 </div>
@@ -1298,17 +1298,17 @@ export const LeadDetailsPage = () => {
                 if (!ent || !ent.documentos?.length) return null;
                 const nombreCliente = lead.nombre_cliente.split(" ")[0];
                 return (
-                  <div style={{ marginTop: "0.5rem", borderTop: "1px dashed #cbd5e1", paddingTop: "0.5rem" }}>
-                    <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                  <div style={{ marginTop: "0.5rem", borderTop: "1px dashed var(--slate-300)", paddingTop: "0.5rem" }}>
+                    <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "var(--slate-600)", textTransform: "uppercase", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
                       <LuPaperclip size={13} /> Formularios de {actEntidad}
                     </span>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "0.4rem" }}>
                       {ent.documentos.map((d) => (
-                        <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.4rem 0.6rem" }}>
+                        <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.4rem 0.6rem" }}>
                           <span style={{ flex: 1, fontSize: "0.82rem", minWidth: 120, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuFileText size={13} /> {d.nombre}</span>
                           <a
                             href={d.url} target="_blank" rel="noopener noreferrer"
-                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#024f7d", textDecoration: "none", border: "1px solid #cbd5e1", borderRadius: 6, padding: "0.25rem 0.6rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+                            style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--brand)", textDecoration: "none", border: "1px solid var(--slate-300)", borderRadius: 6, padding: "0.25rem 0.6rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                           >
                             <LuDownload size={13} /> Descargar
                           </a>
@@ -1332,8 +1332,8 @@ export const LeadDetailsPage = () => {
               <label
                 style={{
                   display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                  border: "1px solid #cbd5e1", borderRadius: 8, padding: "0.35rem 0.7rem",
-                  cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, color: "#475569", background: "#f8fafc",
+                  border: "1px solid var(--slate-300)", borderRadius: 8, padding: "0.35rem 0.7rem",
+                  cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)", background: "var(--slate-50)",
                 }}
               >
                 <LuPaperclip size={14} /> Adjuntar documento(s)
@@ -1406,7 +1406,7 @@ export const LeadDetailsPage = () => {
                           <LuBanknote size={12} /> {act.entidad}
                         </span>
                         {act.estado_fin && (
-                          <span style={{ background: ESTADO_FIN_COLORS[act.estado_fin] ?? "#64748b", color: "#fff", borderRadius: 6, padding: "0.15rem 0.5rem", fontSize: "0.74rem", fontWeight: 700 }}>
+                          <span style={{ background: ESTADO_FIN_COLORS[act.estado_fin] ?? "var(--slate-500)", color: "#fff", borderRadius: 6, padding: "0.15rem 0.5rem", fontSize: "0.74rem", fontWeight: 700 }}>
                             {act.estado_fin}
                           </span>
                         )}
@@ -1427,8 +1427,8 @@ export const LeadDetailsPage = () => {
                               title="Descargar"
                               style={{
                                 display: "inline-flex", alignItems: "center", gap: "0.3rem",
-                                background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 6,
-                                padding: "0.25rem 0.55rem", fontSize: "0.78rem", cursor: "pointer", color: "#334155",
+                                background: "var(--slate-100)", border: "1px solid var(--slate-300)", borderRadius: 6,
+                                padding: "0.25rem 0.55rem", fontSize: "0.78rem", cursor: "pointer", color: "var(--slate-700)",
                               }}
                             >
                               {descargandoId === d.id ? <LuHourglass size={13} /> : (d.tipo_mime?.includes("pdf") ? <LuFileText size={13} /> : d.tipo_mime?.includes("image") ? <LuImage size={13} /> : <LuPaperclip size={13} />)} {d.nombre}

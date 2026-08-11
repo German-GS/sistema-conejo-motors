@@ -28,16 +28,16 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--slate-200);
   flex-shrink: 0;
 }
 .modalHeader h2 { margin: 0; font-size: 1.1rem; color: var(--brand-dark); }
 .closeBtn {
   background: none; border: none; font-size: 1.1rem;
-  cursor: pointer; color: #64748b; padding: 4px 8px;
+  cursor: pointer; color: var(--slate-500); padding: 4px 8px;
   border-radius: 6px; transition: background 0.15s;
 }
-.closeBtn:hover { background: #f1f5f9; }
+.closeBtn:hover { background: var(--slate-100); }
 
 .modalBody {
   flex: 1;
@@ -51,12 +51,12 @@
 .sectionTitle {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--slate-500);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0 0 0.75rem;
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--slate-200);
 }
 
 /* Grids */
@@ -67,12 +67,12 @@
 }
 
 .field { display: flex; flex-direction: column; gap: 4px; }
-.field label { font-size: 0.76rem; font-weight: 700; color: #475569; }
+.field label { font-size: 0.76rem; font-weight: 700; color: var(--slate-600); }
 .fullWidth { grid-column: 1 / -1; }
 
 .input, .textarea {
   padding: 0.45rem 0.7rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.88rem;
   color: #1e293b;
@@ -81,13 +81,13 @@
   width: 100%;
   box-sizing: border-box;
 }
-.input:focus, .textarea:focus { outline: none; border-color: #024f7d; }
+.input:focus, .textarea:focus { outline: none; border-color: var(--brand); }
 .textarea { resize: vertical; font-family: inherit; }
 
 /* Imágenes */
 .imgHint {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   margin: 0 0 0.75rem;
 }
 
@@ -109,14 +109,14 @@
 
 /* Primera imagen destacada */
 .imgCardFirst .imgThumb {
-  border-color: #024f7d;
-  box-shadow: 0 0 0 2px #024f7d;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand);
 }
 
 .imgBadge {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #024f7d;
+  color: var(--brand);
   background: #e0f2fe;
   padding: 1px 6px;
   border-radius: 8px;
@@ -128,7 +128,7 @@
   height: 68px;
   object-fit: cover;
   border-radius: 8px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--slate-200);
   display: block;
 }
 
@@ -140,17 +140,17 @@
 }
 
 .imgArrow {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  background: var(--slate-100);
+  border: 1px solid var(--slate-300);
   border-radius: 5px;
   padding: 2px 7px;
   font-size: 0.75rem;
   cursor: pointer;
-  color: #475569;
+  color: var(--slate-600);
   transition: background 0.12s;
   line-height: 1.5;
 }
-.imgArrow:hover:not(:disabled) { background: #e0f2fe; color: #024f7d; border-color: #024f7d; }
+.imgArrow:hover:not(:disabled) { background: #e0f2fe; color: var(--brand); border-color: var(--brand); }
 .imgArrow:disabled { opacity: 0.3; cursor: default; }
 
 .imgDeleteSmall {
@@ -169,13 +169,13 @@
 .imgAddBtn {
   width: 90px;
   height: 68px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed var(--slate-300);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-size: 0.78rem;
   font-weight: 600;
   text-align: center;
@@ -184,7 +184,7 @@
   align-self: flex-start;
   margin-top: 22px; /* alinea con las imgs que tienen badge */
 }
-.imgAddBtn:hover { border-color: #024f7d; color: #024f7d; }
+.imgAddBtn:hover { border-color: var(--brand); color: var(--brand); }
 
 .uploadPreview {
   margin-top: 0.75rem;
@@ -195,7 +195,7 @@
 }
 
 .uploadBtn {
-  background: #024f7d; color: white;
+  background: var(--brand); color: white;
   border: none; border-radius: 8px;
   padding: 0.45rem 1rem;
   font-size: 0.85rem; font-weight: 600;
@@ -205,9 +205,9 @@
 .uploadBtn:hover { background: #013a5e; }
 
 .cancelSmall {
-  background: none; border: 1px solid #cbd5e1;
+  background: none; border: 1px solid var(--slate-300);
   border-radius: 8px; padding: 0.45rem 0.75rem;
-  font-size: 0.82rem; color: #64748b; cursor: pointer;
+  font-size: 0.82rem; color: var(--slate-500); cursor: pointer;
 }
 .cancelSmall:hover { border-color: #ef4444; color: #ef4444; }
 
@@ -217,16 +217,16 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--slate-200);
   flex-shrink: 0;
 }
 .cancelBtn {
-  background: none; border: 1.5px solid #cbd5e1;
+  background: none; border: 1.5px solid var(--slate-300);
   border-radius: 8px; padding: 0.6rem 1.25rem;
-  font-size: 0.9rem; color: #64748b; cursor: pointer;
+  font-size: 0.9rem; color: var(--slate-500); cursor: pointer;
 }
 .saveBtn {
-  background: #024f7d; color: white;
+  background: var(--brand); color: white;
   border: none; border-radius: 8px;
   padding: 0.6rem 1.5rem;
   font-size: 0.9rem; font-weight: 700;

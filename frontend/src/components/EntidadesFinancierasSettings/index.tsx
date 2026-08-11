@@ -94,7 +94,7 @@ export const EntidadesFinancierasSettings = () => {
 
   return (
     <div>
-      <p style={{ color: "#64748b", fontSize: "0.9rem", margin: "0 0 1rem" }}>
+      <p style={{ color: "var(--slate-500)", fontSize: "0.9rem", margin: "0 0 1rem" }}>
         Gestioná las entidades financieras y sus formularios (CIC, KYC, etc.). Los documentos quedan disponibles para descargar y enviar al cliente desde el Lead.
       </p>
 
@@ -103,7 +103,7 @@ export const EntidadesFinancierasSettings = () => {
           value={nuevaEntidad}
           onChange={(e) => setNuevaEntidad(e.target.value)}
           placeholder="Nombre de la entidad (ej: Banco Nacional)"
-          style={{ flex: 1, minWidth: 220, padding: "0.55rem 0.75rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontFamily: "inherit" }}
+          style={{ flex: 1, minWidth: 220, padding: "0.55rem 0.75rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontFamily: "inherit" }}
         />
         <button className="btn btn-principal" onClick={crear} disabled={creando || !nuevaEntidad.trim()}>
           + Agregar entidad
@@ -115,17 +115,17 @@ export const EntidadesFinancierasSettings = () => {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         {entidades.map((e) => (
-          <div key={e.id} style={{ border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.15rem", background: e.activa ? "#fff" : "#f8fafc", opacity: e.activa ? 1 : 0.7 }}>
+          <div key={e.id} style={{ border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1rem 1.15rem", background: e.activa ? "#fff" : "var(--slate-50)", opacity: e.activa ? 1 : 0.7 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
               <strong style={{ fontSize: "1rem", color: "var(--brand-dark)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLandmark size={16} /> {e.nombre}</strong>
-              <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: e.activa ? "#dcfce7" : "#e2e8f0", color: e.activa ? "#15803d" : "#64748b" }}>
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: e.activa ? "#dcfce7" : "var(--slate-200)", color: e.activa ? "#15803d" : "var(--slate-500)" }}>
                 {e.activa ? "Activa" : "Inactiva"}
               </span>
               <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
-                <button onClick={() => toggleActiva(e)} style={{ border: "1px solid #cbd5e1", background: "#fff", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", color: "#475569" }}>
+                <button onClick={() => toggleActiva(e)} style={{ border: "1px solid var(--slate-300)", background: "#fff", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", color: "var(--slate-600)" }}>
                   {e.activa ? "Desactivar" : "Activar"}
                 </button>
-                <button onClick={() => eliminar(e)} style={{ border: "1px solid #fecaca", background: "#fff", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", color: "#dc2626" }}>
+                <button onClick={() => eliminar(e)} style={{ border: "1px solid #fecaca", background: "#fff", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", color: "var(--danger)" }}>
                   Eliminar
                 </button>
               </div>
@@ -135,10 +135,10 @@ export const EntidadesFinancierasSettings = () => {
             {e.documentos?.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginBottom: "0.75rem" }}>
                 {e.documentos.map((d) => (
-                  <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.4rem 0.7rem" }}>
+                  <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.4rem 0.7rem" }}>
                     <span style={{ flex: 1, fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuFileText size={14} /> {d.nombre}</span>
-                    <a href={d.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "#024f7d", fontWeight: 600 }}>Ver</a>
-                    <button onClick={() => eliminarDoc(d.id)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#dc2626", fontSize: "0.85rem", display: "inline-flex", alignItems: "center" }}><LuX size={14} /></button>
+                    <a href={d.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--brand)", fontWeight: 600 }}>Ver</a>
+                    <button onClick={() => eliminarDoc(d.id)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--danger)", fontSize: "0.85rem", display: "inline-flex", alignItems: "center" }}><LuX size={14} /></button>
                   </div>
                 ))}
               </div>
@@ -150,9 +150,9 @@ export const EntidadesFinancierasSettings = () => {
                 value={nombreDoc[e.id] ?? ""}
                 onChange={(ev) => setNombreDoc((p) => ({ ...p, [e.id]: ev.target.value }))}
                 placeholder="Nombre del formulario (ej: CIC)"
-                style={{ flex: 1, minWidth: 160, padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit" }}
+                style={{ flex: 1, minWidth: 160, padding: "0.4rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.85rem", fontFamily: "inherit" }}
               />
-              <label style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", border: "1.5px dashed #94a3b8", borderRadius: 8, padding: "0.4rem 0.8rem", cursor: subiendo === e.id ? "wait" : "pointer", fontSize: "0.82rem", fontWeight: 600, color: "#475569", background: "#fff" }}>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", border: "1.5px dashed var(--slate-400)", borderRadius: 8, padding: "0.4rem 0.8rem", cursor: subiendo === e.id ? "wait" : "pointer", fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)", background: "#fff" }}>
                 {subiendo === e.id ? "Subiendo…" : <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuUpload size={14} /> Subir formulario</span>}
                 <input
                   type="file"

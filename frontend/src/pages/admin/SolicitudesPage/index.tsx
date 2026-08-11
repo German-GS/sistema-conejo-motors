@@ -32,7 +32,7 @@ const TIPO_LABELS: Record<TipoSolicitud, string> = {
 };
 
 const ESTADO_COLORS: Record<EstadoSolicitud, string> = {
-  pendiente: "#f59e0b",
+  pendiente: "var(--warning)",
   aprobada:  "#10b981",
   rechazada: "#ef4444",
 };

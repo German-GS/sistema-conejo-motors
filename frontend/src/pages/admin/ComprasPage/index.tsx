@@ -14,14 +14,14 @@ interface Orden {
 }
 
 const ESTADO_STYLE: Record<string, [string, string]> = {
-  Borrador: ["#f1f5f9", "#475569"], Enviada: ["#dbeafe", "#1d4ed8"],
+  Borrador: ["var(--slate-100)", "var(--slate-600)"], Enviada: ["#dbeafe", "#1d4ed8"],
   "Recibida Parcial": ["#fef3c7", "#92400e"], Recibida: ["#dcfce7", "#15803d"], Cancelada: ["#fee2e2", "#b91c1c"],
 };
 
-const card: React.CSSProperties = { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" };
-const inp: React.CSSProperties = { padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
-const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "#64748b", textAlign: "left" };
-const td: React.CSSProperties = { padding: "6px 10px", color: "#334155", fontSize: "0.85rem" };
+const card: React.CSSProperties = { background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1.25rem" };
+const inp: React.CSSProperties = { padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.85rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
+const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "var(--slate-500)", textAlign: "left" };
+const td: React.CSSProperties = { padding: "6px 10px", color: "var(--slate-700)", fontSize: "0.85rem" };
 
 export const ComprasPage = () => {
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
@@ -110,7 +110,7 @@ export const ComprasPage = () => {
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
         <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Órdenes de Compra</h1>
-        <button onClick={() => setShowForm((s) => !s)} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700 }}>
+        <button onClick={() => setShowForm((s) => !s)} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700 }}>
           {showForm ? "Cerrar" : "+ Nueva orden"}
         </button>
       </div>
@@ -118,16 +118,16 @@ export const ComprasPage = () => {
       {showForm && (
         <div style={card}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Proveedor
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Proveedor
               <select value={proveedorId} onChange={(e) => setProveedorId(e.target.value)} style={inp}>
                 <option value="">— sin proveedor —</option>
                 {proveedores.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
               </select>
             </label>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>Fecha
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)" }}>Fecha
               <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={inp} />
             </label>
-            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569", display: "flex", alignItems: "center", gap: "0.4rem", alignSelf: "end" }}>
+            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)", display: "flex", alignItems: "center", gap: "0.4rem", alignSelf: "end" }}>
               <input type="checkbox" checked={recibida} onChange={(e) => setRecibida(e.target.checked)} /> Recibida (contabilizar ya)
             </label>
           </div>
@@ -151,21 +151,21 @@ export const ComprasPage = () => {
                         </select>
                       </td>
                       <td style={{ ...td, textAlign: "right" }}>{CRC(totalL)}</td>
-                      <td style={{ padding: 4, textAlign: "center" }}>{lineas.length > 1 && <button onClick={() => setLineas((prev) => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626" }}>✕</button>}</td>
+                      <td style={{ padding: 4, textAlign: "center" }}>{lineas.length > 1 && <button onClick={() => setLineas((prev) => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)" }}>✕</button>}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-          <button onClick={() => setLineas((prev) => [...prev, { descripcion: "", cantidad: 1, precio_unitario: 0, iva_porcentaje: 13 }])} style={{ background: "none", border: "1px dashed #cbd5e1", color: "#475569", borderRadius: 8, padding: "0.4rem 0.8rem", cursor: "pointer", marginTop: "0.5rem", fontSize: "0.82rem" }}>+ Agregar línea</button>
+          <button onClick={() => setLineas((prev) => [...prev, { descripcion: "", cantidad: 1, precio_unitario: 0, iva_porcentaje: 13 }])} style={{ background: "none", border: "1px dashed var(--slate-300)", color: "var(--slate-600)", borderRadius: 8, padding: "0.4rem 0.8rem", cursor: "pointer", marginTop: "0.5rem", fontSize: "0.82rem" }}>+ Agregar línea</button>
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "1rem", flexWrap: "wrap", marginTop: "1rem", borderTop: "1px solid #f1f5f9", paddingTop: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "1rem", flexWrap: "wrap", marginTop: "1rem", borderTop: "1px solid var(--slate-100)", paddingTop: "1rem" }}>
             <input value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Notas (opcional)" style={{ ...inp, maxWidth: 320 }} />
             <div style={{ textAlign: "right", fontSize: "0.9rem" }}>
-              <div style={{ color: "#64748b" }}>Subtotal: {CRC(totales.subtotal)} · IVA: {CRC(totales.iva)}</div>
+              <div style={{ color: "var(--slate-500)" }}>Subtotal: {CRC(totales.subtotal)} · IVA: {CRC(totales.iva)}</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--brand-dark)" }}>Total: {CRC(totales.total)}</div>
-              <button onClick={guardar} disabled={guardando} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1.2rem", cursor: "pointer", fontWeight: 700, marginTop: "0.5rem" }}>{guardando ? "Guardando…" : "Guardar orden"}</button>
+              <button onClick={guardar} disabled={guardando} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1.2rem", cursor: "pointer", fontWeight: 700, marginTop: "0.5rem" }}>{guardando ? "Guardando…" : "Guardar orden"}</button>
             </div>
           </div>
         </div>
@@ -185,9 +185,9 @@ export const ComprasPage = () => {
             <tbody>
               {ordenes.length === 0 && <tr><td style={td} colSpan={9}>Sin órdenes de compra.</td></tr>}
               {ordenes.map((o) => {
-                const badge = ESTADO_STYLE[o.estado] ?? ["#f1f5f9", "#475569"];
+                const badge = ESTADO_STYLE[o.estado] ?? ["var(--slate-100)", "var(--slate-600)"];
                 return (
-                  <tr key={o.id} style={{ borderTop: "1px solid #f1f5f9" }}>
+                  <tr key={o.id} style={{ borderTop: "1px solid var(--slate-100)" }}>
                     <td style={td}>{o.numero}</td>
                     <td style={td}>{o.fecha}</td>
                     <td style={td}>{o.proveedor?.nombre || "—"}</td>
@@ -199,7 +199,7 @@ export const ComprasPage = () => {
                       {o.comprobante_gcs_path ? (
                         <button onClick={() => verComprobante(o.id)} title="Ver factura" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem", display: "inline-flex", alignItems: "center" }}><LuPaperclip size={16} /></button>
                       ) : (
-                        <label title="Adjuntar factura (foto o PDF)" style={{ cursor: "pointer", color: "#64748b", display: "inline-flex", alignItems: "center" }}><LuUpload size={16} />
+                        <label title="Adjuntar factura (foto o PDF)" style={{ cursor: "pointer", color: "var(--slate-500)", display: "inline-flex", alignItems: "center" }}><LuUpload size={16} />
                           <input type="file" accept="image/*,application/pdf" capture="environment" style={{ display: "none" }} onChange={(e) => subirComprobante(o.id, e.target.files?.[0] ?? null)} />
                         </label>
                       )}
@@ -215,7 +215,7 @@ export const ComprasPage = () => {
             </tbody>
           </table>
         </div>
-        <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "0.75rem" }}>
+        <p style={{ fontSize: "0.78rem", color: "var(--slate-400)", marginTop: "0.75rem" }}>
           Al marcar una orden como <strong>Recibida</strong>, se contabiliza (Debe 1400 Inventario + Debe 1210 IVA acreditable / Haber 2100 CxP) y el IVA entra a la liquidación D-150.
         </p>
       </div>

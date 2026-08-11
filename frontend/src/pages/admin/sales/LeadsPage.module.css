@@ -8,7 +8,7 @@
 
 .metricCard {
   background: white;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   display: flex;
@@ -30,7 +30,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 /* Barras de fuente (card ancha) */
@@ -50,7 +50,7 @@
 .fuenteLabel {
   width: 110px;
   flex-shrink: 0;
-  color: #475569;
+  color: var(--slate-600);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -59,14 +59,14 @@
 .barTrack {
   flex: 1;
   height: 8px;
-  background: #f1f5f9;
+  background: var(--slate-100);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .barFill {
   height: 100%;
-  background: #024f7d;
+  background: var(--brand);
   border-radius: 4px;
   transition: width 0.4s ease;
   min-width: 4px;
@@ -91,18 +91,18 @@
 .kpi {
   display: flex; flex-direction: column; align-items: center;
   gap: 2px; padding: 0.6rem 1.1rem;
-  background: white; border: 1.5px solid #e2e8f0;
+  background: white; border: 1.5px solid var(--slate-200);
   border-radius: 10px; cursor: pointer; transition: all 0.15s;
   min-width: 80px;
 }
-.kpi:hover { border-color: #024f7d; }
+.kpi:hover { border-color: var(--brand); }
 .kpiActive { background: #f0f9ff; }
 .kpiNum { font-size: 1.5rem; font-weight: 800; }
-.kpiLabel { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+.kpiLabel { font-size: 0.72rem; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.04em; }
 .clearFilter {
-  background: none; border: 1.5px solid #e2e8f0;
+  background: none; border: 1.5px solid var(--slate-200);
   border-radius: 8px; padding: 0.5rem 0.75rem;
-  cursor: pointer; color: #94a3b8; font-size: 0.85rem;
+  cursor: pointer; color: var(--slate-400); font-size: 0.85rem;
   transition: all 0.15s;
 }
 .clearFilter:hover { border-color: #ef4444; color: #ef4444; }
@@ -113,8 +113,8 @@
   border-bottom: 1px solid var(--borde-suave);
   padding: 0.75rem 0.9rem; text-align: left; font-size: 0.88rem;
 }
-.leadsTable th { font-weight: 700; color: #64748b; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
-.leadsTable tbody tr:hover { background: #f8fafc; }
+.leadsTable th { font-weight: 700; color: var(--slate-500); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.leadsTable tbody tr:hover { background: var(--slate-50); }
 
 .rowAlert { background: #fff7f7 !important; }
 
@@ -125,12 +125,12 @@
 }
 
 .fuente { font-size: 0.85rem; white-space: nowrap; }
-.sub { color: #94a3b8; font-size: 0.8rem; }
+.sub { color: var(--slate-400); font-size: 0.8rem; }
 
-.followup { font-size: 0.82rem; color: #475569; white-space: nowrap; }
+.followup { font-size: 0.82rem; color: var(--slate-600); white-space: nowrap; }
 .followupAlert { font-size: 0.82rem; color: #ef4444; font-weight: 700; white-space: nowrap; }
 
-.empty { color: #94a3b8; text-align: center; padding: 2rem; font-style: italic; }
+.empty { color: var(--slate-400); text-align: center; padding: 2rem; font-style: italic; }
 
 /* ── Tablet responsive ── */
 @media (max-width: 1024px) {

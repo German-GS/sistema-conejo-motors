@@ -5,24 +5,24 @@
   margin-bottom: 1.5rem; gap: 1rem;
 }
 .header h1 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary, var(--brand-dark)); margin: 0; }
-.subtitle { font-size: 0.85rem; color: #64748b; margin: 0.2rem 0 0; }
+.subtitle { font-size: 0.85rem; color: var(--slate-500); margin: 0.2rem 0 0; }
 
 .statsRow { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.statCard { flex: 1; min-width: 160px; display: flex; flex-direction: column; align-items: center; padding: 1rem; background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
-.statNum { font-size: 1.6rem; font-weight: 800; color: #024f7d; }
-.statLabel { font-size: 0.78rem; color: #64748b; text-align: center; margin-top: 0.2rem; }
+.statCard { flex: 1; min-width: 160px; display: flex; flex-direction: column; align-items: center; padding: 1rem; background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid var(--slate-200); }
+.statNum { font-size: 1.6rem; font-weight: 800; color: var(--brand); }
+.statLabel { font-size: 0.78rem; color: var(--slate-500); text-align: center; margin-top: 0.2rem; }
 
-.loading { text-align: center; color: #64748b; padding: 2rem; }
+.loading { text-align: center; color: var(--slate-500); padding: 2rem; }
 
 .empty {
   display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
-  padding: 3rem; text-align: center; color: #94a3b8;
+  padding: 3rem; text-align: center; color: var(--slate-400);
 }
 .empty span { font-size: 3rem; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
 
-.campanaCard { cursor: pointer; transition: box-shadow 0.15s; padding: 1.25rem; background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+.campanaCard { cursor: pointer; transition: box-shadow 0.15s; padding: 1.25rem; background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid var(--slate-200); }
 .campanaCard:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
 
 .cardHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
@@ -39,11 +39,11 @@
 }
 
 .campanaNombre { font-size: 1rem; font-weight: 700; color: var(--brand-dark); margin: 0 0 0.3rem; }
-.objetivo { font-size: 0.82rem; color: #64748b; margin: 0 0 0.75rem; }
+.objetivo { font-size: 0.82rem; color: var(--slate-500); margin: 0 0 0.75rem; }
 
 .cardMeta {
   display: flex; flex-direction: column; gap: 0.25rem;
-  font-size: 0.82rem; color: #475569; margin-bottom: 0.75rem;
+  font-size: 0.82rem; color: var(--slate-600); margin-bottom: 0.75rem;
 }
 .gastoTag {
   display: inline-block; margin-left: 0.5rem;
@@ -52,14 +52,14 @@
 }
 
 /* Funnel de conversión */
-.metricas { background: #f8fafc; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
+.metricas { background: var(--slate-50); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
 .funnel { display: flex; align-items: center; justify-content: space-around; margin-bottom: 0.5rem; }
 .funnelStep { display: flex; flex-direction: column; align-items: center; }
 .funnelNum { font-size: 1.3rem; font-weight: 800; color: var(--brand-dark); }
-.funnelLabel { font-size: 0.7rem; color: #64748b; }
-.funnelArrow { font-size: 1rem; color: #94a3b8; }
-.metricaExtra { display: flex; gap: 0.75rem; flex-wrap: wrap; font-size: 0.78rem; color: #475569; }
-.verMetricas { font-size: 0.78rem; color: #94a3b8; text-align: center; margin: 0.5rem 0 0.75rem; }
+.funnelLabel { font-size: 0.7rem; color: var(--slate-500); }
+.funnelArrow { font-size: 1rem; color: var(--slate-400); }
+.metricaExtra { display: flex; gap: 0.75rem; flex-wrap: wrap; font-size: 0.78rem; color: var(--slate-600); }
+.verMetricas { font-size: 0.78rem; color: var(--slate-400); text-align: center; margin: 0.5rem 0 0.75rem; }
 
 .cardActions { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
 .btnEdit, .btnPausar, .btnActivar, .btnFinalizar {
@@ -69,7 +69,7 @@
 .btnEdit    { color: #0369a1; border-color: #7dd3fc; }
 .btnPausar  { color: #b45309; border-color: #fcd34d; }
 .btnActivar { color: #16a34a; border-color: #86efac; }
-.btnFinalizar { color: #64748b; border-color: #cbd5e1; }
+.btnFinalizar { color: var(--slate-500); border-color: var(--slate-300); }
 
 /* Modal */
 .overlay {
@@ -83,9 +83,9 @@
   display: flex; flex-direction: column; gap: 0.6rem;
 }
 .modal h2 { font-size: 1.1rem; font-weight: 800; color: var(--brand-dark); margin: 0 0 0.5rem; }
-.modal label { font-size: 0.8rem; font-weight: 700; color: #475569; }
+.modal label { font-size: 0.8rem; font-weight: 700; color: var(--slate-600); }
 .modal input, .modal select, .modal textarea {
-  width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  width: 100%; border: 1.5px solid var(--slate-200); border-radius: 8px;
   padding: 0.55rem 0.8rem; font-size: 0.9rem; font-family: inherit;
   box-sizing: border-box;
 }

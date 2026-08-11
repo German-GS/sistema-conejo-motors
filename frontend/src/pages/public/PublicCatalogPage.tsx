@@ -177,7 +177,7 @@ export const PublicCatalogPage = () => {
           ? `Vehículos Eléctricos ${filterMarca}`
           : "Catálogo de Vehículos Eléctricos"}
       </h1>
-      <p style={{ textAlign: "center", color: "#64748b", marginBottom: "2rem" }}>
+      <p style={{ textAlign: "center", color: "var(--slate-500)", marginBottom: "2rem" }}>
         {totalFiltrados} vehículo{totalFiltrados !== 1 ? "s" : ""} disponible{totalFiltrados !== 1 ? "s" : ""}
         {filterMarca !== "Todas" && ` · Marca: ${filterMarca}`}
         {filterCategoria !== "Todas" && ` · Categoría: ${filterCategoria}`}

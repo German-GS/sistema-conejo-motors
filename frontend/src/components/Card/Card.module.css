@@ -13,7 +13,7 @@
 .cardHeader h2 {
   margin: 0;
   font-size: 1.1rem;
-  color: #024f7d; /* Título con el color principal */
+  color: var(--brand); /* Título con el color principal */
 }
 
 .cardContent {

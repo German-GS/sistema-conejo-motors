@@ -52,9 +52,9 @@ const clasKey: Record<Clasificacion, string> = {
 // Color sólido por estado (se aplica inline al activarse, infalible ante caché/CSS)
 const COLOR_ACTIVO: Record<string, string> = {
   Visible: "#16a34a",
-  Oculto: "#64748b",
+  Oculto: "var(--slate-500)",
   "En Stock": "#16a34a",
-  Agotado: "#dc2626",
+  Agotado: "var(--danger)",
   Contrapedido: "#2563eb",
   "No Comercial": "#7c3aed",
 };

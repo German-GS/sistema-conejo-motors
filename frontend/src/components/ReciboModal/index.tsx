@@ -81,7 +81,7 @@ export const ReciboModal: React.FC<ReciboModalProps> = ({
       ],
       foot: [["Salario Bruto Total", formatCurrency(salarioBruto)]],
       theme: "striped",
-      headStyles: { fillColor: "#024f7d" },
+      headStyles: { fillColor: "var(--brand)" },
       footStyles: {
         fillColor: "#e0e0e0",
         textColor: "#333",

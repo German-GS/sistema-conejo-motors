@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--slate-100);
+  border: 1px solid var(--slate-200);
   border-radius: 10px;
   padding: 0.4rem 0.85rem;
   flex-wrap: wrap;
@@ -20,14 +20,14 @@
 .time {
   font-size: 1rem;
   font-weight: 800;
-  color: #024f7d;
+  color: var(--brand);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.03em;
 }
 
 .date {
   font-size: 0.68rem;
-  color: #64748b;
+  color: var(--slate-500);
   text-transform: capitalize;
 }
 
@@ -44,7 +44,7 @@
 
 .inside  { background: #10b981; color: white; }
 .outside { background: #ef4444; color: white; }
-.lunch   { background: #f59e0b; color: white; }
+.lunch   { background: var(--warning); color: white; }
 
 .lastTime {
   font-size: 0.68rem;
@@ -82,7 +82,7 @@
 }
 
 .btnAlmuerzo {
-  background: #f59e0b;
+  background: var(--warning);
   color: white;
   padding: 0.35rem 0.6rem;
 }

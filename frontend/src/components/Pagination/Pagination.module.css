@@ -9,7 +9,7 @@
 
 .info {
   font-size: 0.82rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .pages {
@@ -22,7 +22,7 @@
   min-width: 32px;
   height: 32px;
   padding: 0 6px;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 7px;
   background: white;
   font-size: 0.88rem;
@@ -36,8 +36,8 @@
 
 .btn:hover:not(:disabled) {
   background: #e0f2fe;
-  border-color: #024f7d;
-  color: #024f7d;
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .btn:disabled {
@@ -46,21 +46,21 @@
 }
 
 .btn.active {
-  background: #024f7d;
+  background: var(--brand);
   color: white;
-  border-color: #024f7d;
+  border-color: var(--brand);
   font-weight: 700;
 }
 
 .ellipsis {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   padding: 0 2px;
 }
 
 .sizeSelect {
   padding: 4px 8px;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.82rem;
   background: white;

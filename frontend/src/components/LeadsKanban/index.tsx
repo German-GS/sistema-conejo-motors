@@ -41,8 +41,8 @@ const COLUMNAS = [
 ];
 
 const COLOR: Record<string, string> = {
-  Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
-  "Prueba de Manejo": "#06b6d4", "Cotizacion Enviada": "#0891b2",
+  Nuevo: "#3b82f6", Contactado: "var(--warning)", "En Progreso": "#8b5cf6",
+  "Prueba de Manejo": "#06b6d4", "Cotizacion Enviada": "var(--info)",
   Negociacion: "#d97706", Cerrado: "#10b981", Perdido: "#ef4444",
 };
 

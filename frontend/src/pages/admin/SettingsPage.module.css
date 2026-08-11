@@ -264,13 +264,13 @@
 .calcField label {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--slate-600);
 }
 .calcField input,
 .calcField select {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.9rem;
   color: #1e293b;
@@ -281,10 +281,10 @@
 .calcField input:focus,
 .calcField select:focus {
   outline: none;
-  border-color: #024f7d;
+  border-color: var(--brand);
 }
 .calcHint {
   font-size: 0.74rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   margin: 2px 0 0;
 }

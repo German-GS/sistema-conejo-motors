@@ -28,7 +28,7 @@ const tipoIcono = (tipo: string) => {
 };
 
 const estadoColor: Record<string, string> = {
-  Pendiente: '#f59e0b', Completada: '#10b981', Cancelada: '#ef4444',
+  Pendiente: 'var(--warning)', Completada: '#10b981', Cancelada: '#ef4444',
 };
 
 export default function AgendaPage() {

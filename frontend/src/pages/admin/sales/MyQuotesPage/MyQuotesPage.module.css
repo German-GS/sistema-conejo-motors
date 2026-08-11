@@ -7,8 +7,8 @@
 }
 .topBar h1 { margin: 0; }
 .total {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--slate-100);
+  color: var(--slate-500);
   font-size: 0.82rem;
   padding: 3px 10px;
   border-radius: 20px;
@@ -25,14 +25,14 @@
 .kpi {
   display: flex; flex-direction: column; align-items: center;
   gap: 2px; padding: 0.55rem 1rem;
-  background: white; border: 1.5px solid #e2e8f0;
+  background: white; border: 1.5px solid var(--slate-200);
   border-radius: 10px; cursor: pointer; transition: all 0.15s;
   min-width: 72px;
 }
-.kpi:hover { border-color: #024f7d; }
+.kpi:hover { border-color: var(--brand); }
 .kpiActive { background: #f0f9ff; }
 .kpiNum { font-size: 1.35rem; font-weight: 800; }
-.kpiLabel { font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+.kpiLabel { font-size: 0.68rem; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.04em; }
 
 /* Search bar */
 .searchBar {
@@ -44,19 +44,19 @@
 .searchInput {
   flex: 1;
   padding: 0.5rem 0.9rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.9rem;
   background: white;
 }
-.searchInput:focus { outline: none; border-color: #024f7d; }
-.resultCount { font-size: 0.8rem; color: #64748b; white-space: nowrap; }
+.searchInput:focus { outline: none; border-color: var(--brand); }
+.resultCount { font-size: 0.8rem; color: var(--slate-500); white-space: nowrap; }
 
 /* Table */
 .tableWrap {
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--slate-200);
 }
 
 .table {
@@ -69,7 +69,7 @@
 .table th, .table td {
   padding: 0.75rem 0.9rem;
   text-align: left;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--slate-100);
   vertical-align: middle;
 }
 
@@ -78,11 +78,11 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #64748b;
-  background: #f8fafc;
+  color: var(--slate-500);
+  background: var(--slate-50);
 }
 
-.table tbody tr:hover { background: #f8fafc; }
+.table tbody tr:hover { background: var(--slate-50); }
 .rowExpired { background: #fff7f7 !important; }
 
 /* Celdas específicas */
@@ -94,8 +94,8 @@
   cursor: default;
 }
 
-.sub { font-size: 0.78rem; color: #94a3b8; }
-.dateCell { font-size: 0.85rem; color: #475569; }
+.sub { font-size: 0.78rem; color: var(--slate-400); }
+.dateCell { font-size: 0.85rem; color: var(--slate-600); }
 
 .discountTag {
   display: block;
@@ -109,14 +109,14 @@
   margin-left: 4px;
   font-size: 0.68rem;
   background: #e0f2fe;
-  color: #024f7d;
+  color: var(--brand);
   border-radius: 4px;
   padding: 0 5px;
   font-weight: 600;
 }
 
 .expired { font-size: 0.82rem; color: #ef4444; font-weight: 700; }
-.expiringSoon { font-size: 0.82rem; color: #f59e0b; font-weight: 600; }
+.expiringSoon { font-size: 0.82rem; color: var(--warning); font-weight: 600; }
 
 .statusBadge {
   display: inline-block;
@@ -132,7 +132,7 @@
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.8rem;
-  background: #024f7d;
+  background: var(--brand);
   color: white;
   border-radius: 7px;
   font-size: 0.82rem;
@@ -147,7 +147,7 @@
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 .empty p { margin-bottom: 1rem; font-size: 0.95rem; }
 
@@ -176,7 +176,7 @@
   justify-content: center;
   width: 30px; height: 30px;
   background: #fef2f2;
-  color: #dc2626;
+  color: var(--danger);
   border: 1.5px solid #fecaca;
   border-radius: 7px;
   font-size: 0.85rem;
@@ -186,9 +186,9 @@
   flex-shrink: 0;
 }
 .cancelBtn:hover {
-  background: #dc2626;
+  background: var(--danger);
   color: white;
-  border-color: #dc2626;
+  border-color: var(--danger);
 }
 
 /* ── Modal ──────────────────────────────────────────────────────────────── */
@@ -225,7 +225,7 @@
 }
 .modalIcon { font-size: 1.75rem; line-height: 1; flex-shrink: 0; }
 .modalHeader strong { display: block; font-size: 1rem; color: var(--brand-dark); }
-.modalSub { margin: 3px 0 0; font-size: 0.82rem; color: #64748b; }
+.modalSub { margin: 3px 0 0; font-size: 0.82rem; color: var(--slate-500); }
 
 .modalWarning {
   background: #fff7ed;
@@ -242,13 +242,13 @@
   display: block;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--slate-600);
   margin-bottom: 0.4rem;
 }
 
 .modalTextarea {
   width: 100%;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   padding: 0.65rem 0.8rem;
   font-size: 0.9rem;
@@ -258,7 +258,7 @@
   transition: border-color 0.15s;
   color: #1e293b;
 }
-.modalTextarea:focus { outline: none; border-color: #dc2626; }
+.modalTextarea:focus { outline: none; border-color: var(--danger); }
 
 .modalActions {
   display: flex;
@@ -270,20 +270,20 @@
 .modalCancel {
   padding: 0.55rem 1.1rem;
   background: white;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 8px;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--slate-600);
   cursor: pointer;
   transition: background 0.15s;
 }
-.modalCancel:hover { background: #f8fafc; }
+.modalCancel:hover { background: var(--slate-50); }
 .modalCancel:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .modalConfirm {
   padding: 0.55rem 1.25rem;
-  background: #dc2626;
+  background: var(--danger);
   color: white;
   border: none;
   border-radius: 8px;

@@ -15,7 +15,7 @@ interface OrdenTrabajo {
 
 const ESTADOS = ['Recibido','Diagnostico','En Reparacion','Listo','Entregado','Cancelado'];
 const estadoColor: Record<string, string> = {
-  Recibido: '#64748b', Diagnostico: '#f59e0b', 'En Reparacion': '#3b82f6', Listo: '#10b981', Entregado: '#024f7d', Cancelado: '#ef4444',
+  Recibido: 'var(--slate-500)', Diagnostico: 'var(--warning)', 'En Reparacion': '#3b82f6', Listo: '#10b981', Entregado: 'var(--brand)', Cancelado: '#ef4444',
 };
 
 export default function TallerPage() {

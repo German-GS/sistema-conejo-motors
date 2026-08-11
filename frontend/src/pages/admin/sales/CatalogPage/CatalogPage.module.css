@@ -11,8 +11,8 @@
 
 .count {
   font-size: 0.85rem;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--slate-500);
+  background: var(--slate-100);
   padding: 4px 12px;
   border-radius: 20px;
   white-space: nowrap;
@@ -27,7 +27,7 @@
   margin-bottom: 1.5rem;
   padding: 1rem;
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--slate-200);
   border-radius: 10px;
 }
 
@@ -35,23 +35,23 @@
   flex: 1;
   min-width: 200px;
   padding: 0.5rem 0.85rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.9rem;
   background: white;
 }
-.searchInput:focus { outline: none; border-color: #024f7d; }
+.searchInput:focus { outline: none; border-color: var(--brand); }
 
 .select {
   padding: 0.5rem 0.75rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.88rem;
   background: white;
   color: #374151;
   cursor: pointer;
 }
-.select:focus { outline: none; border-color: #024f7d; }
+.select:focus { outline: none; border-color: var(--brand); }
 
 .checkLabel {
   display: flex;
@@ -80,7 +80,7 @@
 .noResults {
   text-align: center;
   padding: 3rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 .noResults p { font-size: 1rem; margin-bottom: 1rem; }
 
@@ -170,7 +170,7 @@
 
 .oldPrice {
   font-size: 0.82rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   text-decoration: line-through;
   margin: 0;
 }
@@ -180,7 +180,7 @@
   gap: 0.75rem;
   flex-wrap: wrap;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--slate-500);
   margin: 4px 0;
   flex-grow: 1;
 }
@@ -189,7 +189,7 @@
   display: flex;
   gap: 0.75rem;
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   margin-bottom: 0.75rem;
 }
 
@@ -239,7 +239,7 @@
 .reservadoCard {
   background: white;
   border: 1.5px solid #fde68a;
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--warning);
   border-radius: 10px;
   padding: 0.9rem 1rem;
   display: flex;
@@ -267,8 +267,8 @@
 
 .reservadoColor {
   font-size: 0.75rem;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--slate-500);
+  background: var(--slate-100);
   padding: 2px 7px;
   border-radius: 6px;
 }
@@ -278,11 +278,11 @@
   flex-direction: column;
   gap: 2px;
   font-size: 0.78rem;
-  color: #475569;
+  color: var(--slate-600);
 }
 
 .expiradoText {
-  color: #dc2626;
+  color: var(--danger);
   font-weight: 600;
 }
 
@@ -296,8 +296,8 @@
   flex: 1;
   text-align: center;
   padding: 0.4rem 0.75rem;
-  background: #f1f5f9;
-  color: #024f7d;
+  background: var(--slate-100);
+  color: var(--brand);
   border-radius: 8px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -309,7 +309,7 @@
 .liberarBtn {
   padding: 0.4rem 0.85rem;
   background: none;
-  border: 1.5px solid #f59e0b;
+  border: 1.5px solid var(--warning);
   color: #92400e;
   border-radius: 8px;
   font-size: 0.78rem;
@@ -318,7 +318,7 @@
   transition: all 0.15s;
 }
 .liberarBtn:hover:not(:disabled) {
-  background: #f59e0b;
+  background: var(--warning);
   color: white;
 }
 .liberarBtn:disabled { opacity: 0.5; cursor: not-allowed; }

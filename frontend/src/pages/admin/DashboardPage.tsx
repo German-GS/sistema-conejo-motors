@@ -20,21 +20,21 @@ const CRC = (v: number) =>
 
 // Mapa de nombres de color → hex para el punto visual
 const COLOR_HEX: Record<string, string> = {
-  negro: "#111827", blanco: "#f8fafc", gris: "#9ca3af", plateado: "#cbd5e1", plata: "#cbd5e1",
-  celeste: "#7dd3fc", azul: "#2563eb", "azul marino": "#1e3a8a", rojo: "#dc2626", verde: "#16a34a",
+  negro: "#111827", blanco: "var(--slate-50)", gris: "#9ca3af", plateado: "var(--slate-300)", plata: "var(--slate-300)",
+  celeste: "#7dd3fc", azul: "#2563eb", "azul marino": "#1e3a8a", rojo: "var(--danger)", verde: "#16a34a",
   amarillo: "#eab308", naranja: "#f97316", cafe: "#92400e", "café": "#92400e", morado: "#7c3aed",
   dorado: "#d4af37", beige: "#e7dcc8", vino: "#7f1d1d",
 };
-const colorHex = (c?: string) => COLOR_HEX[(c ?? "").trim().toLowerCase()] ?? "#cbd5e1";
+const colorHex = (c?: string) => COLOR_HEX[(c ?? "").trim().toLowerCase()] ?? "var(--slate-300)";
 
 const ESTADO_STYLE: Record<string, { bg: string; fg: string }> = {
   Disponible: { bg: "#dcfce7", fg: "#15803d" },
   Reservado: { bg: "#fef3c7", fg: "#92400e" },
-  Vendido: { bg: "#e2e8f0", fg: "#475569" },
+  Vendido: { bg: "var(--slate-200)", fg: "var(--slate-600)" },
   Demo: { bg: "#ede9fe", fg: "#7c3aed" },
 };
 
-const marginColor = (m: number) => (m < 0 ? "#dc2626" : m < 5 ? "#d97706" : "#16a34a");
+const marginColor = (m: number) => (m < 0 ? "var(--danger)" : m < 5 ? "#d97706" : "#16a34a");
 
 export const DashboardPage = () => {
   const confirm = useConfirm();
@@ -184,14 +184,14 @@ export const DashboardPage = () => {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
-  const inp: React.CSSProperties = { padding: "0.4rem 0.55rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.85rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
+  const inp: React.CSSProperties = { padding: "0.4rem 0.55rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.85rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
 
   return (
     <>
       <div className={styles.header}>
         <h1>Inventario de Vehículos</h1>
         <div style={{ display: "flex", gap: "0.6rem" }}>
-          <button className="btn" onClick={exportar} style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", display: "flex", alignItems: "center", gap: "0.4rem" }} title="Exportar a Excel">
+          <button className="btn" onClick={exportar} style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", display: "flex", alignItems: "center", gap: "0.4rem" }} title="Exportar a Excel">
             <LuChartColumnStacked size={16} /> Exportar Excel
           </button>
           <button className="btn btn-principal" onClick={handleOpenCreateModal}>Añadir Vehículo</button>
@@ -202,7 +202,7 @@ export const DashboardPage = () => {
         <span>
           Inventario ({stockActivo} en stock activo
           {especiales.length > 0 && (
-            <span style={{ fontSize: "0.78rem", color: "#94a3b8", fontWeight: 400, marginLeft: "0.5rem" }}>
+            <span style={{ fontSize: "0.78rem", color: "var(--slate-400)", fontWeight: 400, marginLeft: "0.5rem" }}>
               · {especiales.length} fuera de inventario
               {especiales.map(v => ` (${v.modelo} — ${v.clasificacion_inventario ?? v.visibilidad})`).join(",")}
             </span>
@@ -234,7 +234,7 @@ export const DashboardPage = () => {
 
         {/* Lista de unidades (filas expandibles) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-          {paginated.length === 0 && <p style={{ textAlign: "center", color: "#94a3b8", padding: "1.5rem" }}>Sin vehículos.</p>}
+          {paginated.length === 0 && <p style={{ textAlign: "center", color: "var(--slate-400)", padding: "1.5rem" }}>Sin vehículos.</p>}
           {paginated.map((v) => {
             const abierto = expanded.has(v.id);
             const est = ESTADO_STYLE[v.estado] ?? ESTADO_STYLE.Vendido;
@@ -243,52 +243,52 @@ export const DashboardPage = () => {
             const img = v.profile?.imagenes && v.profile.imagenes.length > 0
               ? getImageUrl([...v.profile.imagenes].sort((a, b) => a.order - b.order)[0].url) : null;
             return (
-              <div key={v.id} style={{ border: "1px solid #e2e8f0", borderRadius: 12, background: "#fff", overflow: "hidden" }}>
+              <div key={v.id} style={{ border: "1px solid var(--slate-200)", borderRadius: 12, background: "#fff", overflow: "hidden" }}>
                 {/* Fila compacta */}
                 <div
                   onClick={() => toggleExpand(v.id)}
                   style={{ display: "grid", gridTemplateColumns: "48px 1.6fr 1.3fr 110px 130px 28px", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.9rem", cursor: "pointer" }}
                 >
-                  <div style={{ position: "relative", width: 48, height: 36, borderRadius: 6, overflow: "hidden", background: "#f1f5f9" }}>
-                    {img ? <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "0.6rem", color: "#94a3b8", display: "grid", placeItems: "center", height: "100%" }}>s/f</span>}
+                  <div style={{ position: "relative", width: 48, height: 36, borderRadius: 6, overflow: "hidden", background: "var(--slate-100)" }}>
+                    {img ? <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "0.6rem", color: "var(--slate-400)", display: "grid", placeItems: "center", height: "100%" }}>s/f</span>}
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <span title={v.color} style={{ width: 14, height: 14, borderRadius: "50%", background: colorHex(v.color), border: "1.5px solid rgba(0,0,0,0.15)", flexShrink: 0 }} />
                       <strong style={{ color: "var(--brand-dark)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.marca} {v.modelo}</strong>
-                      <span style={{ color: "#64748b", fontSize: "0.82rem" }}>{v.año}</span>
+                      <span style={{ color: "var(--slate-500)", fontSize: "0.82rem" }}>{v.año}</span>
                     </div>
-                    <div style={{ fontSize: "0.78rem", color: "#94a3b8", textTransform: "capitalize" }}>{v.color || "—"} · {v.bodega?.nombre || "sin ubicación"}</div>
+                    <div style={{ fontSize: "0.78rem", color: "var(--slate-400)", textTransform: "capitalize" }}>{v.color || "—"} · {v.bodega?.nombre || "sin ubicación"}</div>
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <button
                       onClick={(e) => copyVin(v.vin, e)}
                       title="Copiar VIN"
-                      style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.78rem", color: "#334155", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                      style={{ background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.78rem", color: "var(--slate-700)", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                     >
                       📋 {v.vin}
                     </button>
                   </div>
                   <span style={{ fontSize: "0.72rem", fontWeight: 700, background: est.bg, color: est.fg, borderRadius: 20, padding: "2px 10px", textAlign: "center" }}>{v.estado}</span>
                   <strong style={{ color: "var(--brand-dark)", textAlign: "right", fontSize: "0.9rem" }}>{CRC(precioFinal)}</strong>
-                  <span style={{ color: "#94a3b8", textAlign: "center", transform: abierto ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>›</span>
+                  <span style={{ color: "var(--slate-400)", textAlign: "center", transform: abierto ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>›</span>
                 </div>
 
                 {/* Panel expandido */}
                 {abierto && (
-                  <div style={{ borderTop: "1px solid #f1f5f9", padding: "1rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.25rem", background: "#fbfcfe" }}>
+                  <div style={{ borderTop: "1px solid var(--slate-100)", padding: "1rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.25rem", background: "#fbfcfe" }}>
                     {/* Precios */}
                     <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuWallet size={14} /> Precio</div>
-                      <div style={{ fontSize: "0.8rem", color: "#64748b", marginBottom: "0.5rem" }}>Costo inventario: <strong style={{ color: "#334155" }}>{CRC(Number(v.precio_costo))}</strong></div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuWallet size={14} /> Precio</div>
+                      <div style={{ fontSize: "0.8rem", color: "var(--slate-500)", marginBottom: "0.5rem" }}>Costo inventario: <strong style={{ color: "var(--slate-700)" }}>{CRC(Number(v.precio_costo))}</strong></div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
-                        <label style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Precio de lista (₡)
+                        <label style={{ fontSize: "0.75rem", color: "var(--slate-600)", fontWeight: 600 }}>Precio de lista (₡)
                           <input value={editing[v.id]?.precio_venta ?? ""} onChange={(e) => setEdit(v.id, "precio_venta", e.target.value)} style={inp} />
                         </label>
-                        <label style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Precio USD
+                        <label style={{ fontSize: "0.75rem", color: "var(--slate-600)", fontWeight: 600 }}>Precio USD
                           <input value={editing[v.id]?.precio_venta_usd ?? ""} onChange={(e) => setEdit(v.id, "precio_venta_usd", e.target.value)} placeholder="opcional" style={inp} />
                         </label>
-                        <label style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Descuento %
+                        <label style={{ fontSize: "0.75rem", color: "var(--slate-600)", fontWeight: 600 }}>Descuento %
                           <input value={editing[v.id]?.descuento ?? ""} onChange={(e) => setEdit(v.id, "descuento", e.target.value)} style={inp} />
                         </label>
                         <div style={{ alignSelf: "end", fontSize: "0.8rem" }}>
@@ -300,7 +300,7 @@ export const DashboardPage = () => {
 
                     {/* Visibilidad + Uso */}
                     <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuEye size={14} /> Visibilidad y uso</div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuEye size={14} /> Visibilidad y uso</div>
                       <VisibilityButtons
                         vehicleId={v.id}
                         current={v.visibilidad ?? "Visible"}
@@ -314,13 +314,13 @@ export const DashboardPage = () => {
 
                     {/* Acciones */}
                     <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuSettings size={14} /> Acciones</div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuSettings size={14} /> Acciones</div>
                       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                        <button onClick={() => handleOpenEditModal(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={14} /> Editar ficha</button>
-                        <button onClick={() => setHistorialVehicle(v)} className="btn" style={{ border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuClock size={14} /> Historial</button>
-                        <button onClick={() => handleDelete(v.id)} className="btn" style={{ border: "1px solid #fecaca", background: "#fff", color: "#dc2626", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuTrash2 size={14} /> Eliminar</button>
+                        <button onClick={() => handleOpenEditModal(v)} className="btn" style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={14} /> Editar ficha</button>
+                        <button onClick={() => setHistorialVehicle(v)} className="btn" style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuClock size={14} /> Historial</button>
+                        <button onClick={() => handleDelete(v.id)} className="btn" style={{ border: "1px solid #fecaca", background: "#fff", color: "var(--danger)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuTrash2 size={14} /> Eliminar</button>
                       </div>
-                      <div style={{ marginTop: "0.6rem", position: "relative", width: 90, height: 60, borderRadius: 6, overflow: "hidden", background: "#f1f5f9" }}>
+                      <div style={{ marginTop: "0.6rem", position: "relative", width: 90, height: 60, borderRadius: 6, overflow: "hidden", background: "var(--slate-100)" }}>
                         {img && <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                         <VehicleRibbon visibilidad={v.visibilidad} clasificacion={v.clasificacion_inventario} />
                       </div>

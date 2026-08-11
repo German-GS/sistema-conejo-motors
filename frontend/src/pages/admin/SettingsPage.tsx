@@ -147,7 +147,7 @@ const CalcSettings: React.FC = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <p style={{ color: "#64748b", fontSize: "0.88rem", margin: 0 }}>
+      <p style={{ color: "var(--slate-500)", fontSize: "0.88rem", margin: 0 }}>
         Estos valores se usan como predeterminados cuando el vendedor abre la calculadora de financiamiento.
       </p>
       <div className={styles.calcGrid}>
@@ -207,16 +207,16 @@ const ImpuestoSettings: React.FC = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <p style={{ color: "#64748b", fontSize: "0.88rem", margin: 0 }}>
+      <p style={{ color: "var(--slate-500)", fontSize: "0.88rem", margin: 0 }}>
         Impuesto que se aplica a las cotizaciones nuevas. Actualmente, por la exoneración, es del <strong>4%</strong>; si cambia (sube o baja), actualizalo acá y se usará en las próximas cotizaciones. El vendedor igual puede ajustarlo por cotización si tiene permiso.
       </p>
       <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem", flexWrap: "wrap" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-          <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>IVA por defecto (%)</label>
+          <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-600)" }}>IVA por defecto (%)</label>
           <input
             type="number" value={iva} min={0} max={13} step={1}
             onChange={(e) => setIva(Number(e.target.value))}
-            style={{ width: 140, padding: "0.55rem 0.7rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "1rem", fontFamily: "inherit" }}
+            style={{ width: 140, padding: "0.55rem 0.7rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "1rem", fontFamily: "inherit" }}
           />
         </div>
         <button onClick={save} disabled={saving} className="btn btn-principal">
@@ -250,16 +250,16 @@ const LeadsConfigSettings: React.FC = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <p style={{ color: "#64748b", fontSize: "0.88rem", margin: 0 }}>
+      <p style={{ color: "var(--slate-500)", fontSize: "0.88rem", margin: 0 }}>
         Un lead marcado como <strong>Tibio</strong> que no tenga actividad registrada después de su fecha de seguimiento se moverá automáticamente a <strong>Descartado</strong> pasados estos días. Se avisa al vendedor <strong>1 día antes</strong>.
       </p>
       <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem", flexWrap: "wrap" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-          <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Días para auto-descartar leads tibios</label>
+          <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--slate-600)" }}>Días para auto-descartar leads tibios</label>
           <input
             type="number" value={dias} min={1} max={60} step={1}
             onChange={(e) => setDias(Number(e.target.value))}
-            style={{ width: 140, padding: "0.55rem 0.7rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "1rem", fontFamily: "inherit" }}
+            style={{ width: 140, padding: "0.55rem 0.7rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "1rem", fontFamily: "inherit" }}
           />
         </div>
         <button onClick={save} disabled={saving} className="btn btn-principal">
@@ -318,22 +318,22 @@ const PasskeySettings: React.FC = () => {
           {registrando ? "Registrando…" : <><LuPlus size={16} /> Registrar este dispositivo</>}
         </button>
       </div>
-      {loading ? <p style={{ color: "#94a3b8" }}>Cargando…</p>
-        : passkeys.length === 0 ? <p style={{ color: "#94a3b8" }}>No tenés passkeys registradas. Registrá este dispositivo para entrar con biometría.</p>
+      {loading ? <p style={{ color: "var(--slate-400)" }}>Cargando…</p>
+        : passkeys.length === 0 ? <p style={{ color: "var(--slate-400)" }}>No tenés passkeys registradas. Registrá este dispositivo para entrar con biometría.</p>
         : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead><tr>
-              <th style={{ textAlign: "left", padding: "6px 8px", fontSize: "0.72rem", color: "#64748b", textTransform: "uppercase" }}>Dispositivo</th>
-              <th style={{ textAlign: "left", padding: "6px 8px", fontSize: "0.72rem", color: "#64748b", textTransform: "uppercase" }}>Registrada</th>
+              <th style={{ textAlign: "left", padding: "6px 8px", fontSize: "0.72rem", color: "var(--slate-500)", textTransform: "uppercase" }}>Dispositivo</th>
+              <th style={{ textAlign: "left", padding: "6px 8px", fontSize: "0.72rem", color: "var(--slate-500)", textTransform: "uppercase" }}>Registrada</th>
               <th></th>
             </tr></thead>
             <tbody>
               {passkeys.map((p) => (
-                <tr key={p.id} style={{ borderTop: "1px solid #f1f5f9" }}>
-                  <td style={{ padding: "8px", fontSize: "0.88rem", color: "#334155" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuKeyRound size={14} /> {p.device_name || "Dispositivo sin nombre"}</span></td>
-                  <td style={{ padding: "8px", fontSize: "0.85rem", color: "#64748b" }}>{new Date(p.creado_en).toLocaleDateString("es-CR")}</td>
+                <tr key={p.id} style={{ borderTop: "1px solid var(--slate-100)" }}>
+                  <td style={{ padding: "8px", fontSize: "0.88rem", color: "var(--slate-700)" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><LuKeyRound size={14} /> {p.device_name || "Dispositivo sin nombre"}</span></td>
+                  <td style={{ padding: "8px", fontSize: "0.85rem", color: "var(--slate-500)" }}>{new Date(p.creado_en).toLocaleDateString("es-CR")}</td>
                   <td style={{ padding: "8px", textAlign: "right" }}>
-                    <button onClick={() => eliminar(p.id)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.78rem" }}>Eliminar</button>
+                    <button onClick={() => eliminar(p.id)} style={{ background: "none", border: "1px solid #fecaca", color: "var(--danger)", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.78rem" }}>Eliminar</button>
                   </td>
                 </tr>
               ))}
@@ -390,15 +390,15 @@ const FacturacionSettings: React.FC = () => {
     } catch { toast.error("No se pudo generar el ejemplo.", { id: tId }); }
   };
 
-  if (!emisor) return <p style={{ color: "#94a3b8" }}>Cargando…</p>;
+  if (!emisor) return <p style={{ color: "var(--slate-400)" }}>Cargando…</p>;
 
-  const inp: React.CSSProperties = { width: "100%", padding: "0.5rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit", boxSizing: "border-box" };
-  const lbl: React.CSSProperties = { fontSize: "0.78rem", fontWeight: 700, color: "#475569", marginBottom: 4, display: "block" };
+  const inp: React.CSSProperties = { width: "100%", padding: "0.5rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", fontFamily: "inherit", boxSizing: "border-box" };
+  const lbl: React.CSSProperties = { fontSize: "0.78rem", fontWeight: 700, color: "var(--slate-600)", marginBottom: 4, display: "block" };
   const Field = ({ campo, label, ph, hint }: { campo: string; label: string; ph?: string; hint?: string }) => (
     <div>
       <label style={lbl}>{label}</label>
       <input style={inp} value={emisor[campo] ?? ""} placeholder={ph} onChange={(e) => set(campo, e.target.value)} />
-      {hint && <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 }}>{hint}</div>}
+      {hint && <div style={{ fontSize: "0.7rem", color: "var(--slate-400)", marginTop: 2 }}>{hint}</div>}
     </div>
   );
 
@@ -437,12 +437,12 @@ const FacturacionSettings: React.FC = () => {
 
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
         <button onClick={guardar} disabled={saving} className="btn btn-principal" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>{saving ? "Guardando…" : <><LuSave size={16} /> Guardar datos del emisor</>}</button>
-        <span style={{ width: 1, height: 24, background: "#e2e8f0" }} />
-        <button onClick={() => verEjemplo("factura")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Factura de ejemplo</button>
-        <button onClick={() => verEjemplo("tiquete")} style={{ background: "#fff", border: "1.5px solid #024f7d", color: "#024f7d", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Tiquete de ejemplo</button>
-        <button onClick={() => verEjemplo("proforma")} style={{ background: "#fff", border: "1.5px solid #64748b", color: "#475569", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Proforma de ejemplo</button>
+        <span style={{ width: 1, height: 24, background: "var(--slate-200)" }} />
+        <button onClick={() => verEjemplo("factura")} style={{ background: "#fff", border: "1.5px solid var(--brand)", color: "var(--brand)", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Factura de ejemplo</button>
+        <button onClick={() => verEjemplo("tiquete")} style={{ background: "#fff", border: "1.5px solid var(--brand)", color: "var(--brand)", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Tiquete de ejemplo</button>
+        <button onClick={() => verEjemplo("proforma")} style={{ background: "#fff", border: "1.5px solid var(--slate-500)", color: "var(--slate-600)", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuEye size={16} /> Proforma de ejemplo</button>
       </div>
-      <p style={{ fontSize: "0.78rem", color: "#94a3b8", margin: 0 }}>
+      <p style={{ fontSize: "0.78rem", color: "var(--slate-400)", margin: 0 }}>
         Los ejemplos usan datos ficticios con tus datos de emisor reales, para ver cómo se ve el comprobante impreso. Las cotizaciones reales generan su Proforma PDF desde el detalle de la cotización.
       </p>
     </div>
@@ -486,16 +486,16 @@ const DepreciacionConfig: React.FC = () => {
     catch { toast.error("Error."); }
   };
 
-  const inp: React.CSSProperties = { padding: "0.35rem 0.5rem", borderRadius: 6, border: "1.5px solid #e2e8f0", fontSize: "0.82rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
-  const btnNavy: React.CSSProperties = { background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap" };
+  const inp: React.CSSProperties = { padding: "0.35rem 0.5rem", borderRadius: 6, border: "1.5px solid var(--slate-200)", fontSize: "0.82rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
+  const btnNavy: React.CSSProperties = { background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap" };
 
-  if (loading) return <p style={{ color: "#94a3b8" }}>Cargando…</p>;
+  if (loading) return <p style={{ color: "var(--slate-400)" }}>Cargando…</p>;
   return (
-    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" }}>
+    <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
         <div>
           <strong style={{ fontSize: "1rem", color: "var(--brand-dark)" }}>Tabla de depreciación</strong>
-          <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "#64748b", maxWidth: 620 }}>
+          <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "var(--slate-500)", maxWidth: 620 }}>
             Doble libro: <strong>vida financiera</strong> (NIIF, va al mayor) y <strong>vida fiscal</strong> (Anexo Nº 2 del Decreto 43198-H, solo para renta).
             La tasa anual es la del Anexo. Verificá los valores contra el reglamento vigente.
             <br />
@@ -510,7 +510,7 @@ const DepreciacionConfig: React.FC = () => {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", minWidth: 640 }}>
           <thead>
-            <tr style={{ textAlign: "left", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>
+            <tr style={{ textAlign: "left", color: "var(--slate-500)", borderBottom: "1px solid var(--slate-200)" }}>
               <th style={{ padding: "6px" }}>Categoría</th>
               <th style={{ padding: "6px", width: 100 }} title="Vida útil contable (NIIF)">Vida financiera</th>
               <th style={{ padding: "6px", width: 100 }} title="Vida útil fiscal (Anexo 2)">Vida fiscal</th>
@@ -523,15 +523,15 @@ const DepreciacionConfig: React.FC = () => {
           </thead>
           <tbody>
             {cats.map((c) => (
-              <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <tr key={c.id} style={{ borderBottom: "1px solid var(--slate-100)" }}>
                 <td style={{ padding: "6px" }}><input value={c.nombre} onChange={(e) => setCampo(c.id, "nombre", e.target.value)} style={inp} /></td>
                 <td style={{ padding: "6px" }}>
                   <input type="number" value={c.vida_util_meses} onChange={(e) => setCampo(c.id, "vida_util_meses", e.target.value)} style={inp} />
-                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 }}>{(Number(c.vida_util_meses) / 12).toFixed(Number(c.vida_util_meses) % 12 === 0 ? 0 : 1)} años</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--slate-400)", marginTop: 2 }}>{(Number(c.vida_util_meses) / 12).toFixed(Number(c.vida_util_meses) % 12 === 0 ? 0 : 1)} años</div>
                 </td>
                 <td style={{ padding: "6px" }}>
                   <input type="number" value={c.vida_util_fiscal_meses ?? ""} onChange={(e) => setCampo(c.id, "vida_util_fiscal_meses", e.target.value)} style={inp} />
-                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 }}>{c.vida_util_fiscal_meses ? `${(Number(c.vida_util_fiscal_meses) / 12).toFixed(Number(c.vida_util_fiscal_meses) % 12 === 0 ? 0 : 1)} años` : "—"}</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--slate-400)", marginTop: 2 }}>{c.vida_util_fiscal_meses ? `${(Number(c.vida_util_fiscal_meses) / 12).toFixed(Number(c.vida_util_fiscal_meses) % 12 === 0 ? 0 : 1)} años` : "—"}</div>
                 </td>
                 <td style={{ padding: "6px" }}>
                   <select value={c.metodo_fiscal ?? "LineaRecta"} onChange={(e) => setCampo(c.id, "metodo_fiscal", e.target.value)} style={inp}>
@@ -543,12 +543,12 @@ const DepreciacionConfig: React.FC = () => {
                 <td style={{ padding: "6px" }}><input value={c.cuenta_activo} onChange={(e) => setCampo(c.id, "cuenta_activo", e.target.value)} style={inp} /></td>
                 <td style={{ padding: "6px", textAlign: "center" }}><input type="checkbox" checked={c.activo} onChange={(e) => setCampo(c.id, "activo", e.target.checked)} /></td>
                 <td style={{ padding: "6px", whiteSpace: "nowrap" }}>
-                  <button onClick={() => guardar(c)} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.75rem", marginRight: 4 }}>Guardar</button>
-                  <button onClick={() => eliminar(c.id)} style={{ background: "none", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: "0.75rem" }}>✕</button>
+                  <button onClick={() => guardar(c)} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.75rem", marginRight: 4 }}>Guardar</button>
+                  <button onClick={() => eliminar(c.id)} style={{ background: "none", border: "1px solid #fecaca", color: "var(--danger)", borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: "0.75rem" }}>✕</button>
                 </td>
               </tr>
             ))}
-            {cats.length === 0 && <tr><td colSpan={8} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8" }}>Sin categorías. Usá "Sembrar tabla" para los valores por defecto.</td></tr>}
+            {cats.length === 0 && <tr><td colSpan={8} style={{ padding: "1rem", textAlign: "center", color: "var(--slate-400)" }}>Sin categorías. Usá "Sembrar tabla" para los valores por defecto.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -729,10 +729,10 @@ export const SettingsPage = () => {
       {/* Encabezado + navegación por secciones */}
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--brand-dark)", margin: "0 0 0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuSettings size={22} /> Configuración</h1>
-        <p style={{ color: "#64748b", fontSize: "0.9rem", margin: 0 }}>{seccionActual.desc}</p>
+        <p style={{ color: "var(--slate-500)", fontSize: "0.9rem", margin: 0 }}>{seccionActual.desc}</p>
       </div>
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.75rem", borderBottom: "2px solid #f1f5f9", paddingBottom: "0.75rem" }}>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.75rem", borderBottom: "2px solid var(--slate-100)", paddingBottom: "0.75rem" }}>
         {seccionesVisibles.map((s) => {
           const activa = s.id === seccion;
           return (
@@ -742,9 +742,9 @@ export const SettingsPage = () => {
               style={{
                 display: "inline-flex", alignItems: "center", gap: "0.5rem",
                 padding: "0.6rem 1.1rem", borderRadius: 10, cursor: "pointer",
-                border: activa ? "1.5px solid #024f7d" : "1.5px solid #e2e8f0",
-                background: activa ? "#024f7d" : "#fff",
-                color: activa ? "#fff" : "#475569",
+                border: activa ? "1.5px solid var(--brand)" : "1.5px solid var(--slate-200)",
+                background: activa ? "var(--brand)" : "#fff",
+                color: activa ? "#fff" : "var(--slate-600)",
                 fontWeight: 700, fontSize: "0.9rem", fontFamily: "inherit",
                 boxShadow: activa ? "0 2px 8px rgba(2,79,125,0.25)" : "none",
                 transition: "all 0.15s",
@@ -982,7 +982,7 @@ export const SettingsPage = () => {
                   <img
                     src={URL.createObjectURL(file)}
                     alt={`Preview ${index + 1}`}
-                    style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '2px solid #024f7d' }}
+                    style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '2px solid var(--brand)' }}
                   />
                   <button
                     type="button"

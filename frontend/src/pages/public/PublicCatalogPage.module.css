@@ -1,7 +1,7 @@
 /* ── Panel de filtros ── */
 .filterPanel {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
   border-radius: 14px;
   padding: 1.5rem 1.75rem;
   margin-bottom: 2.5rem;
@@ -32,7 +32,7 @@
 .filterLabel {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--slate-600);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -47,26 +47,26 @@
 .pill {
   padding: 0.45rem 1rem;
   border-radius: 20px;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   background: white;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--slate-600);
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
 }
 
 .pill:hover {
-  border-color: #024f7d;
-  color: #024f7d;
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .pillActive {
   padding: 0.45rem 1rem;
   border-radius: 20px;
-  border: 1.5px solid #024f7d;
-  background: #024f7d;
+  border: 1.5px solid var(--brand);
+  background: var(--brand);
   font-size: 0.85rem;
   font-weight: 600;
   color: white;
@@ -77,7 +77,7 @@
 /* Select */
 .filterSelect {
   padding: 0.5rem 0.75rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.9rem;
   color: #1e293b;
@@ -88,7 +88,7 @@
 
 .filterSelect:focus {
   outline: none;
-  border-color: #024f7d;
+  border-color: var(--brand);
 }
 
 /* Range slider */
@@ -98,7 +98,7 @@
   width: 100%;
   height: 5px;
   border-radius: 4px;
-  background: #cbd5e1;
+  background: var(--slate-300);
   outline: none;
   cursor: pointer;
 }
@@ -109,7 +109,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #024f7d;
+  background: var(--brand);
   cursor: pointer;
   box-shadow: 0 0 0 3px rgba(2, 79, 125, 0.15);
 }
@@ -118,7 +118,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #024f7d;
+  background: var(--brand);
   cursor: pointer;
   border: none;
 }
@@ -127,7 +127,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   margin-top: 2px;
 }
 
@@ -136,11 +136,11 @@
   align-self: flex-start;
   padding: 0.45rem 1rem;
   border-radius: 8px;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   background: white;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--slate-500);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -154,7 +154,7 @@
 .noResults {
   text-align: center;
   padding: 4rem 2rem;
-  color: #64748b;
+  color: var(--slate-500);
   font-size: 1rem;
   display: flex;
   flex-direction: column;

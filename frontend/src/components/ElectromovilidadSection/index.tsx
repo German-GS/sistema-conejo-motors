@@ -50,8 +50,8 @@ const costoPorKm = [
 ];
 
 const STATS = [
-  { icon: <LuZap />, label: "Ahorro en 3 años", value: "₡1,064,000", sub: "≈ $1,900 USD", color: "#024f7d" },
-  { icon: <LuCalendarDays />, label: "Ahorro mensual", value: "₡29,556", sub: "≈ $53 USD / mes", color: "#024f7d" },
+  { icon: <LuZap />, label: "Ahorro en 3 años", value: "₡1,064,000", sub: "≈ $1,900 USD", color: "var(--brand)" },
+  { icon: <LuCalendarDays />, label: "Ahorro mensual", value: "₡29,556", sub: "≈ $53 USD / mes", color: "var(--brand)" },
   { icon: <LuFuel />, label: "Costo/km gasolina", value: "₡78.9", sub: "ciudad 12 km/L", color: "#f97316" },
   { icon: <LuBatteryCharging />, label: "Costo/km eléctrico", value: "₡11.7", sub: "6.7× más barato", color: "#00c7b1" },
 ];
@@ -126,8 +126,8 @@ export const ElectromovilidadSection = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={costosAnuales} barCategoryGap="35%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="año" tick={{ fill: "#64748b" }} />
-                  <YAxis tickFormatter={(v) => `₡${(v/1000).toFixed(0)}k`} tick={{ fill: "#64748b" }} />
+                  <XAxis dataKey="año" tick={{ fill: "var(--slate-500)" }} />
+                  <YAxis tickFormatter={(v) => `₡${(v/1000).toFixed(0)}k`} tick={{ fill: "var(--slate-500)" }} />
                   <Tooltip content={<CustomTooltipCRC />} />
                   <Legend />
                   <Bar dataKey="Gasolina" fill="#f97316" radius={[6,6,0,0]} />
@@ -142,8 +142,8 @@ export const ElectromovilidadSection = () => {
                     <p className={styles.kmLabel}>Costo/km {c.name}</p>
                   </div>
                 ))}
-                <div className={styles.kmCard} style={{ borderColor: "#024f7d", background: "#e0f2fe" }}>
-                  <p className={styles.kmValue} style={{ color: "#024f7d" }}>6.7×</p>
+                <div className={styles.kmCard} style={{ borderColor: "var(--brand)", background: "#e0f2fe" }}>
+                  <p className={styles.kmValue} style={{ color: "var(--brand)" }}>6.7×</p>
                   <p className={styles.kmLabel}>El eléctrico es más barato</p>
                 </div>
               </div>
@@ -157,8 +157,8 @@ export const ElectromovilidadSection = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={mantenimientoData} layout="vertical" barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis type="number" tickFormatter={(v) => `₡${(v/1000).toFixed(0)}k`} tick={{ fill: "#64748b" }} />
-                  <YAxis type="category" dataKey="concepto" width={140} tick={{ fill: "#64748b", fontSize: 12 }} />
+                  <XAxis type="number" tickFormatter={(v) => `₡${(v/1000).toFixed(0)}k`} tick={{ fill: "var(--slate-500)" }} />
+                  <YAxis type="category" dataKey="concepto" width={140} tick={{ fill: "var(--slate-500)", fontSize: 12 }} />
                   <Tooltip content={<CustomTooltipCRC />} />
                   <Legend />
                   <Bar dataKey="Gas" name="Gasolina" fill="#f97316" radius={[0,4,4,0]} />
@@ -178,8 +178,8 @@ export const ElectromovilidadSection = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={acumulado}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="mes" tick={{ fill: "#64748b", fontSize: 11 }} />
-                  <YAxis tickFormatter={(v) => `₡${(v/1000).toFixed(0)}k`} tick={{ fill: "#64748b" }} />
+                  <XAxis dataKey="mes" tick={{ fill: "var(--slate-500)", fontSize: 11 }} />
+                  <YAxis tickFormatter={(v) => `₡${(v/1000).toFixed(0)}k`} tick={{ fill: "var(--slate-500)" }} />
                   <Tooltip content={<CustomTooltipCRC />} />
                   <Legend />
                   <Line type="monotone" dataKey="Gas" name="Gasolina" stroke="#f97316" strokeWidth={2.5} dot={{ r: 4 }} />

@@ -1,5 +1,5 @@
 .container { padding: 2rem; max-width: 1400px; margin: 0 auto; }
-.container h1 { font-size: 1.6rem; color: #024f7d; margin-bottom: 0.3rem; }
+.container h1 { font-size: 1.6rem; color: var(--brand); margin-bottom: 0.3rem; }
 .subtitle { color: #718096; margin-bottom: 1rem; font-size: 0.9rem; }
 
 .legend { display: flex; gap: 1.5rem; margin-bottom: 1.2rem; font-size: 0.82rem; font-weight: 600; }
@@ -7,10 +7,10 @@
 .warning  { color: #c05621; }
 .negative { color: #c53030; }
 
-.tableWrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0; }
+.tableWrapper { overflow-x: auto; border-radius: 10px; border: 1px solid var(--slate-200); }
 .table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-.table th { background: #024f7d; color: white; padding: 0.65rem 0.9rem; text-align: left; white-space: nowrap; }
-.table td { padding: 0.6rem 0.9rem; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+.table th { background: var(--brand); color: white; padding: 0.65rem 0.9rem; text-align: left; white-space: nowrap; }
+.table td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--slate-200); vertical-align: middle; }
 .table tbody tr:hover { background: #f7fafc; }
 .editingRow { background: #ebf8ff !important; }
 
@@ -20,9 +20,9 @@
 .vin { font-family: monospace; font-size: 0.78rem; color: #4a5568; }
 .cost { color: #4a5568; font-size: 0.85rem; }
 
-.priceInput { width: 140px; padding: 5px 8px; border: 2px solid #024f7d; border-radius: 6px; font-size: 0.875rem; }
+.priceInput { width: 140px; padding: 5px 8px; border: 2px solid var(--brand); border-radius: 6px; font-size: 0.875rem; }
 .discountInput { display: flex; align-items: center; gap: 4px; }
-.discountField { width: 64px; padding: 5px 6px; border: 2px solid #024f7d; border-radius: 6px; font-size: 0.875rem; text-align: center; }
+.discountField { width: 64px; padding: 5px 6px; border: 2px solid var(--brand); border-radius: 6px; font-size: 0.875rem; text-align: center; }
 
 .discountBadge { background: #fefcbf; color: #744210; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; }
 
@@ -36,5 +36,5 @@
 
 .actions { display: flex; gap: 6px; }
 .editBtn  { padding: 5px 12px; background: #e8a800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-.saveBtn  { padding: 5px 12px; background: #024f7d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+.saveBtn  { padding: 5px 12px; background: var(--brand); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
 .cancelBtn{ padding: 5px 10px; background: white; border: 1px solid #cbd5e0; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }

@@ -57,7 +57,7 @@
 }
 .passwordInput:focus {
   outline: none;
-  border-color: #024f7d;
+  border-color: var(--brand);
 }
 
 .eyeBtn {
@@ -66,13 +66,13 @@
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #64748b;
+  color: var(--slate-500);
   display: flex;
   align-items: center;
   line-height: 1;
   user-select: none;
 }
-.eyeBtn:hover { color: #024f7d; }
+.eyeBtn:hover { color: var(--brand); }
 
 /* ── Tablet responsive ── */
 @media (max-width: 1024px) {

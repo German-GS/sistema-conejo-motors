@@ -1,6 +1,6 @@
 .calculator {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
+  background: var(--slate-50);
+  border: 1.5px solid var(--slate-200);
   border-radius: 16px;
   padding: 1.5rem;
   display: flex;
@@ -23,7 +23,7 @@
 .header p {
   margin: 2px 0 0;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--slate-400);
 }
 
 .fields { display: flex; flex-direction: column; gap: 1rem; }
@@ -39,15 +39,15 @@
 .field label {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--slate-600);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.hint { font-weight: 400; color: #94a3b8; text-transform: none; letter-spacing: 0; }
+.hint { font-weight: 400; color: var(--slate-400); text-transform: none; letter-spacing: 0; }
 
 .input, .select {
   padding: 0.5rem 0.75rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--slate-300);
   border-radius: 8px;
   font-size: 0.9rem;
   color: #1e293b;
@@ -56,7 +56,7 @@
 }
 .input:focus, .select:focus {
   outline: none;
-  border-color: #024f7d;
+  border-color: var(--brand);
 }
 
 .range {
@@ -65,7 +65,7 @@
   width: 100%;
   height: 4px;
   border-radius: 4px;
-  background: #cbd5e1;
+  background: var(--slate-300);
   cursor: pointer;
   margin-top: 4px;
 }
@@ -74,14 +74,14 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #024f7d;
+  background: var(--brand);
   cursor: pointer;
 }
 .rangeLabels {
   display: flex;
   justify-content: space-between;
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--slate-400);
 }
 
 /* Resultado */
@@ -101,19 +101,19 @@
   align-items: center;
   gap: 0.25rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--slate-200);
 }
 .cuotaLabel {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--slate-500);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .cuotaValue {
   font-size: 2rem;
   font-weight: 800;
-  color: #024f7d;
+  color: var(--brand);
 }
 
 .breakdown {
@@ -125,14 +125,14 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: #475569;
+  color: var(--slate-600);
 }
 .breakdownItem strong { color: #1e293b; }
 .intereses { color: #ef4444; }
 
 .disclaimer {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   margin: 0;
   text-align: center;
 }
@@ -140,9 +140,9 @@
 .empty {
   text-align: center;
   padding: 1.25rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-size: 0.9rem;
   background: white;
   border-radius: 10px;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--slate-300);
 }

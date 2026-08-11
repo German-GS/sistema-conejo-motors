@@ -10,20 +10,20 @@
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--slate-200);
   border-radius: 6px;
   background: white;
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #64748b;
+  color: var(--slate-500);
   transition: all 0.15s ease;
   white-space: nowrap;
 }
 .btn:hover:not(:disabled) {
-  border-color: #94a3b8;
-  color: #334155;
-  background: #f8fafc;
+  border-color: var(--slate-400);
+  color: var(--slate-700);
+  background: var(--slate-50);
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -42,9 +42,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 .active_Visible  { background: #16a34a; border-color: #15803d; }
-.active_Oculto   { background: #64748b; border-color: #475569; }
+.active_Oculto   { background: var(--slate-500); border-color: var(--slate-600); }
 .active_EnStock  { background: #16a34a; border-color: #15803d; }
-.active_Agotado  { background: #dc2626; border-color: #b91c1c; }
+.active_Agotado  { background: var(--danger); border-color: #b91c1c; }
 .active_Contrapedido { background: #2563eb; border-color: #1d4ed8; }
 .active_NoComercial  { background: #7c3aed; border-color: #6d28d9; }
 /* En estado activo el hover solo aclara un poco (mantiene el color sólido) */
@@ -53,9 +53,9 @@
   filter: brightness(1.08);
 }
 .btn.active_Visible:hover  { background: #16a34a; }
-.btn.active_Oculto:hover   { background: #64748b; }
+.btn.active_Oculto:hover   { background: var(--slate-500); }
 .btn.active_EnStock:hover  { background: #16a34a; }
-.btn.active_Agotado:hover  { background: #dc2626; }
+.btn.active_Agotado:hover  { background: var(--danger); }
 .btn.active_Contrapedido:hover { background: #2563eb; }
 .btn.active_NoComercial:hover  { background: #7c3aed; }
 
@@ -67,6 +67,6 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #94a3b8;
+  color: var(--slate-400);
   min-width: 58px;
 }

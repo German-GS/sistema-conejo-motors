@@ -223,7 +223,7 @@ export const AsistenciaPage = () => {
               onClick={() => setTab("rango")} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={16} /> Resumen por Período</button>
             <button className={`${styles.tab} ${tab === "pendientes" ? styles.tabActive : ""}`}
               onClick={() => setTab("pendientes")}
-              style={{ color: tab === "pendientes" ? undefined : "#f59e0b", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              style={{ color: tab === "pendientes" ? undefined : "var(--warning)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
               <LuTriangleAlert size={16} /> Pendientes
             </button>
           </>
@@ -304,7 +304,7 @@ export const AsistenciaPage = () => {
                   {data.map((m: Marcaje) => (
                     <tr key={m.id}>
                       <td><strong>{m.usuario?.nombre_completo ?? "—"}</strong></td>
-                      <td className={styles.hora} style={{ color: "#f59e0b" }}>{fmtHora(m.fecha_hora)}<br /><span className={styles.sub}>{fmtFecha(m.fecha_hora)}</span></td>
+                      <td className={styles.hora} style={{ color: "var(--warning)" }}>{fmtHora(m.fecha_hora)}<br /><span className={styles.sub}>{fmtFecha(m.fecha_hora)}</span></td>
                       <td className={styles.sub}>{m.hora_original ? fmtHora(m.hora_original) : "—"}</td>
                       <td className={styles.sub}>{m.modificado_por?.nombre_completo ?? "—"}</td>
                       <td className={styles.sub}>{m.nota_admin ?? "—"}</td>
@@ -392,12 +392,12 @@ export const AsistenciaPage = () => {
                               </button>
                             )}
                             <button
-                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 6, cursor: "pointer", color: "#475569", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid var(--slate-300)", borderRadius: 6, cursor: "pointer", color: "var(--slate-600)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                               onClick={() => { setCorrigiendo(m); setNuevaHora(""); setNotaAdmin(""); }}>
                               <LuPencil size={14} /> Corregir
                             </button>
                             <button
-                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #fecaca", borderRadius: 6, cursor: "pointer", color: "#dc2626", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #fecaca", borderRadius: 6, cursor: "pointer", color: "var(--danger)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                               onClick={() => handleEliminarMarcaje(m)}>
                               <LuTrash2 size={14} /> Eliminar
                             </button>
@@ -418,7 +418,7 @@ export const AsistenciaPage = () => {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}>
           <div style={{ background: "#fff", borderRadius: 12, padding: 28, width: "min(460px, 100%)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
             <h3 style={{ marginBottom: 16 }}>Registrar Salida Faltante</h3>
-            <p style={{ marginBottom: 16, fontSize: "0.9rem", color: "#64748b" }}>
+            <p style={{ marginBottom: 16, fontSize: "0.9rem", color: "var(--slate-500)" }}>
               Colaborador: <strong>{agregandoSalida.nombre}</strong><br />
               El colaborador no marcó su salida ese día.
             </p>
@@ -465,7 +465,7 @@ export const AsistenciaPage = () => {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}>
           <div style={{ background: "#fff", borderRadius: 12, padding: 28, width: "min(460px, 100%)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
             <h3 style={{ marginBottom: 16 }}>Corregir Hora del Marcaje</h3>
-            <p style={{ marginBottom: 16, fontSize: "0.9rem", color: "#64748b" }}>
+            <p style={{ marginBottom: 16, fontSize: "0.9rem", color: "var(--slate-500)" }}>
               Colaborador: <strong>{corrigiendo.usuario?.nombre_completo}</strong><br />
               {corrigiendo.es_auto_cierre ? "Cierre automático" : "Hora actual"}: <strong>{fmtHora(corrigiendo.fecha_hora)}</strong>
             </p>
@@ -484,7 +484,7 @@ export const AsistenciaPage = () => {
 
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: "block", marginBottom: 4, fontSize: "0.85rem", fontWeight: 600 }}>
-                Motivo de la corrección <span style={{ color: "#94a3b8", fontWeight: 400 }}>(opcional)</span>
+                Motivo de la corrección <span style={{ color: "var(--slate-400)", fontWeight: 400 }}>(opcional)</span>
               </label>
               <textarea
                 value={notaAdmin}

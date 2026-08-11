@@ -1,13 +1,13 @@
 .container { padding: 2rem; max-width: 1400px; margin: 0 auto; }
-.container h1 { font-size: 1.6rem; color: #024f7d; margin-bottom: 0.4rem; }
+.container h1 { font-size: 1.6rem; color: var(--brand); margin-bottom: 0.4rem; }
 .subtitle { color: #555; margin-bottom: 1.5rem; }
 
 .uploadSection { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
 
 .fileLabel {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.6rem 1.2rem; border: 2px dashed #024f7d; border-radius: 8px;
-  cursor: pointer; color: #024f7d; font-weight: 500; transition: background 0.2s;
+  padding: 0.6rem 1.2rem; border: 2px dashed var(--brand); border-radius: 8px;
+  cursor: pointer; color: var(--brand); font-weight: 500; transition: background 0.2s;
 }
 .fileLabel:hover { background: #e8f4fd; }
 
@@ -15,11 +15,11 @@
 .valid { color: #2f855a; }
 .errors { color: #c05621; }
 
-.tableWrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
+.tableWrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--slate-200); margin-bottom: 1.5rem; }
 
 .table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.table th { background: #024f7d; color: white; padding: 0.6rem 0.8rem; text-align: left; white-space: nowrap; }
-.table td { padding: 0.55rem 0.8rem; border-bottom: 1px solid #e2e8f0; }
+.table th { background: var(--brand); color: white; padding: 0.6rem 0.8rem; text-align: left; white-space: nowrap; }
+.table td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--slate-200); }
 .table tbody tr:hover { background: #f7fafc; }
 
 .errorRow { background: #fff5f5 !important; }

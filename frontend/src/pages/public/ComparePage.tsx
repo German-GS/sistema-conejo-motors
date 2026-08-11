@@ -81,7 +81,7 @@ const ImpactMetrics = ({ vehicles }: { vehicles: (Vehicle | null)[] }) => {
   const maxDC    = Math.max(...active.map(v => v.tiempo_carga_dc || 0)) * 1.1 || 60;
   const maxAC    = Math.max(...active.map(v => v.tiempo_carga_ac || 0)) * 1.1 || 600;
 
-  const COLORS = ["#024f7d", "#00c7b1", "#f59e0b"];
+  const COLORS = ["var(--brand)", "#00c7b1", "var(--warning)"];
 
   return (
     <div className={styles.impactSection}>
@@ -126,7 +126,7 @@ const ImpactMetrics = ({ vehicles }: { vehicles: (Vehicle | null)[] }) => {
                   {v.marca} {v.modelo}
                 </div>
                 {v.tiempo_carga_ac ? (
-                  <TimeBar value={v.tiempo_carga_ac} max={maxAC} color="#94a3b8" label="🏠 AC Residencial" unit="min" />
+                  <TimeBar value={v.tiempo_carga_ac} max={maxAC} color="var(--slate-400)" label="🏠 AC Residencial" unit="min" />
                 ) : <p className={styles.noData}>Sin dato AC</p>}
                 {v.tiempo_carga_dc ? (
                   <TimeBar value={v.tiempo_carga_dc} max={maxDC} color={COLORS[i]} label="🔌 DC Rápido" unit="min" />
@@ -243,7 +243,7 @@ export const ComparePage = () => {
   };
 
   const hasAny = selected.some(Boolean);
-  const COLORS = ["#024f7d", "#00c7b1", "#f59e0b"];
+  const COLORS = ["var(--brand)", "#00c7b1", "var(--warning)"];
 
   // SEO dinámico: si ya eligió vehículos, el título los nombra
   const selectedNames = selected.filter(Boolean).map(v => `${v!.marca} ${v!.modelo}`);
@@ -342,7 +342,7 @@ export const ComparePage = () => {
                   <tr className={styles.stickyHeader}>
                     <th className={styles.featureCol}>Característica</th>
                     {selected.map((v, i) => (
-                      <th key={i} className={styles.vehicleCol} style={{ borderTop: `3px solid ${v ? COLORS[i] : "#e2e8f0"}` }}>
+                      <th key={i} className={styles.vehicleCol} style={{ borderTop: `3px solid ${v ? COLORS[i] : "var(--slate-200)"}` }}>
                         {v ? (
                           <div className={styles.thVehicle}>
                             <img src={v.imagenes?.[0] ? getImageUrl(v.imagenes[0].url) : "/placeholder.png"}

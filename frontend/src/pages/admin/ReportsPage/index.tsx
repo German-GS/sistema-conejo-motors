@@ -31,18 +31,18 @@ const reportOptions: { value: ReportType; label: string; icon: React.ReactNode; 
   { value: "payroll",          label: "Informe de Planilla",         icon: <LuBriefcase size={18} />, needsDates: true  },
 ];
 
-const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
+const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "var(--warning)", Frio: "#3b82f6" };
 const ESTADO_COLOR: Record<string, string> = {
-  Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
-  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "#94a3b8",
+  Nuevo: "#3b82f6", Contactado: "var(--warning)", "En Progreso": "#8b5cf6",
+  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "var(--slate-400)",
 };
 
 const fmtCRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
 
 // Mini barra de progreso para comparar filas
-const Bar = ({ value, max, color = "#024f7d" }: { value: number; max: number; color?: string }) => (
-  <div style={{ background: "#f1f5f9", borderRadius: 4, height: 8, width: "100%", minWidth: 80 }}>
+const Bar = ({ value, max, color = "var(--brand)" }: { value: number; max: number; color?: string }) => (
+  <div style={{ background: "var(--slate-100)", borderRadius: 4, height: 8, width: "100%", minWidth: 80 }}>
     <div style={{ width: `${max > 0 ? (value / max) * 100 : 0}%`, background: color, height: "100%", borderRadius: 4, transition: "width 0.3s" }} />
   </div>
 );
@@ -266,7 +266,7 @@ export const ReportsPage = () => {
                   <td>{r.vehiculo}</td>
                   <td><strong>{r.cotizaciones}</strong></td>
                   <td>{fmtCRC(Number(r.monto_total))}</td>
-                  <td><Bar value={Number(r.cotizaciones)} max={maxCot} color="#f59e0b" /></td>
+                  <td><Bar value={Number(r.cotizaciones)} max={maxCot} color="var(--warning)" /></td>
                 </tr>
               ))}
             </tbody>
@@ -349,11 +349,11 @@ export const ReportsPage = () => {
                 { n: `${d.tasaCierreGlobal}%`, l: "Tasa de cierre", c: "#10b981" },
                 { n: d.cerrados, l: "Cerrados", c: "#10b981" },
                 { n: d.seguimientos.vencidos, l: "Seguimientos vencidos", c: d.seguimientos.vencidos > 0 ? "#ef4444" : "#10b981" },
-                { n: d.descartados, l: "Descartados", c: "#94a3b8" },
+                { n: d.descartados, l: "Descartados", c: "var(--slate-400)" },
               ].map((k) => (
-                <div key={k.l} style={{ flex: 1, minWidth: 130, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.9rem 1rem" }}>
+                <div key={k.l} style={{ flex: 1, minWidth: 130, background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "0.9rem 1rem" }}>
                   <div style={{ fontSize: "1.5rem", fontWeight: 800, color: k.c }}>{k.n}</div>
-                  <div style={{ fontSize: "0.78rem", color: "#64748b" }}>{k.l}</div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--slate-500)" }}>{k.l}</div>
                 </div>
               ))}
             </div>
@@ -365,7 +365,7 @@ export const ReportsPage = () => {
                 {d.funnel.map((f: any) => (
                   <div key={f.estado} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                     <span style={{ width: 100, fontSize: "0.85rem", fontWeight: 600 }}>{f.estado}</span>
-                    <div style={{ flex: 1 }}><Bar value={f.total} max={maxFunnel} color={ESTADO_COLOR[f.estado] ?? "#024f7d"} /></div>
+                    <div style={{ flex: 1 }}><Bar value={f.total} max={maxFunnel} color={ESTADO_COLOR[f.estado] ?? "var(--brand)"} /></div>
                     <span style={{ width: 40, textAlign: "right", fontWeight: 700 }}>{f.total}</span>
                   </div>
                 ))}
@@ -385,7 +385,7 @@ export const ReportsPage = () => {
                       <td style={cell}>{r.En_Progreso}</td>
                       <td style={{ ...cell, color: "#10b981", fontWeight: 700 }}>{r.Cerrado}</td>
                       <td style={{ ...cell, color: "#ef4444" }}>{r.Perdido}</td>
-                      <td style={{ ...cell, color: "#94a3b8" }}>{r.Descartado}</td>
+                      <td style={{ ...cell, color: "var(--slate-400)" }}>{r.Descartado}</td>
                       <td style={{ ...cell, fontWeight: 700 }}>{r.tasaCierre}%</td>
                     </tr>
                   ))}
@@ -400,13 +400,13 @@ export const ReportsPage = () => {
                 {d.porTemperatura.map((t: any) => (
                   <div key={t.temperatura} style={{ flex: 1, minWidth: 140, background: "#fff", border: `1px solid ${TEMP_COLOR[t.temperatura]}`, borderRadius: 12, padding: "0.8rem 1rem" }}>
                     <div style={{ fontWeight: 800, color: TEMP_COLOR[t.temperatura] }}>{t.temperatura}</div>
-                    <div style={{ fontSize: "0.85rem", color: "#334155" }}>{t.total} leads · {t.cerrados} cerrados</div>
+                    <div style={{ fontSize: "0.85rem", color: "var(--slate-700)" }}>{t.total} leads · {t.cerrados} cerrados</div>
                     <div style={{ fontSize: "1.15rem", fontWeight: 800, color: "#10b981" }}>{t.tasaCierre}% cierre</div>
                   </div>
                 ))}
-                <div style={{ flex: 1, minWidth: 140, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.8rem 1rem" }}>
-                  <div style={{ fontWeight: 800, color: "#94a3b8" }}>Sin temperatura</div>
-                  <div style={{ fontSize: "0.85rem", color: "#334155" }}>{d.sinTemperatura} leads sin clasificar</div>
+                <div style={{ flex: 1, minWidth: 140, background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "0.8rem 1rem" }}>
+                  <div style={{ fontWeight: 800, color: "var(--slate-400)" }}>Sin temperatura</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--slate-700)" }}>{d.sinTemperatura} leads sin clasificar</div>
                 </div>
               </div>
             </div>
@@ -435,7 +435,7 @@ export const ReportsPage = () => {
                       <td><strong>{v.vendedor}</strong></td>
                       <td style={cell}>{v.total}</td>
                       <td style={cell}>{v.activos}</td>
-                      <td style={{ ...cell, color: v.vencidos > 0 ? "#ef4444" : "#94a3b8", fontWeight: v.vencidos > 0 ? 700 : 400 }}>{v.vencidos}</td>
+                      <td style={{ ...cell, color: v.vencidos > 0 ? "#ef4444" : "var(--slate-400)", fontWeight: v.vencidos > 0 ? 700 : 400 }}>{v.vencidos}</td>
                       <td style={{ ...cell, color: "#10b981" }}>{v.cerrados}</td>
                       <td style={{ ...cell, fontWeight: 700 }}>{v.tasaCierre}%</td>
                     </tr>
@@ -500,9 +500,9 @@ export const ReportsPage = () => {
       {/* ── Historial de Cierres de Mes ── */}
       <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuFolder size={20} /> Historial de Cierres de Mes</span>}>
         {loadingCierres ? (
-          <p style={{ color: "#94a3b8", padding: "1rem" }}>Cargando...</p>
+          <p style={{ color: "var(--slate-400)", padding: "1rem" }}>Cargando...</p>
         ) : cierres.length === 0 ? (
-          <p style={{ color: "#94a3b8", padding: "1rem" }}>
+          <p style={{ color: "var(--slate-400)", padding: "1rem" }}>
             Aún no hay cierres de mes registrados. Usa el botón "Cerrar Mes" en el dashboard.
           </p>
         ) : (

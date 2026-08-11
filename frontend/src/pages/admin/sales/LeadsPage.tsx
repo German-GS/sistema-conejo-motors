@@ -25,11 +25,11 @@ interface Lead {
 }
 
 const ESTADO_COLORS: Record<string, string> = {
-  Nuevo: "#3b82f6", Contactado: "#f59e0b", "En Progreso": "#8b5cf6",
-  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "#94a3b8",
+  Nuevo: "#3b82f6", Contactado: "var(--warning)", "En Progreso": "#8b5cf6",
+  Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "var(--slate-400)",
 };
 
-const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "#f59e0b", Frio: "#3b82f6" };
+const TEMP_COLOR: Record<string, string> = { Caliente: "#ef4444", Tibio: "var(--warning)", Frio: "#3b82f6" };
 
 const FUENTE_ICONS: Record<string, string> = {
   Web: "🌐", Instagram: "📸", Facebook: "👍", WhatsApp: "💬",
@@ -228,36 +228,36 @@ export const LeadsPage = () => {
         <div style={{ marginBottom: "1rem" }}>
           <button
             onClick={toggleReporte}
-            style={{ border: "1px solid #cbd5e1", background: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#024f7d", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+            style={{ border: "1px solid var(--slate-300)", background: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "var(--brand)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
           >
             <LuChartColumnStacked size={16} /> {showReporte ? "Ocultar" : "Ver"} reporte de conversión por fuente
           </button>
           {showReporte && (
-            <div style={{ overflowX: "auto", marginTop: "0.75rem", border: "1px solid #e2e8f0", borderRadius: 12 }}>
+            <div style={{ overflowX: "auto", marginTop: "0.75rem", border: "1px solid var(--slate-200)", borderRadius: 12 }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
                 <thead>
-                  <tr style={{ background: "#024f7d", color: "#fff", textAlign: "left" }}>
+                  <tr style={{ background: "var(--brand)", color: "#fff", textAlign: "left" }}>
                     <th style={{ padding: "0.6rem 0.8rem" }}>Fuente</th>
                     <th style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>Total</th>
                     <th style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>En Progreso</th>
                     <th style={{ padding: "0.6rem 0.8rem", textAlign: "center", color: "#a7f3d0" }}>Cerrado</th>
                     <th style={{ padding: "0.6rem 0.8rem", textAlign: "center", color: "#fecaca" }}>Perdido</th>
-                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center", color: "#e2e8f0" }}>Descartado</th>
+                    <th style={{ padding: "0.6rem 0.8rem", textAlign: "center", color: "var(--slate-200)" }}>Descartado</th>
                     <th style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>Tasa cierre</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reporteFuentes.length === 0 ? (
-                    <tr><td colSpan={7} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8" }}>Sin datos.</td></tr>
+                    <tr><td colSpan={7} style={{ padding: "1rem", textAlign: "center", color: "var(--slate-400)" }}>Sin datos.</td></tr>
                   ) : reporteFuentes.map((r) => (
-                    <tr key={r.fuente} style={{ borderTop: "1px solid #f1f5f9" }}>
+                    <tr key={r.fuente} style={{ borderTop: "1px solid var(--slate-100)" }}>
                       <td style={{ padding: "0.55rem 0.8rem", fontWeight: 600 }}>{FUENTE_ICONS[r.fuente] ?? "📋"} {r.fuente}</td>
                       <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700 }}>{r.total}</td>
                       <td style={{ padding: "0.55rem 0.8rem", textAlign: "center" }}>{r.En_Progreso}</td>
                       <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#10b981", fontWeight: 700 }}>{r.Cerrado}</td>
                       <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#ef4444" }}>{r.Perdido}</td>
-                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#94a3b8" }}>{r.Descartado}</td>
-                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700, color: r.tasaCierre >= 20 ? "#10b981" : "#64748b" }}>{r.tasaCierre}%</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "var(--slate-400)" }}>{r.Descartado}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700, color: r.tasaCierre >= 20 ? "#10b981" : "var(--slate-500)" }}>{r.tasaCierre}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -299,7 +299,7 @@ export const LeadsPage = () => {
         >▦ Tablero</button>
         <button
           onClick={() => setShowNuevo(true)}
-          style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, border: "none", background: "#024f7d", color: "#fff" }}
+          style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, border: "none", background: "var(--brand)", color: "#fff" }}
         >+ Nuevo Lead</button>
       </div>
 
@@ -339,14 +339,14 @@ export const LeadsPage = () => {
                   <tr
                     key={lead.id}
                     className={followupVencido ? styles.rowAlert : ""}
-                    style={archivado ? { opacity: 0.55, background: "#f8fafc" } : undefined}
+                    style={archivado ? { opacity: 0.55, background: "var(--slate-50)" } : undefined}
                   >
                     <td>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
                         {lead.temperatura && (
                           <span
                             title={`Temperatura: ${lead.temperatura}`}
-                            style={{ width: 9, height: 9, borderRadius: "50%", background: TEMP_COLOR[lead.temperatura] ?? "#cbd5e1", flexShrink: 0 }}
+                            style={{ width: 9, height: 9, borderRadius: "50%", background: TEMP_COLOR[lead.temperatura] ?? "var(--slate-300)", flexShrink: 0 }}
                           />
                         )}
                         <strong>{lead.nombre_cliente}</strong>
@@ -378,7 +378,7 @@ export const LeadsPage = () => {
                     <td>
                       <span
                         className={styles.status}
-                        style={{ background: ESTADO_COLORS[lead.estado] ?? "#64748b" }}
+                        style={{ background: ESTADO_COLORS[lead.estado] ?? "var(--slate-500)" }}
                       >
                         {lead.estado}
                       </span>
@@ -432,23 +432,23 @@ export const LeadsPage = () => {
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, width: "min(440px, 94vw)", padding: "1.5rem", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <h2 style={{ margin: "0 0 1rem", fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuPlus size={18} /> Nuevo Lead</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+              <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)" }}>
                 Nombre del cliente *
                 <input value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
                   style={inputStyle} placeholder="Ej: María Rodríguez" autoFocus />
               </label>
               <div style={{ display: "flex", gap: "0.6rem" }}>
-                <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)" }}>
                   Teléfono
                   <input value={nuevo.telefono} onChange={(e) => setNuevo({ ...nuevo, telefono: e.target.value })}
                     style={inputStyle} placeholder="8888-8888" />
                 </label>
-                <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                <label style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)" }}>
                   Fuente <span style={{ color: "#ef4444" }}>*</span>
                   <select
                     value={nuevo.fuente}
                     onChange={(e) => setNuevo({ ...nuevo, fuente: e.target.value, campana_id: "" })}
-                    style={{ ...inputStyle, borderColor: nuevo.fuente ? "#e2e8f0" : "#fca5a5" }}
+                    style={{ ...inputStyle, borderColor: nuevo.fuente ? "var(--slate-200)" : "#fca5a5" }}
                     required
                   >
                     <option value="">— Seleccioná la fuente —</option>
@@ -460,7 +460,7 @@ export const LeadsPage = () => {
               </div>
               {/* Campaña — solo si la fuente es red social y hay campañas activas */}
               {["Facebook", "Instagram", "TikTok"].includes(nuevo.fuente) && campanasActivas.filter(c => c.plataforma === nuevo.fuente).length > 0 && (
-                <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)" }}>
                   📣 Campaña de {nuevo.fuente} (opcional)
                   <select
                     value={nuevo.campana_id}
@@ -475,18 +475,18 @@ export const LeadsPage = () => {
                   </select>
                 </label>
               )}
-              <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+              <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)" }}>
                 Email
                 <input value={nuevo.email} onChange={(e) => setNuevo({ ...nuevo, email: e.target.value })}
                   style={inputStyle} placeholder="cliente@correo.com" />
               </label>
-              <p style={{ fontSize: "0.76rem", color: "#94a3b8", margin: 0 }}>
+              <p style={{ fontSize: "0.76rem", color: "var(--slate-400)", margin: 0 }}>
                 Indique al menos teléfono o email. {isAdmin ? "Se asignará por turno a un vendedor." : "Quedará asignado a ti."}
               </p>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", marginTop: "1.25rem" }}>
-              <button onClick={() => setShowNuevo(false)} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "1px solid #cbd5e1", background: "#fff", color: "#475569", fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
-              <button onClick={crearLead} disabled={guardandoNuevo} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "none", background: "#024f7d", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => setShowNuevo(false)} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-600)", fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={crearLead} disabled={guardandoNuevo} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "none", background: "var(--brand)", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
                 {guardandoNuevo ? "Guardando..." : "Crear Lead"}
               </button>
             </div>
@@ -499,14 +499,14 @@ export const LeadsPage = () => {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", marginTop: 4, padding: "0.5rem 0.7rem",
-  border: "1px solid #cbd5e1", borderRadius: 8, fontSize: "0.9rem", boxSizing: "border-box",
+  border: "1px solid var(--slate-300)", borderRadius: 8, fontSize: "0.9rem", boxSizing: "border-box",
 };
 
 const toggleStyle = (active: boolean): React.CSSProperties => ({
   display: "flex", alignItems: "center", gap: "0.35rem",
   padding: "0.4rem 0.9rem", borderRadius: 8, cursor: "pointer",
   fontSize: "0.85rem", fontWeight: 600,
-  border: `1px solid ${active ? "#024f7d" : "#cbd5e1"}`,
-  background: active ? "#024f7d" : "#fff",
-  color: active ? "#fff" : "#475569",
+  border: `1px solid ${active ? "var(--brand)" : "var(--slate-300)"}`,
+  background: active ? "var(--brand)" : "#fff",
+  color: active ? "#fff" : "var(--slate-600)",
 });
