@@ -143,7 +143,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             </div>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: "0.8rem", color: "#64748b" }}>Continuar como</div>
-              <div style={{ fontWeight: 700, color: "#0a2540", wordBreak: "break-all" }}>{email}</div>
+              <div style={{ fontWeight: 700, color: "var(--brand-dark)", wordBreak: "break-all" }}>{email}</div>
             </div>
             <button type="button" onClick={handlePasskeyLogin} disabled={cargando}
               style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",

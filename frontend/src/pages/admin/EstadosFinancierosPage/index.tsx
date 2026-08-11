@@ -66,7 +66,7 @@ export const EstadosFinancierosPage = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-        <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuChartColumnStacked size={22} /> Estados Financieros</h1>
+        <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuChartColumnStacked size={22} /> Estados Financieros</h1>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
           <input type="month" value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem" }} />
           <button onClick={descargarExcel} style={{ background: "#059669", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}><LuDownload size={16} /> Excel (3 estados)</button>
@@ -106,7 +106,7 @@ export const EstadosFinancierosPage = () => {
 
 const Seccion = ({ titulo, filas, anterior, totalLabel, total, totalPrev, favorableCuandoSube = true }: any) => (
   <>
-    <tr><td style={{ ...td, fontWeight: 800, color: "#0a2540", paddingTop: 12 }} colSpan={4}>{titulo}</td></tr>
+    <tr><td style={{ ...td, fontWeight: 800, color: "var(--brand-dark)", paddingTop: 12 }} colSpan={4}>{titulo}</td></tr>
     {filas.length === 0 && <tr><td style={{ ...td, color: "#94a3b8" }} colSpan={4}>Sin movimientos.</td></tr>}
     {filas.map((f: any) => {
       const prev = anterior?.find((x: any) => x.codigo === f.codigo);
@@ -147,7 +147,7 @@ const EstadoResultados = ({ data }: any) => {
     <Tabla>
       <Seccion titulo="INGRESOS" filas={a.ingresos} anterior={p?.ingresos} totalLabel="Total Ingresos" total={a.totalIngresos} totalPrev={p?.totalIngresos} />
       <Seccion titulo="GASTOS" filas={a.gastos} anterior={p?.gastos} totalLabel="Total Gastos" total={a.totalGastos} totalPrev={p?.totalGastos} favorableCuandoSube={false} />
-      <tr style={{ borderTop: "3px solid #0a2540" }}>
+      <tr style={{ borderTop: "3px solid var(--brand-dark)" }}>
         <td style={{ ...td, fontWeight: 800, color: a.utilidadNeta >= 0 ? "#059669" : "#dc2626" }}>UTILIDAD NETA</td>
         <td style={{ ...tdR, fontWeight: 800, color: a.utilidadNeta >= 0 ? "#059669" : "#dc2626" }}>{CRC(a.utilidadNeta)}</td>
         <td style={tdR}>{p ? CRC(p.utilidadNeta) : "—"}</td>
@@ -160,7 +160,7 @@ const EstadoResultados = ({ data }: any) => {
 // Fila simple de dos columnas (concepto / monto) para balance clasificado y flujo.
 const Fila = ({ label, monto, bold, indent, color, top }: any) => (
   <tr style={{ borderTop: top ? top : "1px solid #f8fafc" }}>
-    <td style={{ ...td, paddingLeft: indent ?? 10, fontWeight: bold ? 800 : 400, color: color ?? (bold ? "#0a2540" : "#334155") }} colSpan={3}>{label}</td>
+    <td style={{ ...td, paddingLeft: indent ?? 10, fontWeight: bold ? 800 : 400, color: color ?? (bold ? "var(--brand-dark)" : "#334155") }} colSpan={3}>{label}</td>
     <td style={{ ...tdR, fontWeight: bold ? 800 : 400, color: color ?? "#334155" }}>{monto === undefined ? "" : CRC(monto)}</td>
   </tr>
 );
@@ -193,7 +193,7 @@ const BalanceGeneral = ({ data }: any) => {
         <Fila label="Activo no corriente" bold indent={18} />
         {cuenta(a.activo.noCorriente)}
         <Fila label="Total activo no corriente" monto={a.activo.totalNoCorriente} bold indent={18} />
-        <Fila label="TOTAL ACTIVOS" monto={a.activo.total} bold top="2px solid #0a2540" />
+        <Fila label="TOTAL ACTIVOS" monto={a.activo.total} bold top="2px solid var(--brand-dark)" />
 
         <Fila label="PASIVOS" bold color="#024f7d" top="3px solid #e2e8f0" />
         <Fila label="Pasivo corriente" bold indent={18} />
@@ -202,12 +202,12 @@ const BalanceGeneral = ({ data }: any) => {
         <Fila label="Pasivo no corriente" bold indent={18} />
         {cuenta(a.pasivo.noCorriente)}
         <Fila label="Total pasivo no corriente" monto={a.pasivo.totalNoCorriente} bold indent={18} />
-        <Fila label="TOTAL PASIVOS" monto={a.pasivo.total} bold top="2px solid #0a2540" />
+        <Fila label="TOTAL PASIVOS" monto={a.pasivo.total} bold top="2px solid var(--brand-dark)" />
 
         <Fila label="PATRIMONIO" bold color="#024f7d" top="3px solid #e2e8f0" />
         {a.patrimonio.map((c: any) => <Fila key={c.codigo} label={`${c.codigo} ${c.nombre}`} monto={c.saldo} indent={30} />)}
         <Fila label="Utilidad del ejercicio" monto={a.totales.utilidadEjercicio} indent={30} />
-        <Fila label="TOTAL PATRIMONIO" monto={a.totales.patrimonio} bold top="2px solid #0a2540" />
+        <Fila label="TOTAL PATRIMONIO" monto={a.totales.patrimonio} bold top="2px solid var(--brand-dark)" />
       </Tabla2>
 
       {/* Verificación de la ecuación contable (Parte F) */}
@@ -239,7 +239,7 @@ const FlujoCaja = ({ data }: any) => {
         {seccion("Actividades de operación", a.operacion)}
         {seccion("Actividades de inversión", a.inversion)}
         {seccion("Actividades de financiamiento", a.financiamiento)}
-        <Fila label="VARIACIÓN NETA DE EFECTIVO" monto={a.variacionNeta} bold color={a.variacionNeta >= 0 ? "#059669" : "#dc2626"} top="3px solid #0a2540" />
+        <Fila label="VARIACIÓN NETA DE EFECTIVO" monto={a.variacionNeta} bold color={a.variacionNeta >= 0 ? "#059669" : "#dc2626"} top="3px solid var(--brand-dark)" />
       </Tabla2>
 
       {/* Cuadre contra la variación directa de caja */}
@@ -315,7 +315,7 @@ const SaludFinanciera = ({ data }: any) => {
         if (!items.length) return null;
         return (
           <div key={cat}>
-            <h3 style={{ margin: "0.5rem 0", color: "#0a2540", fontSize: "1rem" }}>{cat}</h3>
+            <h3 style={{ margin: "0.5rem 0", color: "var(--brand-dark)", fontSize: "1rem" }}>{cat}</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.75rem" }}>
               {items.map((i: any) => {
                 const c = SEM_COLOR[i.semaforo] ?? SEM_COLOR.na;

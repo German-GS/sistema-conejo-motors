@@ -67,7 +67,7 @@ export const ClientesPage = () => {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.25rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><LuUsers size={22} /> Clientes</h1>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--brand-dark)", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><LuUsers size={22} /> Clientes</h1>
         <input
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
@@ -96,7 +96,7 @@ export const ClientesPage = () => {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
-                    <strong style={{ color: "#0a2540" }}>{c.nombre_completo}</strong>
+                    <strong style={{ color: "var(--brand-dark)" }}>{c.nombre_completo}</strong>
                     <span style={{ display: "flex", gap: "0.4rem" }}>
                       {c.vehiculos > 0 && <span title="Vehículos comprados" style={{ fontSize: "0.72rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "1px 8px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuCar size={12} /> {c.vehiculos}</span>}
                       <span title="Cotizaciones" style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#475569", borderRadius: 20, padding: "1px 8px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuFileText size={12} /> {c.cotizaciones}</span>
@@ -119,7 +119,7 @@ export const ClientesPage = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
               {/* Datos */}
               <div>
-                <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.2rem", color: "#0a2540" }}>{perfil.cliente.nombre_completo}</h2>
+                <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.2rem", color: "var(--brand-dark)" }}>{perfil.cliente.nombre_completo}</h2>
                 <div style={{ fontSize: "0.88rem", color: "#334155", display: "flex", flexDirection: "column", gap: 2 }}>
                   <span><strong>Cédula:</strong> {perfil.cliente.cedula}</span>
                   <span><strong>Teléfono:</strong> {perfil.cliente.telefono || "—"}</span>
@@ -158,7 +158,7 @@ export const ClientesPage = () => {
                     {perfil.cotizaciones.map((c: any) => (
                       <div key={c.id} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.6rem 0.8rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
                         <div>
-                          <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0a2540" }}>#{c.id} · {c.vehiculo}</div>
+                          <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--brand-dark)" }}>#{c.id} · {c.vehiculo}</div>
                           <div style={{ fontSize: "0.76rem", color: "#94a3b8" }}>{c.fecha ? fmtFechaLocal(c.fecha) : ""} · {c.estado} · {CRC(c.total)}</div>
                         </div>
                         <button onClick={() => verProforma(c.id)}

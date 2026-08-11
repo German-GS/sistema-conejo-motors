@@ -27,7 +27,7 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
-.formCard h3 { margin: 0 0 1.25rem; font-size: 1rem; color: #0a2540; }
+.formCard h3 { margin: 0 0 1.25rem; font-size: 1rem; color: var(--brand-dark); }
 
 .form {
   display: grid;
@@ -118,7 +118,7 @@
   gap: 0.5rem;
 }
 
-.tipo { font-size: 0.95rem; font-weight: 700; color: #0a2540; }
+.tipo { font-size: 0.95rem; font-weight: 700; color: var(--brand-dark); }
 .empleado {
   margin-left: 0.75rem;
   font-size: 0.8rem;

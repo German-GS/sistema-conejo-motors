@@ -74,7 +74,7 @@ const DonutCuentas = ({ data }: { data: { cuenta: string; costo: number; color: 
           <div key={d.cuenta} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <span style={{ width: 11, height: 11, borderRadius: 3, background: d.color, flexShrink: 0 }} />
             <span style={{ color: "#334155" }}>{nombreCuenta(d.cuenta)}</span>
-            <strong style={{ color: "#0a2540", marginLeft: "auto" }}>{fmtCRC(d.costo)}</strong>
+            <strong style={{ color: "var(--brand-dark)", marginLeft: "auto" }}>{fmtCRC(d.costo)}</strong>
           </div>
         ))}
       </div>
@@ -853,7 +853,7 @@ export const ContabilidadPage = () => {
           {editItem && (
             <div onClick={() => setEditItem(null)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }}>
               <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 12, padding: "1.25rem", width: "min(460px, 100%)", maxHeight: "90vh", overflowY: "auto" }}>
-                <h3 style={{ margin: "0 0 0.25rem", color: "#0a2540" }}>Editar activo</h3>
+                <h3 style={{ margin: "0 0 0.25rem", color: "var(--brand-dark)" }}>Editar activo</h3>
                 <p style={{ margin: "0 0 1rem", fontSize: "0.82rem", color: "#64748b" }}>{editItem.nombre}</p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                   {editItem.tipo === "Activo" && (

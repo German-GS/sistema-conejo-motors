@@ -57,7 +57,7 @@ export const FacturacionElectronicaPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Facturación Electrónica — Catálogo CABYS</h1>
+      <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Facturación Electrónica — Catálogo CABYS</h1>
 
       {/* Aviso modo interino */}
       <div style={{ background: "#fef3c7", border: "1px solid #fde68a", color: "#92400e", borderRadius: 12, padding: "0.9rem 1.1rem" }}>
@@ -71,7 +71,7 @@ export const FacturacionElectronicaPage = () => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
           <div>
             <div style={{ fontSize: "0.78rem", color: "#64748b" }}>Códigos CABYS cargados</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540" }}>{total === null ? "…" : total.toLocaleString("es-CR")}</div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--brand-dark)" }}>{total === null ? "…" : total.toLocaleString("es-CR")}</div>
             {total !== null && total < 100 && (
               <div style={{ fontSize: "0.78rem", color: "#92400e", marginTop: 4 }}>Solo está la semilla del negocio. Importá el Excel oficial para el catálogo completo (~20.500 códigos).</div>
             )}
@@ -89,7 +89,7 @@ export const FacturacionElectronicaPage = () => {
 
       {/* Buscador */}
       <div style={card}>
-        <strong style={{ fontSize: "1rem", color: "#0a2540" }}>Buscar código CABYS</strong>
+        <strong style={{ fontSize: "1rem", color: "var(--brand-dark)" }}>Buscar código CABYS</strong>
         <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "0.25rem 0 0.75rem" }}>Por código (dígitos) o por descripción. Muestra la tarifa de IVA sugerida.</p>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ej: 4911315000000  ·  vehículo eléctrico  ·  mantenimiento"
           style={{ width: "100%", padding: "0.6rem 0.8rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", boxSizing: "border-box" }} />

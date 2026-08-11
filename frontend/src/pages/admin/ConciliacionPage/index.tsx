@@ -75,7 +75,7 @@ export const ConciliacionPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBanknote size={22} /> Conciliación Bancaria</h1>
+      <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBanknote size={22} /> Conciliación Bancaria</h1>
 
       <div style={card}>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
@@ -110,7 +110,7 @@ export const ConciliacionPage = () => {
           </div>
 
           <div style={card}>
-            <strong style={{ color: "#0a2540" }}>En libros, no en banco (en tránsito)</strong>
+            <strong style={{ color: "var(--brand-dark)" }}>En libros, no en banco (en tránsito)</strong>
             <div style={{ overflowX: "auto", marginTop: "0.5rem" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
                 <thead><tr><th style={th}>Fecha</th><th style={th}>Asiento</th><th style={th}>Descripción</th><th style={thR}>Monto</th></tr></thead>
@@ -128,7 +128,7 @@ export const ConciliacionPage = () => {
           </div>
 
           <div style={card}>
-            <strong style={{ color: "#0a2540" }}>En banco, no en libros (comisiones, intereses)</strong>
+            <strong style={{ color: "var(--brand-dark)" }}>En banco, no en libros (comisiones, intereses)</strong>
             <div style={{ overflowX: "auto", marginTop: "0.5rem" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
                 <thead><tr><th style={th}>Fecha</th><th style={th}>Descripción</th><th style={thR}>Monto</th><th style={th}></th></tr></thead>

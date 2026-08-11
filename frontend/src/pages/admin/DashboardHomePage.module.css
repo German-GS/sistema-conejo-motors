@@ -33,7 +33,7 @@
 .welcomeTitle {
   font-size: 1.6rem;
   font-weight: 800;
-  color: #0a2540;
+  color: var(--brand-dark);
   margin: 0 0 0.2rem;
 }
 
@@ -141,7 +141,7 @@
 .miniKpiValue {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #0a2540;
+  color: var(--brand-dark);
   line-height: 1.1;
 }
 
@@ -180,7 +180,7 @@
 .panelTitle {
   font-size: 0.88rem;
   font-weight: 700;
-  color: #0a2540;
+  color: var(--brand-dark);
 }
 
 /* Online dot animado */
@@ -250,7 +250,7 @@
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #0a2540;
+  color: var(--brand-dark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -318,7 +318,7 @@
   display: block;
   font-size: 0.83rem;
   font-weight: 600;
-  color: #0a2540;
+  color: var(--brand-dark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

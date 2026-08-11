@@ -86,7 +86,7 @@
 .rowExpired { background: #fff7f7 !important; }
 
 /* Celdas específicas */
-.quoteId { font-weight: 800; color: #0a2540; }
+.quoteId { font-weight: 800; color: var(--brand-dark); }
 .leadBadge {
   margin-left: 5px;
   font-size: 0.75rem;
@@ -224,7 +224,7 @@
   margin-bottom: 1rem;
 }
 .modalIcon { font-size: 1.75rem; line-height: 1; flex-shrink: 0; }
-.modalHeader strong { display: block; font-size: 1rem; color: #0a2540; }
+.modalHeader strong { display: block; font-size: 1rem; color: var(--brand-dark); }
 .modalSub { margin: 3px 0 0; font-size: 0.82rem; color: #64748b; }
 
 .modalWarning {

@@ -164,7 +164,7 @@
 .price {
   font-size: 1.35rem;
   font-weight: 800;
-  color: #0a2540;
+  color: var(--brand-dark);
   margin: 0;
 }
 
@@ -193,7 +193,7 @@
   margin-bottom: 0.75rem;
 }
 
-.error { color: var(--warning); }
+.error { color: var(--danger); }
 
 /* ── Tablet responsive ── */
 @media (max-width: 1024px) {
@@ -262,7 +262,7 @@
 
 .reservadoInfo strong {
   font-size: 0.9rem;
-  color: #0a2540;
+  color: var(--brand-dark);
 }
 
 .reservadoColor {

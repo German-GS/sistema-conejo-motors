@@ -28,7 +28,7 @@
 .header h2 {
   font-size: 2rem;
   font-weight: 800;
-  color: #0a2540;
+  color: var(--brand-dark);
   margin: 0 0 0.75rem;
 }
 .lead {
@@ -93,7 +93,7 @@
   box-shadow: 0 2px 16px rgba(2,79,125,0.08);
   border: 1px solid #bae6fd;
 }
-.chartCard h3 { font-size: 1.05rem; font-weight: 700; color: #0a2540; margin: 0 0 0.25rem; }
+.chartCard h3 { font-size: 1.05rem; font-weight: 700; color: var(--brand-dark); margin: 0 0 0.25rem; }
 .chartSub { font-size: 0.83rem; color: #94a3b8; margin: 0 0 1.25rem; }
 
 /* Tooltip */

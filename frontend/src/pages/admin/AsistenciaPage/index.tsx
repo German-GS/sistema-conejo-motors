@@ -431,7 +431,7 @@ export const AsistenciaPage = () => {
                 type="datetime-local"
                 value={salidaHora}
                 onChange={e => setSalidaHora(e.target.value)}
-                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "#0a2540" }}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "var(--brand-dark)" }}
               />
             </div>
 
@@ -444,7 +444,7 @@ export const AsistenciaPage = () => {
                 onChange={e => setSalidaNota(e.target.value)}
                 placeholder="Ej: El colaborador confirmó que salió a las 6pm pero olvidó marcar."
                 rows={3}
-                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "#0a2540", resize: "vertical" }}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "var(--brand-dark)", resize: "vertical" }}
               />
             </div>
 
@@ -478,7 +478,7 @@ export const AsistenciaPage = () => {
                 type="datetime-local"
                 value={nuevaHora}
                 onChange={e => setNuevaHora(e.target.value)}
-                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "#0a2540" }}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "var(--brand-dark)" }}
               />
             </div>
 
@@ -491,7 +491,7 @@ export const AsistenciaPage = () => {
                 onChange={e => setNotaAdmin(e.target.value)}
                 placeholder="Ej: El colaborador reportó que marcó salida pero el sistema no la registró..."
                 rows={3}
-                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "#0a2540", resize: "vertical" }}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "var(--brand-dark)", resize: "vertical" }}
               />
             </div>
 

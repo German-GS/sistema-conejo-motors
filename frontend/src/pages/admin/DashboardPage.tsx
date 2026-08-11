@@ -255,7 +255,7 @@ export const DashboardPage = () => {
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <span title={v.color} style={{ width: 14, height: 14, borderRadius: "50%", background: colorHex(v.color), border: "1.5px solid rgba(0,0,0,0.15)", flexShrink: 0 }} />
-                      <strong style={{ color: "#0a2540", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.marca} {v.modelo}</strong>
+                      <strong style={{ color: "var(--brand-dark)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.marca} {v.modelo}</strong>
                       <span style={{ color: "#64748b", fontSize: "0.82rem" }}>{v.año}</span>
                     </div>
                     <div style={{ fontSize: "0.78rem", color: "#94a3b8", textTransform: "capitalize" }}>{v.color || "—"} · {v.bodega?.nombre || "sin ubicación"}</div>
@@ -270,7 +270,7 @@ export const DashboardPage = () => {
                     </button>
                   </div>
                   <span style={{ fontSize: "0.72rem", fontWeight: 700, background: est.bg, color: est.fg, borderRadius: 20, padding: "2px 10px", textAlign: "center" }}>{v.estado}</span>
-                  <strong style={{ color: "#0a2540", textAlign: "right", fontSize: "0.9rem" }}>{CRC(precioFinal)}</strong>
+                  <strong style={{ color: "var(--brand-dark)", textAlign: "right", fontSize: "0.9rem" }}>{CRC(precioFinal)}</strong>
                   <span style={{ color: "#94a3b8", textAlign: "center", transform: abierto ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>›</span>
                 </div>
 

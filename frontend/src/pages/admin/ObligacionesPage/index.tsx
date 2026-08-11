@@ -91,7 +91,7 @@ export const ObligacionesPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Obligaciones Tributarias — IVA (D-150)</h1>
+      <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Obligaciones Tributarias — IVA (D-150)</h1>
 
       {/* Banner de pendiente */}
       {pendiente?.pendiente && (
@@ -109,7 +109,7 @@ export const ObligacionesPage = () => {
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-              <strong style={{ fontSize: "1.05rem", color: "#0a2540" }}>Período</strong>
+              <strong style={{ fontSize: "1.05rem", color: "var(--brand-dark)" }}>Período</strong>
               <input type="month" value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} style={{ padding: "0.35rem 0.5rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem" }} />
               <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>(podés elegir cualquier mes para reconstruir hacia atrás)</span>
             </div>
@@ -186,7 +186,7 @@ export const ObligacionesPage = () => {
 
       {/* Notas de crédito / débito */}
       <div style={card}>
-        <strong style={{ fontSize: "1rem", color: "#0a2540" }}>Notas de crédito / débito</strong>
+        <strong style={{ fontSize: "1rem", color: "var(--brand-dark)" }}>Notas de crédito / débito</strong>
         <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "0.25rem 0 0.75rem" }}>Devoluciones, descuentos o cargos posteriores que ajustan el IVA del período (crédito resta, débito suma).</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.6rem", alignItems: "end" }}>
           <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#475569" }}>Tipo
@@ -216,7 +216,7 @@ export const ObligacionesPage = () => {
 
       {/* Histórico */}
       <div style={card}>
-        <strong style={{ fontSize: "1rem", color: "#0a2540" }}>Historial de liquidaciones</strong>
+        <strong style={{ fontSize: "1rem", color: "var(--brand-dark)" }}>Historial de liquidaciones</strong>
         <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 640 }}>
             <thead>
@@ -253,7 +253,7 @@ export const ObligacionesPage = () => {
 
       {/* Información de soporte */}
       <div style={{ ...card, background: "#f8fafc" }}>
-        <strong style={{ fontSize: "0.95rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuInfo size={16} /> Información de soporte</strong>
+        <strong style={{ fontSize: "0.95rem", color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuInfo size={16} /> Información de soporte</strong>
         <ul style={{ fontSize: "0.84rem", color: "#475569", lineHeight: 1.7, marginTop: "0.5rem" }}>
           <li><strong>Formulario:</strong> D-150 en TRIBU-CR (reemplazó al ATV/D-104 desde el 6 oct 2025). Se declara <strong>por tarifa</strong>, no por actividad.</li>
           <li><strong>Plazo:</strong> primeros 15 días naturales del mes siguiente. Declarar aunque sea en cero.</li>

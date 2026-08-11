@@ -78,7 +78,7 @@
 .kpiGreen { border-color: #bbf7d0; background: #f0fdf4; }
 
 .kpiIcon { font-size: 1.4rem; }
-.kpiNum { font-size: 1.5rem; font-weight: 800; color: #0a2540; line-height: 1; }
+.kpiNum { font-size: 1.5rem; font-weight: 800; color: var(--brand-dark); line-height: 1; }
 .kpiLabel { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
 
 /* ── Tabla ──────────────────────────────────────────────── */

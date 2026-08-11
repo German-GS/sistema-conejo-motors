@@ -31,7 +31,7 @@ export const PendientesContablesPage = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-        <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuTriangleAlert size={22} /> Pendientes de Contabilizar</h1>
+        <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuTriangleAlert size={22} /> Pendientes de Contabilizar</h1>
         <button onClick={cargar} style={{ background: "#fff", border: "1.5px solid #e2e8f0", color: "#475569", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}><LuRefreshCw size={15} /> Actualizar</button>
       </div>
 

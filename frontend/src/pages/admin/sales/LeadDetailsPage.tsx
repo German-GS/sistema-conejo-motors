@@ -1121,7 +1121,7 @@ export const LeadDetailsPage = () => {
             const dato = (icon: ReactNode, label: string, value: string) => (
               <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
                 <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>{icon} {label}</span>
-                <span style={{ fontSize: "0.92rem", fontWeight: 700, color: "#0a2540" }}>{value}</span>
+                <span style={{ fontSize: "0.92rem", fontWeight: 700, color: "var(--brand-dark)" }}>{value}</span>
               </div>
             );
             return (
@@ -1153,7 +1153,7 @@ export const LeadDetailsPage = () => {
                             }}>
                               {done ? "✓" : i + 1}
                             </div>
-                            <span style={{ fontSize: "0.68rem", color: actual ? "#0a2540" : "#94a3b8", fontWeight: actual ? 700 : 500, whiteSpace: "nowrap" }}>{etapa}</span>
+                            <span style={{ fontSize: "0.68rem", color: actual ? "var(--brand-dark)" : "#94a3b8", fontWeight: actual ? 700 : 500, whiteSpace: "nowrap" }}>{etapa}</span>
                           </div>
                           {i < FUNNEL.length - 1 && (
                             <div style={{ flex: 1, height: 2, background: i < idxActual ? (ESTADO_COLORS[lead.estado] ?? "#10b981") : "#e2e8f0", margin: "0 4px", marginBottom: 16 }} />
@@ -1172,7 +1172,7 @@ export const LeadDetailsPage = () => {
                   {lead.temperatura && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 90 }}>
                       <span style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuThermometer size={13} /> Temperatura</span>
-                      <span style={{ fontSize: "0.92rem", fontWeight: 700, color: TEMP_COLOR[lead.temperatura] ?? "#0a2540" }}>
+                      <span style={{ fontSize: "0.92rem", fontWeight: 700, color: TEMP_COLOR[lead.temperatura] ?? "var(--brand-dark)" }}>
                         {TEMPERATURAS.find((t) => t.value === lead.temperatura)?.label ?? lead.temperatura}
                       </span>
                     </div>

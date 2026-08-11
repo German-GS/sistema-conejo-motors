@@ -218,7 +218,7 @@
 
 /* Botón de Eliminar (Rojo) */
 .deleteButton {
-  background-color: var(--warning);
+  background-color: var(--danger);
   color: white;
 }
 .deleteButton:hover {
@@ -236,7 +236,7 @@
 }
 
 .highlightCard {
-  border-left: 4px solid var(--caution);
+  border-left: 4px solid var(--warning);
 }
 
 /* Botones de acción en la tabla de perfiles — sin romper celdas */

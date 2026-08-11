@@ -204,7 +204,7 @@ export default function GastosPage() {
             {porCategoria.map(([cat, monto]) => (
               <span key={cat} style={{ display: "inline-flex", alignItems: "baseline", gap: "0.4rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "3px 12px", fontSize: "0.8rem" }}>
                 <span style={{ color: "#475569" }}>{cat}</span>
-                <strong style={{ color: "#0a2540" }}>₡{monto.toLocaleString('es-CR')}</strong>
+                <strong style={{ color: "var(--brand-dark)" }}>₡{monto.toLocaleString('es-CR')}</strong>
               </span>
             ))}
           </div>

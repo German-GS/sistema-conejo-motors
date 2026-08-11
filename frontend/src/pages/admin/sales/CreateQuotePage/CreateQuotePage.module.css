@@ -98,7 +98,7 @@
 .fuenteTitle {
   font-size: 1rem;
   font-weight: 700;
-  color: #0a2540;
+  color: var(--brand-dark);
   margin-bottom: 0.25rem;
 }
 
@@ -148,7 +148,7 @@
 
 /* Resumen de proforma */
 .summary {
-  background: #0a2540;
+  background: var(--brand-dark);
   color: white;
   border-radius: 12px;
   padding: 1.5rem;

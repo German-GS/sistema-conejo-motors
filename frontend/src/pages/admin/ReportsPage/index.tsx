@@ -345,7 +345,7 @@ export const ReportsPage = () => {
             {/* KPIs */}
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
               {[
-                { n: d.total, l: "Total leads", c: "#0a2540" },
+                { n: d.total, l: "Total leads", c: "var(--brand-dark)" },
                 { n: `${d.tasaCierreGlobal}%`, l: "Tasa de cierre", c: "#10b981" },
                 { n: d.cerrados, l: "Cerrados", c: "#10b981" },
                 { n: d.seguimientos.vencidos, l: "Seguimientos vencidos", c: d.seguimientos.vencidos > 0 ? "#ef4444" : "#10b981" },
@@ -360,7 +360,7 @@ export const ReportsPage = () => {
 
             {/* Embudo */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={18} /> Embudo por estado</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={18} /> Embudo por estado</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
                 {d.funnel.map((f: any) => (
                   <div key={f.estado} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
@@ -374,7 +374,7 @@ export const ReportsPage = () => {
 
             {/* Conversión por fuente */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>📣 Conversión por fuente</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)" }}>📣 Conversión por fuente</h3>
               <table className={styles.reportTable}>
                 <thead><tr><th>Fuente</th><th>Total</th><th>En Progreso</th><th>Cerrado</th><th>Perdido</th><th>Descartado</th><th>Tasa cierre</th></tr></thead>
                 <tbody>
@@ -395,7 +395,7 @@ export const ReportsPage = () => {
 
             {/* Temperatura */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuThermometer size={18} /> Por temperatura (¿convierten más los calientes?)</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuThermometer size={18} /> Por temperatura (¿convierten más los calientes?)</h3>
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                 {d.porTemperatura.map((t: any) => (
                   <div key={t.temperatura} style={{ flex: 1, minWidth: 140, background: "#fff", border: `1px solid ${TEMP_COLOR[t.temperatura]}`, borderRadius: 12, padding: "0.8rem 1rem" }}>
@@ -413,7 +413,7 @@ export const ReportsPage = () => {
 
             {/* Etapa — dónde se quedan */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTarget size={18} /> ¿Dónde se quedan los leads? (última etapa alcanzada)</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTarget size={18} /> ¿Dónde se quedan los leads? (última etapa alcanzada)</h3>
               <table className={styles.reportTable}>
                 <thead><tr><th>Última etapa</th><th>Leads</th></tr></thead>
                 <tbody>
@@ -426,7 +426,7 @@ export const ReportsPage = () => {
 
             {/* Disciplina de seguimiento por vendedor */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "#0a2540" }}>👤 Seguimiento por vendedor</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)" }}>👤 Seguimiento por vendedor</h3>
               <table className={styles.reportTable}>
                 <thead><tr><th>Vendedor</th><th>Total</th><th>Activos</th><th>Vencidos</th><th>Cerrados</th><th>Tasa cierre</th></tr></thead>
                 <tbody>

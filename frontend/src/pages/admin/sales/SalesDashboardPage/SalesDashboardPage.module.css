@@ -19,7 +19,7 @@
 }
 
 .welcomeTitle {
-  font-size: 1.55rem; font-weight: 800; color: #0a2540; margin: 0 0 0.25rem;
+  font-size: 1.55rem; font-weight: 800; color: var(--brand-dark); margin: 0 0 0.25rem;
 }
 
 .welcomeSub {
@@ -67,7 +67,7 @@
 
 .kpiRight { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 
-.kpiValue { font-size: 1.3rem; font-weight: 800; color: #0a2540; line-height: 1.1; }
+.kpiValue { font-size: 1.3rem; font-weight: 800; color: var(--brand-dark); line-height: 1.1; }
 
 .kpiLabel {
   font-size: 0.7rem; font-weight: 700; color: #64748b;
@@ -97,7 +97,7 @@
   border-bottom: 1px solid #f1f5f9;
 }
 
-.panelTitle { font-size: 0.88rem; font-weight: 700; color: #0a2540; }
+.panelTitle { font-size: 0.88rem; font-weight: 700; color: var(--brand-dark); }
 
 .onlineDot {
   width: 8px; height: 8px; background: #10b981;
@@ -145,7 +145,7 @@
 
 .avatarName {
   display: flex; align-items: center; gap: 5px;
-  font-size: 0.83rem; font-weight: 600; color: #0a2540;
+  font-size: 0.83rem; font-weight: 600; color: var(--brand-dark);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
@@ -178,7 +178,7 @@
   display: flex; align-items: center; gap: 0.5rem;
   background: white; border: 1.5px solid #e2e8f0;
   border-radius: 10px; padding: 0.65rem 1.1rem;
-  font-size: 0.85rem; font-weight: 600; color: #0a2540;
+  font-size: 0.85rem; font-weight: 600; color: var(--brand-dark);
   cursor: pointer; transition: all 0.15s;
 }
 .quickLink:hover {

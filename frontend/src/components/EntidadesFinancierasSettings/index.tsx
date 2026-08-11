@@ -117,7 +117,7 @@ export const EntidadesFinancierasSettings = () => {
         {entidades.map((e) => (
           <div key={e.id} style={{ border: "1px solid #e2e8f0", borderRadius: 12, padding: "1rem 1.15rem", background: e.activa ? "#fff" : "#f8fafc", opacity: e.activa ? 1 : 0.7 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
-              <strong style={{ fontSize: "1rem", color: "#0a2540", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLandmark size={16} /> {e.nombre}</strong>
+              <strong style={{ fontSize: "1rem", color: "var(--brand-dark)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLandmark size={16} /> {e.nombre}</strong>
               <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: e.activa ? "#dcfce7" : "#e2e8f0", color: e.activa ? "#15803d" : "#64748b" }}>
                 {e.activa ? "Activa" : "Inactiva"}
               </span>

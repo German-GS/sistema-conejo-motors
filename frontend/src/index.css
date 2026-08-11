@@ -1,14 +1,64 @@
-/* Definición de la paleta de colores global */
+/* ═══════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — fuente única de verdad de color/radio/espaciado del panel
+   admin y del sitio público. Antes de escribir un hex o un px a mano en un
+   componente, revisá si hay un token acá — así el look se mantiene uniforme
+   y un cambio de marca se hace en un solo lugar.
+   ═══════════════════════════════════════════════════════════════════════ */
 :root {
-  --azul-principal: #024f7d;
+  /* ── Marca — un solo azul (antes convivían #024f7d y #0a2540 sueltos) ── */
+  --brand: #024f7d;
+  --brand-dark: #0a2540;      /* azul marino oscuro (headers, texto fuerte) */
+  --brand-hover: #023a5c;
+  --brand-050: #eff6ff;       /* fondo muy claro (hover, banners info) */
+  --brand-100: #dbeafe;
+
+  /* ── Escala de grises (slate) ── */
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-900: #0f172a;
+
+  /* ── Semánticos ── */
+  --success: #059669;
+  --danger:  #dc2626;
+  --warning: #f59e0b;
+  --info:    #0891b2;
+
+  /* ── Radios ── */
+  --radius-sm:   6px;
+  --radius:      8px;
+  --radius-lg:   12px;
+  --radius-pill: 9999px;
+
+  /* ── Espaciado (4/8/12/16/24/32) ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* ── Tipografía ── */
+  --text-xs:   0.75rem;
+  --text-sm:   0.85rem;
+  --text-base: 0.95rem;
+  --text-lg:   1.1rem;
+  --text-xl:   1.35rem;
+  --text-2xl:  1.75rem;
+
+  /* ── Alias retrocompatibles — mismo valor, no romper nada existente ── */
+  --azul-principal: var(--brand);
   --turquesa-acento: #00c7b1;
   --fondo-principal: #f7f7f7;
   --fondo-tarjeta: #ffffff;
   --texto-principal: #333333;
   --texto-secundario: #555555;
   --borde-suave: #e0e0e0;
-  --warning: #e7081e;
-  --caution: #eb7609;
 }
 
 /* Reseteo y estilos base */
@@ -44,28 +94,28 @@ body {
 
 /* Botón Principal (Azul) */
 .btn-principal {
-  background-color: var(--azul-principal);
+  background-color: var(--brand);
   color: white;
 }
 .btn-principal:hover {
-  background-color: #023a5c; /* Un azul más oscuro */
+  background-color: var(--brand-hover);
   transform: translateY(-1px);
 }
 
 /*Boton de advertencia*/
 .btn-caution {
-  background-color: var(--caution);
+  background-color: var(--warning);
   color: white;
 }
 
 .btn-caution:hover {
-  background-color: #ee7300; /* Un azul más oscuro */
+  background-color: #ee7300;
   transform: translateY(-1px);
 }
 
 /* Botón de Peligro (Rojo) */
 .btn-danger {
-  background-color: var(--warning);
+  background-color: var(--danger);
   color: white;
 }
 .btn-danger:hover {

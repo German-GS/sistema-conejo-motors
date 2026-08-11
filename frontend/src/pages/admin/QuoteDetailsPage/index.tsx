@@ -313,7 +313,7 @@ export const QuoteDetailsPage = () => {
             <div style={{ display: "flex", alignItems: "flex-start", gap: "0.85rem", marginBottom: "1rem" }}>
               <span style={{ fontSize: "1.75rem", display: "inline-flex" }}><LuBan size={28} /></span>
               <div>
-                <strong style={{ display: "block", fontSize: "1rem", color: "#0a2540" }}>
+                <strong style={{ display: "block", fontSize: "1rem", color: "var(--brand-dark)" }}>
                   Cancelar Cotización #{quote.id}
                 </strong>
                 <p style={{ margin: "3px 0 0", fontSize: "0.82rem", color: "#64748b" }}>

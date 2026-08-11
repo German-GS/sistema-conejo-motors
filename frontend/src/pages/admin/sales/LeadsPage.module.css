@@ -21,7 +21,7 @@
 .metricNum {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #0a2540;
+  color: var(--brand-dark);
   line-height: 1;
 }
 

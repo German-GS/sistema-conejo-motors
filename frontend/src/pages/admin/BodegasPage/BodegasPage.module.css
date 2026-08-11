@@ -35,6 +35,6 @@
 }
 
 .error {
-  color: var(--warning);
+  color: var(--danger);
   margin-top: 1rem;
 }

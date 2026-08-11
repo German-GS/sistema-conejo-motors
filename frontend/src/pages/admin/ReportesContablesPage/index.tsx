@@ -39,7 +39,7 @@ export const ReportesContablesPage = () => {
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBookOpen size={22} /> Reportes Contables</h1>
+      <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBookOpen size={22} /> Reportes Contables</h1>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -86,7 +86,7 @@ const Balanza = () => {
                   <td style={tdR}>{c.saldoAcreedor ? CRC(c.saldoAcreedor) : "—"}</td>
                 </tr>
               ))}
-              <tr style={{ borderTop: "2px solid #0a2540", fontWeight: 800 }}>
+              <tr style={{ borderTop: "2px solid var(--brand-dark)", fontWeight: 800 }}>
                 <td style={td} colSpan={2}>TOTALES</td>
                 <td style={tdR}>{CRC(data.totales.debe)}</td><td style={tdR}>{CRC(data.totales.haber)}</td>
                 <td style={tdR}>{CRC(data.totales.saldoDeudor)}</td><td style={tdR}>{CRC(data.totales.saldoAcreedor)}</td>
@@ -119,7 +119,7 @@ const Mayor = () => {
       </div>
       {data && (
         <>
-          <div style={{ fontWeight: 700, color: "#0a2540", marginBottom: "0.5rem" }}>{data.cuenta.codigo} {data.cuenta.nombre} · Saldo inicial: {CRC(data.saldoInicial)}</div>
+          <div style={{ fontWeight: 700, color: "var(--brand-dark)", marginBottom: "0.5rem" }}>{data.cuenta.codigo} {data.cuenta.nombre} · Saldo inicial: {CRC(data.saldoInicial)}</div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680 }}>
               <thead><tr><th style={th}>Fecha</th><th style={th}>Asiento</th><th style={th}>Descripción</th><th style={thR}>Debe</th><th style={thR}>Haber</th><th style={thR}>Saldo</th></tr></thead>
@@ -131,7 +131,7 @@ const Mayor = () => {
                     <td style={tdR}>{CRC(m.saldo)}</td>
                   </tr>
                 ))}
-                <tr style={{ borderTop: "2px solid #0a2540", fontWeight: 800 }}><td style={td} colSpan={5}>SALDO FINAL</td><td style={tdR}>{CRC(data.saldoFinal)}</td></tr>
+                <tr style={{ borderTop: "2px solid var(--brand-dark)", fontWeight: 800 }}><td style={td} colSpan={5}>SALDO FINAL</td><td style={tdR}>{CRC(data.saldoFinal)}</td></tr>
               </tbody>
             </table>
           </div>
@@ -185,7 +185,7 @@ const Aging = () => {
                   <td style={{ ...tdR, fontWeight: 700 }}>{CRC(e.total)}</td>
                 </tr>
               ))}
-              <tr style={{ borderTop: "2px solid #0a2540", fontWeight: 800 }}>
+              <tr style={{ borderTop: "2px solid var(--brand-dark)", fontWeight: 800 }}>
                 <td style={td}>TOTALES</td>
                 {data.tramos.map((t: string) => <td key={t} style={tdR}>{CRC(data.totales[t])}</td>)}
                 <td style={tdR}>{CRC(data.totalGeneral)}</td>

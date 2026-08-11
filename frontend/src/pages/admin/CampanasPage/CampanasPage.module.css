@@ -4,7 +4,7 @@
   display: flex; align-items: flex-start; justify-content: space-between;
   margin-bottom: 1.5rem; gap: 1rem;
 }
-.header h1 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary, #0a2540); margin: 0; }
+.header h1 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary, var(--brand-dark)); margin: 0; }
 .subtitle { font-size: 0.85rem; color: #64748b; margin: 0.2rem 0 0; }
 
 .statsRow { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
@@ -38,7 +38,7 @@
   border-radius: 999px; border: 1.5px solid; background: transparent;
 }
 
-.campanaNombre { font-size: 1rem; font-weight: 700; color: #0a2540; margin: 0 0 0.3rem; }
+.campanaNombre { font-size: 1rem; font-weight: 700; color: var(--brand-dark); margin: 0 0 0.3rem; }
 .objetivo { font-size: 0.82rem; color: #64748b; margin: 0 0 0.75rem; }
 
 .cardMeta {
@@ -55,7 +55,7 @@
 .metricas { background: #f8fafc; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
 .funnel { display: flex; align-items: center; justify-content: space-around; margin-bottom: 0.5rem; }
 .funnelStep { display: flex; flex-direction: column; align-items: center; }
-.funnelNum { font-size: 1.3rem; font-weight: 800; color: #0a2540; }
+.funnelNum { font-size: 1.3rem; font-weight: 800; color: var(--brand-dark); }
 .funnelLabel { font-size: 0.7rem; color: #64748b; }
 .funnelArrow { font-size: 1rem; color: #94a3b8; }
 .metricaExtra { display: flex; gap: 0.75rem; flex-wrap: wrap; font-size: 0.78rem; color: #475569; }
@@ -82,7 +82,7 @@
   width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
   display: flex; flex-direction: column; gap: 0.6rem;
 }
-.modal h2 { font-size: 1.1rem; font-weight: 800; color: #0a2540; margin: 0 0 0.5rem; }
+.modal h2 { font-size: 1.1rem; font-weight: 800; color: var(--brand-dark); margin: 0 0 0.5rem; }
 .modal label { font-size: 0.8rem; font-weight: 700; color: #475569; }
 .modal input, .modal select, .modal textarea {
   width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;

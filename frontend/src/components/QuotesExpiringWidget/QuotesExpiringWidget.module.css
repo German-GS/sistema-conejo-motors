@@ -36,7 +36,7 @@
   display: block;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #0a2540;
+  color: var(--brand-dark);
 }
 
 .headerSub {
@@ -149,7 +149,7 @@
   font-size: 0.68rem; font-weight: 700; color: #94a3b8; display: block;
 }
 .vehiculo {
-  font-size: 0.85rem; font-weight: 700; color: #0a2540;
+  font-size: 0.85rem; font-weight: 700; color: var(--brand-dark);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
@@ -166,7 +166,7 @@
   display: flex; flex-direction: column; gap: 1px;
 }
 .fechaLabel { font-size: 0.68rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
-.fechaVal   { font-size: 0.8rem; color: #0a2540; font-weight: 600; }
+.fechaVal   { font-size: 0.8rem; color: var(--brand-dark); font-weight: 600; }
 
 .cellBadge { display: flex; align-items: center; }
 

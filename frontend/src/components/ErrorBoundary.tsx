@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
         <div style={{ maxWidth: 440, textAlign: "center", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "2rem" }}>
           <div style={{ fontSize: "2.5rem", color: "#b91c1c", display: "flex", justifyContent: "center" }}><LuTriangleAlert size={40} /></div>
-          <h2 style={{ color: "#0a2540", margin: "0.5rem 0" }}>Algo salió mal en esta pantalla</h2>
+          <h2 style={{ color: "var(--brand-dark)", margin: "0.5rem 0" }}>Algo salió mal en esta pantalla</h2>
           <p style={{ color: "#64748b", fontSize: "0.9rem" }}>
             Se produjo un error al mostrar esta página. Podés reintentar o volver al inicio; tus datos no se perdieron.
           </p>

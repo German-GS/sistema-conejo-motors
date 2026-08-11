@@ -106,7 +106,7 @@
 
 .subtotal {
   font-weight: 700;
-  color: #0a2540;
+  color: var(--brand-dark);
   padding-top: 0.75rem;
   border-top: 2px solid #e2e8f0;
   margin-top: 0.25rem;
@@ -115,7 +115,7 @@
 .total {
   font-weight: 800;
   font-size: 1.05rem;
-  color: #0a2540;
+  color: var(--brand-dark);
   padding-top: 0.75rem;
   border-top: 2px solid #024f7d;
   margin-top: 0.25rem;

@@ -313,7 +313,7 @@ const PasskeySettings: React.FC = () => {
         <br /><strong>Registrá cada dispositivo</strong> desde el que quieras entrar así (usá el dominio <code>sistema.conejomotors.com</code>).
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-        <strong style={{ color: "#0a2540" }}>Tus passkeys</strong>
+        <strong style={{ color: "var(--brand-dark)" }}>Tus passkeys</strong>
         <button onClick={registrar} disabled={registrando} className="btn btn-principal" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
           {registrando ? "Registrando…" : <><LuPlus size={16} /> Registrar este dispositivo</>}
         </button>
@@ -494,7 +494,7 @@ const DepreciacionConfig: React.FC = () => {
     <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
         <div>
-          <strong style={{ fontSize: "1rem", color: "#0a2540" }}>Tabla de depreciación</strong>
+          <strong style={{ fontSize: "1rem", color: "var(--brand-dark)" }}>Tabla de depreciación</strong>
           <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "#64748b", maxWidth: 620 }}>
             Doble libro: <strong>vida financiera</strong> (NIIF, va al mayor) y <strong>vida fiscal</strong> (Anexo Nº 2 del Decreto 43198-H, solo para renta).
             La tasa anual es la del Anexo. Verificá los valores contra el reglamento vigente.
@@ -728,7 +728,7 @@ export const SettingsPage = () => {
     <>
       {/* Encabezado + navegación por secciones */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0a2540", margin: "0 0 0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuSettings size={22} /> Configuración</h1>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--brand-dark)", margin: "0 0 0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuSettings size={22} /> Configuración</h1>
         <p style={{ color: "#64748b", fontSize: "0.9rem", margin: 0 }}>{seccionActual.desc}</p>
       </div>
 

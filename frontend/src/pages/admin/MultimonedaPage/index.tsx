@@ -63,10 +63,10 @@ export const MultimonedaPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuWallet size={22} /> Multimoneda — Tipo de Cambio y Diferencial</h1>
+      <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuWallet size={22} /> Multimoneda — Tipo de Cambio y Diferencial</h1>
 
       <div style={card}>
-        <strong style={{ color: "#0a2540" }}>Tipo de cambio del dólar</strong>
+        <strong style={{ color: "var(--brand-dark)" }}>Tipo de cambio del dólar</strong>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap", marginTop: "0.75rem" }}>
           <button disabled={busy} onClick={sincronizar} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}><LuRefreshCw size={15} /> Sincronizar hoy (Hacienda)</button>
           <span style={{ width: 1, height: 24, background: "#e2e8f0" }} />
@@ -92,7 +92,7 @@ export const MultimonedaPage = () => {
       </div>
 
       <div style={card}>
-        <strong style={{ color: "#0a2540" }}>Diferencial cambiario del período</strong>
+        <strong style={{ color: "var(--brand-dark)" }}>Diferencial cambiario del período</strong>
         <p style={{ fontSize: "0.82rem", color: "#64748b", margin: "0.35rem 0 0.75rem" }}>
           Revalúa los saldos en USD (CxC/CxP) al TC de cierre y registra la ganancia/pérdida cambiaria. Idempotente: no se duplica si se corre dos veces.
         </p>

@@ -272,7 +272,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
             <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
               <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase" }}>Salario Bruto</div>
-              <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0a2540" }}>{fmtCRC(calcResult.bruto)}</div>
+              <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--brand-dark)" }}>{fmtCRC(calcResult.bruto)}</div>
               <div style={{ fontSize: "0.68rem", color: "#16a34a" }}>✓ se guarda este</div>
             </div>
             <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>

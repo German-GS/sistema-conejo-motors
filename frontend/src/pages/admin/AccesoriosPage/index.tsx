@@ -169,7 +169,7 @@ export const AccesoriosPage = () => {
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <span title={acc.vehiculo.color} style={{ width: 14, height: 14, borderRadius: "50%", background: colorHex(acc.vehiculo.color), border: "1.5px solid rgba(0,0,0,0.15)", flexShrink: 0 }} />
-                      <strong style={{ color: "#0a2540" }}>{acc.vehiculo.marca} {acc.vehiculo.modelo}</strong>
+                      <strong style={{ color: "var(--brand-dark)" }}>{acc.vehiculo.marca} {acc.vehiculo.modelo}</strong>
                       <span style={{ color: "#94a3b8", fontSize: "0.82rem" }}>{acc.vehiculo.año}</span>
                     </div>
                     <button onClick={() => copyVin(acc.vehiculo.vin)} title="Copiar VIN" style={{ marginTop: 4, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "1px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.74rem", color: "#334155", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuClipboardList size={13} /> {acc.vehiculo.vin}</button>

@@ -109,7 +109,7 @@ export const ComprasPage = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-        <h1 style={{ margin: 0, color: "#0a2540", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Órdenes de Compra</h1>
+        <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Órdenes de Compra</h1>
         <button onClick={() => setShowForm((s) => !s)} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700 }}>
           {showForm ? "Cerrar" : "+ Nueva orden"}
         </button>
@@ -164,7 +164,7 @@ export const ComprasPage = () => {
             <input value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Notas (opcional)" style={{ ...inp, maxWidth: 320 }} />
             <div style={{ textAlign: "right", fontSize: "0.9rem" }}>
               <div style={{ color: "#64748b" }}>Subtotal: {CRC(totales.subtotal)} · IVA: {CRC(totales.iva)}</div>
-              <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#0a2540" }}>Total: {CRC(totales.total)}</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--brand-dark)" }}>Total: {CRC(totales.total)}</div>
               <button onClick={guardar} disabled={guardando} style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1.2rem", cursor: "pointer", fontWeight: 700, marginTop: "0.5rem" }}>{guardando ? "Guardando…" : "Guardar orden"}</button>
             </div>
           </div>
