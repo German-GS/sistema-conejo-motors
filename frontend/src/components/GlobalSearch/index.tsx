@@ -22,8 +22,13 @@ const GROUP_LABEL: Record<string, string> = {
   factura: "Facturas",
 };
 
-/** Tope de páginas mostradas — el resto de los grupos son datos (vehículos, clientes…). */
-const MAX_PAGINAS = 6;
+/**
+ * Tope de páginas mostradas. Cuando el query nombra una sección del menú (ej. "compras",
+ * "finanzas"), se listan todos sus destinos — algunas secciones tienen hasta 13 ítems
+ * (Finanzas + su sub-hub de Contabilidad) — por eso el tope es más alto que para matches
+ * de un solo destino.
+ */
+const MAX_PAGINAS = 15;
 
 export const GlobalSearch = () => {
   const navigate = useNavigate();

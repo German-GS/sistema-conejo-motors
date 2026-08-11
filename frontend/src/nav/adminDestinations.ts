@@ -80,7 +80,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
   { id: "importaciones", label: "Importaciones", ruta: "/admin/importaciones", icon: LuShip, seccion: "inventario",
     keywords: ["importacion", "aduana", "embarque"] },
   { id: "import", label: "Importar Excel", ruta: "/admin/import", icon: LuUpload, seccion: "inventario",
-    keywords: ["excel", "carga masiva", "importar vehiculos"] },
+    keywords: ["excel", "carga en bloque", "importar vehiculos"] },
 
   // ── COMPRAS ──
   { id: "proveedores", label: "Proveedores", ruta: "/admin/proveedores", icon: LuBuilding2, seccion: "compras",
@@ -181,16 +181,31 @@ function normalizar(s: string): string {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
+/** ¿El texto matchea el query? Bidireccional (para tolerar singular/plural, ej. "compra" vs
+ *  "compras") pero solo en reversa cuando el texto es lo bastante largo, para no generar
+ *  falsos positivos con keywords cortos (ej. "oc", "iva"). */
+function matchTexto(texto: string, q: string): boolean {
+  const t = normalizar(texto);
+  if (t.includes(q)) return true;
+  return t.length >= 3 && q.includes(t);
+}
+
 export function buscarDestinos(query: string, rol: string): AdminDestination[] {
   const q = normalizar(query.trim());
   if (!q) return [];
-  return ADMIN_DESTINATIONS
-    .filter((d) => d.seccion !== "_top" && puedeVerDestino(d, rol))
-    .filter((d) => {
-      const label = normalizar(d.label);
-      if (label.includes(q)) return true;
-      return (d.keywords ?? []).some((k) => normalizar(k).includes(q));
-    })
+  const visibles = ADMIN_DESTINATIONS.filter((d) => d.seccion !== "_top" && puedeVerDestino(d, rol));
+
+  // 1) Si el query nombra una SECCIÓN del menú (ej. "inventario", "compras"), mostrar todo
+  //    lo que contiene esa sección — así se puede "entrar" a un grupo escribiendo su nombre.
+  const seccion = ADMIN_SECTIONS.find((s) => matchTexto(s.label, q));
+  if (seccion) {
+    const enSeccion = visibles.filter((d) => d.seccion === seccion.id);
+    if (enSeccion.length > 0) return enSeccion;
+  }
+
+  // 2) Si no, búsqueda normal por label/keywords de cada destino.
+  return visibles
+    .filter((d) => matchTexto(d.label, q) || (d.keywords ?? []).some((k) => matchTexto(k, q)))
     // Prioriza coincidencias que empiezan por el query en el label.
     .sort((a, b) => {
       const aStarts = normalizar(a.label).startsWith(q) ? 0 : 1;
