@@ -11,6 +11,8 @@
   --brand-hover: #023a5c;
   --brand-050: #eff6ff;       /* fondo muy claro (hover, banners info) */
   --brand-100: #dbeafe;
+  --accent: #00c7b1;          /* turquesa — para romper la monotonía de "todo azul": estados activos/seleccionados puntuales, no para uso masivo */
+  --accent-hover: #00a894;
 
   /* ── Escala de grises (slate) ── */
   --slate-50:  #f8fafc;
@@ -53,7 +55,7 @@
 
   /* ── Alias retrocompatibles — mismo valor, no romper nada existente ── */
   --azul-principal: var(--brand);
-  --turquesa-acento: #00c7b1;
+  --turquesa-acento: var(--accent);
   --fondo-principal: #f7f7f7;
   --fondo-tarjeta: #ffffff;
   --texto-principal: #333333;

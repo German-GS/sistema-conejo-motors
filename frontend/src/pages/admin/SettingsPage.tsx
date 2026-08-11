@@ -742,11 +742,11 @@ export const SettingsPage = () => {
               style={{
                 display: "inline-flex", alignItems: "center", gap: "0.5rem",
                 padding: "0.6rem 1.1rem", borderRadius: 10, cursor: "pointer",
-                border: activa ? "1.5px solid var(--brand)" : "1.5px solid var(--slate-200)",
-                background: activa ? "var(--brand)" : "#fff",
+                border: activa ? "1.5px solid var(--accent)" : "1.5px solid var(--slate-200)",
+                background: activa ? "var(--accent)" : "#fff",
                 color: activa ? "#fff" : "var(--slate-600)",
                 fontWeight: 700, fontSize: "0.9rem", fontFamily: "inherit",
-                boxShadow: activa ? "0 2px 8px rgba(2,79,125,0.25)" : "none",
+                boxShadow: activa ? "0 2px 8px rgba(0,199,177,0.3)" : "none",
                 transition: "all 0.15s",
               }}
             >

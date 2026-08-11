@@ -22,5 +22,5 @@
   transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 .tab:hover { color: var(--brand); background: var(--brand-050); }
-.tabActive { color: var(--brand); border-bottom-color: var(--brand); }
+.tabActive { color: var(--accent-hover); border-bottom-color: var(--accent); }
 .tab:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
