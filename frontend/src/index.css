@@ -81,6 +81,29 @@ body {
   height: 100%;
 }
 
+/* ── Jerarquía tipográfica base (D5) ──────────────────────────────────────
+   Solo se aplica a h1-h4/p SIN clase ni estilo inline propio: cualquier
+   className o style={{}} de un componente le gana por especificidad, así
+   que esto es un valor por defecto seguro, no pisa nada existente. */
+h1 { font-size: var(--text-2xl); font-weight: 800; color: var(--brand-dark); margin: 0 0 var(--space-2); }
+h2 { font-size: var(--text-xl);  font-weight: 700; color: var(--brand-dark); margin: 0 0 var(--space-2); }
+h3 { font-size: var(--text-lg);  font-weight: 700; color: var(--slate-700);  margin: 0 0 var(--space-1); }
+h4 { font-size: var(--text-base); font-weight: 700; color: var(--slate-700); margin: 0 0 var(--space-1); }
+
+/* ── Foco accesible (D5) ── anillo visible con el color de marca al navegar
+   por teclado. :focus-visible no se dispara con click de mouse, así que no
+   agrega "cajas" visuales al clickear con el mouse, solo al tabular. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 .btn {
   padding: 0.6rem 1.2rem;
   border: none;
@@ -92,6 +115,11 @@ body {
   text-decoration: none;
   display: inline-block;
   text-align: center;
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
 }
 
 /* Botón Principal (Azul) */
