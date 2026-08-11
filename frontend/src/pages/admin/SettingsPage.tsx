@@ -132,11 +132,11 @@ const CalcSettings: React.FC = () => {
   const save = async () => {
     setSaving(true);
     try {
-      await Promise.all([
-        apiClient.post("/site-settings", { key: "calc_tasa_default",    value: String(tasa) }),
-        apiClient.post("/site-settings", { key: "calc_plazo_default",   value: String(plazo) }),
-        apiClient.post("/site-settings", { key: "calc_prima_pct_default", value: String(primaPct) }),
-      ]);
+      await apiClient.patch("/site-settings", { settings: [
+        { key: "calc_tasa_default",      value: String(tasa) },
+        { key: "calc_plazo_default",     value: String(plazo) },
+        { key: "calc_prima_pct_default", value: String(primaPct) },
+      ] });
       toast.success("Parámetros de calculadora guardados.");
     } catch {
       toast.error("Error al guardar.");
@@ -199,7 +199,7 @@ const ImpuestoSettings: React.FC = () => {
   const save = async () => {
     setSaving(true);
     try {
-      await apiClient.post("/site-settings", { key: "iva_default", value: String(iva) });
+      await apiClient.patch("/site-settings", { settings: [{ key: "iva_default", value: String(iva) }] });
       toast.success("IVA por defecto guardado.");
     } catch { toast.error("Error al guardar."); }
     finally { setSaving(false); }
@@ -242,7 +242,7 @@ const LeadsConfigSettings: React.FC = () => {
   const save = async () => {
     setSaving(true);
     try {
-      await apiClient.post("/site-settings", { key: "lead_descarte_dias", value: String(dias) });
+      await apiClient.patch("/site-settings", { settings: [{ key: "lead_descarte_dias", value: String(dias) }] });
       toast.success("Configuración guardada.");
     } catch { toast.error("Error al guardar."); }
     finally { setSaving(false); }
@@ -286,10 +286,10 @@ const FinanciamientoSocioSettings: React.FC = () => {
 
   const guardar = async () => {
     try {
-      await Promise.all([
-        apiClient.post("/site-settings", { key: "cuenta_financiamiento_socio", value: puente.trim() }),
-        apiClient.post("/site-settings", { key: "cuenta_destino_socio", value: destino.trim() }),
-      ]);
+      await apiClient.patch("/site-settings", { settings: [
+        { key: "cuenta_financiamiento_socio", value: puente.trim() },
+        { key: "cuenta_destino_socio", value: destino.trim() },
+      ] });
       toast.success("Cuentas guardadas.");
     } catch { toast.error("Error al guardar."); }
   };
