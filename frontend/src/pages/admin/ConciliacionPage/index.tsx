@@ -79,9 +79,15 @@ export const ConciliacionPage = () => {
 
       <div style={card}>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
-          <select style={inp} value={cuentaId ?? ""} onChange={(e) => setCuentaId(Number(e.target.value))}>
+          <select style={{ ...inp, minWidth: 220 }} value={cuentaId ?? ""} onChange={(e) => setCuentaId(Number(e.target.value))}>
+            {cuentas.length === 0 && <option value="">Sin cuentas bancarias registradas</option>}
             {cuentas.map((c) => <option key={c.id} value={c.id}>{c.banco} · {c.numero_cuenta} ({c.moneda})</option>)}
           </select>
+          {cuentas.length === 0 && (
+            <span style={{ fontSize: "0.8rem", color: "var(--slate-500)" }}>
+              Registrá una cuenta bancaria primero en <a href="/admin/tesoreria" style={{ color: "var(--brand)" }}>Tesorería</a>.
+            </span>
+          )}
           <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
           <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) importar(f); }} />

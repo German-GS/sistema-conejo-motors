@@ -90,6 +90,40 @@ h2 { font-size: var(--text-xl);  font-weight: 700; color: var(--brand-dark); mar
 h3 { font-size: var(--text-lg);  font-weight: 700; color: var(--slate-700);  margin: 0 0 var(--space-1); }
 h4 { font-size: var(--text-base); font-weight: 700; color: var(--slate-700); margin: 0 0 var(--space-1); }
 
+/* ── Normalización de <select> (bug reportado en Safari) ──────────────────
+   Safari renderiza los <select> con su bisel nativo del sistema e IGNORA
+   border/border-radius de CSS a menos que se resetee "appearance". Por eso
+   selects que ya tenían border/radius en su style={{}} igual se veían "sin
+   estilos" ahí (Obligaciones, Nueva Cuenta, Conciliación). Este reset es
+   global: aplica el look consistente en TODOS los <select> del sistema,
+   tengan o no estilo inline propio — appearance/background-image no chocan
+   con ningún inline existente (ninguno define background propio hoy). */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--slate-700);
+  background-color: #fff;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='%2364748b' d='M5.25 7.5L10 12.25L14.75 7.5H5.25Z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 1.1em;
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius);
+  padding: 0.5rem 1.8rem 0.5rem 0.7rem;
+  cursor: pointer;
+}
+select:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* ── Foco accesible (D5) ── anillo visible con el color de marca al navegar
    por teclado. :focus-visible no se dispara con click de mouse, así que no
    agrega "cajas" visuales al clickear con el mouse, solo al tabular. */
