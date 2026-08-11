@@ -4,7 +4,7 @@ import { Card } from "@/components/Card";
 import toast from "react-hot-toast";
 import styles from "./ReportsPage.module.css";
 import * as XLSX from "xlsx";
-import { LuWallet, LuTrophy, LuCar, LuClipboardList, LuUsers, LuTarget, LuChartColumnStacked, LuPackage, LuBriefcase, LuTrendingUp, LuDownload, LuThermometer, LuFolder, LuPlay } from "react-icons/lu";
+import { LuWallet, LuTrophy, LuCar, LuClipboardList, LuUsers, LuTarget, LuChartColumnStacked, LuPackage, LuBriefcase, LuTrendingUp, LuDownload, LuThermometer, LuFolder, LuPlay, LuMegaphone, LuUserRound, LuHourglass } from "react-icons/lu";
 
 const MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
@@ -128,7 +128,7 @@ export const ReportsPage = () => {
   };
 
   const renderReport = () => {
-    if (loading) return <div className={styles.loading}>⏳ Generando informe...</div>;
+    if (loading) return <div className={styles.loading} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuHourglass size={16} /> Generando informe...</div>;
     if (!reportData) return <div className={styles.empty}>Selecciona el tipo de informe y el período, luego haz clic en Generar.</div>;
     if (Array.isArray(reportData) && !reportData.length)
       return <div className={styles.empty}>No se encontraron resultados para ese período.</div>;
@@ -374,7 +374,7 @@ export const ReportsPage = () => {
 
             {/* Conversión por fuente */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)" }}>📣 Conversión por fuente</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)" }}><LuMegaphone size={16} style={{ verticalAlign: "-2px", marginRight: 6 }} />Conversión por fuente</h3>
               <table className={styles.reportTable}>
                 <thead><tr><th>Fuente</th><th>Total</th><th>En Progreso</th><th>Cerrado</th><th>Perdido</th><th>Descartado</th><th>Tasa cierre</th></tr></thead>
                 <tbody>
@@ -426,7 +426,7 @@ export const ReportsPage = () => {
 
             {/* Disciplina de seguimiento por vendedor */}
             <div>
-              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)" }}>👤 Seguimiento por vendedor</h3>
+              <h3 style={{ margin: "0 0 0.6rem", fontSize: "1rem", color: "var(--brand-dark)" }}><LuUserRound size={16} style={{ verticalAlign: "-2px", marginRight: 6 }} />Seguimiento por vendedor</h3>
               <table className={styles.reportTable}>
                 <thead><tr><th>Vendedor</th><th>Total</th><th>Activos</th><th>Vencidos</th><th>Cerrados</th><th>Tasa cierre</th></tr></thead>
                 <tbody>

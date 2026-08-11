@@ -245,7 +245,7 @@ export const CatalogPage = () => {
           Solo con descuento
         </label>
         {hasFilters && (
-          <button className={styles.resetBtn} onClick={resetFilters}>✕ Limpiar</button>
+          <button className={styles.resetBtn} onClick={resetFilters} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuX size={13} /> Limpiar</button>
         )}
       </div>
 

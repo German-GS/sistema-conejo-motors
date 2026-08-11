@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import styles from "./TesoreriaPage.module.css";
-import { LuPlus, LuBuilding2, LuArrowUpRight, LuArrowDownRight } from "react-icons/lu";
+import { LuPlus, LuBuilding2, LuArrowUpRight, LuArrowDownRight, LuCircleCheck } from "react-icons/lu";
 
 interface Cuenta { id: number; banco: string; numero_cuenta: string; tipo: string; moneda: string; saldo_actual: number; activa: boolean; }
 interface Movimiento { id: number; tipo: string; monto: number; descripcion: string; fecha: string; referencia?: string; conciliado: boolean; }
@@ -121,7 +121,7 @@ export default function TesoreriaPage() {
                         fontSize: "0.72rem", fontWeight: 600, whiteSpace: "nowrap",
                       }}
                     >
-                      {m.conciliado ? "✓ Conciliado" : "Conciliar"}
+                      {m.conciliado ? <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuCircleCheck size={13} /> Conciliado</span> : "Conciliar"}
                     </button>
                     <div className={`${styles.movMonto} ${esEntrada(m.tipo) ? styles.entrada : styles.salida}`}>
                       {esEntrada(m.tipo) ? '+' : '-'}₡{(+m.monto).toLocaleString('es-CR')}

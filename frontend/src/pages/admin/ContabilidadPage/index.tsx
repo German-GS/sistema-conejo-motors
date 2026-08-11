@@ -9,7 +9,7 @@ import {
   LuLock, LuLockOpen, LuPencil, LuCircleCheck, LuCircleX, LuTriangleAlert,
   LuChartColumnStacked, LuSettings, LuNotebookPen, LuBuilding2, LuClipboardList,
   LuTrendingUp, LuTrendingDown, LuGem, LuFileStack, LuBookOpen, LuBookMarked,
-  LuReceiptText, LuRefreshCw, LuPlus, LuInfo, LuHourglass,
+  LuReceiptText, LuRefreshCw, LuPlus, LuInfo, LuHourglass, LuX,
 } from "react-icons/lu";
 import type { IconType } from "react-icons";
 
@@ -567,7 +567,7 @@ export const ContabilidadPage = () => {
                     <input placeholder="Descripción línea" value={l.descripcion} onChange={e => { const n=[...lineasForm]; n[i].descripcion=e.target.value; setLineasForm(n); }} />
                     <input type="number" min={0} value={l.debe || ""} placeholder="0" onChange={e => { const n=[...lineasForm]; n[i].debe=Number(e.target.value); setLineasForm(n); }} />
                     <input type="number" min={0} value={l.haber || ""} placeholder="0" onChange={e => { const n=[...lineasForm]; n[i].haber=Number(e.target.value); setLineasForm(n); }} />
-                    <button type="button" className={styles.removeBtn} onClick={() => removeLinea(i)}>✕</button>
+                    <button type="button" className={styles.removeBtn} onClick={() => removeLinea(i)}><LuX size={14} /></button>
                   </div>
                 ))}
                 <div className={styles.lineasFooter}>

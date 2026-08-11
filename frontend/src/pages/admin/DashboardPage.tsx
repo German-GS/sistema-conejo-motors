@@ -13,7 +13,7 @@ import { VehicleRibbon } from "@/components/VehicleRibbon";
 import { VehicleHistorialModal } from "@/components/VehicleHistorialModal";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { exportToExcel } from "@/utils/exportExcel";
-import { LuChartColumnStacked, LuWallet, LuEye, LuSettings, LuPencil, LuClock, LuTrash2 } from "react-icons/lu";
+import { LuChartColumnStacked, LuWallet, LuEye, LuSettings, LuPencil, LuClock, LuTrash2, LuX, LuCopy } from "react-icons/lu";
 
 const CRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
@@ -228,7 +228,7 @@ export const DashboardPage = () => {
             <option value="Demo">Demo / uso interno</option>
           </select>
           {(search || filterEstado) && (
-            <button className={styles.clearBtn} onClick={() => { setSearch(""); setFilterEstado(""); setPage(1); }}>✕ Limpiar</button>
+            <button className={styles.clearBtn} onClick={() => { setSearch(""); setFilterEstado(""); setPage(1); }} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuX size={14} /> Limpiar</button>
           )}
         </div>
 
@@ -264,9 +264,9 @@ export const DashboardPage = () => {
                     <button
                       onClick={(e) => copyVin(v.vin, e)}
                       title="Copiar VIN"
-                      style={{ background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.78rem", color: "var(--slate-700)", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                      style={{ background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.78rem", color: "var(--slate-700)", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                     >
-                      📋 {v.vin}
+                      <LuCopy size={12} /> {v.vin}
                     </button>
                   </div>
                   <span style={{ fontSize: "0.72rem", fontWeight: 700, background: est.bg, color: est.fg, borderRadius: 20, padding: "2px 10px", textAlign: "center" }}>{v.estado}</span>

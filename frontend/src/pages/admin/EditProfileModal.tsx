@@ -317,7 +317,7 @@ export const EditProfileModal: React.FC<Props> = ({ profileId, onClose, onSaved 
                       className={styles.imgDeleteSmall}
                       onClick={() => handleDeleteImage(img.id)}
                       title="Eliminar"
-                    >✕</button>
+                    ><LuX size={14} /></button>
                     <button
                       className={styles.imgArrow}
                       onClick={() => moveImage(idx, 1)}

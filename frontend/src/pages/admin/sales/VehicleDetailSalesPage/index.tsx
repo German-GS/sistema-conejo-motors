@@ -8,6 +8,7 @@ import {
   LuBriefcase, LuRoute, LuGauge, LuUsers, LuRefreshCw,
   LuMoveHorizontal, LuMoveVertical, LuArrowUp, LuScale, LuShield, LuCar,
   LuZap, LuBatteryCharging, LuWrench, LuRocket, LuLuggage, LuArmchair, LuMapPin, LuSmartphone,
+  LuCircleCheck,
 } from "react-icons/lu";
 
 interface VehicleDetail {
@@ -55,7 +56,7 @@ const FeatureGroup = ({ title, items }: { title: React.ReactNode; items?: string
   items && items.length > 0 ? (
     <div className={styles.featureGroup}>
       <h4 style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>{title}</h4>
-      <ul>{items.map((item, i) => <li key={i}>✓ {item}</li>)}</ul>
+      <ul>{items.map((item, i) => <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuCircleCheck size={14} /> {item}</li>)}</ul>
     </div>
   ) : null;
 

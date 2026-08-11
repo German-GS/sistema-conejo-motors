@@ -8,7 +8,7 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { LeadsKanban } from "@/components/LeadsKanban";
 import styles from "./LeadsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
-import { LuChartColumnStacked, LuLock, LuTriangleAlert, LuCalendarDays, LuPlus } from "react-icons/lu";
+import { LuChartColumnStacked, LuLock, LuTriangleAlert, LuCalendarDays, LuPlus, LuX, LuList, LuLayoutGrid, LuMegaphone } from "react-icons/lu";
 
 interface Lead {
   id: number;
@@ -283,7 +283,7 @@ export const LeadsPage = () => {
           </button>
         ))}
         {filterEstado !== "Todos" && (
-          <button className={styles.clearFilter} onClick={() => setFilterEstado("Todos")}>✕</button>
+          <button className={styles.clearFilter} onClick={() => setFilterEstado("Todos")}><LuX size={14} /></button>
         )}
       </div>
 
@@ -291,12 +291,12 @@ export const LeadsPage = () => {
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem", alignItems: "center" }}>
         <button
           onClick={() => setVista("lista")}
-          style={toggleStyle(vista === "lista")}
-        >☰ Lista</button>
+          style={{ ...toggleStyle(vista === "lista"), display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+        ><LuList size={14} /> Lista</button>
         <button
           onClick={() => setVista("tablero")}
-          style={toggleStyle(vista === "tablero")}
-        >▦ Tablero</button>
+          style={{ ...toggleStyle(vista === "tablero"), display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+        ><LuLayoutGrid size={14} /> Tablero</button>
         <button
           onClick={() => setShowNuevo(true)}
           style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, border: "none", background: "var(--brand)", color: "#fff" }}
@@ -408,9 +408,10 @@ export const LeadsPage = () => {
                             background: "none", border: "1px solid #fca5a5",
                             borderRadius: 6, color: "#ef4444", cursor: "pointer",
                             padding: "4px 8px", fontSize: "0.8rem", lineHeight: 1,
+                            display: "inline-flex", alignItems: "center",
                           }}
                         >
-                          ✕
+                          <LuX size={13} />
                         </button>
                       )}
                     </td>
@@ -460,8 +461,8 @@ export const LeadsPage = () => {
               </div>
               {/* Campaña — solo si la fuente es red social y hay campañas activas */}
               {["Facebook", "Instagram", "TikTok"].includes(nuevo.fuente) && campanasActivas.filter(c => c.plataforma === nuevo.fuente).length > 0 && (
-                <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)" }}>
-                  📣 Campaña de {nuevo.fuente} (opcional)
+                <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--slate-600)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                  <LuMegaphone size={14} /> Campaña de {nuevo.fuente} (opcional)
                   <select
                     value={nuevo.campana_id}
                     onChange={(e) => setNuevo({ ...nuevo, campana_id: e.target.value })}

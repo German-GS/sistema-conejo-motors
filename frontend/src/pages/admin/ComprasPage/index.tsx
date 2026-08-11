@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
-import { LuReceiptText, LuPaperclip, LuUpload } from "react-icons/lu";
+import { LuReceiptText, LuPaperclip, LuUpload, LuX } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 
@@ -151,7 +151,7 @@ export const ComprasPage = () => {
                         </select>
                       </td>
                       <td style={{ ...td, textAlign: "right" }}>{CRC(totalL)}</td>
-                      <td style={{ padding: 4, textAlign: "center" }}>{lineas.length > 1 && <button onClick={() => setLineas((prev) => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)" }}>✕</button>}</td>
+                      <td style={{ padding: 4, textAlign: "center" }}>{lineas.length > 1 && <button onClick={() => setLineas((prev) => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)", display: "inline-flex" }}><LuX size={14} /></button>}</td>
                     </tr>
                   );
                 })}

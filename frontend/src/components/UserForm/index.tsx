@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import styles from "./UserForm.module.css";
 import toast from "react-hot-toast";
-import { LuEye, LuEyeOff, LuCalculator } from "react-icons/lu";
+import { LuEye, LuEyeOff, LuCalculator, LuCircleCheck } from "react-icons/lu";
 
 interface Role {
   id: number;
@@ -273,7 +273,7 @@ export const UserForm: React.FC<UserFormProps> = ({
             <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
               <div style={{ fontSize: "0.72rem", color: "var(--slate-400)", textTransform: "uppercase" }}>Salario Bruto</div>
               <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--brand-dark)" }}>{fmtCRC(calcResult.bruto)}</div>
-              <div style={{ fontSize: "0.68rem", color: "#16a34a" }}>✓ se guarda este</div>
+              <div style={{ fontSize: "0.68rem", color: "#16a34a", display: "flex", alignItems: "center", gap: "0.25rem" }}><LuCircleCheck size={11} /> se guarda este</div>
             </div>
             <div style={{ background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 8, padding: "0.5rem 0.8rem", minWidth: 130 }}>
               <div style={{ fontSize: "0.72rem", color: "var(--slate-400)", textTransform: "uppercase" }}>Neto que recibe</div>

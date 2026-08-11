@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
-import { LuBanknote, LuUpload, LuLink } from "react-icons/lu";
+import { LuBanknote, LuUpload, LuLink, LuCircleCheck } from "react-icons/lu";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 const card: React.CSSProperties = { background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1.25rem" };
@@ -115,7 +115,7 @@ export const ConciliacionPage = () => {
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
                 <thead><tr><th style={th}>Fecha</th><th style={th}>Asiento</th><th style={th}>Descripción</th><th style={thR}>Monto</th></tr></thead>
                 <tbody>
-                  {rep.enLibrosNoEnBanco.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. ✓</td></tr>}
+                  {rep.enLibrosNoEnBanco.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. <LuCircleCheck size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></td></tr>}
                   {rep.enLibrosNoEnBanco.map((l: any) => (
                     <tr key={l.lineaId} style={{ borderTop: "1px solid var(--slate-100)" }}>
                       <td style={td}>{l.fecha}</td><td style={td}>#{l.asientoId}</td><td style={td}>{l.descripcion}</td>
@@ -133,7 +133,7 @@ export const ConciliacionPage = () => {
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
                 <thead><tr><th style={th}>Fecha</th><th style={th}>Descripción</th><th style={thR}>Monto</th><th style={th}></th></tr></thead>
                 <tbody>
-                  {rep.enBancoNoEnLibros.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. ✓</td></tr>}
+                  {rep.enBancoNoEnLibros.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. <LuCircleCheck size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></td></tr>}
                   {rep.enBancoNoEnLibros.map((m: any) => (
                     <tr key={m.id} style={{ borderTop: "1px solid var(--slate-100)" }}>
                       <td style={td}>{m.fecha}</td><td style={td}>{m.descripcion}</td>

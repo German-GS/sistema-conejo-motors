@@ -500,7 +500,7 @@ export const LeadDetailsPage = () => {
             <strong>Solicitud enviada a contabilidad</strong>
             <p>El equipo de administración fue notificado y procesará la factura de <strong>{lead.nombre_cliente}</strong> a la brevedad.</p>
           </div>
-          <button className={styles.facturaEnviadaClose} onClick={() => setFacturaEnviada(false)}>✕</button>
+          <button className={styles.facturaEnviadaClose} onClick={() => setFacturaEnviada(false)}><LuX size={16} /></button>
         </div>
       )}
 
@@ -1151,7 +1151,7 @@ export const LeadDetailsPage = () => {
                               color: done ? "#fff" : "var(--slate-400)",
                               boxShadow: actual ? `0 0 0 3px ${(ESTADO_COLORS[lead.estado] ?? "#10b981")}33` : "none",
                             }}>
-                              {done ? "✓" : i + 1}
+                              {done ? <LuCircleCheck size={12} /> : i + 1}
                             </div>
                             <span style={{ fontSize: "0.68rem", color: actual ? "var(--brand-dark)" : "var(--slate-400)", fontWeight: actual ? 700 : 500, whiteSpace: "nowrap" }}>{etapa}</span>
                           </div>

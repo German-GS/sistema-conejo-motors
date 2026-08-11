@@ -544,7 +544,7 @@ const DepreciacionConfig: React.FC = () => {
                 <td style={{ padding: "6px", textAlign: "center" }}><input type="checkbox" checked={c.activo} onChange={(e) => setCampo(c.id, "activo", e.target.checked)} /></td>
                 <td style={{ padding: "6px", whiteSpace: "nowrap" }}>
                   <button onClick={() => guardar(c)} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.75rem", marginRight: 4 }}>Guardar</button>
-                  <button onClick={() => eliminar(c.id)} style={{ background: "none", border: "1px solid #fecaca", color: "var(--danger)", borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: "0.75rem" }}>✕</button>
+                  <button onClick={() => eliminar(c.id)} style={{ background: "none", border: "1px solid #fecaca", color: "var(--danger)", borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: "0.75rem", display: "inline-flex" }}><LuX size={12} /></button>
                 </td>
               </tr>
             ))}
@@ -991,11 +991,11 @@ export const SettingsPage = () => {
                       position: 'absolute', top: '-6px', right: '-6px',
                       background: '#e53e3e', color: 'white', border: 'none',
                       borderRadius: '50%', width: '20px', height: '20px',
-                      cursor: 'pointer', fontSize: '12px', lineHeight: '20px', textAlign: 'center', padding: 0
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
                     }}
                     title="Quitar esta imagen"
                   >
-                    ✕
+                    <LuX size={12} />
                   </button>
                 </div>
               ))}

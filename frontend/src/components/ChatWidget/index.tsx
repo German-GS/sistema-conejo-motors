@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "@/api/apiClient";
 import styles from "./ChatWidget.module.css";
-import { LuMessageCircle, LuSend } from "react-icons/lu";
+import { LuMessageCircle, LuSend, LuX } from "react-icons/lu";
 
 interface Mensaje {
   id: number;
@@ -169,7 +169,7 @@ export const ChatWidget: React.FC = () => {
               <span className={styles.headerTitle} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuMessageCircle size={18} /> Chat del Equipo</span>
               <span className={styles.onlineDot} />
             </div>
-            <button className={styles.closeBtn} onClick={() => setOpen(false)}>✕</button>
+            <button className={styles.closeBtn} onClick={() => setOpen(false)}><LuX size={16} /></button>
           </div>
 
           <div className={styles.messages}>

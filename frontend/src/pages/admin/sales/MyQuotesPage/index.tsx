@@ -6,7 +6,7 @@ import { Pagination } from "@/components/Pagination";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 import { useConfirm } from "@/components/ConfirmDialog";
 import toast from "react-hot-toast";
-import { LuLink, LuTriangleAlert, LuClock, LuBan } from "react-icons/lu";
+import { LuLink, LuTriangleAlert, LuClock, LuBan, LuX, LuFileText } from "react-icons/lu";
 
 interface Quote {
   id: number;
@@ -193,7 +193,7 @@ export const MyQuotesPage = () => {
         <p className={styles.empty}>Cargando cotizaciones...</p>
       ) : filtered.length === 0 ? (
         <div className={styles.empty}>
-          <p>📄 No hay cotizaciones que coincidan.</p>
+          <p style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}><LuFileText size={16} /> No hay cotizaciones que coincidan.</p>
           {(filterEstado !== "Todas" || search) && (
             <button className={styles.clearBtn} onClick={() => { setFilterEstado("Todas"); setSearch(""); }}>
               Limpiar filtros
@@ -299,7 +299,7 @@ export const MyQuotesPage = () => {
                               vehiculo: `${q.vehiculo?.marca ?? ""} ${q.vehiculo?.modelo ?? ""} (${q.vehiculo?.año ?? ""})`,
                             })}
                           >
-                            ✕
+                            <LuX size={13} />
                           </button>
                         )}
                         {q.estado === "Cancelada" && isAdmin && (
@@ -309,7 +309,7 @@ export const MyQuotesPage = () => {
                             disabled={eliminandoId === q.id}
                             onClick={() => handleEliminar(q.id)}
                           >
-                            {eliminandoId === q.id ? "..." : "✕"}
+                            {eliminandoId === q.id ? "..." : <LuX size={13} />}
                           </button>
                         )}
                       </td>

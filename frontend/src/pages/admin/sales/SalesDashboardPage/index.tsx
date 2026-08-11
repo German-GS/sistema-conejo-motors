@@ -12,6 +12,7 @@ import { QuotesExpiringWidget } from "@/components/QuotesExpiringWidget";
 import {
   LuCar, LuUsers, LuFileText, LuCircleCheck, LuWallet, LuTarget,
   LuUtensils, LuTrendingUp, LuClipboardList, LuCalendarDays, LuMail,
+  LuMoon, LuRefreshCw,
 } from "react-icons/lu";
 
 interface SalesStats {
@@ -115,11 +116,14 @@ export const SalesDashboardPage = () => {
           <p className={styles.welcomeSub}>
             {new Date().toLocaleDateString("es-CR", { weekday: "long", day: "numeric", month: "long" })}
             {yoConectado && (
-              <span className={styles.connectedBadge}>🟢 Conectado desde {yoConectado.desde}</span>
+              <span className={styles.connectedBadge}>
+                <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "var(--success)", marginRight: 4 }} />
+                Conectado desde {yoConectado.desde}
+              </span>
             )}
           </p>
         </div>
-        <button className={styles.refreshBtn} onClick={fetchAll} title="Actualizar">↻</button>
+        <button className={styles.refreshBtn} onClick={fetchAll} title="Actualizar"><LuRefreshCw size={16} /></button>
       </div>
 
       {/* ── Accesos rápidos ──────────────────────────────────────────────── */}
@@ -156,7 +160,7 @@ export const SalesDashboardPage = () => {
           </div>
           {conectados.length === 0 ? (
             <div className={styles.emptyPanel}>
-              <span>😴</span>
+              <span><LuMoon size={20} /></span>
               <p>Nadie ha marcado entrada hoy.</p>
             </div>
           ) : (
