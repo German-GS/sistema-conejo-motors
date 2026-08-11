@@ -10,7 +10,7 @@ import {
   LuCalculator, LuCalendarDays, LuBuilding2, LuTrendingDown, LuTrendingUp, LuWallet,
   LuWrench, LuShield, LuBanknote, LuShip, LuMegaphone, LuTriangleAlert, LuFileCheck,
   LuReceipt, LuScale, LuDollarSign, LuClipboardList, LuLandmark, LuBadgeDollarSign,
-  LuInbox, LuPiggyBank,
+  LuInbox, LuPiggyBank, LuPackage2, LuCreditCard, LuUserRound, LuChartPie, LuFileSpreadsheet,
 } from "react-icons/lu";
 
 export interface AdminSection {
@@ -62,7 +62,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
     keywords: ["cotizacion", "proforma", "presupuesto"] },
   { id: "leads", label: "Leads / CRM", ruta: "/admin/leads", icon: LuUserCheck, seccion: "ventas",
     keywords: ["crm", "prospectos", "seguimiento"] },
-  { id: "clientes", label: "Clientes", ruta: "/admin/clientes", icon: LuUsers, seccion: "ventas",
+  { id: "clientes", label: "Clientes", ruta: "/admin/clientes", icon: LuUserRound, seccion: "ventas",
     keywords: ["cliente", "expediente", "sugef"] },
   { id: "campanas", label: "Campañas", ruta: "/admin/campanas", icon: LuMegaphone, seccion: "ventas",
     keywords: ["marketing", "facebook", "instagram", "tiktok", "publicidad"] },
@@ -74,7 +74,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
     keywords: ["vehiculo", "precio", "vin", "stock"] },
   { id: "accesorios", label: "Accesorios de vehículo", ruta: "/admin/accesorios", icon: LuPackage, seccion: "inventario",
     keywords: ["accesorio", "extras vehiculo"] },
-  { id: "repuestos", label: "Repuestos", ruta: "/admin/productos", icon: LuWrench, seccion: "inventario",
+  { id: "repuestos", label: "Repuestos", ruta: "/admin/productos", icon: LuPackage2, seccion: "inventario",
     keywords: ["repuesto", "productos", "taller repuestos"],
     descripcion: "Repuestos y accesorios para venta general (no ligados a un vehículo del inventario)." },
   { id: "importaciones", label: "Importaciones", ruta: "/admin/importaciones", icon: LuShip, seccion: "inventario",
@@ -87,7 +87,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
     keywords: ["proveedor", "supplier"] },
   { id: "ordenes-compra", label: "Órdenes de Compra", ruta: "/admin/compras", icon: LuClipboardList, seccion: "compras",
     keywords: ["orden de compra", "oc", "compra"] },
-  { id: "gastos", label: "Gastos", ruta: "/admin/gastos", icon: LuReceipt, seccion: "compras",
+  { id: "gastos", label: "Gastos", ruta: "/admin/gastos", icon: LuCreditCard, seccion: "compras",
     keywords: ["gasto", "factura de gasto", "comprobante"] },
 
   // ── FINANZAS (nivel 1) ──
@@ -119,7 +119,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
     subseccion: "contab", iconSize: 16,
     keywords: ["balance", "resultados", "p&l", "situacion financiera", "estado de resultados"],
     descripcion: "Balance general y estado de resultados (P&L)." },
-  { id: "reportes-contables", label: "Reportes Contables", ruta: "/admin/reportes-contables", icon: LuBookMarked, seccion: "finanzas",
+  { id: "reportes-contables", label: "Reportes Contables", ruta: "/admin/reportes-contables", icon: LuFileSpreadsheet, seccion: "finanzas",
     subseccion: "contab", iconSize: 16,
     keywords: ["balanza de comprobacion", "mayor", "diario", "aging", "reportes"],
     descripcion: "Balanza de comprobación, libro mayor, libro diario y aging de cuentas." },
@@ -157,7 +157,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
     keywords: ["gps", "rastreo", "ubicacion vehiculo"] },
 
   // ── SISTEMA ──
-  { id: "reports", label: "Informes", ruta: "/admin/reports", icon: LuChartColumnStacked, seccion: "sistema",
+  { id: "reports", label: "Informes", ruta: "/admin/reports", icon: LuChartPie, seccion: "sistema",
     roles: ["Administrador"],
     keywords: ["informes gerenciales", "ventas por vendedor", "desempeño"],
     descripcion: "Informes gerenciales de ventas y desempeño del equipo." },
