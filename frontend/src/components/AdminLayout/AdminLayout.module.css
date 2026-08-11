@@ -98,6 +98,28 @@
   padding: 0.52rem 0;
 }
 
+/* ── Estrella de favoritos: visible al pasar el mouse por el enlace ── */
+.favToggle {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+.navLink:hover .favToggle {
+  opacity: 1;
+}
+.favToggle:hover {
+  color: #fbbf24;
+}
+/* Si ya es favorito, queda visible siempre (opacity inline vía React, ver SidebarLink). */
+
 /* ── Encabezado de sección COLAPSABLE ── */
 .sectionLabel {
   display: flex;

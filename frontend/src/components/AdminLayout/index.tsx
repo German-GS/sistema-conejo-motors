@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { Link, NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import styles from "./AdminLayout.module.css";
 import { jwtDecode } from "jwt-decode";
@@ -7,49 +7,18 @@ import { useSessionKeepAlive } from "@/hooks/useSessionKeepAlive";
 import apiClient from "@/api/apiClient";
 import conejoLogo from "../../img/Logos/Logo-Blanco.png";
 import {
-  LuLayoutDashboard,
-  LuCar,
-  LuUsers,
-  LuSettings,
-  LuFileText,
-  LuWarehouse,
-  LuMapPin,
-  LuBookMarked,
-  LuChartColumnStacked,
-  LuBell,
-  LuReceipt,
-  LuUpload,
-  LuPackage,
-  LuTag,
-  LuUserCheck,
-  LuCalendarClock,
-  LuShoppingCart,
-  LuCalculator,
-  LuCalendarDays,
-  LuBuilding2,
-  LuTrendingDown,
-  LuTrendingUp,
-  LuWallet,
-  LuReceiptText,
-  LuWrench,
-  LuShield,
-  LuBanknote,
-  LuShip,
-  LuChevronDown,
-  LuMenu,
-  LuX,
-  LuMegaphone,
-  LuTriangleAlert,
-  LuFileCheck,
-  LuPin,
-  LuEye,
+  LuChevronDown, LuMenu, LuX, LuPin, LuEye, LuBell, LuSearch, LuStar, LuClock,
+  LuLayoutDashboard, LuCalculator,
 } from "react-icons/lu";
+import {
+  ADMIN_SECTIONS, ADMIN_DESTINATIONS, DESTINO_POR_RUTA, puedeVerDestino,
+  type AdminDestination,
+} from "@/nav/adminDestinations";
 import { ClockWidget } from "@/components/ClockWidget";
 import { ChatWidget } from "@/components/ChatWidget";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { LuSearch } from "react-icons/lu";
 
 // Interfaz para el objeto de notificación
 interface Notification {
@@ -58,47 +27,27 @@ interface Notification {
   link: string;
 }
 
-// Secciones del menú con sus rutas para detectar cuál abrir automáticamente
-const SECTION_ROUTES: Record<string, string[]> = {
-  ventas:       ["/admin/sales", "/admin/leads", "/admin/clientes", "/admin/campanas", "/admin/agenda"],
-  inventario:   ["/admin/inventory", "/admin/pricing", "/admin/accesorios", "/admin/importaciones", "/admin/import"],
-  rrhh:         ["/admin/users", "/admin/planilla", "/admin/asistencia", "/admin/solicitudes"],
-  repuestos:    ["/admin/productos"],
-  compras:      ["/admin/proveedores", "/admin/gastos", "/admin/compras"],
-  finanzas:     ["/admin/finanzas", "/admin/cxc", "/admin/cxp", "/admin/caja-chica", "/admin/tesoreria"],
-  postventa:    ["/admin/taller", "/admin/garantias"],
-  operaciones:  ["/admin/bodegas", "/admin/billing", "/admin/tracking"],
-};
-
 /** Rutas del sub-hub "Contabilidad" anidado dentro de Finanzas. Al entrar por una de
  *  estas rutas se abre tanto "finanzas" (padre) como "finanzas-contab" (el sub-hub). */
-const CONTAB_SUBHUB_ROUTES = [
-  "/admin/conciliacion", "/admin/multimoneda", "/admin/contabilidad", "/admin/obligaciones",
-  "/admin/estados-financieros", "/admin/reportes-contables", "/admin/pendientes-contables",
-  "/admin/facturacion-electronica",
-];
+const CONTAB_SUBHUB_ROUTES = ADMIN_DESTINATIONS
+  .filter((d) => d.subseccion === "contab")
+  .map((d) => d.ruta);
 
 const STORAGE_KEY = "adminSidebarSections";
+const FAVORITOS_KEY = "adminFavorites";
+const RECIENTES_KEY = "adminRecientes";
+const MAX_RECIENTES = 5;
 
-/**
- * Roles que ven cada sección del menú. Es solo filtrado de UI — la protección real
- * de cada endpoint ya existe en el backend (RolesGuard); esto evita mostrar enlaces
- * que el rol no puede usar, para que el menú sea corto y relevante por rol.
- */
-const SECTION_ROLES: Record<string, string[]> = {
-  ventas:      ["Administrador", "Vendedor"],
-  inventario:  ["Administrador", "Vendedor"],
-  rrhh:        ["Administrador"],
-  repuestos:   ["Administrador", "Vendedor"],
-  compras:     ["Administrador", "Contador"],
-  finanzas:    ["Administrador", "Contador"],
-  postventa:   ["Administrador", "Vendedor"],
-  operaciones: ["Administrador", "Vendedor", "Contador"],
-};
-// Si el rol aún no cargó (fracción de segundo tras montar), no ocultar nada — evita el
-// parpadeo de "menú vacío" mientras se decodifica el token.
-const puedeVerSeccion = (id: string, rol: string) =>
-  !rol || !SECTION_ROLES[id] || SECTION_ROLES[id].includes(rol);
+// Destinos agrupados por sección (excluye Dashboard y Sistema, que se renderizan aparte).
+const DESTINOS_POR_SECCION: Record<string, AdminDestination[]> = {};
+for (const d of ADMIN_DESTINATIONS) {
+  if (d.seccion === "_top" || d.seccion === "sistema") continue;
+  (DESTINOS_POR_SECCION[d.seccion] ??= []).push(d);
+}
+const DESTINOS_SISTEMA = ADMIN_DESTINATIONS.filter((d) => d.seccion === "sistema");
+/** Etiqueta e icono de cada sub-hub anidado (hoy solo existe "contabilidad" dentro de Finanzas). */
+const SUBHUB_LABELS: Record<string, string> = { contab: "Contabilidad" };
+const SUBHUB_ICONS: Record<string, React.ComponentType<{ size?: number }>> = { contab: LuCalculator };
 
 const getDefaultSections = (pathname: string): Set<string> => {
   // Si hay estado guardado, usarlo
@@ -113,13 +62,20 @@ const getDefaultSections = (pathname: string): Set<string> => {
   }
 
   // Si no, abrir la sección que contiene la ruta actual
-  for (const [section, routes] of Object.entries(SECTION_ROUTES)) {
-    if (routes.some(r => pathname.startsWith(r))) {
-      return new Set([section]);
+  for (const [seccion, destinos] of Object.entries(DESTINOS_POR_SECCION)) {
+    if (destinos.some(d => pathname.startsWith(d.ruta))) {
+      return new Set([seccion]);
     }
   }
   // Por defecto: ventas e inventario abiertas
-  return new Set(["ventas", "inventario"]);
+  return new Set(["ventas", "inventario", "favoritos", "recientes"]);
+};
+
+const leerListaGuardada = (key: string): string[] => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
 };
 
 export const AdminLayout = () => {
@@ -134,10 +90,11 @@ export const AdminLayout = () => {
   const [userRole, setUserRole] = useState("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [overdueLeads, setOverdueLeads] = useState(0);
   const [openSections, setOpenSections] = useState<Set<string>>(() =>
     getDefaultSections(window.location.pathname)
   );
+  const [favoritos, setFavoritos] = useState<string[]>(() => leerListaGuardada(FAVORITOS_KEY));
+  const [recientes, setRecientes] = useState<string[]>(() => leerListaGuardada(RECIENTES_KEY));
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -169,7 +126,6 @@ export const AdminLayout = () => {
       const next = new Set(prev);
       if (next.has(section)) next.delete(section);
       else next.add(section);
-      // Persistir en localStorage
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch { /* ignorar */ }
       return next;
     });
@@ -182,9 +138,9 @@ export const AdminLayout = () => {
     if (CONTAB_SUBHUB_ROUTES.some(r => location.pathname.startsWith(r))) {
       abrir.push("finanzas", "finanzas-contab");
     } else {
-      for (const [section, routes] of Object.entries(SECTION_ROUTES)) {
-        if (routes.some(r => location.pathname.startsWith(r))) {
-          abrir.push(section);
+      for (const [seccion, destinos] of Object.entries(DESTINOS_POR_SECCION)) {
+        if (destinos.some(d => location.pathname.startsWith(d.ruta))) {
+          abrir.push(seccion);
           break;
         }
       }
@@ -198,6 +154,25 @@ export const AdminLayout = () => {
       return next;
     });
   }, [location.pathname]);
+
+  // Recientes: registra la página actual (si coincide con un destino conocido) al navegar.
+  useEffect(() => {
+    const dest = DESTINO_POR_RUTA[location.pathname];
+    if (!dest) return;
+    setRecientes(prev => {
+      const next = [dest.id, ...prev.filter(id => id !== dest.id)].slice(0, MAX_RECIENTES + 1);
+      try { localStorage.setItem(RECIENTES_KEY, JSON.stringify(next)); } catch { /* ignorar */ }
+      return next;
+    });
+  }, [location.pathname]);
+
+  const toggleFavorito = useCallback((id: string) => {
+    setFavoritos(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      try { localStorage.setItem(FAVORITOS_KEY, JSON.stringify(next)); } catch { /* ignorar */ }
+      return next;
+    });
+  }, []);
 
   const togglePin = () => {
     setPinned(p => {
@@ -236,15 +211,6 @@ export const AdminLayout = () => {
         const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
       }
-
-      const fetchOverdue = () => {
-        apiClient.get("/leads/followup/overdue-count")
-          .then((res) => setOverdueLeads(res.data.count))
-          .catch(() => {});
-      };
-      fetchOverdue();
-      const overdueInterval = setInterval(fetchOverdue, 120000);
-      return () => clearInterval(overdueInterval);
     }
   }, []);
 
@@ -258,7 +224,6 @@ export const AdminLayout = () => {
     try {
       await apiClient.patch(`/notifications/${notification.id}/read`);
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
-      // Resolver el link: si no tiene prefijo /admin o /sales, añadir /admin
       const link = notification.link || "/admin";
       const resolved = link.startsWith("/admin") || link.startsWith("/sales") ? link : `/admin${link}`;
       navigate(resolved);
@@ -267,14 +232,41 @@ export const AdminLayout = () => {
     }
   };
 
+  // Destinos visibles para este rol, memoizados por sección.
+  const visiblesPorSeccion = useMemo(() => {
+    const out: Record<string, AdminDestination[]> = {};
+    for (const [seccion, destinos] of Object.entries(DESTINOS_POR_SECCION)) {
+      out[seccion] = destinos.filter(d => puedeVerDestino(d, userRole));
+    }
+    return out;
+  }, [userRole]);
+
+  const destinosFavoritos = useMemo(
+    () => favoritos.map(id => ADMIN_DESTINATIONS.find(d => d.id === id)).filter(Boolean) as AdminDestination[],
+    [favoritos],
+  );
+  const currentDestId = DESTINO_POR_RUTA[location.pathname]?.id;
+  const destinosRecientes = useMemo(
+    () => recientes
+      .filter(id => id !== currentDestId)
+      .slice(0, MAX_RECIENTES)
+      .map(id => ADMIN_DESTINATIONS.find(d => d.id === id))
+      .filter(Boolean) as AdminDestination[],
+    [recientes, currentDestId],
+  );
+
   // Helper: renderiza un encabezado de sección colapsable
-  const SectionHeader = ({ id, label }: { id: string; label: string }) => (
+  const SectionHeader = ({ id, label, icon }: { id: string; label: string; icon?: React.ReactNode }) => (
     <button
       className={`${styles.sectionLabel} ${openSections.has(id) ? styles.sectionOpen : ""}`}
       onClick={() => toggleSection(id)}
       title={!showLabels ? label : undefined}
     >
-      {showLabels && <span>{label}</span>}
+      {showLabels && (
+        <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+          {icon}{label}
+        </span>
+      )}
       {showLabels && (
         <LuChevronDown
           size={12}
@@ -284,38 +276,61 @@ export const AdminLayout = () => {
     </button>
   );
 
-  // Helper: NavLink con estilos activos
+  // Helper: NavLink con estilos activos. `hint` es un tooltip aclaratorio (siempre visible
+  // al hacer hover, incluso con el sidebar expandido) para destinos con nombres parecidos.
   const SidebarLink = ({
-    to,
-    icon,
-    label,
-    badge,
+    to, icon, iconSize = 18, label, hint, badge, favId,
   }: {
-    to: string;
-    icon: React.ReactNode;
-    label: string;
-    badge?: number;
-  }) => (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
-      }
-      title={!showLabels ? label : undefined}
-    >
-      {icon}
-      {showLabels && <span className={styles.linkText}>{label}</span>}
-      {badge && badge > 0 && (
-        <span className={styles.menuBadge} title={`${badge} follow-up(s) vencidos`}>
-          {badge}
-        </span>
-      )}
-    </NavLink>
-  );
+    to: string; icon: React.ReactNode; iconSize?: number; label: string; hint?: string;
+    badge?: number; favId?: string;
+  }) => {
+    const esFavorito = favId ? favoritos.includes(favId) : false;
+    return (
+      <NavLink
+        to={to}
+        className={({ isActive }) =>
+          `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
+        }
+        title={!showLabels ? label : hint}
+      >
+        {icon}
+        {showLabels && <span className={styles.linkText}>{label}</span>}
+        {badge && badge > 0 && (
+          <span className={styles.menuBadge} title={`${badge} follow-up(s) vencidos`}>
+            {badge}
+          </span>
+        )}
+        {showLabels && favId && (
+          <button
+            type="button"
+            className={styles.favToggle}
+            style={esFavorito ? { opacity: 1, color: "#fbbf24" } : undefined}
+            title={esFavorito ? "Quitar de favoritos" : "Agregar a favoritos"}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorito(favId); }}
+          >
+            <LuStar size={13} fill={esFavorito ? "currentColor" : "none"} />
+          </button>
+        )}
+      </NavLink>
+    );
+  };
+
+  // Helper: renderiza los ítems planos de una sección (sin sub-hub)
+  const renderDestinos = (destinos: AdminDestination[]) => destinos.map((d) => (
+    <SidebarLink
+      key={d.id}
+      to={d.ruta}
+      icon={<d.icon size={d.iconSize ?? 18} />}
+      iconSize={d.iconSize}
+      label={d.label}
+      hint={d.descripcion}
+      favId={d.id}
+    />
+  ));
 
   return (
     <div className={styles.layout}>
-      {/* Tarea 2: Bloquear sistema.conejomotors.com de Google */}
+      {/* Bloquear sistema.conejomotors.com de Google */}
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
@@ -361,164 +376,83 @@ export const AdminLayout = () => {
           {/* Dashboard */}
           <SidebarLink to="/admin" icon={<LuLayoutDashboard size={18} />} label="Dashboard" />
 
-          {/* ── VENTAS ── */}
-          {puedeVerSeccion("ventas", userRole) && (
+          {/* ── FAVORITOS ── */}
+          {destinosFavoritos.length > 0 && (
             <>
-              <SectionHeader id="ventas" label="VENTAS" />
-              {isOpen("ventas") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/sales/catalog" icon={<LuBookMarked size={18} />} label="Catálogo" />
-                  <SidebarLink to="/admin/sales/quotes" icon={<LuFileText size={18} />} label="Cotizaciones" />
-                  <SidebarLink to="/admin/leads" icon={<LuUserCheck size={18} />} label="Leads / CRM" />
-                  <SidebarLink to="/admin/clientes" icon={<LuUsers size={18} />} label="Clientes" />
-                  <SidebarLink to="/admin/campanas" icon={<LuMegaphone size={18} />} label="Campañas" />
-                  <SidebarLink to="/admin/agenda" icon={<LuCalendarDays size={18} />} label="Agenda" />
-                </div>
+              <SectionHeader id="favoritos" label="FAVORITOS" icon={<LuStar size={12} />} />
+              {isOpen("favoritos") && (
+                <div className={styles.sectionItems}>{renderDestinos(destinosFavoritos)}</div>
               )}
             </>
           )}
 
-          {/* ── INVENTARIO ── */}
-          {puedeVerSeccion("inventario", userRole) && (
+          {/* ── RECIENTES ── */}
+          {destinosRecientes.length > 0 && (
             <>
-              <SectionHeader id="inventario" label="INVENTARIO" />
-              {isOpen("inventario") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/inventory" icon={<LuCar size={18} />} label="Vehículos y precios" />
-                  <SidebarLink to="/admin/accesorios" icon={<LuPackage size={18} />} label="Accesorios" />
-                  <SidebarLink to="/admin/importaciones" icon={<LuShip size={18} />} label="Importaciones" />
-                  <SidebarLink to="/admin/import" icon={<LuUpload size={18} />} label="Importar Excel" />
-                </div>
+              <SectionHeader id="recientes" label="RECIENTES" icon={<LuClock size={12} />} />
+              {isOpen("recientes") && (
+                <div className={styles.sectionItems}>{renderDestinos(destinosRecientes)}</div>
               )}
             </>
           )}
 
-          {/* ── RRHH ── */}
-          {puedeVerSeccion("rrhh", userRole) && (
-            <>
-              <SectionHeader id="rrhh" label="RRHH" />
-              {isOpen("rrhh") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/users" icon={<LuUsers size={18} />} label="Colaboradores" />
-                  <SidebarLink to="/admin/planilla" icon={<LuFileText size={18} />} label="Planilla" />
-                  <SidebarLink to="/admin/asistencia" icon={<LuCalendarClock size={18} />} label="Asistencia" />
-                  <SidebarLink to="/admin/solicitudes" icon={<LuFileText size={18} />} label="Solicitudes" />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ── REPUESTOS ── */}
-          {puedeVerSeccion("repuestos", userRole) && (
-            <>
-              <SectionHeader id="repuestos" label="REPUESTOS" />
-              {isOpen("repuestos") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/productos" icon={<LuShoppingCart size={18} />} label="Repuestos & Accesorios" />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ── COMPRAS ── */}
-          {puedeVerSeccion("compras", userRole) && (
-            <>
-              <SectionHeader id="compras" label="COMPRAS" />
-              {isOpen("compras") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/proveedores" icon={<LuBuilding2 size={18} />} label="Proveedores" />
-                  <SidebarLink to="/admin/compras" icon={<LuReceiptText size={18} />} label="Órdenes de Compra" />
-                  <SidebarLink to="/admin/gastos" icon={<LuReceiptText size={18} />} label="Gastos" />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ── FINANZAS Y CONTABILIDAD ──
-              Sub-hub: los enlaces puramente contables quedan anidados bajo "Contabilidad"
-              (mismo componente, mismas rutas — solo se agrupan visualmente). */}
-          {puedeVerSeccion("finanzas", userRole) && (
-            <>
-              <SectionHeader id="finanzas" label="FINANZAS Y CONTABILIDAD" />
-              {isOpen("finanzas") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/finanzas" icon={<LuWallet size={18} />} label="Resumen Financiero" />
-                  <SidebarLink to="/admin/cxc" icon={<LuTrendingUp size={18} />} label="Cuentas x Cobrar" />
-                  <SidebarLink to="/admin/cxp" icon={<LuTrendingDown size={18} />} label="Cuentas x Pagar" />
-                  <SidebarLink to="/admin/caja-chica" icon={<LuWallet size={18} />} label="Caja Chica" />
-                  <SidebarLink to="/admin/tesoreria" icon={<LuBanknote size={18} />} label="Tesorería" />
-
-                  <button
-                    type="button"
-                    className={styles.subGroupToggle}
-                    onClick={() => toggleSection("finanzas-contab")}
-                    title={!showLabels ? "Contabilidad" : undefined}
-                  >
-                    <LuCalculator size={18} />
-                    {showLabels && <span>Contabilidad</span>}
-                    {showLabels && (
-                      <LuChevronDown
-                        size={12}
-                        className={`${styles.chevron} ${openSections.has("finanzas-contab") ? styles.chevronOpen : ""}`}
-                      />
-                    )}
-                  </button>
-                  {(colapsadoReal || openSections.has("finanzas-contab")) && (
-                    <div className={styles.subGroupItems}>
-                      <SidebarLink to="/admin/contabilidad" icon={<LuCalculator size={16} />} label="Libro / Asientos" />
-                      <SidebarLink to="/admin/conciliacion" icon={<LuBanknote size={16} />} label="Conciliación Bancaria" />
-                      <SidebarLink to="/admin/multimoneda" icon={<LuBanknote size={16} />} label="Multimoneda (USD)" />
-                      <SidebarLink to="/admin/obligaciones" icon={<LuReceiptText size={16} />} label="Obligaciones (IVA)" />
-                      <SidebarLink to="/admin/estados-financieros" icon={<LuChartColumnStacked size={16} />} label="Estados Financieros" />
-                      <SidebarLink to="/admin/reportes-contables" icon={<LuBookMarked size={16} />} label="Reportes Contables" />
-                      <SidebarLink to="/admin/pendientes-contables" icon={<LuTriangleAlert size={16} />} label="Pendientes Contab." />
-                      <SidebarLink to="/admin/facturacion-electronica" icon={<LuFileCheck size={16} />} label="Facturación Electrónica" />
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ── POSTVENTA ── */}
-          {puedeVerSeccion("postventa", userRole) && (
-            <>
-              <SectionHeader id="postventa" label="POSTVENTA" />
-              {isOpen("postventa") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/taller" icon={<LuWrench size={18} />} label="Taller" />
-                  <SidebarLink to="/admin/garantias" icon={<LuShield size={18} />} label="Garantías" />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ── OPERACIONES ── */}
-          {puedeVerSeccion("operaciones", userRole) && (
-            <>
-              <SectionHeader id="operaciones" label="OPERACIONES" />
-              {isOpen("operaciones") && (
-                <div className={styles.sectionItems}>
-                  <SidebarLink to="/admin/bodegas" icon={<LuWarehouse size={18} />} label="Bodegas" />
-                  <SidebarLink to="/admin/billing" icon={<LuReceipt size={18} />} label="Facturación" />
-                  <SidebarLink to="/admin/tracking" icon={<LuMapPin size={18} />} label="Rastreo" />
-                </div>
-              )}
-            </>
-          )}
+          {ADMIN_SECTIONS.filter(s => s.id !== "sistema").map((seccion) => {
+            const destinos = visiblesPorSeccion[seccion.id] ?? [];
+            if (destinos.length === 0) return null;
+            const principales = destinos.filter(d => !d.subseccion);
+            const subhubs = new Map<string, AdminDestination[]>();
+            for (const d of destinos) {
+              if (!d.subseccion) continue;
+              if (!subhubs.has(d.subseccion)) subhubs.set(d.subseccion, []);
+              subhubs.get(d.subseccion)!.push(d);
+            }
+            return (
+              <div key={seccion.id}>
+                <SectionHeader id={seccion.id} label={seccion.label.toUpperCase()} />
+                {isOpen(seccion.id) && (
+                  <div className={styles.sectionItems}>
+                    {renderDestinos(principales)}
+                    {[...subhubs.entries()].map(([subId, items]) => {
+                      const SubIcon = SUBHUB_ICONS[subId] ?? LuCalculator;
+                      return (
+                      <div key={subId}>
+                        <button
+                          type="button"
+                          className={styles.subGroupToggle}
+                          onClick={() => toggleSection(`${seccion.id}-${subId}`)}
+                          title={!showLabels ? SUBHUB_LABELS[subId] ?? subId : undefined}
+                        >
+                          <SubIcon size={18} />
+                          {showLabels && <span>{SUBHUB_LABELS[subId] ?? subId}</span>}
+                          {showLabels && (
+                            <LuChevronDown
+                              size={12}
+                              className={`${styles.chevron} ${openSections.has(`${seccion.id}-${subId}`) ? styles.chevronOpen : ""}`}
+                            />
+                          )}
+                        </button>
+                        {(colapsadoReal || openSections.has(`${seccion.id}-${subId}`)) && (
+                          <div className={styles.subGroupItems}>
+                            {renderDestinos(items)}
+                          </div>
+                        )}
+                      </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* ── SISTEMA — fijo al fondo ── */}
-        {(userRole === "Administrador" || userRole === "Contador") && (
+        {DESTINOS_SISTEMA.some(d => puedeVerDestino(d, userRole)) && (
           <div className={styles.sidebarBottom}>
             <div className={styles.sectionLabelStatic}>
               {showLabels && <span>SISTEMA</span>}
             </div>
-            {userRole === "Administrador" && (
-              <SidebarLink to="/admin/reports" icon={<LuChartColumnStacked size={18} />} label="Informes" />
-            )}
-            {/* Configuración: Admin ve todo; Contador ve solo la sección de Seguridad (passkeys). */}
-            <SidebarLink to="/admin/settings" icon={<LuSettings size={18} />} label="Configuración" />
+            {renderDestinos(DESTINOS_SISTEMA.filter(d => puedeVerDestino(d, userRole)))}
           </div>
         )}
       </aside>
@@ -540,7 +474,7 @@ export const AdminLayout = () => {
           <div className={styles.headerActions}>
             <button
               onClick={() => window.dispatchEvent(new Event("global-search:open"))}
-              title="Buscar (⌘/Ctrl + K)"
+              title="Buscar o ir a una sección (⌘/Ctrl + K)"
               style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",
                 background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8,
@@ -548,7 +482,7 @@ export const AdminLayout = () => {
               }}
             >
               <LuSearch size={16} />
-              <span style={{ }}>Buscar</span>
+              <span>Buscar o ir a…</span>
               <span style={{ fontSize: "0.7rem", border: "1px solid #cbd5e1", borderRadius: 4, padding: "1px 5px", background: "#fff" }}>⌘K</span>
             </button>
             <ClockWidget />

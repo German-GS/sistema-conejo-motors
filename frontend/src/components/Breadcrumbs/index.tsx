@@ -1,39 +1,27 @@
 import { Link, useLocation } from "react-router-dom";
+import { ADMIN_DESTINATIONS } from "@/nav/adminDestinations";
 
-// Etiquetas legibles por segmento de ruta
-const LABELS: Record<string, string> = {
+// Etiquetas derivadas del último segmento de la ruta de cada destino del panel admin
+// (adminDestinations.ts es la única fuente de verdad — así el breadcrumb nunca queda
+// desactualizado cuando se agrega o renombra una pantalla).
+const LABELS_DERIVADAS: Record<string, string> = Object.fromEntries(
+  ADMIN_DESTINATIONS.map((d) => {
+    const segs = d.ruta.split("/").filter(Boolean);
+    return [segs[segs.length - 1], d.label];
+  }),
+);
+
+// Segmentos estructurales (prefijos de sección o rutas dinámicas) que no son, en sí
+// mismos, un destino del menú — se traducen a mano.
+const LABELS_MANUALES: Record<string, string> = {
   admin: "Inicio",
   sales: "Ventas",
-  inventory: "Inventario",
-  pricing: "Precios",
-  accesorios: "Accesorios",
-  importaciones: "Importaciones",
-  import: "Importar Excel",
-  catalog: "Catálogo",
-  quotes: "Cotizaciones",
-  leads: "Leads / CRM",
-  agenda: "Agenda",
-  users: "Colaboradores",
-  planilla: "Planilla",
-  asistencia: "Asistencia",
-  solicitudes: "Solicitudes",
-  productos: "Repuestos",
-  proveedores: "Proveedores",
-  gastos: "Gastos",
-  cxc: "Cuentas x Cobrar",
-  cxp: "Cuentas x Pagar",
-  "caja-chica": "Caja Chica",
-  tesoreria: "Tesorería",
-  contabilidad: "Contabilidad",
-  taller: "Taller",
-  garantias: "Garantías",
-  bodegas: "Bodegas",
-  billing: "Facturación",
-  tracking: "Rastreo",
-  reports: "Informes",
-  settings: "Configuración",
   quote: "Nueva cotización",
+  compare: "Comparar",
+  pricing: "Precios",
 };
+
+const LABELS: Record<string, string> = { ...LABELS_DERIVADAS, ...LABELS_MANUALES };
 
 const linkPathFor = (segments: string[], idx: number) => "/" + segments.slice(0, idx + 1).join("/");
 
