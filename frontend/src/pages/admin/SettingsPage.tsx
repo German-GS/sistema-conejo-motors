@@ -270,84 +270,6 @@ const LeadsConfigSettings: React.FC = () => {
   );
 };
 
-// --- COMPONENTE DE FINANCIAMIENTO DEL SOCIO (cuentas puente + reclasificación) ---
-const FinanciamientoSocioSettings: React.FC = () => {
-  const [puente, setPuente] = useState("2900");
-  const [destino, setDestino] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    apiClient.get("/site-settings/public").then((res) => {
-      const get = (k: string, d = "") => res.data?.find((x: any) => x.key === k)?.value ?? d;
-      setPuente(get("cuenta_financiamiento_socio", "2900"));
-      setDestino(get("cuenta_destino_socio", ""));
-    }).catch(() => {});
-  }, []);
-
-  const guardar = async () => {
-    try {
-      await apiClient.patch("/site-settings", { settings: [
-        { key: "cuenta_financiamiento_socio", value: puente.trim() },
-        { key: "cuenta_destino_socio", value: destino.trim() },
-      ] });
-      toast.success("Cuentas guardadas.");
-    } catch { toast.error("Error al guardar."); }
-  };
-
-  const accion = async (url: string, label: string) => {
-    setBusy(true);
-    const tId = toast.loading(`${label}…`);
-    try {
-      const r = await apiClient.post(url, {});
-      const d = r.data;
-      if (d.yaEjecutado) toast(d.mensaje, { id: tId, icon: "ℹ️" });
-      else if (d.sinNegativos || d.sinSaldo) toast(d.mensaje, { id: tId, icon: "ℹ️" });
-      else toast.success(`Listo. ${d.total ? `Movió ₡${Number(d.total).toLocaleString("es-CR")}` : d.monto ? `Movió ₡${Number(d.monto).toLocaleString("es-CR")}` : ""}`, { id: tId });
-    } catch (e: any) { toast.error(e.response?.data?.message || "Error.", { id: tId }); }
-    finally { setBusy(false); }
-  };
-
-  const inp: React.CSSProperties = { width: 160, padding: "0.5rem 0.6rem", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: "0.9rem", fontFamily: "inherit" };
-  const lbl: React.CSSProperties = { fontSize: "0.8rem", fontWeight: 700, color: "#475569", display: "block", marginBottom: 4 };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 10, padding: "0.8rem 1rem", fontSize: "0.85rem", lineHeight: 1.5 }}>
-        Los gastos que pagó el dueño de su bolsillo se registran contra una <strong>cuenta puente</strong> (financiamiento del socio) en vez de Caja/Banco. Tras la reunión, se reclasifican al destino (préstamo o aporte de capital).
-        <br /><strong>Importante:</strong> creá primero las cuentas en el plan de cuentas (Contabilidad); acá solo se indican por código.
-      </div>
-
-      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-        <div>
-          <label style={lbl}>Cuenta puente (financiamiento del socio)</label>
-          <input style={inp} value={puente} onChange={(e) => setPuente(e.target.value)} placeholder="2900" />
-          <div style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 2 }}>Ej: 2900 (por clasificar)</div>
-        </div>
-        <div>
-          <label style={lbl}>Cuenta destino (post-reunión)</label>
-          <input style={inp} value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="2150 o 3150" />
-          <div style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 2 }}>2150 préstamo (pasivo) / 3150 aporte (patrimonio)</div>
-        </div>
-      </div>
-      <button onClick={guardar} className="btn btn-principal" style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuSave size={16} /> Guardar cuentas</button>
-
-      <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-        <button disabled={busy} onClick={() => accion("/contabilidad/reclasificar-caja-a-socio", "Reclasificando caja")}
-          style={{ background: "#024f7d", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-          1. Reclasificar Caja/Banco negativos <LuArrowRight size={14} /> socio
-        </button>
-        <button disabled={busy} onClick={() => accion("/contabilidad/reclasificar-socio-a-destino", "Reclasificando al destino")}
-          style={{ background: "#059669", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-          2. Reclasificar socio <LuArrowRight size={14} /> destino (post-reunión)
-        </button>
-      </div>
-      <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0 }}>
-        El paso 1 lleva los saldos negativos de Caja/Banco a la cuenta puente. El paso 2 (después de decidir en la reunión) vacía la puente al destino configurado. Ambas son idempotentes (no duplican en el día).
-      </p>
-    </div>
-  );
-};
-
 // --- COMPONENTE DE SEGURIDAD (passkeys) ---
 const PasskeySettings: React.FC = () => {
   const [passkeys, setPasskeys] = useState<{ id: number; device_name: string | null; creado_en: string }[]>([]);
@@ -423,13 +345,12 @@ const PasskeySettings: React.FC = () => {
 };
 
 // --- COMPONENTE PRINCIPAL ---
-type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion" | "facturacion" | "contabilidad" | "seguridad";
+type SeccionConfig = "vehiculos" | "sitio" | "financiamiento" | "planilla" | "crm" | "depreciacion" | "facturacion" | "seguridad";
 const SECCIONES: { id: SeccionConfig; icon: React.ReactNode; label: string; desc: string; roles?: string[] }[] = [
   { id: "vehiculos",      icon: <LuCar size={18} />, label: "Vehículos",     desc: "Perfiles de modelos y sus especificaciones", roles: ["Administrador"] },
   { id: "sitio",          icon: <LuGlobe size={18} />, label: "Sitio Web",     desc: "Página principal y contenido público", roles: ["Administrador"] },
   { id: "financiamiento", icon: <LuBanknote size={18} />, label: "Financiamiento", desc: "Entidades, formularios y calculadora", roles: ["Administrador"] },
   { id: "facturacion",    icon: <LuReceiptText size={18} />, label: "Facturación",   desc: "Datos del emisor y previsualización de comprobantes electrónicos", roles: ["Administrador"] },
-  { id: "contabilidad",   icon: <LuCalculator size={18} />, label: "Contabilidad",  desc: "Financiamiento del socio y reclasificación de cuentas", roles: ["Administrador"] },
   { id: "crm",            icon: <LuTarget size={18} />, label: "CRM / Leads",    desc: "Reglas de seguimiento y auto-descarte de leads", roles: ["Administrador"] },
   { id: "planilla",       icon: <LuWallet size={18} />, label: "Planilla",      desc: "Comisiones, cargas patronales y deducciones", roles: ["Administrador"] },
   { id: "depreciacion",   icon: <LuTrendingDown size={18} />, label: "Depreciación",  desc: "Tabla de vida útil por categoría de activo", roles: ["Administrador"] },
@@ -1166,12 +1087,6 @@ export const SettingsPage = () => {
       {seccion === "facturacion" && (
       <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={18} /> Facturación Electrónica — Datos del emisor y ejemplos</span>}>
         <FacturacionSettings />
-      </Card>
-      )}
-
-      {seccion === "contabilidad" && (
-      <Card title={<span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuCalculator size={18} /> Financiamiento del socio (gastos pagados por el dueño)</span>}>
-        <FinanciamientoSocioSettings />
       </Card>
       )}
 
