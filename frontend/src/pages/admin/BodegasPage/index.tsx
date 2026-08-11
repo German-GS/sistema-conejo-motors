@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import apiClient from "../../../api/apiClient";
 import { Card } from "../../../components/Card";
+import { PageHeader, Button, Table } from "@/components/ui";
+import { LuWarehouse, LuPlus } from "react-icons/lu";
 import styles from "./BodegasPage.module.css";
 
 // Interfaz para el tipo de dato Bodega
@@ -53,6 +55,11 @@ export const BodegasPage = () => {
 
   return (
     <>
+      <PageHeader
+        title={<><LuWarehouse size={22} /> Bodegas</>}
+        subtitle="Ubicaciones físicas donde se guarda o exhibe el inventario."
+      />
+
       <Card title="Añadir Nueva Bodega/Ubicación">
         <form onSubmit={handleSubmit} className={styles.form}>
           <input
@@ -69,16 +76,14 @@ export const BodegasPage = () => {
             placeholder="Dirección (Opcional)"
             className={styles.input}
           />
-          <button type="submit" className="btn btn-principal">
-            Crear Bodega
-          </button>
+          <Button type="submit" icon={<LuPlus size={16} />}>Crear Bodega</Button>
         </form>
         {mensaje && <p className={styles.mensaje}>{mensaje}</p>}
         {error && <p className={styles.error}>{error}</p>}
       </Card>
 
       <Card title="Bodegas Existentes">
-        <table className={styles.bodegasTable}>
+        <Table>
           <thead>
             <tr>
               <th>ID</th>
@@ -95,7 +100,7 @@ export const BodegasPage = () => {
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </Card>
     </>
   );
