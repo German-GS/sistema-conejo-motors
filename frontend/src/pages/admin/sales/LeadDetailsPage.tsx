@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import styles from "./LeadDetailsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 import { PageLoader } from "@/components/PageLoader";
+import { Button, Badge } from "@/components/ui";
 import {
   LuGlobe, LuHandshake, LuBuilding2, LuClipboardList,
   LuCircleCheck, LuTriangleAlert, LuBriefcase, LuBanknote, LuWallet, LuCar,
@@ -110,6 +111,11 @@ const TIPOS_MANUALES = ["nota", "llamada", "email", "whatsapp", "reunion"];
 const ESTADO_COLORS: Record<string, string> = {
   Nuevo: "#3b82f6", Contactado: "var(--warning)", "En Progreso": "#8b5cf6",
   Cerrado: "#10b981", Perdido: "#ef4444", Descartado: "var(--slate-400)",
+};
+
+const ESTADO_BADGE_VARIANT: Record<string, "success" | "danger" | "warning" | "info" | "neutral"> = {
+  Nuevo: "info", Contactado: "warning", "En Progreso": "neutral",
+  Cerrado: "success", Perdido: "danger", Descartado: "neutral",
 };
 
 const TEMPERATURAS: { value: "Caliente" | "Tibio" | "Frio"; label: ReactNode; color: string }[] = [
@@ -554,22 +560,20 @@ export const LeadDetailsPage = () => {
                     style={{ fontSize: "1.05rem", fontWeight: 700, padding: "0.3rem 0.5rem", borderRadius: 8, border: "1.5px solid var(--brand)", width: "100%" }}
                   />
                   <div style={{ display: "flex", gap: "0.4rem" }}>
-                    <button
+                    <Button
+                      size="sm"
+                      variant="primary"
                       onClick={() => {
                         const n = nombreEdit.trim();
                         if (n && n !== lead.nombre_cliente) save({ nombre_cliente: n } as any);
                         setEditandoNombre(false);
                       }}
-                      style={{ background: "var(--brand)", color: "#fff", border: "none", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
                     >
                       Guardar
-                    </button>
-                    <button
-                      onClick={() => setEditandoNombre(false)}
-                      style={{ background: "var(--slate-100)", color: "var(--slate-600)", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "0.3rem 0.7rem", cursor: "pointer", fontSize: "0.8rem" }}
-                    >
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => setEditandoNombre(false)}>
                       Cancelar
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -584,12 +588,9 @@ export const LeadDetailsPage = () => {
                   </button>
                 </h1>
               )}
-              <span
-                className={styles.estadoBadge}
-                style={{ background: ESTADO_COLORS[lead.estado] ?? "var(--slate-500)" }}
-              >
+              <Badge variant={ESTADO_BADGE_VARIANT[lead.estado] ?? "neutral"}>
                 {lead.estado}
-              </span>
+              </Badge>
 
               {/* Temperatura del lead */}
               <div style={{ display: "flex", gap: "0.35rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
@@ -981,6 +982,9 @@ export const LeadDetailsPage = () => {
                   const estadoColor: Record<string, string> = {
                     Activa: "#10b981", Expirada: "var(--warning)", Cancelada: "#ef4444",
                   };
+                  const estadoBadgeVariant: Record<string, "success" | "danger" | "warning" | "info" | "neutral"> = {
+                    Activa: "success", Expirada: "warning", Cancelada: "danger",
+                  };
                   const color = estadoColor[c.estado] ?? "var(--slate-500)";
                   return (
                     <div
@@ -996,9 +1000,9 @@ export const LeadDetailsPage = () => {
                         <strong style={{ fontSize: "0.85rem" }}>
                           {c.vehiculo.marca} {c.vehiculo.modelo} ({c.vehiculo.año})
                         </strong>
-                        <span style={{ fontSize: "0.75rem", fontWeight: 700, color, background: `${color}18`, padding: "2px 7px", borderRadius: 20 }}>
+                        <Badge variant={estadoBadgeVariant[c.estado] ?? "neutral"}>
                           {c.estado}
-                        </span>
+                        </Badge>
                       </div>
                       <div style={{ fontSize: "0.78rem", color: "var(--text-secondary, var(--slate-500))", display: "flex", gap: "0.75rem" }}>
                         <span>#{c.id}</span>

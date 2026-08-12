@@ -8,6 +8,7 @@ import {
   LuPalette, LuNotebookPen, LuPencil,
 } from "react-icons/lu";
 import type { IconType } from "react-icons";
+import { PageHeader, Badge, Button } from "@/components/ui";
 
 interface Accesorio {
   id: number;
@@ -118,17 +119,17 @@ export const AccesoriosPage = () => {
 
   return (
     <div className={styles.container}>
-      <h1>Accesorios por Vehículo</h1>
-      <p className={styles.subtitle}>
-        ✅ Llegó con el vehículo &nbsp;·&nbsp; ❌ No llegó / falta &nbsp;·&nbsp; 🔲 Pendiente verificar &nbsp;—&nbsp; en edición, tocá cada ítem para cambiar su estado.
-      </p>
+      <PageHeader
+        title="Accesorios por Vehículo"
+        subtitle="✅ Llegó con el vehículo · ❌ No llegó / falta · 🔲 Pendiente verificar — en edición, tocá cada ítem para cambiar su estado."
+      />
 
       {/* Resumen + filtros */}
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center", margin: "0.5rem 0 1.25rem" }}>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <span style={{ fontSize: "0.8rem", background: "#eff6ff", color: "#1d4ed8", borderRadius: 20, padding: "3px 12px", fontWeight: 700 }}>{accesorios.length} vehículos</span>
-          <span style={{ fontSize: "0.8rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "3px 12px", fontWeight: 700 }}>{completos} completos</span>
-          <span style={{ fontSize: "0.8rem", background: "#fef3c7", color: "#92400e", borderRadius: 20, padding: "3px 12px", fontWeight: 700 }}>{accesorios.length - completos} pendientes</span>
+          <Badge variant="info">{accesorios.length} vehículos</Badge>
+          <Badge variant="success">{completos} completos</Badge>
+          <Badge variant="warning">{accesorios.length - completos} pendientes</Badge>
         </div>
         <input
           value={search}
@@ -138,15 +139,12 @@ export const AccesoriosPage = () => {
         />
         <div style={{ display: "flex", gap: "0.35rem" }}>
           {([["todos", "Todos"], ["incompletos", "Incompletos"], ["no_entregados", "No entregados"]] as const).map(([k, l]) => (
-            <button
+            <Button
               key={k}
+              size="sm"
+              variant={filtro === k ? "primary" : "secondary"}
               onClick={() => setFiltro(k)}
-              style={{
-                fontSize: "0.8rem", borderRadius: 8, padding: "0.4rem 0.7rem", cursor: "pointer", fontWeight: 600,
-                border: `1.5px solid ${filtro === k ? "var(--brand)" : "var(--slate-200)"}`,
-                background: filtro === k ? "var(--brand)" : "#fff", color: filtro === k ? "#fff" : "var(--slate-600)",
-              }}
-            >{l}</button>
+            >{l}</Button>
           ))}
         </div>
       </div>
@@ -175,7 +173,7 @@ export const AccesoriosPage = () => {
                     <button onClick={() => copyVin(acc.vehiculo.vin)} title="Copiar VIN" style={{ marginTop: 4, background: "var(--slate-50)", border: "1px solid var(--slate-200)", borderRadius: 6, padding: "1px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: "0.74rem", color: "var(--slate-700)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuClipboardList size={13} /> {acc.vehiculo.vin}</button>
                   </div>
                   {acc.entregado_al_cliente && !isEditing && (
-                    <span style={{ fontSize: "0.7rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "2px 8px", fontWeight: 700, whiteSpace: "nowrap" }}>✅ Entregado</span>
+                    <Badge variant="success">✅ Entregado</Badge>
                   )}
                 </div>
 
@@ -223,8 +221,8 @@ export const AccesoriosPage = () => {
                       Entregado al cliente
                     </label>
                     <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <button onClick={handleSave} className="btn btn-principal" style={{ fontSize: "0.82rem", flex: 1 }}>Guardar</button>
-                      <button onClick={cancelar} className="btn" style={{ border: "1px solid var(--slate-200)", background: "#fff", color: "var(--slate-600)", fontSize: "0.82rem" }}>Cancelar</button>
+                      <Button onClick={handleSave} size="sm" style={{ flex: 1 }}>Guardar</Button>
+                      <Button onClick={cancelar} size="sm" variant="secondary">Cancelar</Button>
                     </div>
                   </div>
                 ) : (
@@ -232,7 +230,7 @@ export const AccesoriosPage = () => {
                     <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
                       <LuPalette size={13} /> {acc.color_interior || "—"}{acc.observaciones ? <> · <LuNotebookPen size={13} /> {acc.observaciones}</> : ""}
                     </span>
-                    <button onClick={() => startEdit(acc)} className="btn" style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", fontSize: "0.8rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={13} /> Editar</button>
+                    <Button onClick={() => startEdit(acc)} size="sm" variant="secondary" icon={<LuPencil size={13} />}>Editar</Button>
                   </div>
                 )}
               </div>

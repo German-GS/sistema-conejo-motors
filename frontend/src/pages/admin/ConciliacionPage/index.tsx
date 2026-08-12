@@ -2,13 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import { LuBanknote, LuUpload, LuLink, LuCircleCheck } from "react-icons/lu";
+import { Button, PageHeader, Table } from "@/components/ui";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 const card: React.CSSProperties = { background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1.25rem" };
-const th: React.CSSProperties = { padding: "6px 10px", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "var(--slate-500)", textAlign: "left" };
-const thR: React.CSSProperties = { ...th, textAlign: "right" };
-const td: React.CSSProperties = { padding: "6px 10px", color: "var(--slate-700)", fontSize: "0.82rem" };
-const tdR: React.CSSProperties = { ...td, textAlign: "right" };
+const thR: React.CSSProperties = { textAlign: "right" };
+const tdR: React.CSSProperties = { textAlign: "right" };
 const inp: React.CSSProperties = { padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", fontFamily: "inherit" };
 const hoy = () => new Date().toISOString().slice(0, 10);
 const inicioMes = () => hoy().slice(0, 8) + "01";
@@ -75,7 +74,7 @@ export const ConciliacionPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBanknote size={22} /> Conciliación Bancaria</h1>
+      <PageHeader title={<><LuBanknote size={22} /> Conciliación Bancaria</>} />
 
       <div style={card}>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
@@ -91,8 +90,8 @@ export const ConciliacionPage = () => {
           <input type="date" style={inp} value={desde} onChange={(e) => setDesde(e.target.value)} />
           <input type="date" style={inp} value={hasta} onChange={(e) => setHasta(e.target.value)} />
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) importar(f); }} />
-          <button disabled={busy} onClick={() => fileRef.current?.click()} style={{ background: "#fff", border: "1.5px solid var(--brand)", color: "var(--brand)", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUpload size={16} /> Importar extracto (CSV)</button>
-          <button disabled={busy} onClick={conciliar} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuLink size={16} /> Conciliar automáticamente</button>
+          <Button variant="secondary" disabled={busy} onClick={() => fileRef.current?.click()} icon={<LuUpload size={16} />}>Importar extracto (CSV)</Button>
+          <Button variant="primary" disabled={busy} onClick={conciliar} icon={<LuLink size={16} />}>Conciliar automáticamente</Button>
         </div>
         <p style={{ fontSize: "0.75rem", color: "var(--slate-400)", margin: "0.6rem 0 0" }}>
           CSV: <code>fecha,descripcion,monto,referencia</code> — monto firmado (+ entrada / − salida). Ej: <code>2026-05-10,Depósito cliente,150000,REF123</code>
@@ -117,42 +116,42 @@ export const ConciliacionPage = () => {
 
           <div style={card}>
             <strong style={{ color: "var(--brand-dark)" }}>En libros, no en banco (en tránsito)</strong>
-            <div style={{ overflowX: "auto", marginTop: "0.5rem" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
-                <thead><tr><th style={th}>Fecha</th><th style={th}>Asiento</th><th style={th}>Descripción</th><th style={thR}>Monto</th></tr></thead>
+            <div style={{ marginTop: "0.5rem" }}>
+              <Table>
+                <thead><tr><th>Fecha</th><th>Asiento</th><th>Descripción</th><th style={thR}>Monto</th></tr></thead>
                 <tbody>
-                  {rep.enLibrosNoEnBanco.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. <LuCircleCheck size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></td></tr>}
+                  {rep.enLibrosNoEnBanco.length === 0 && <tr><td colSpan={4}>Nada pendiente. <LuCircleCheck size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></td></tr>}
                   {rep.enLibrosNoEnBanco.map((l: any) => (
-                    <tr key={l.lineaId} style={{ borderTop: "1px solid var(--slate-100)" }}>
-                      <td style={td}>{l.fecha}</td><td style={td}>#{l.asientoId}</td><td style={td}>{l.descripcion}</td>
+                    <tr key={l.lineaId}>
+                      <td>{l.fecha}</td><td>#{l.asientoId}</td><td>{l.descripcion}</td>
                       <td style={tdR}>{CRC(l.monto)}</td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           </div>
 
           <div style={card}>
             <strong style={{ color: "var(--brand-dark)" }}>En banco, no en libros (comisiones, intereses)</strong>
-            <div style={{ overflowX: "auto", marginTop: "0.5rem" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
-                <thead><tr><th style={th}>Fecha</th><th style={th}>Descripción</th><th style={thR}>Monto</th><th style={th}></th></tr></thead>
+            <div style={{ marginTop: "0.5rem" }}>
+              <Table>
+                <thead><tr><th>Fecha</th><th>Descripción</th><th style={thR}>Monto</th><th></th></tr></thead>
                 <tbody>
-                  {rep.enBancoNoEnLibros.length === 0 && <tr><td style={td} colSpan={4}>Nada pendiente. <LuCircleCheck size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></td></tr>}
+                  {rep.enBancoNoEnLibros.length === 0 && <tr><td colSpan={4}>Nada pendiente. <LuCircleCheck size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></td></tr>}
                   {rep.enBancoNoEnLibros.map((m: any) => (
-                    <tr key={m.id} style={{ borderTop: "1px solid var(--slate-100)" }}>
-                      <td style={td}>{m.fecha}</td><td style={td}>{m.descripcion}</td>
+                    <tr key={m.id}>
+                      <td>{m.fecha}</td><td>{m.descripcion}</td>
                       <td style={{ ...tdR, color: m.monto < 0 ? "var(--danger)" : "var(--success)" }}>{CRC(m.monto)}</td>
                       <td style={tdR}>
-                        <button onClick={() => crearAsiento(m.id)} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: "0.75rem" }}>
+                        <Button size="sm" variant="primary" onClick={() => crearAsiento(m.id)}>
                           Crear asiento
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           </div>
         </>

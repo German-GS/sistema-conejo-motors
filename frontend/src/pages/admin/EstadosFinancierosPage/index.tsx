@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import { LuChartColumnStacked, LuDownload, LuTriangleAlert, LuCircleCheck, LuCircle } from "react-icons/lu";
+import { PageHeader, Tabs, Button } from "@/components/ui";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 
@@ -65,25 +66,24 @@ export const EstadosFinancierosPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-        <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuChartColumnStacked size={22} /> Estados Financieros</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-          <input type="month" value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem" }} />
-          <button onClick={descargarExcel} style={{ background: "var(--success)", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1rem", cursor: "pointer", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}><LuDownload size={16} /> Excel (3 estados)</button>
-        </div>
-      </div>
+      <PageHeader
+        title={<><LuChartColumnStacked size={22} /> Estados Financieros</>}
+        actions={
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+            <input type="month" value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={{ padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem" }} />
+            <Button variant="primary" onClick={descargarExcel} icon={<LuDownload size={16} />} style={{ background: "var(--success)" }}>
+              Excel (3 estados)
+            </Button>
+          </div>
+        }
+      />
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            style={{ padding: "0.5rem 1rem", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: "0.85rem",
-              border: tab === t.id ? "none" : "1.5px solid var(--slate-200)",
-              background: tab === t.id ? "var(--brand)" : "#fff", color: tab === t.id ? "#fff" : "var(--slate-600)" }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={TABS.map((t) => ({ id: t.id, label: t.label }))}
+        active={tab}
+        onChange={(id) => setTab(id as Tab)}
+      />
 
       {loading && <p style={{ padding: "1rem", color: "var(--slate-500)" }}>Cargando…</p>}
 
@@ -287,7 +287,7 @@ const SaludFinanciera = ({ data }: any) => {
       {/* Diagnóstico general */}
       <div style={{ ...card, background: g.bg, border: `1px solid ${g.border}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <LuCircle size={28} fill={d.semaforoGlobal === "verde" ? "#22c55e" : d.semaforoGlobal === "amarillo" ? "#eab308" : d.semaforoGlobal === "rojo" ? "#ef4444" : "#cbd5e1"} color={d.semaforoGlobal === "verde" ? "#22c55e" : d.semaforoGlobal === "amarillo" ? "#eab308" : d.semaforoGlobal === "rojo" ? "#ef4444" : "#cbd5e1"} />
+          <LuCircle size={28} fill={d.semaforoGlobal === "verde" ? "#22c55e" : d.semaforoGlobal === "amarillo" ? "#eab308" : d.semaforoGlobal === "rojo" ? "#ef4444" : "var(--slate-300)"} color={d.semaforoGlobal === "verde" ? "#22c55e" : d.semaforoGlobal === "amarillo" ? "#eab308" : d.semaforoGlobal === "rojo" ? "#ef4444" : "var(--slate-300)"} />
           <div style={{ flex: 1, minWidth: 240 }}>
             <div style={{ fontWeight: 800, color: g.text, fontSize: "1.05rem" }}>Diagnóstico general — {d.semaforoGlobal.toUpperCase()} (puntaje {d.puntaje}/2)</div>
             <div style={{ color: "var(--slate-700)", fontSize: "0.88rem", marginTop: 2 }}>{d.resumen}</div>

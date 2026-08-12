@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import { LuReceiptText, LuTriangleAlert, LuDownload, LuInfo } from "react-icons/lu";
+import { PageHeader, Table, Badge, Button } from "@/components/ui";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 const TARIFA_LABEL: Record<string, string> = {
@@ -91,7 +92,7 @@ export const ObligacionesPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Obligaciones Tributarias — IVA (D-150)</h1>
+      <PageHeader title={<><LuReceiptText size={22} /> Obligaciones Tributarias — IVA (D-150)</>} />
 
       {/* Banner de pendiente */}
       {pendiente?.pendiente && (
@@ -134,7 +135,7 @@ export const ObligacionesPage = () => {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
             <div>
               <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--slate-500)", marginBottom: 4 }}>Ventas por tarifa</div>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <Table>
                 <thead><tr><th style={th}>Tarifa</th><th style={{ ...th, textAlign: "right" }}>Base</th><th style={{ ...th, textAlign: "right" }}>IVA</th></tr></thead>
                 <tbody>
                   {Object.entries(calc.ventas_por_tarifa ?? {}).map(([k, v]: any) => (
@@ -146,11 +147,11 @@ export const ObligacionesPage = () => {
                   ))}
                   {Object.keys(calc.ventas_por_tarifa ?? {}).length === 0 && <tr><td style={td} colSpan={3}>Sin ventas en el período.</td></tr>}
                 </tbody>
-              </table>
+              </Table>
             </div>
             <div>
               <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--slate-500)", marginBottom: 4 }}>Compras / crédito por tarifa</div>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <Table>
                 <thead><tr><th style={th}>Tarifa</th><th style={{ ...th, textAlign: "right" }}>Base</th><th style={{ ...th, textAlign: "right" }}>IVA</th></tr></thead>
                 <tbody>
                   {Object.entries(calc.compras_por_tarifa ?? {}).map(([k, v]: any) => (
@@ -162,7 +163,7 @@ export const ObligacionesPage = () => {
                   ))}
                   {Object.keys(calc.compras_por_tarifa ?? {}).length === 0 && <tr><td style={td} colSpan={3}>Sin crédito fiscal en el período.</td></tr>}
                 </tbody>
-              </table>
+              </Table>
             </div>
           </div>
 
@@ -174,12 +175,12 @@ export const ObligacionesPage = () => {
             <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--slate-600)", flex: "1 1 200px" }}>Notas (opcional)
               <input value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Ej: conciliado con prellenado TRIBU-CR" style={{ display: "block", marginTop: 4, padding: "0.45rem 0.6rem", borderRadius: 8, border: "1.5px solid var(--slate-200)", width: "100%", boxSizing: "border-box" }} />
             </label>
-            <button onClick={generar} disabled={generando} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.2rem", cursor: "pointer", fontWeight: 700 }}>
+            <Button onClick={generar} loading={generando}>
               {generando ? "Generando…" : "Generar liquidación"}
-            </button>
-            <button onClick={descargarXml} style={{ background: "#fff", border: "1px solid var(--slate-300)", color: "var(--slate-700)", borderRadius: 8, padding: "0.6rem 1rem", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }} title="Borrador XML del D-150 (sin firmar)">
-              <LuDownload size={15} /> XML (borrador)
-            </button>
+            </Button>
+            <Button variant="secondary" onClick={descargarXml} icon={<LuDownload size={15} />} title="Borrador XML del D-150 (sin firmar)">
+              XML (borrador)
+            </Button>
           </div>
         </div>
       )}
@@ -210,15 +211,15 @@ export const ObligacionesPage = () => {
           <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--slate-600)", gridColumn: "span 2" }}>Motivo
             <input value={nota.motivo} onChange={(e) => setNota({ ...nota, motivo: e.target.value })} style={notaInp} />
           </label>
-          <button onClick={crearNota} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, height: 34 }}>Registrar nota</button>
+          <Button onClick={crearNota} size="sm">Registrar nota</Button>
         </div>
       </div>
 
       {/* Histórico */}
       <div style={card}>
         <strong style={{ fontSize: "1rem", color: "var(--brand-dark)" }}>Historial de liquidaciones</strong>
-        <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 640 }}>
+        <div style={{ marginTop: "0.75rem" }}>
+          <Table>
             <thead>
               <tr>
                 <th style={th}>Período</th><th style={th}>Estado</th>
@@ -231,23 +232,23 @@ export const ObligacionesPage = () => {
             <tbody>
               {liquidaciones.length === 0 && <tr><td style={td} colSpan={6}>Aún no hay liquidaciones generadas.</td></tr>}
               {liquidaciones.map((l) => {
-                const badge = { Pendiente: ["#fef3c7", "#92400e"], Generada: ["#dbeafe", "#1d4ed8"], Presentada: ["#e0e7ff", "#3730a3"], Pagada: ["#dcfce7", "#15803d"] }[l.estado as string] ?? ["var(--slate-100)", "var(--slate-600)"];
+                const badgeVariant = { Pendiente: "warning", Generada: "info", Presentada: "neutral", Pagada: "success" }[l.estado as string] as "warning" | "info" | "neutral" | "success" | undefined;
                 return (
                   <tr key={l.id} style={{ borderTop: "1px solid var(--slate-100)" }}>
                     <td style={td}>{l.periodo}</td>
-                    <td style={td}><span style={{ fontSize: "0.72rem", fontWeight: 700, background: badge[0], color: badge[1], borderRadius: 20, padding: "2px 10px" }}>{l.estado}</span></td>
+                    <td style={td}><Badge variant={badgeVariant ?? "neutral"}>{l.estado}</Badge></td>
                     <td style={{ ...td, textAlign: "right" }}>{CRC(l.debito_fiscal)}</td>
                     <td style={{ ...td, textAlign: "right" }}>{CRC(l.credito_fiscal_aplicable)}</td>
                     <td style={{ ...td, textAlign: "right", fontWeight: 700, color: Number(l.iva_a_pagar) > 0 ? "var(--danger)" : "var(--success)" }}>{CRC(l.iva_a_pagar)}</td>
                     <td style={{ ...td, textAlign: "right", whiteSpace: "nowrap" }}>
-                      {l.estado === "Generada" && <button onClick={() => marcar(l.id, "presentada")} style={{ border: "1px solid #c7d2fe", background: "#fff", color: "#3730a3", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem", marginRight: 4 }}>Presentada</button>}
-                      {(l.estado === "Generada" || l.estado === "Presentada") && <button onClick={() => marcar(l.id, "pagada")} style={{ border: "1px solid #bbf7d0", background: "#fff", color: "#15803d", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Pagada</button>}
+                      {l.estado === "Generada" && <Button size="sm" variant="secondary" onClick={() => marcar(l.id, "presentada")} style={{ marginRight: 4 }}>Presentada</Button>}
+                      {(l.estado === "Generada" || l.estado === "Presentada") && <Button size="sm" variant="secondary" onClick={() => marcar(l.id, "pagada")}>Pagada</Button>}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         </div>
       </div>
 

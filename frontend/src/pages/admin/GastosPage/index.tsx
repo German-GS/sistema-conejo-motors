@@ -4,6 +4,7 @@ import apiClient from "@/api/apiClient";
 import styles from "./GastosPage.module.css";
 import { LuPlus, LuReceipt, LuFileText, LuChartColumnStacked, LuPencil, LuTrash2, LuCalendarDays, LuStore, LuPaperclip, LuCircleCheck } from "react-icons/lu";
 import { exportToExcel } from "@/utils/exportExcel";
+import { PageHeader, Button } from "@/components/ui";
 
 interface Gasto { id: number; categoria: string; descripcion: string; monto: number; fecha: string; numero_factura?: string; proveedor?: { nombre: string }; comprobante_gcs_path?: string | null; comprobante_mime?: string | null; metodo_pago?: string; notas?: string; iva_monto?: number; nombre_comercio?: string; }
 
@@ -173,13 +174,16 @@ export default function GastosPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <div><h1>Gastos Operativos</h1><p>Control de gastos y costos de operación</p></div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className={styles.btnPrimary} style={{ background: "#fff", color: "var(--slate-700)", border: "1px solid var(--slate-300)", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={exportar}><LuChartColumnStacked size={16} /> Excel</button>
-          <button className={styles.btnPrimary} onClick={abrirNuevo}><LuPlus size={16} /> Nuevo Gasto</button>
-        </div>
-      </div>
+      <PageHeader
+        title="Gastos Operativos"
+        subtitle="Control de gastos y costos de operación"
+        actions={
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <Button variant="secondary" onClick={exportar} icon={<LuChartColumnStacked size={16} />}>Excel</Button>
+            <Button onClick={abrirNuevo} icon={<LuPlus size={16} />}>Nuevo Gasto</Button>
+          </div>
+        }
+      />
 
       {/* Resumen del período seleccionado */}
       <div className={styles.kpiCard} style={{ display: "block" }}>
@@ -262,10 +266,10 @@ export default function GastosPage() {
               <div className={`${styles.fg} ${styles.full}`}><label>Notas</label><textarea value={form.notas} onChange={f('notas')} rows={2} /></div>
             </div>
             <div className={styles.actions}>
-              <button className={styles.btnSecondary} onClick={() => setShowModal(false)} disabled={guardando}>Cancelar</button>
-              <button className={styles.btnPrimary} onClick={guardar} disabled={guardando}>
-                {guardando ? (<span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><span className={`${styles.spinner} ${styles.spinnerWhite}`} /> {subiendoFoto ? "Subiendo foto…" : "Guardando…"}</span>) : "Guardar"}
-              </button>
+              <Button variant="secondary" onClick={() => setShowModal(false)} disabled={guardando}>Cancelar</Button>
+              <Button onClick={guardar} disabled={guardando} loading={guardando}>
+                {guardando ? (subiendoFoto ? "Subiendo foto…" : "Guardando…") : "Guardar"}
+              </Button>
             </div>
           </div>
         </div>

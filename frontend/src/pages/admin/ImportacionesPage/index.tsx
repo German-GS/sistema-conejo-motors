@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useConfirm } from "@/components/ConfirmDialog";
 import styles from "./ImportacionesPage.module.css";
 import { LuPlus, LuShip, LuChevronDown, LuChevronRight, LuTrash2, LuCircleCheck } from "react-icons/lu";
+import { Button, PageHeader, Badge, Table } from "@/components/ui";
 
 interface ImpVehiculo {
   id: number;
@@ -24,8 +25,8 @@ interface Importacion {
 }
 
 const ESTADOS = ['En Transito','En Puerto','En Aduana','Nacionalizado','Entregado'];
-const estadoColor: Record<string, string> = {
-  'En Transito':'#3b82f6','En Puerto':'var(--warning)','En Aduana':'#f97316','Nacionalizado':'#8b5cf6','Entregado':'#10b981'
+const estadoVariant: Record<string, "success" | "danger" | "warning" | "info" | "neutral"> = {
+  'En Transito':'info','En Puerto':'warning','En Aduana':'danger','Nacionalizado':'neutral','Entregado':'success'
 };
 
 const emptyVeh = { vin: '', marca: '', modelo: '', anio: '', color: '', costo_estimado_crc: '' };
@@ -112,10 +113,11 @@ export default function ImportacionesPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <div><h1>Gestión de Importaciones</h1><p>Seguimiento documental y alta de vehículos a inventario</p></div>
-        <button className={styles.btnPrimary} onClick={() => setShowModal(true)}><LuPlus size={16} /> Nueva Importación</button>
-      </div>
+      <PageHeader
+        title="Gestión de Importaciones"
+        subtitle="Seguimiento documental y alta de vehículos a inventario"
+        actions={<Button variant="primary" icon={<LuPlus size={16} />} onClick={() => setShowModal(true)}>Nueva Importación</Button>}
+      />
 
       {loading ? <p className={styles.loading}>Cargando...</p> : (
         <div className={styles.lista}>
@@ -150,7 +152,7 @@ export default function ImportacionesPage() {
                   </div>
                 </div>
                 <div className={styles.cardRight}>
-                  <span className={styles.badge} style={{ background: estadoColor[imp.estado]+'22', color: estadoColor[imp.estado] }}>{imp.estado}</span>
+                  <Badge variant={estadoVariant[imp.estado]}>{imp.estado}</Badge>
                   <select className={styles.estadoSel} value={imp.estado} onChange={e => cambiarEstado(imp.id, e.target.value)}>
                     {ESTADOS.map(s => <option key={s}>{s}</option>)}
                   </select>
@@ -161,44 +163,45 @@ export default function ImportacionesPage() {
                 <div style={{ marginTop: '1rem', borderTop: '1px solid var(--slate-200)', paddingTop: '1rem' }}>
                   {/* Lista de vehículos */}
                   {(imp.vehiculos?.length ?? 0) > 0 ? (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                    <Table>
                       <thead>
-                        <tr style={{ textAlign: 'left', color: 'var(--slate-500)' }}>
-                          <th style={{ padding: '4px 8px' }}>VIN</th>
-                          <th style={{ padding: '4px 8px' }}>Marca / Modelo</th>
-                          <th style={{ padding: '4px 8px' }}>Año</th>
-                          <th style={{ padding: '4px 8px' }}>Color</th>
-                          <th style={{ padding: '4px 8px' }}>Costo CRC</th>
-                          <th style={{ padding: '4px 8px' }}>Inventario</th>
-                          <th style={{ padding: '4px 8px' }}></th>
+                        <tr>
+                          <th>VIN</th>
+                          <th>Marca / Modelo</th>
+                          <th>Año</th>
+                          <th>Color</th>
+                          <th>Costo CRC</th>
+                          <th>Inventario</th>
+                          <th></th>
                         </tr>
                       </thead>
                       <tbody>
                         {imp.vehiculos!.map(v => (
-                          <tr key={v.id} style={{ borderTop: '1px solid var(--slate-100)' }}>
-                            <td style={{ padding: '4px 8px', fontFamily: 'monospace' }}>{v.vin || '—'}</td>
-                            <td style={{ padding: '4px 8px' }}>{[v.marca, v.modelo].filter(Boolean).join(' ') || '—'}</td>
-                            <td style={{ padding: '4px 8px' }}>{v.anio || '—'}</td>
-                            <td style={{ padding: '4px 8px' }}>{v.color || '—'}</td>
-                            <td style={{ padding: '4px 8px' }}>{v.costo_estimado_crc ? `₡${Number(v.costo_estimado_crc).toLocaleString('es-CR')}` : '—'}</td>
-                            <td style={{ padding: '4px 8px' }}>
+                          <tr key={v.id}>
+                            <td style={{ fontFamily: 'monospace' }}>{v.vin || '—'}</td>
+                            <td>{[v.marca, v.modelo].filter(Boolean).join(' ') || '—'}</td>
+                            <td>{v.anio || '—'}</td>
+                            <td>{v.color || '—'}</td>
+                            <td>{v.costo_estimado_crc ? `₡${Number(v.costo_estimado_crc).toLocaleString('es-CR')}` : '—'}</td>
+                            <td>
                               {v.vehiculo
-                                ? <span style={{ color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: 4 }}><LuCircleCheck size={14} /> #{v.vehiculo.id}</span>
+                                ? <span style={{ color: 'var(--success)', display: 'inline-flex', alignItems: 'center', gap: 4 }}><LuCircleCheck size={14} /> #{v.vehiculo.id}</span>
                                 : <span style={{ color: 'var(--slate-400)' }}>No creado</span>}
                             </td>
-                            <td style={{ padding: '4px 8px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                               {!v.vehiculo && (
-                                <button
-                                  className={styles.btnPrimary}
-                                  style={{ padding: '4px 10px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  icon={<LuPlus size={14} />}
                                   onClick={() => promover(v)}
                                 >
-                                  <LuPlus size={14} /> Crear en inventario
-                                </button>
+                                  Crear en inventario
+                                </Button>
                               )}
                               <button
                                 onClick={() => eliminarVehiculo(v.id)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', marginLeft: 6 }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', marginLeft: 6 }}
                                 title="Eliminar"
                               >
                                 <LuTrash2 size={15} />
@@ -207,7 +210,7 @@ export default function ImportacionesPage() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
+                    </Table>
                   ) : (
                     <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>Sin vehículos. Agregue abajo.</p>
                   )}
@@ -220,9 +223,9 @@ export default function ImportacionesPage() {
                     <input placeholder="Año" type="number" value={vf.anio} onChange={setVF(imp.id, 'anio')} style={inp(70)} />
                     <input placeholder="Color" value={vf.color} onChange={setVF(imp.id, 'color')} style={inp(90)} />
                     <input placeholder="Costo CRC" type="number" value={vf.costo_estimado_crc} onChange={setVF(imp.id, 'costo_estimado_crc')} style={inp(110)} />
-                    <button className={styles.btnSecondary} style={{ padding: '6px 12px' }} onClick={() => agregarVehiculo(imp.id)}>
-                      <LuPlus size={14} /> Agregar
-                    </button>
+                    <Button variant="secondary" size="sm" icon={<LuPlus size={14} />} onClick={() => agregarVehiculo(imp.id)}>
+                      Agregar
+                    </Button>
                   </div>
                 </div>
               )}
@@ -248,7 +251,7 @@ export default function ImportacionesPage() {
               <div className={styles.fg}><label>Estado</label><select value={form.estado} onChange={f('estado')}>{ESTADOS.map(s=><option key={s}>{s}</option>)}</select></div>
               <div className={`${styles.fg} ${styles.full}`}><label>Notas</label><textarea value={form.notas} onChange={f('notas')} rows={2} /></div>
             </div>
-            <div className={styles.actions}><button className={styles.btnSecondary} onClick={() => setShowModal(false)}>Cancelar</button><button className={styles.btnPrimary} onClick={guardar}>Guardar</button></div>
+            <div className={styles.actions}><Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button><Button variant="primary" onClick={guardar}>Guardar</Button></div>
           </div>
         </div>
       )}

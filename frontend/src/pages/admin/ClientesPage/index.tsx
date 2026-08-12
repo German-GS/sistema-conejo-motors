@@ -6,6 +6,7 @@ import {
   LuUsers, LuCar, LuFileText, LuReceiptText, LuClipboardList,
   LuLock, LuCircleCheck, LuCircleAlert,
 } from "react-icons/lu";
+import { PageHeader, Badge, Button } from "@/components/ui";
 
 const CRC = (v: number) => "₡" + (Number(v) || 0).toLocaleString("es-CR");
 
@@ -66,15 +67,17 @@ export const ClientesPage = () => {
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.25rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--brand-dark)", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><LuUsers size={22} /> Clientes</h1>
-        <input
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          placeholder="🔍 Buscar por nombre, cédula, teléfono…"
-          style={{ padding: "0.55rem 0.9rem", borderRadius: 10, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", minWidth: 280, fontFamily: "inherit" }}
-        />
-      </div>
+      <PageHeader
+        title={<><LuUsers size={22} /> Clientes</>}
+        actions={
+          <input
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="🔍 Buscar por nombre, cédula, teléfono…"
+            style={{ padding: "0.55rem 0.9rem", borderRadius: 10, border: "1.5px solid var(--slate-200)", fontSize: "0.9rem", minWidth: 280, fontFamily: "inherit" }}
+          />
+        }
+      />
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(320px, 1fr) minmax(340px, 1.2fr)", gap: "1.25rem", alignItems: "start" }}>
         {/* Lista */}
@@ -98,8 +101,8 @@ export const ClientesPage = () => {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
                     <strong style={{ color: "var(--brand-dark)" }}>{c.nombre_completo}</strong>
                     <span style={{ display: "flex", gap: "0.4rem" }}>
-                      {c.vehiculos > 0 && <span title="Vehículos comprados" style={{ fontSize: "0.72rem", background: "#dcfce7", color: "#15803d", borderRadius: 20, padding: "1px 8px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuCar size={12} /> {c.vehiculos}</span>}
-                      <span title="Cotizaciones" style={{ fontSize: "0.72rem", background: "var(--slate-100)", color: "var(--slate-600)", borderRadius: 20, padding: "1px 8px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><LuFileText size={12} /> {c.cotizaciones}</span>
+                      {c.vehiculos > 0 && <Badge variant="success"><LuCar size={12} /> {c.vehiculos}</Badge>}
+                      <Badge variant="neutral"><LuFileText size={12} /> {c.cotizaciones}</Badge>
                     </span>
                   </div>
                   <div style={{ fontSize: "0.8rem", color: "var(--slate-500)" }}>{c.cedula} · {c.telefono || "sin tel."}</div>
@@ -161,10 +164,9 @@ export const ClientesPage = () => {
                           <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--brand-dark)" }}>#{c.id} · {c.vehiculo}</div>
                           <div style={{ fontSize: "0.76rem", color: "var(--slate-400)" }}>{c.fecha ? fmtFechaLocal(c.fecha) : ""} · {c.estado} · {CRC(c.total)}</div>
                         </div>
-                        <button onClick={() => verProforma(c.id)}
-                          style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                          <LuReceiptText size={14} /> Ver Proforma
-                        </button>
+                        <Button size="sm" onClick={() => verProforma(c.id)} icon={<LuReceiptText size={14} />}>
+                          Ver Proforma
+                        </Button>
                       </div>
                     ))}
                   </div>

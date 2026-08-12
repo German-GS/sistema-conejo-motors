@@ -2,6 +2,7 @@ import { getImageUrl } from "@/utils/imageUrl";
 import React, { useState, useEffect, useRef } from "react";
 import apiClient from "../../api/apiClient";
 import { Card } from "../../components/Card";
+import { PageHeader, Tabs } from "@/components/ui";
 import styles from "./SettingsPage.module.css";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -728,33 +729,18 @@ export const SettingsPage = () => {
     <>
       {/* Encabezado + navegación por secciones */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--brand-dark)", margin: "0 0 0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuSettings size={22} /> Configuración</h1>
-        <p style={{ color: "var(--slate-500)", fontSize: "0.9rem", margin: 0 }}>{seccionActual.desc}</p>
+        <PageHeader
+          title={<><LuSettings size={22} /> Configuración</>}
+          subtitle={seccionActual.desc}
+        />
       </div>
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.75rem", borderBottom: "2px solid var(--slate-100)", paddingBottom: "0.75rem" }}>
-        {seccionesVisibles.map((s) => {
-          const activa = s.id === seccion;
-          return (
-            <button
-              key={s.id}
-              onClick={() => setSeccion(s.id)}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "0.5rem",
-                padding: "0.6rem 1.1rem", borderRadius: 10, cursor: "pointer",
-                border: activa ? "1.5px solid var(--accent)" : "1.5px solid var(--slate-200)",
-                background: activa ? "var(--accent)" : "#fff",
-                color: activa ? "#fff" : "var(--slate-600)",
-                fontWeight: 700, fontSize: "0.9rem", fontFamily: "inherit",
-                boxShadow: activa ? "0 2px 8px rgba(0,199,177,0.3)" : "none",
-                transition: "all 0.15s",
-              }}
-            >
-              <span style={{ fontSize: "1.1rem" }}>{s.icon}</span>
-              {s.label}
-            </button>
-          );
-        })}
+      <div style={{ marginBottom: "1.75rem" }}>
+        <Tabs
+          tabs={seccionesVisibles.map((s) => ({ id: s.id, label: s.label, icon: s.icon }))}
+          active={seccion}
+          onChange={(id) => setSeccion(id as SeccionConfig)}
+        />
       </div>
 
       {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}

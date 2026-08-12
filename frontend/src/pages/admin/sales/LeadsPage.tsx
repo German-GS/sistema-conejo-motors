@@ -9,6 +9,7 @@ import { LeadsKanban } from "@/components/LeadsKanban";
 import styles from "./LeadsPage.module.css";
 import { fmtFecha, fmtFechaLocal } from "@/utils/dateUtils";
 import { LuChartColumnStacked, LuLock, LuTriangleAlert, LuCalendarDays, LuPlus, LuX, LuList, LuLayoutGrid, LuMegaphone } from "react-icons/lu";
+import { Button, Table } from "@/components/ui";
 
 interface Lead {
   id: number;
@@ -226,15 +227,12 @@ export const LeadsPage = () => {
       {/* Reporte de conversión por fuente (admin) */}
       {isAdmin && (
         <div style={{ marginBottom: "1rem" }}>
-          <button
-            onClick={toggleReporte}
-            style={{ border: "1px solid var(--slate-300)", background: "#fff", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "var(--brand)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
-          >
-            <LuChartColumnStacked size={16} /> {showReporte ? "Ocultar" : "Ver"} reporte de conversión por fuente
-          </button>
+          <Button variant="secondary" size="sm" icon={<LuChartColumnStacked size={16} />} onClick={toggleReporte}>
+            {showReporte ? "Ocultar" : "Ver"} reporte de conversión por fuente
+          </Button>
           {showReporte && (
-            <div style={{ overflowX: "auto", marginTop: "0.75rem", border: "1px solid var(--slate-200)", borderRadius: 12 }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+            <div style={{ marginTop: "0.75rem" }}>
+              <Table>
                 <thead>
                   <tr style={{ background: "var(--brand)", color: "#fff", textAlign: "left" }}>
                     <th style={{ padding: "0.6rem 0.8rem" }}>Fuente</th>
@@ -254,14 +252,14 @@ export const LeadsPage = () => {
                       <td style={{ padding: "0.55rem 0.8rem", fontWeight: 600 }}>{FUENTE_ICONS[r.fuente] ?? "📋"} {r.fuente}</td>
                       <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700 }}>{r.total}</td>
                       <td style={{ padding: "0.55rem 0.8rem", textAlign: "center" }}>{r.En_Progreso}</td>
-                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#10b981", fontWeight: 700 }}>{r.Cerrado}</td>
-                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "#ef4444" }}>{r.Perdido}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "var(--success)", fontWeight: 700 }}>{r.Cerrado}</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "var(--danger)" }}>{r.Perdido}</td>
                       <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", color: "var(--slate-400)" }}>{r.Descartado}</td>
-                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700, color: r.tasaCierre >= 20 ? "#10b981" : "var(--slate-500)" }}>{r.tasaCierre}%</td>
+                      <td style={{ padding: "0.55rem 0.8rem", textAlign: "center", fontWeight: 700, color: r.tasaCierre >= 20 ? "var(--success)" : "var(--slate-500)" }}>{r.tasaCierre}%</td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           )}
         </div>
@@ -289,18 +287,11 @@ export const LeadsPage = () => {
 
       {/* Toggle de vista + Nuevo lead */}
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem", alignItems: "center" }}>
-        <button
-          onClick={() => setVista("lista")}
-          style={{ ...toggleStyle(vista === "lista"), display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
-        ><LuList size={14} /> Lista</button>
-        <button
-          onClick={() => setVista("tablero")}
-          style={{ ...toggleStyle(vista === "tablero"), display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
-        ><LuLayoutGrid size={14} /> Tablero</button>
-        <button
-          onClick={() => setShowNuevo(true)}
-          style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, border: "none", background: "var(--brand)", color: "#fff" }}
-        >+ Nuevo Lead</button>
+        <Button variant={vista === "lista" ? "primary" : "secondary"} size="sm" icon={<LuList size={14} />} onClick={() => setVista("lista")}>Lista</Button>
+        <Button variant={vista === "tablero" ? "primary" : "secondary"} size="sm" icon={<LuLayoutGrid size={14} />} onClick={() => setVista("tablero")}>Tablero</Button>
+        <div style={{ marginLeft: "auto" }}>
+          <Button variant="primary" size="sm" icon={<LuPlus size={14} />} onClick={() => setShowNuevo(true)}>Nuevo Lead</Button>
+        </div>
       </div>
 
       {vista === "tablero" ? (
@@ -316,7 +307,7 @@ export const LeadsPage = () => {
         ) : filtered.length === 0 ? (
           <p className={styles.empty}>No hay leads con ese estado.</p>
         ) : (
-          <table className={styles.leadsTable}>
+          <Table>
             <thead>
               <tr>
                 <th>Cliente</th>
@@ -401,25 +392,20 @@ export const LeadsPage = () => {
                         Ver
                       </Link>
                       {isAdmin && (
-                        <button
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          icon={<LuX size={13} />}
                           onClick={() => handleEliminar(lead.id, lead.nombre_cliente)}
                           title="Eliminar lead"
-                          style={{
-                            background: "none", border: "1px solid #fca5a5",
-                            borderRadius: 6, color: "#ef4444", cursor: "pointer",
-                            padding: "4px 8px", fontSize: "0.8rem", lineHeight: 1,
-                            display: "inline-flex", alignItems: "center",
-                          }}
-                        >
-                          <LuX size={13} />
-                        </button>
+                        />
                       )}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         )}
       </Card>
       )}
@@ -486,10 +472,10 @@ export const LeadsPage = () => {
               </p>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", marginTop: "1.25rem" }}>
-              <button onClick={() => setShowNuevo(false)} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-600)", fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
-              <button onClick={crearLead} disabled={guardandoNuevo} style={{ padding: "0.55rem 1.1rem", borderRadius: 8, border: "none", background: "var(--brand)", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
-                {guardandoNuevo ? "Guardando..." : "Crear Lead"}
-              </button>
+              <Button variant="secondary" onClick={() => setShowNuevo(false)}>Cancelar</Button>
+              <Button variant="primary" onClick={crearLead} disabled={guardandoNuevo} loading={guardandoNuevo}>
+                Crear Lead
+              </Button>
             </div>
           </div>
         </div>

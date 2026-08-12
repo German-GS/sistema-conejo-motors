@@ -14,6 +14,7 @@ import { VehicleHistorialModal } from "@/components/VehicleHistorialModal";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { exportToExcel } from "@/utils/exportExcel";
 import { LuChartColumnStacked, LuWallet, LuEye, LuSettings, LuPencil, LuClock, LuTrash2, LuX, LuCopy } from "react-icons/lu";
+import { PageHeader, Badge, Button } from "@/components/ui";
 
 const CRC = (v: number) =>
   new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(v);
@@ -27,11 +28,11 @@ const COLOR_HEX: Record<string, string> = {
 };
 const colorHex = (c?: string) => COLOR_HEX[(c ?? "").trim().toLowerCase()] ?? "var(--slate-300)";
 
-const ESTADO_STYLE: Record<string, { bg: string; fg: string }> = {
-  Disponible: { bg: "#dcfce7", fg: "#15803d" },
-  Reservado: { bg: "#fef3c7", fg: "#92400e" },
-  Vendido: { bg: "var(--slate-200)", fg: "var(--slate-600)" },
-  Demo: { bg: "#ede9fe", fg: "#7c3aed" },
+const ESTADO_BADGE: Record<string, "success" | "warning" | "neutral" | "info"> = {
+  Disponible: "success",
+  Reservado: "warning",
+  Vendido: "neutral",
+  Demo: "info",
 };
 
 const marginColor = (m: number) => (m < 0 ? "var(--danger)" : m < 5 ? "#d97706" : "#16a34a");
@@ -188,15 +189,17 @@ export const DashboardPage = () => {
 
   return (
     <>
-      <div className={styles.header}>
-        <h1>Inventario de Vehículos</h1>
-        <div style={{ display: "flex", gap: "0.6rem" }}>
-          <button className="btn" onClick={exportar} style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", display: "flex", alignItems: "center", gap: "0.4rem" }} title="Exportar a Excel">
-            <LuChartColumnStacked size={16} /> Exportar Excel
-          </button>
-          <button className="btn btn-principal" onClick={handleOpenCreateModal}>Añadir Vehículo</button>
-        </div>
-      </div>
+      <PageHeader
+        title="Inventario de Vehículos"
+        actions={
+          <div style={{ display: "flex", gap: "0.6rem" }}>
+            <Button variant="secondary" onClick={exportar} icon={<LuChartColumnStacked size={16} />} title="Exportar a Excel">
+              Exportar Excel
+            </Button>
+            <Button onClick={handleOpenCreateModal}>Añadir Vehículo</Button>
+          </div>
+        }
+      />
 
       <Card title={
         <span>
@@ -228,7 +231,7 @@ export const DashboardPage = () => {
             <option value="Demo">Demo / uso interno</option>
           </select>
           {(search || filterEstado) && (
-            <button className={styles.clearBtn} onClick={() => { setSearch(""); setFilterEstado(""); setPage(1); }} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuX size={14} /> Limpiar</button>
+            <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterEstado(""); setPage(1); }} icon={<LuX size={14} />}>Limpiar</Button>
           )}
         </div>
 
@@ -237,7 +240,7 @@ export const DashboardPage = () => {
           {paginated.length === 0 && <p style={{ textAlign: "center", color: "var(--slate-400)", padding: "1.5rem" }}>Sin vehículos.</p>}
           {paginated.map((v) => {
             const abierto = expanded.has(v.id);
-            const est = ESTADO_STYLE[v.estado] ?? ESTADO_STYLE.Vendido;
+            const estBadge = ESTADO_BADGE[v.estado] ?? "neutral";
             const precioFinal = Number(v.precio_venta_final ?? v.precio_venta ?? 0);
             const prev = getPreview(v);
             const img = v.profile?.imagenes && v.profile.imagenes.length > 0
@@ -269,7 +272,7 @@ export const DashboardPage = () => {
                       <LuCopy size={12} /> {v.vin}
                     </button>
                   </div>
-                  <span style={{ fontSize: "0.72rem", fontWeight: 700, background: est.bg, color: est.fg, borderRadius: 20, padding: "2px 10px", textAlign: "center" }}>{v.estado}</span>
+                  <Badge variant={estBadge}>{v.estado}</Badge>
                   <strong style={{ color: "var(--brand-dark)", textAlign: "right", fontSize: "0.9rem" }}>{CRC(precioFinal)}</strong>
                   <span style={{ color: "var(--slate-400)", textAlign: "center", transform: abierto ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>›</span>
                 </div>
@@ -295,7 +298,7 @@ export const DashboardPage = () => {
                           {prev && <>Final: <strong>{CRC(prev.final)}</strong><br /><span style={{ color: marginColor(prev.margen) }}>Margen {prev.margen.toFixed(1)}%</span></>}
                         </div>
                       </div>
-                      <button onClick={() => handleSavePrecio(v)} className="btn btn-principal" style={{ marginTop: "0.6rem", fontSize: "0.82rem" }}>Guardar precio</button>
+                      <Button onClick={() => handleSavePrecio(v)} size="sm" style={{ marginTop: "0.6rem" }}>Guardar precio</Button>
                     </div>
 
                     {/* Visibilidad + Uso */}
@@ -316,9 +319,9 @@ export const DashboardPage = () => {
                     <div>
                       <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--slate-500)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.35rem" }}><LuSettings size={14} /> Acciones</div>
                       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                        <button onClick={() => handleOpenEditModal(v)} className="btn" style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuPencil size={14} /> Editar ficha</button>
-                        <button onClick={() => setHistorialVehicle(v)} className="btn" style={{ border: "1px solid var(--slate-300)", background: "#fff", color: "var(--slate-700)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuClock size={14} /> Historial</button>
-                        <button onClick={() => handleDelete(v.id)} className="btn" style={{ border: "1px solid #fecaca", background: "#fff", color: "var(--danger)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><LuTrash2 size={14} /> Eliminar</button>
+                        <Button onClick={() => handleOpenEditModal(v)} variant="secondary" size="sm" icon={<LuPencil size={14} />}>Editar ficha</Button>
+                        <Button onClick={() => setHistorialVehicle(v)} variant="secondary" size="sm" icon={<LuClock size={14} />}>Historial</Button>
+                        <Button onClick={() => handleDelete(v.id)} variant="danger" size="sm" icon={<LuTrash2 size={14} />}>Eliminar</Button>
                       </div>
                       <div style={{ marginTop: "0.6rem", position: "relative", width: 90, height: 60, borderRadius: 6, overflow: "hidden", background: "var(--slate-100)" }}>
                         {img && <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}

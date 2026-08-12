@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import styles from "./ReportsPage.module.css";
 import * as XLSX from "xlsx";
 import { LuWallet, LuTrophy, LuCar, LuClipboardList, LuUsers, LuTarget, LuChartColumnStacked, LuPackage, LuBriefcase, LuTrendingUp, LuDownload, LuThermometer, LuFolder, LuPlay, LuMegaphone, LuUserRound, LuHourglass } from "react-icons/lu";
+import { Table, Button } from "@/components/ui";
 
 const MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
@@ -483,12 +484,12 @@ export const ReportsPage = () => {
               </div>
             </>
           )}
-          <button className="btn btn-principal" onClick={handleGenerate} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            {loading ? "Generando..." : <><LuPlay size={16} /> Generar Informe</>}
-          </button>
-          <button className="btn btn-secondary" onClick={handleExport} disabled={!reportData} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <LuDownload size={16} /> Exportar Excel
-          </button>
+          <Button onClick={handleGenerate} loading={loading} icon={<LuPlay size={16} />}>
+            Generar Informe
+          </Button>
+          <Button variant="secondary" onClick={handleExport} disabled={!reportData} icon={<LuDownload size={16} />}>
+            Exportar Excel
+          </Button>
         </div>
       </Card>
 
@@ -506,7 +507,7 @@ export const ReportsPage = () => {
             Aún no hay cierres de mes registrados. Usa el botón "Cerrar Mes" en el dashboard.
           </p>
         ) : (
-          <table className={styles.reportTable}>
+          <Table>
             <thead>
               <tr>
                 <th>Mes</th>
@@ -528,18 +529,19 @@ export const ReportsPage = () => {
                   <td>{c.cerrado_por?.nombre_completo ?? "—"}</td>
                   <td>{new Date(c.fecha_cierre).toLocaleDateString("es-CR")}</td>
                   <td>
-                    <button
-                      className="btn btn-secondary"
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => handleDescargarCierre(c.id, c.mes, c.anio)}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontSize: "0.78rem", padding: "0.3rem 0.75rem" }}
+                      icon={<LuDownload size={14} />}
                     >
-                      <LuDownload size={14} /> Excel
-                    </button>
+                      Excel
+                    </Button>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
       </Card>
     </div>

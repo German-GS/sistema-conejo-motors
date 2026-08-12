@@ -10,6 +10,7 @@ import {
   LuBuilding2, LuUser, LuGlobe, LuCalendarDays, LuZap, LuLock, LuSearch, LuInbox,
   LuPaperclip, LuUpload, LuLink, LuCar, LuHourglass, LuUserCog,
 } from "react-icons/lu";
+import { PageHeader, Tabs, Table, Badge, Button } from "@/components/ui";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 interface Cotizacion {
@@ -248,17 +249,19 @@ const PendingBillingPage = () => {
 
   return (
     <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <h1 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuBriefcase size={22} /> Facturación</h1>
-        <div className={styles.kpis}>
-          <span className={styles.kpiChip} style={{ background: "#e0f2fe", color: "var(--info)", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-            <LuClipboardList size={14} /> {pendientes.length} pendientes
-          </span>
-          <span className={styles.kpiChip} style={{ background: "#dcfce7", color: "#166534", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-            <LuCircleCheck size={14} /> {historial.length} completadas
-          </span>
-        </div>
-      </div>
+      <PageHeader
+        title={<><LuBriefcase size={22} /> Facturación</>}
+        actions={
+          <div className={styles.kpis}>
+            <span className={styles.kpiChip} style={{ background: "#e0f2fe", color: "var(--info)", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <LuClipboardList size={14} /> {pendientes.length} pendientes
+            </span>
+            <span className={styles.kpiChip} style={{ background: "#dcfce7", color: "#166534", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <LuCircleCheck size={14} /> {historial.length} completadas
+            </span>
+          </div>
+        }
+      />
 
       {/* Aviso: facturación electrónica en modo interino (sin llaves) */}
       <div style={{ background: "#fef3c7", border: "1px solid #fde68a", color: "#92400e", borderRadius: 10, padding: "0.7rem 1rem", fontSize: "0.85rem", marginBottom: "1rem", lineHeight: 1.5 }}>
@@ -467,17 +470,15 @@ const PendingBillingPage = () => {
       {/* ── Tabs ── */}
       {!cotSeleccionada && (
         <>
-          <div className={styles.tabBar}>
-            <button className={`${styles.tab} ${tab === "pendientes" ? styles.tabActive : ""}`} onClick={() => setTab("pendientes")} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              <LuClipboardList size={15} /> Pendientes ({pendientes.length})
-            </button>
-            <button className={`${styles.tab} ${tab === "buscar" ? styles.tabActive : ""}`} onClick={() => setTab("buscar")} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              <LuSearch size={15} /> Buscar Cliente
-            </button>
-            <button className={`${styles.tab} ${tab === "historial" ? styles.tabActive : ""}`} onClick={() => setTab("historial")} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              <LuCircleCheck size={15} /> Historial ({historial.length})
-            </button>
-          </div>
+          <Tabs
+            tabs={[
+              { id: "pendientes", label: `Pendientes (${pendientes.length})`, icon: <LuClipboardList size={15} /> },
+              { id: "buscar", label: "Buscar Cliente", icon: <LuSearch size={15} /> },
+              { id: "historial", label: `Historial (${historial.length})`, icon: <LuCircleCheck size={15} /> },
+            ]}
+            active={tab}
+            onChange={(id) => setTab(id as Tab)}
+          />
 
           {/* ══ TAB: Pendientes ══════════════════════════════════════════════ */}
           {tab === "pendientes" && (
@@ -505,9 +506,9 @@ const PendingBillingPage = () => {
                 <input className={styles.buscarInput} placeholder="Buscar por nombre, cédula o email del cliente..."
                   value={busqueda} onChange={e => setBusqueda(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter") buscarCotizaciones(); }} />
-                <button className={styles.buscarBtn} onClick={buscarCotizaciones} disabled={buscando}>
-                  {buscando ? "Buscando..." : "Buscar"}
-                </button>
+                <Button onClick={buscarCotizaciones} loading={buscando}>
+                  Buscar
+                </Button>
               </div>
               {resultados.length === 0 && busqueda && !buscando && (
                 <div className={styles.empty}><LuSearch size={22} /><p>No se encontraron cotizaciones activas para esa búsqueda.</p></div>
@@ -523,7 +524,7 @@ const PendingBillingPage = () => {
           {/* ══ TAB: Historial ═══════════════════════════════════════════════ */}
           {tab === "historial" && (
             <div className={styles.historialTable}>
-              <table>
+              <Table>
                 <thead>
                   <tr>
                     <th>#</th><th>Fecha</th><th>Facturado a</th><th>Vehículo</th>
@@ -549,7 +550,7 @@ const PendingBillingPage = () => {
                         <strong style={{ color: "var(--success)" }}>{fmtCRC(Number(v.total_con_iva) || Number(v.monto_final))}</strong>
                         {Number(v.iva_monto) > 0 && <div style={{ fontSize: "0.72rem", color: "var(--slate-500)" }}>IVA: {fmtCRC(v.iva_monto)}</div>}
                       </td>
-                      <td><span className={styles.estadoOk} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuCircleCheck size={13} /> {v.estado}</span></td>
+                      <td><Badge variant="success"><LuCircleCheck size={13} /> {v.estado}</Badge></td>
                       <td>
                         {v.comprobante_gcs_path ? (
                           <button onClick={() => verComprobanteVenta(v.id)} title="Ver documento adjunto" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1rem", display: "inline-flex", alignItems: "center" }}><LuPaperclip size={16} /></button>
@@ -563,7 +564,7 @@ const PendingBillingPage = () => {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           )}
         </>
@@ -588,14 +589,14 @@ const PendingBillingPage = () => {
                   Completar ahora
                 </a>
               )}
-              <button className="btn btn-secondary" onClick={() => setSugefModal(null)}>Cancelar</button>
-              <button
+              <Button variant="secondary" onClick={() => setSugefModal(null)}>Cancelar</Button>
+              <Button
+                variant="danger"
                 onClick={() => enviarFactura(true)}
                 disabled={procesando}
-                style={{ background: "var(--danger)", color: "#fff", border: "none", borderRadius: 8, padding: "0.5rem 1rem", cursor: "pointer", fontWeight: 700 }}
               >
                 Facturar de todas formas
-              </button>
+              </Button>
             </div>
             <p style={{ fontSize: "0.75rem", color: "var(--slate-400)", margin: "10px 0 0" }}>
               "Facturar de todas formas" registra el incumplimiento en el historial del lead.

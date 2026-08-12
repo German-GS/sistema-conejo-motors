@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 import { Card } from "@/components/Card";
+import { PageHeader, Table } from "@/components/ui";
 import { LuWallet, LuDownload, LuUpload, LuChartColumnStacked, LuCalendarDays, LuTriangleAlert } from "react-icons/lu";
 
 interface Resumen {
@@ -46,10 +47,10 @@ export default function FinanzasPage() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: "0.25rem" }}>Resumen Financiero</h1>
-      <p style={{ color: "var(--slate-500)", marginBottom: "1.25rem" }}>
-        Posición de caja, cuentas por cobrar/pagar y flujo de caja proyectado.
-      </p>
+      <PageHeader
+        title={<><LuWallet size={22} /> Resumen Financiero</>}
+        subtitle="Posición de caja, cuentas por cobrar/pagar y flujo de caja proyectado."
+      />
 
       {/* KPIs principales */}
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
@@ -66,7 +67,7 @@ export default function FinanzasPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
         {/* Proyección de flujo */}
         <Card title={<><LuCalendarDays size={16} /> Flujo de caja proyectado</>}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+          <Table>
             <thead>
               <tr style={{ textAlign: "left", color: "var(--slate-500)", borderBottom: "1px solid var(--slate-200)" }}>
                 <th style={{ padding: "8px 6px" }}>Horizonte</th>
@@ -89,7 +90,7 @@ export default function FinanzasPage() {
                 <td style={{ padding: "8px 6px", textAlign: "right", fontWeight: 700, color: r.proyeccion.dias30.neto >= 0 ? "var(--success)" : "var(--danger)" }}>{CRC(r.proyeccion.dias30.neto)}</td>
               </tr>
             </tbody>
-          </table>
+          </Table>
         </Card>
 
         {/* Vencidos */}

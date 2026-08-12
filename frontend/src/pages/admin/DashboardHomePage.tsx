@@ -17,6 +17,7 @@ import { LeadsFollowUpWidget } from "../../components/LeadsFollowUpWidget";
 import { QuotesExpiringWidget } from "../../components/QuotesExpiringWidget";
 import { CierreMesWidget } from "../../components/CierreMesWidget";
 import { Skeleton, SkeletonCards } from "../../components/Skeleton";
+import { Badge, Button } from "@/components/ui";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 interface BasicStats {
@@ -195,14 +196,12 @@ export const DashboardHomePage = () => {
               <span className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuUsers size={16} /> Equipo en Línea</span>
               <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginLeft: "auto" }}>
                 {conectadosTrabajando.length > 0 && (
-                  <span className={styles.teamChip} style={{ background: "#dcfce7", color: "#166534" }}>
-                    ● {conectadosTrabajando.length} trabajando
-                  </span>
+                  <Badge variant="success">● {conectadosTrabajando.length} trabajando</Badge>
                 )}
                 {conectadosAlmuerzo.length > 0 && (
-                  <span className={styles.teamChip} style={{ background: "#fef3c7", color: "#92400e", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                  <Badge variant="warning">
                     <LuUtensils size={13} /> {conectadosAlmuerzo.length} almuerzo
-                  </span>
+                  </Badge>
                 )}
               </div>
             </div>
@@ -377,20 +376,9 @@ export const DashboardHomePage = () => {
 const QuickAction = ({ icon, label, onClick, primary }: {
   icon: ReactNode; label: string; onClick: () => void; primary?: boolean;
 }) => (
-  <button
-    onClick={onClick}
-    style={{
-      display: "flex", alignItems: "center", gap: "0.5rem",
-      padding: "0.6rem 1rem", borderRadius: 10, cursor: "pointer",
-      fontSize: "0.9rem", fontWeight: 600,
-      border: primary ? "none" : "1px solid var(--slate-200)",
-      background: primary ? "var(--brand)" : "#fff",
-      color: primary ? "#fff" : "var(--slate-700)",
-      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-    }}
-  >
-    <span style={{ fontSize: "1.1rem", display: "inline-flex", alignItems: "center" }}>{icon}</span> {label}
-  </button>
+  <Button onClick={onClick} variant={primary ? "primary" : "secondary"} icon={icon}>
+    {label}
+  </Button>
 );
 
 // ─── sub-componente MiniKpi (compact) ────────────────────────────────────────

@@ -7,6 +7,7 @@ import styles from "./QuoteDetailsPage.module.css";
 import { fmtFechaLocal } from "@/utils/dateUtils";
 import { PageLoader } from "@/components/PageLoader";
 import { LuLink, LuReceiptText, LuBriefcase, LuBan, LuPalette, LuTriangleAlert, LuHourglass, LuWallet, LuGift, LuNotebookPen } from "react-icons/lu";
+import { Button } from "@/components/ui";
 
 // Para pantalla: usa el símbolo ₡
 const fmtCRC = (value: number) =>
@@ -138,35 +139,24 @@ export const QuoteDetailsPage = () => {
           {quote.lead && <span className={styles.leadLink} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}><LuLink size={14} /> Lead #{quote.lead.id}</span>}
         </div>
         <div className={styles.actions}>
-          <button className="btn btn-principal" onClick={verProforma} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <LuReceiptText size={16} /> Ver Proforma
-          </button>
+          <Button onClick={verProforma} icon={<LuReceiptText size={16} />}>
+            Ver Proforma
+          </Button>
           {(quote.estado === "Borrador" || quote.estado === "Enviada") && (
-            <button
+            <Button
+              variant="danger"
               onClick={() => setShowCancelModal(true)}
-              style={{
-                padding: "0.5rem 1rem",
-                background: "#fef2f2",
-                color: "var(--danger)",
-                border: "1.5px solid #fecaca",
-                borderRadius: "8px",
-                fontWeight: 700,
-                fontSize: "0.88rem",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-              }}
+              icon={<LuBan size={16} />}
             >
-              <LuBan size={16} /> Cancelar cotización
-            </button>
+              Cancelar cotización
+            </Button>
           )}
           {puedeFacturar && (
-            <button className="btn btn-principal" onClick={handleIrAFacturar}
+            <Button onClick={handleIrAFacturar}
               title="Ir a facturación para completar la venta con IVA y datos de factura"
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <LuBriefcase size={16} /> Facturar
-            </button>
+              icon={<LuBriefcase size={16} />}>
+              Facturar
+            </Button>
           )}
         </div>
       </div>
@@ -345,28 +335,21 @@ export const QuoteDetailsPage = () => {
               }}
             />
             <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.25rem", justifyContent: "flex-end" }}>
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => { setShowCancelModal(false); setMotivoCancel(""); }}
                 disabled={cancelando}
-                style={{
-                  padding: "0.55rem 1.1rem", background: "white",
-                  border: "1.5px solid var(--slate-200)", borderRadius: "8px",
-                  fontSize: "0.88rem", fontWeight: 600, color: "var(--slate-600)", cursor: "pointer",
-                }}
               >
                 No, mantener
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
                 onClick={handleCancelarDesdeDetalle}
                 disabled={cancelando || !motivoCancel.trim()}
-                style={{
-                  padding: "0.55rem 1.25rem", background: "var(--danger)", color: "white",
-                  border: "none", borderRadius: "8px", fontSize: "0.88rem",
-                  fontWeight: 700, cursor: "pointer", opacity: (cancelando || !motivoCancel.trim()) ? 0.5 : 1,
-                }}
+                loading={cancelando}
               >
-                {cancelando ? "Cancelando..." : "Sí, cancelar cotización"}
-              </button>
+                Sí, cancelar cotización
+              </Button>
             </div>
           </div>
         </div>

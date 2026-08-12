@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import { LuReceiptText, LuPaperclip, LuUpload, LuX } from "react-icons/lu";
+import { PageHeader, Table, Badge, Button } from "@/components/ui";
 
 const CRC = (v: number) => new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(Number(v) || 0);
 
@@ -13,9 +14,9 @@ interface Orden {
   lineas?: any[]; comprobante_gcs_path?: string | null;
 }
 
-const ESTADO_STYLE: Record<string, [string, string]> = {
-  Borrador: ["var(--slate-100)", "var(--slate-600)"], Enviada: ["#dbeafe", "#1d4ed8"],
-  "Recibida Parcial": ["#fef3c7", "#92400e"], Recibida: ["#dcfce7", "#15803d"], Cancelada: ["#fee2e2", "#b91c1c"],
+const ESTADO_BADGE: Record<string, "neutral" | "info" | "warning" | "success" | "danger"> = {
+  Borrador: "neutral", Enviada: "info",
+  "Recibida Parcial": "warning", Recibida: "success", Cancelada: "danger",
 };
 
 const card: React.CSSProperties = { background: "#fff", border: "1px solid var(--slate-200)", borderRadius: 12, padding: "1.25rem" };
@@ -108,12 +109,10 @@ export const ComprasPage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-        <h1 style={{ margin: 0, color: "var(--brand-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}><LuReceiptText size={22} /> Órdenes de Compra</h1>
-        <button onClick={() => setShowForm((s) => !s)} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.6rem 1.1rem", cursor: "pointer", fontWeight: 700 }}>
-          {showForm ? "Cerrar" : "+ Nueva orden"}
-        </button>
-      </div>
+      <PageHeader
+        title={<><LuReceiptText size={22} /> Órdenes de Compra</>}
+        actions={<Button onClick={() => setShowForm((s) => !s)}>{showForm ? "Cerrar" : "+ Nueva orden"}</Button>}
+      />
 
       {showForm && (
         <div style={card}>
@@ -133,8 +132,8 @@ export const ComprasPage = () => {
           </div>
 
           {/* Líneas */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 620 }}>
+          <div>
+            <Table>
               <thead><tr><th style={th}>Descripción</th><th style={{ ...th, width: 80 }}>Cant.</th><th style={{ ...th, width: 120 }}>Precio unit.</th><th style={{ ...th, width: 80 }}>IVA %</th><th style={{ ...th, width: 110, textAlign: "right" }}>Total</th><th style={{ width: 30 }}></th></tr></thead>
               <tbody>
                 {lineas.map((l, i) => {
@@ -156,16 +155,16 @@ export const ComprasPage = () => {
                   );
                 })}
               </tbody>
-            </table>
+            </Table>
           </div>
-          <button onClick={() => setLineas((prev) => [...prev, { descripcion: "", cantidad: 1, precio_unitario: 0, iva_porcentaje: 13 }])} style={{ background: "none", border: "1px dashed var(--slate-300)", color: "var(--slate-600)", borderRadius: 8, padding: "0.4rem 0.8rem", cursor: "pointer", marginTop: "0.5rem", fontSize: "0.82rem" }}>+ Agregar línea</button>
+          <Button onClick={() => setLineas((prev) => [...prev, { descripcion: "", cantidad: 1, precio_unitario: 0, iva_porcentaje: 13 }])} variant="ghost" size="sm" style={{ marginTop: "0.5rem" }}>+ Agregar línea</Button>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "1rem", flexWrap: "wrap", marginTop: "1rem", borderTop: "1px solid var(--slate-100)", paddingTop: "1rem" }}>
             <input value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Notas (opcional)" style={{ ...inp, maxWidth: 320 }} />
             <div style={{ textAlign: "right", fontSize: "0.9rem" }}>
               <div style={{ color: "var(--slate-500)" }}>Subtotal: {CRC(totales.subtotal)} · IVA: {CRC(totales.iva)}</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--brand-dark)" }}>Total: {CRC(totales.total)}</div>
-              <button onClick={guardar} disabled={guardando} style={{ background: "var(--brand)", border: "none", color: "#fff", borderRadius: 8, padding: "0.55rem 1.2rem", cursor: "pointer", fontWeight: 700, marginTop: "0.5rem" }}>{guardando ? "Guardando…" : "Guardar orden"}</button>
+              <Button onClick={guardar} loading={guardando} style={{ marginTop: "0.5rem" }}>{guardando ? "Guardando…" : "Guardar orden"}</Button>
             </div>
           </div>
         </div>
@@ -173,8 +172,8 @@ export const ComprasPage = () => {
 
       {/* Lista */}
       <div style={card}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
+        <div>
+          <Table>
             <thead>
               <tr>
                 <th style={th}>N°</th><th style={th}>Fecha</th><th style={th}>Proveedor</th><th style={th}>Estado</th>
@@ -185,13 +184,13 @@ export const ComprasPage = () => {
             <tbody>
               {ordenes.length === 0 && <tr><td style={td} colSpan={9}>Sin órdenes de compra.</td></tr>}
               {ordenes.map((o) => {
-                const badge = ESTADO_STYLE[o.estado] ?? ["var(--slate-100)", "var(--slate-600)"];
+                const badgeVariant = ESTADO_BADGE[o.estado] ?? "neutral";
                 return (
                   <tr key={o.id} style={{ borderTop: "1px solid var(--slate-100)" }}>
                     <td style={td}>{o.numero}</td>
                     <td style={td}>{o.fecha}</td>
                     <td style={td}>{o.proveedor?.nombre || "—"}</td>
-                    <td style={td}><span style={{ fontSize: "0.72rem", fontWeight: 700, background: badge[0], color: badge[1], borderRadius: 20, padding: "2px 10px" }}>{o.estado}</span></td>
+                    <td style={td}><Badge variant={badgeVariant}>{o.estado}</Badge></td>
                     <td style={{ ...td, textAlign: "right" }}>{CRC(o.subtotal)}</td>
                     <td style={{ ...td, textAlign: "right" }}>{CRC(o.iva)}</td>
                     <td style={{ ...td, textAlign: "right", fontWeight: 700 }}>{CRC(o.total)}</td>
@@ -206,14 +205,14 @@ export const ComprasPage = () => {
                     </td>
                     <td style={{ ...td, textAlign: "right", whiteSpace: "nowrap" }}>
                       {o.estado !== "Recibida" && o.estado !== "Cancelada" && (
-                        <button onClick={() => marcarRecibida(o.id)} style={{ border: "1px solid #bbf7d0", background: "#fff", color: "#15803d", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: "0.75rem" }}>Marcar recibida</button>
+                        <Button onClick={() => marcarRecibida(o.id)} size="sm" variant="secondary">Marcar recibida</Button>
                       )}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         </div>
         <p style={{ fontSize: "0.78rem", color: "var(--slate-400)", marginTop: "0.75rem" }}>
           Al marcar una orden como <strong>Recibida</strong>, se contabiliza (Debe 1400 Inventario + Debe 1210 IVA acreditable / Haber 2100 CxP) y el IVA entra a la liquidación D-150.

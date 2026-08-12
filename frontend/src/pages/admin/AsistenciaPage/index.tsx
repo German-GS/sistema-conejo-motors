@@ -4,6 +4,7 @@ import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./AsistenciaPage.module.css";
 import { Pagination } from "@/components/Pagination";
+import { Button, PageHeader, Table, Tabs } from "@/components/ui";
 import {
   LuCalendarDays, LuChartColumnStacked, LuTriangleAlert, LuClock,
   LuCircleCheck, LuPlus, LuPencil, LuTrash2,
@@ -207,39 +208,30 @@ export const AsistenciaPage = () => {
     };
   }, [data, tab, isAdmin]);
 
+  const tabItems = [
+    ...(isAdmin
+      ? [
+          { id: "dia", label: "Registro del Día", icon: <LuCalendarDays size={16} /> },
+          { id: "rango", label: "Resumen por Período", icon: <LuChartColumnStacked size={16} /> },
+          { id: "pendientes", label: "Pendientes", icon: <LuTriangleAlert size={16} /> },
+        ]
+      : []),
+    { id: "personal", label: isAdmin ? "Mi Historial" : "Mis Marcajes", icon: <LuClock size={16} /> },
+  ];
+
   return (
     <div>
-      <div className={styles.topBar}>
-        <h1>{isAdmin ? "Control de Asistencia" : "Mi Asistencia"}</h1>
-      </div>
+      <PageHeader title={isAdmin ? "Control de Asistencia" : "Mi Asistencia"} />
 
       {/* Tabs */}
-      <div className={styles.tabs}>
-        {isAdmin && (
-          <>
-            <button className={`${styles.tab} ${tab === "dia" ? styles.tabActive : ""}`}
-              onClick={() => setTab("dia")} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuCalendarDays size={16} /> Registro del Día</button>
-            <button className={`${styles.tab} ${tab === "rango" ? styles.tabActive : ""}`}
-              onClick={() => setTab("rango")} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}><LuChartColumnStacked size={16} /> Resumen por Período</button>
-            <button className={`${styles.tab} ${tab === "pendientes" ? styles.tabActive : ""}`}
-              onClick={() => setTab("pendientes")}
-              style={{ color: tab === "pendientes" ? undefined : "var(--warning)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <LuTriangleAlert size={16} /> Pendientes
-            </button>
-          </>
-        )}
-        <button className={`${styles.tab} ${tab === "personal" ? styles.tabActive : ""}`}
-          onClick={() => setTab("personal")} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-          <LuClock size={16} /> {isAdmin ? "Mi Historial" : "Mis Marcajes"}
-        </button>
-      </div>
+      <Tabs tabs={tabItems} active={tab} onChange={(id) => setTab(id as typeof tab)} />
 
       {/* Controles */}
       <div className={styles.controls}>
         {tab === "pendientes" && (
-          <button className="btn btn-principal" onClick={fetchData} disabled={loading}>
+          <Button variant="primary" onClick={fetchData} disabled={loading}>
             {loading ? "Cargando..." : "Actualizar"}
-          </button>
+          </Button>
         )}
         {tab === "dia" && (
           <>
@@ -247,9 +239,9 @@ export const AsistenciaPage = () => {
               <label>Fecha</label>
               <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} max={hoyStr()} />
             </div>
-            <button className="btn btn-principal" onClick={fetchData} disabled={loading}>
+            <Button variant="primary" onClick={fetchData} disabled={loading}>
               {loading ? "Cargando..." : "Consultar"}
-            </button>
+            </Button>
           </>
         )}
         {(tab === "rango" || tab === "personal") && (
@@ -262,9 +254,9 @@ export const AsistenciaPage = () => {
               <label>Hasta</label>
               <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} max={hoyStr()} />
             </div>
-            <button className="btn btn-principal" onClick={fetchData} disabled={loading}>
+            <Button variant="primary" onClick={fetchData} disabled={loading}>
               {loading ? "Cargando..." : "Consultar"}
-            </button>
+            </Button>
           </>
         )}
       </div>
@@ -288,8 +280,7 @@ export const AsistenciaPage = () => {
           </div>
         ) : (
           <>
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            <Table>
                 <thead>
                   <tr>
                     <th>Colaborador</th>
@@ -309,24 +300,21 @@ export const AsistenciaPage = () => {
                       <td className={styles.sub}>{m.modificado_por?.nombre_completo ?? "—"}</td>
                       <td className={styles.sub}>{m.nota_admin ?? "—"}</td>
                       <td>
-                        <button className="btn btn-principal" style={{ padding: "4px 12px", fontSize: "0.8rem" }}
-                          onClick={() => { setCorrigiendo(m); setNuevaHora(""); setNotaAdmin(""); }}>
+                        <Button variant="primary" size="sm" onClick={() => { setCorrigiendo(m); setNuevaHora(""); setNotaAdmin(""); }}>
                           Corregir
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+            </Table>
           </>
         )
       ) : data.length === 0 ? (
         <div className={styles.empty}>No hay registros para el período seleccionado.</div>
       ) : tab === "rango" ? (
         <>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
+          <Table>
               <thead>
                 <tr>
                   <th>Colaborador</th><th>Fecha</th><th>Primera Entrada</th>
@@ -352,14 +340,12 @@ export const AsistenciaPage = () => {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </Table>
           <Pagination page={page} totalPages={totalPages} onPage={setPage} totalItems={data.length} />
         </>
       ) : (
         <>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
+          <Table>
               <thead>
                 <tr>
                   {isAdmin && tab === "dia" && <th>Colaborador</th>}
@@ -386,21 +372,17 @@ export const AsistenciaPage = () => {
                         <td>
                           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                             {faltaSalida && (
-                              <button className="btn btn-principal" style={{ padding: "4px 12px", fontSize: "0.8rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
-                                onClick={() => abrirAgregarSalida(m)}>
-                                <LuPlus size={14} /> Registrar salida
-                              </button>
+                              <Button variant="primary" size="sm" icon={<LuPlus size={14} />} onClick={() => abrirAgregarSalida(m)}>
+                                Registrar salida
+                              </Button>
                             )}
-                            <button
-                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid var(--slate-300)", borderRadius: 6, cursor: "pointer", color: "var(--slate-600)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+                            <Button variant="secondary" size="sm" icon={<LuPencil size={14} />}
                               onClick={() => { setCorrigiendo(m); setNuevaHora(""); setNotaAdmin(""); }}>
-                              <LuPencil size={14} /> Corregir
-                            </button>
-                            <button
-                              style={{ padding: "4px 10px", fontSize: "0.8rem", whiteSpace: "nowrap", background: "#fff", border: "1px solid #fecaca", borderRadius: 6, cursor: "pointer", color: "var(--danger)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
-                              onClick={() => handleEliminarMarcaje(m)}>
-                              <LuTrash2 size={14} /> Eliminar
-                            </button>
+                              Corregir
+                            </Button>
+                            <Button variant="danger" size="sm" icon={<LuTrash2 size={14} />} onClick={() => handleEliminarMarcaje(m)}>
+                              Eliminar
+                            </Button>
                           </div>
                         </td>
                       )}
@@ -408,8 +390,7 @@ export const AsistenciaPage = () => {
                   );
                 })}
               </tbody>
-            </table>
-          </div>
+          </Table>
           <Pagination page={page} totalPages={totalPages} onPage={setPage} totalItems={data.length} />
         </>
       )}
@@ -449,12 +430,12 @@ export const AsistenciaPage = () => {
             </div>
 
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button className="btn btn-secundario" onClick={() => { setAgregandoSalida(null); setSalidaHora(""); setSalidaNota(""); }}>
+              <Button variant="secondary" onClick={() => { setAgregandoSalida(null); setSalidaHora(""); setSalidaNota(""); }}>
                 Cancelar
-              </button>
-              <button className="btn btn-principal" onClick={handleAgregarSalida} disabled={guardandoSalida}>
+              </Button>
+              <Button variant="primary" onClick={handleAgregarSalida} disabled={guardandoSalida} loading={guardandoSalida}>
                 {guardandoSalida ? "Guardando..." : "Registrar Salida"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -496,12 +477,12 @@ export const AsistenciaPage = () => {
             </div>
 
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button className="btn btn-secundario" onClick={() => { setCorrigiendo(null); setNuevaHora(""); setNotaAdmin(""); }}>
+              <Button variant="secondary" onClick={() => { setCorrigiendo(null); setNuevaHora(""); setNotaAdmin(""); }}>
                 Cancelar
-              </button>
-              <button className="btn btn-principal" onClick={handleCorregir} disabled={guardandoCorreccion}>
+              </Button>
+              <Button variant="primary" onClick={handleCorregir} disabled={guardandoCorreccion} loading={guardandoCorreccion}>
                 {guardandoCorreccion ? "Guardando..." : "Guardar Corrección"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
