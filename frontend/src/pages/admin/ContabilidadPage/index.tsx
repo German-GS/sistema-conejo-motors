@@ -4,6 +4,7 @@ import apiClient from "@/api/apiClient";
 import toast from "react-hot-toast";
 import styles from "./ContabilidadPage.module.css";
 import { fmtFecha, hoyEnCR } from "@/utils/dateUtils";
+import { PageHeader, Button, Tabs } from "@/components/ui";
 import {
   LuCar, LuPackage, LuShoppingCart, LuBanknote, LuWallet, LuScale,
   LuLock, LuLockOpen, LuPencil, LuCircleCheck, LuCircleX, LuTriangleAlert,
@@ -408,39 +409,35 @@ export const ContabilidadPage = () => {
 
   return (
     <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <h1 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><LuChartColumnStacked size={22} /> Contabilidad</h1>
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          {cuentas.length === 0 && (
-            <button className={styles.seedBtn} onClick={seedCuentas} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <LuSettings size={16} /> Inicializar Plan de Cuentas Estándar
-            </button>
-          )}
-          {cuentas.length > 0 && (
-            <button className={styles.seedBtn} onClick={cargarInventarioInicial} title="Genera el asiento de apertura del inventario de vehículos en stock" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <LuCar size={16} /> Cargar inventario inicial
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={<><LuChartColumnStacked size={22} /> Contabilidad</>}
+        actions={
+          cuentas.length === 0 ? (
+            <Button variant="secondary" icon={<LuSettings size={16} />} onClick={seedCuentas}>
+              Inicializar Plan de Cuentas Estándar
+            </Button>
+          ) : (
+            <Button variant="secondary" icon={<LuCar size={16} />} onClick={cargarInventarioInicial}
+              title="Genera el asiento de apertura del inventario de vehículos en stock">
+              Cargar inventario inicial
+            </Button>
+          )
+        }
+      />
 
       {/* Tabs */}
-      <div className={styles.tabBar}>
-        {[
-          { key: "dashboard", label: "Resumen", Icon: LuChartColumnStacked },
-          { key: "asientos",  label: "Asientos", Icon: LuNotebookPen },
-          { key: "balance",   label: "Balance", Icon: LuScale },
-          { key: "activos",   label: "Activos Fijos", Icon: LuBuilding2 },
-          { key: "cierres",   label: "Cierres", Icon: LuLock },
-          { key: "cuentas",   label: "Plan de Cuentas", Icon: LuClipboardList },
-        ].map(t => (
-          <button key={t.key} className={`${styles.tab} ${tab === t.key ? styles.tabActive : ""}`}
-            onClick={() => setTab(t.key as any)}
-            style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <t.Icon size={16} /> {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        active={tab}
+        onChange={(id) => setTab(id as any)}
+        tabs={[
+          { id: "dashboard", label: "Resumen", icon: <LuChartColumnStacked size={16} /> },
+          { id: "asientos",  label: "Asientos", icon: <LuNotebookPen size={16} /> },
+          { id: "balance",   label: "Balance", icon: <LuScale size={16} /> },
+          { id: "activos",   label: "Activos Fijos", icon: <LuBuilding2 size={16} /> },
+          { id: "cierres",   label: "Cierres", icon: <LuLock size={16} /> },
+          { id: "cuentas",   label: "Plan de Cuentas", icon: <LuClipboardList size={16} /> },
+        ]}
+      />
 
       {/* ══ TAB: Dashboard ══════════════════════════════════════════════════ */}
       {tab === "dashboard" && preview && (
