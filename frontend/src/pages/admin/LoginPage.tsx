@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { startAuthentication } from "@simplewebauthn/browser";
 import styles from "./LoginPage.module.css";
 import logoConejo from "../../img/Logos/Logo-Conejo-Motors.png";
-import { LuFingerprint } from "react-icons/lu";
+import { LuFingerprint, LuTriangleAlert } from "react-icons/lu";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -104,18 +104,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       if (!err.response) {
         // Sin respuesta del servidor: dormido, red, o CORS
         if (err.code === "ECONNABORTED" || /timeout/i.test(err.message ?? "")) {
-          msg = "⏳ El servidor tardó en responder. Suele estar iniciándose por la mañana — esperá unos segundos y volvé a intentar.";
+          msg = "El servidor tardó en responder. Suele estar iniciándose por la mañana — esperá unos segundos y volvé a intentar.";
         } else {
-          msg = "🔌 No se pudo conectar con el servidor. Puede estar despertando o hay un problema de conexión. Esperá unos segundos y reintentá.";
+          msg = "No se pudo conectar con el servidor. Puede estar despertando o hay un problema de conexión. Esperá unos segundos y reintentá.";
         }
       } else if (status === 401) {
-        msg = "❌ Correo o contraseña incorrectos.";
+        msg = "Correo o contraseña incorrectos.";
       } else if (status === 403) {
-        msg = "🚫 Tu cuenta no tiene acceso o está inactiva. Contactá al administrador.";
+        msg = "Tu cuenta no tiene acceso o está inactiva. Contactá al administrador.";
       } else if (status === 429) {
-        msg = "⚠️ Demasiados intentos. Esperá un momento antes de volver a intentar.";
+        msg = "Demasiados intentos. Esperá un momento antes de volver a intentar.";
       } else if (status >= 500) {
-        msg = "🛠️ El servidor tuvo un problema. Intentá de nuevo en un momento.";
+        msg = "El servidor tuvo un problema. Intentá de nuevo en un momento.";
       } else {
         msg = err.response?.data?.message || "No se pudo iniciar sesión. Intentá de nuevo.";
       }
@@ -152,7 +152,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               {cargando ? (<><span className={styles.spinner} /> Ingresando…</>) : (<><LuFingerprint size={17} /> Entrar con biometría (Face ID / huella)</>)}
             </button>
             {cargando && <p style={{ fontSize: "0.85rem", color: "var(--slate-500)", textAlign: "center", margin: 0 }}>{mensajeCarga}</p>}
-            {error && !cargando && <p className={styles.error}>{error}</p>}
+            {error && !cargando && <p className={styles.error} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTriangleAlert size={15} /> {error}</p>}
             {!cargando && (
               <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.82rem", flexWrap: "wrap", justifyContent: "center" }}>
                 <button type="button" onClick={() => cambiarModo("password")}
@@ -214,7 +214,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   {mensajeCarga}
                 </p>
               )}
-              {error && !cargando && <p className={styles.error}>{error}</p>}
+              {error && !cargando && <p className={styles.error} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LuTriangleAlert size={15} /> {error}</p>}
             </form>
 
             {/* Alternar entre biometría y contraseña */}
