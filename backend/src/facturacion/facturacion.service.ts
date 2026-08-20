@@ -73,11 +73,16 @@ export class FacturacionService {
 
   // ── Lista de cotizaciones listas para facturar ────────────────────────────
 
-  /** Cotizaciones facturables: solo las ya formalizadas con el cliente (Enviada/Aceptada).
-   *  Los borradores no se facturan hasta enviarse. */
+  /**
+   * Cotizaciones facturables. Incluye 'Borrador' además de 'Aceptada'/'Enviada':
+   * hoy no existe ningún flujo en el sistema que mueva una cotización de
+   * 'Borrador' a 'Enviada' (no hay botón ni endpoint para eso), así que
+   * exigir ese estado dejaba la pantalla de Facturación inalcanzable para
+   * cualquier cotización nueva. Se sigue excluyendo 'Rechazada'/'Cancelada'/'Facturada'.
+   */
   async getPendingInvoices(): Promise<Cotizacion[]> {
     return this.cotizacionesRepo.find({
-      where: { estado: In(['Aceptada', 'Enviada']) },
+      where: { estado: In(['Borrador', 'Aceptada', 'Enviada']) },
       relations: ['cliente', 'vehiculo', 'vendedor', 'lead'],
       order: { fecha_creacion: 'DESC' },
     });
