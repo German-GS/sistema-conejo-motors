@@ -1,5 +1,6 @@
 // backend/src/facturacion/facturacion.module.ts
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HttpModule } from '@nestjs/axios';
 import { FacturacionService } from './facturacion.service';
@@ -18,6 +19,9 @@ import { FacturaHtmlService } from './factura-html.service';
 import { FIRMADOR, HACIENDA_CLIENT } from './firma/firma.interfaces';
 import { FirmadorNoop } from './firma/firmador.noop';
 import { HaciendaClientNoop } from './firma/hacienda-client.noop';
+import { FirmadorReal } from './firma/firmador.real';
+import { HaciendaClientReal } from './firma/hacienda-client.real';
+import { SecretsService } from './firma/secrets.service';
 import { Lead } from '../leads/lead.entity';
 import { LeadActividad } from '../leads/lead-actividad.entity';
 import { CuentaCobrar } from '../cxc/cuenta-cobrar.entity';
@@ -41,9 +45,28 @@ import { TipoCambioModule } from '../tipo-cambio/tipo-cambio.module';
     NumeracionService,
     EmisorConfigService,
     FacturaHtmlService,
-    // Seams de firma/envío. Reemplazar por las implementaciones reales al recibir el .p12.
-    { provide: FIRMADOR, useClass: FirmadorNoop },
-    { provide: HACIENDA_CLIENT, useClass: HaciendaClientNoop },
+    SecretsService,
+    FirmadorReal,
+    HaciendaClientReal,
+    // Seams de firma/envío. FACTURACION_FIRMA_REAL=true enchufa las implementaciones
+    // reales (XAdES-EPES + API de Hacienda vía @dojocoding/hacienda-sdk); por defecto
+    // (false) siguen las NoOp — nada cambia hasta activarlo a propósito. Independiente
+    // de FACTURACION_PRODUCCION (que gobierna numeración/situación): se puede probar
+    // la firma+envío real contra el ambiente sandbox de Hacienda sin quemar consecutivos.
+    {
+      provide: FIRMADOR,
+      useFactory: (config: ConfigService, real: FirmadorReal, noop: FirmadorNoop) =>
+        String(config.get('FACTURACION_FIRMA_REAL') ?? 'false').toLowerCase() === 'true' ? real : noop,
+      inject: [ConfigService, FirmadorReal, FirmadorNoop],
+    },
+    FirmadorNoop,
+    {
+      provide: HACIENDA_CLIENT,
+      useFactory: (config: ConfigService, real: HaciendaClientReal, noop: HaciendaClientNoop) =>
+        String(config.get('FACTURACION_FIRMA_REAL') ?? 'false').toLowerCase() === 'true' ? real : noop,
+      inject: [ConfigService, HaciendaClientReal, HaciendaClientNoop],
+    },
+    HaciendaClientNoop,
   ],
   controllers: [FacturacionController],
 })
